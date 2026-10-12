@@ -1,6 +1,7 @@
 import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
+import { MAX_IMAGE_BYTES } from './image-storage.js';
 export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
     return async (req, res) => {
         const send = (status, value) => {
@@ -19,7 +20,16 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);
             }
-            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: publisher ? 'text_publish_now' : 'not_implemented' });
+            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: publisher ? 'text_photo_publish_now' : 'not_implemented' });
+            const imageRead = req.url.match(/^\/api\/media\/files\/([a-f0-9-]{36})$/);
+            if (imageRead && req.method === 'GET') {
+                auth.require(req);
+                const asset = store.all('MediaAsset').find(asset => asset.storage_id === imageRead[1]);
+                if (!asset) fail('Stored image not found', 404);
+                const bytes = store.images.read(asset.storage_id);
+                res.writeHead(200, { 'Content-Type': asset.mime_type, 'Content-Length': String(bytes.length), 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; sandbox" });
+                return res.end(bytes);
+            }
             if (req.headers['x-socialchoice-client'] !== 'local-ui') fail('Application request header required', 403);
             if (req.url === '/api/auth/login' && req.method === 'POST') {
                 if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
@@ -31,6 +41,12 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, { ok: true });
             }
             auth.require(req);
+            if (req.url === '/api/media/upload' && req.method === 'POST') {
+                const chunks = []; let length = 0;
+                for await (const chunk of req) { const bytes = Buffer.from(chunk); length += bytes.length; if (length > MAX_IMAGE_BYTES) fail('Images must be at most 3 MiB', 413); chunks.push(bytes); }
+                let name; try { name = decodeURIComponent(req.headers['x-image-name'] || ''); } catch { fail('Valid image filename required'); }
+                return send(200, store.images.upload(req.headers['x-image-brand'], name, req.headers['content-type'], Buffer.concat(chunks)));
+            }
             const metaRoute = req.url?.match(/^\/api\/meta\/(status|start|pages|import|disconnect|check)$/);
             if (metaRoute) {
                 if (req.method === 'GET' && ['status', 'pages'].includes(metaRoute[1])) return send(200, await meta.execute(metaRoute[1], req, res));
@@ -43,7 +59,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
             if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
-            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: true, message: 'Automatic publishing is unavailable. Use Publish now for one text-only Facebook Page post.' });
+            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: true, message: 'Automatic publishing is unavailable. Use Publish now for one Facebook Page with text and images.' });
             const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status)$/);
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const savingPost = req.url === '/api/posts/save';

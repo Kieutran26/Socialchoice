@@ -24,12 +24,19 @@ export class SocialchoiceWorkspace extends DurableObject {
         const metaSettings = metaConfig(env);
         if (metaSettings.ready && metaSettings.origin !== publicOrigin) throw new Error('Meta callback origin mismatch');
         const meta = createMetaConnection(store, auth, metaSettings, { states: privateMap('oauth'), pending: privateMap('pages') });
-        const publisher = createFacebookPublisher(store, metaSettings);
+        const publisher = createFacebookPublisher(store, metaSettings, { wake: time => ctx.storage.setAlarm(time) });
+        this.publisher = publisher;
+        ctx.blockConcurrencyWhile(() => this.reconcilePhotos());
         const allowedHosts = new Set([new URL(publicOrigin).hostname, new URL(backendOrigin).hostname]);
         this.handler = createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, allowedHosts });
     }
     async fetch(request) {
         if (!this.handler) return Response.json({ message: 'Configure private admin and storage secrets before deployment', ready: false }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
+        await this.reconcilePhotos();
         return handleWebRequest(request, this.handler);
     }
+    async reconcilePhotos() {
+        if (this.publisher && !(await this.ctx.storage.getAlarm())) await this.publisher.resumePhotos();
+    }
+    async alarm() { if (this.publisher) await this.publisher.runPhotos(); }
 }

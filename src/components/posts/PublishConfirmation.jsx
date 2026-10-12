@@ -24,6 +24,7 @@ export default function PublishConfirmation({ review, onClose, onResult }) {
         <p className="text-sm">{t('This will publish immediately on the selected Facebook Page.')}</p>
         <p className="font-medium">{review.pageName} <span className="label-xs">· {review.pageId}</span></p>
         <div className="max-h-72 overflow-auto whitespace-pre-wrap rounded-lg border p-4 text-sm">{review.caption}</div>
+        {!!review.media?.length && <div className="grid grid-cols-3 gap-2 max-h-56 overflow-auto">{review.media.map((image,index) => <div key={image.id}><img src={image.file_url} alt={image.name} className="h-28 w-full object-contain rounded-lg border" /><p className="label-xs truncate">{index+1}. {image.name}</p></div>)}</div>}
         {error && <p role="alert" className="text-sm text-dangerFg">{t(error)}</p>}
         <div className="mt-4 flex justify-end gap-3"><Button variant="outline" disabled={busy} onClick={onClose}>{t('Cancel')}</Button><button className="btn-skew" disabled={busy} onClick={confirm}>{t(busy ? 'Publishing…' : 'Confirm and publish')}</button></div>
     </DialogContent></Dialog>;

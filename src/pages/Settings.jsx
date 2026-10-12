@@ -266,7 +266,7 @@ export default function Settings() {
                             </div>
                         </dl>
 
-                        <p className="label-xs mt-4"> {t('Publish now supports one text-only Facebook Page after authorization and review. Calendar plans are saved in this workspace; automatic delivery and retries are unavailable.')} </p>
+                        <p className="label-xs mt-4"> {t('Publish now supports text and images on one Facebook Page after authorization and review. Calendar plans do not send automatically; video and automatic retries are unavailable.')} </p>
 
                         <Button
                             variant="outline"

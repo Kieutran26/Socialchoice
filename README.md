@@ -58,15 +58,15 @@ See [admin server setup](docs/admin-server-setup.md) for local password recovery
 
 ## Facebook Page connection
 
-Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now supports text to exactly one connected Facebook Page with pages_manage_posts and a content-creation task. It shows the exact Page/caption for confirmation, preserves one durable attempt and only records Published after Meta returns a valid post ID. Automatic delivery remains unavailable.
+Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now supports text and up to ten stored images to exactly one connected Facebook Page with pages_manage_posts and a content-creation task. It shows the exact Page/caption for confirmation, preserves one durable attempt and only records Published after Meta returns a valid post ID. Automatic delivery remains unavailable.
 
 ## Online deployment preparation
 
-The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta OAuth and Page discovery have been verified; publishing permission and a real post must be verified separately.
+The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta OAuth, Page discovery and owner-approved text publication have been verified. Photo publication must be verified separately.
 
 ## Not implemented yet
 
-Media/multi-Page publishing, platform metrics, server delivery worker/retries and media upload storage. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
+Video/multi-Page publishing, platform metrics and calendar delivery/retries. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
 
 The API defaults to loopback locally. Hosted Node binding requires the configured admin password, exact HTTPS origin and persistent database path. The Cloudflare adapter requires private admin and encryption secrets and stores data in its SQLite actor. Vercel routes same-origin requests to the verified backend. Do not expose the unauthenticated development mode.
 
@@ -87,3 +87,11 @@ Audit: plans/reports/project-audit-261012-0943-socialchoice-report.md
 Plan: plans/261012-0943-phase-a/plan.md
 Validation: plans/reports/phase-a-validation-261012-0943-socialchoice-report.md
 Product/design contract: SOCIALCHOICE_PROJECT_GUIDE.md
+
+## Private images and photo posts
+
+Upload JPEG, PNG or still WebP in Create Post or Media Library after choosing a live brand. Each file is limited to 3 MiB and 40 megapixels; a post supports up to ten images. Select library images and arrange their order in the composer. The confirmation dialog shows the exact caption, Page and images. Video is unavailable.
+
+Images are stored as private bounded SQLite chunks in the existing backend, with a 200 MiB cap on encoded image storage. Image previews require the admin session; no public bucket or paid storage is enabled. Remove unused images from Media Library; referenced images preserve post/history integrity. Uploading into Socialchoice does not publish on Facebook.
+
+After confirmation, Cloudflare alarms upload each photo unpublished and create one final feed post with the returned photo IDs. Claims and checkpoints prevent replay of uncertain operations, and the cloud process continues if the browser closes. Node local mode runs while its server process is alive and resumes only safe checkpoints after restart. Photo upload IDs alone never mark the post Published; the final Page post ID is required.

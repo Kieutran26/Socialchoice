@@ -2,18 +2,22 @@ import { createHmac } from 'node:crypto';
 import { fail } from './validation.js';
 
 export function createMetaGraph(config) {
-    async function request(path, params = {}, token, method = 'GET') {
+    async function request(path, params = {}, token, method = 'GET', file) {
         const step = path === 'oauth/access_token' ? (params.grant_type ? 'token_exchange' : 'code_exchange') : ({ me: 'profile', 'me/permissions': 'permissions', 'me/accounts': 'pages' }[path] || 'page_check');
         const reject = (message, status, code, subcode, reason) => {
             throw Object.assign(new Error(message), { status, metaStep: step, metaReason: reason, metaHttpStatus: response?.status, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
         };
         const url = new URL(`https://graph.facebook.com/${config.version}/${path}`);
-        const fields = new URLSearchParams(params);
+        const fields = file ? new FormData() : new URLSearchParams(params);
+        if (file) {
+            for (const [key, value] of Object.entries(params)) fields.set(key, value);
+            fields.set('source', new Blob([new Uint8Array(file.bytes)], { type: file.type }), file.name);
+        }
         if (token) fields.set('appsecret_proof', createHmac('sha256', config.appSecret).update(token).digest('hex'));
         if (method === 'GET') url.search = fields.toString();
         let response, data;
         try {
-            response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
+            response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' && !file ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
         } catch (error) { reject('Meta request unavailable. Try again later.', 502, undefined, undefined, ['TimeoutError', 'AbortError'].includes(error.name) ? 'timeout' : 'network'); }
         // Workers support manual/follow only. Never follow a redirect with credentials.
         if (response.status >= 300 && response.status < 400) reject('Meta returned an unexpected redirect', 502, undefined, undefined, 'redirect');
@@ -24,8 +28,13 @@ export function createMetaGraph(config) {
         return data;
     }
     return {
-        async publishText(pageId, caption, token) {
-            const result = await request(`${pageId}/feed`, { message: caption, published: 'true' }, token, 'POST');
+        async uploadPhoto(pageId, file, token) {
+            const result = await request(`${pageId}/photos`, { published: 'false' }, token, 'POST', file);
+            if (typeof result.id !== 'string' || !/^\d+$/.test(result.id)) fail('Facebook returned no confirmed photo ID', 502);
+            return result.id;
+        },
+        async publishText(pageId, caption, token, photos = []) {
+            const result = await request(`${pageId}/feed`, { message: caption, published: 'true', ...(photos.length ? { attached_media: JSON.stringify(photos.map(id => ({ media_fbid: id }))) } : {}) }, token, 'POST');
             if (typeof result.id !== 'string' || !new RegExp(`^${pageId}_[0-9]+$`).test(result.id)) fail('Facebook returned no confirmed post ID', 502);
             return { id: result.id, url: `https://www.facebook.com/${result.id}` };
         },

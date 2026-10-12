@@ -38,7 +38,15 @@ test('Worker authentication and Vietnamese content survive runtime restart', asy
         const saved = await request('/api/entities/Brand/create', [{ name: 'Thương hiệu Việt' }], cookie);
         assert.equal(saved.status, 200, await saved.clone().text());
         const brand = await saved.json();
+        const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX6kAAAAASUVORK5CYII=', 'base64');
+        const upload = await runtime.dispatchFetch(origin+'/api/media/upload', { method:'POST', headers:{ cookie, 'x-socialchoice-client':'local-ui', 'content-type':'image/png', 'x-image-brand':brand.id, 'x-image-name':encodeURIComponent('ảnh-test.png') }, body:png });
+        assert.equal(upload.status,200,await upload.clone().text());
+        const asset = await upload.json();
         await runtime.dispose(); runtime = new Miniflare(options);
+        assert.equal((await runtime.dispatchFetch(origin+asset.file_url)).status,401);
+        const storedImage = await runtime.dispatchFetch(origin+asset.file_url,{headers:{cookie}});
+        assert.equal(storedImage.status,200);
+        assert.deepEqual(Buffer.from(await storedImage.arrayBuffer()),png);
         assert.equal((await request('/api/session', undefined, cookie)).status, 200);
         const list = await request('/api/entities/Brand/list', [], cookie);
         assert.equal((await list.json()).items[0].name, brand.name);

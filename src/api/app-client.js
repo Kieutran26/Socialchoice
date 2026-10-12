@@ -15,6 +15,22 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    media: {
+        upload: (file, brandId, onProgress = (_value) => {}) => new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/media/upload');
+            xhr.setRequestHeader('Content-Type', file.type);
+            xhr.setRequestHeader('X-Socialchoice-Client', 'local-ui');
+            xhr.setRequestHeader('X-Image-Brand', brandId);
+            xhr.setRequestHeader('X-Image-Name', encodeURIComponent(file.name));
+            xhr.upload.onprogress = event => { if (event.lengthComputable) onProgress(Math.round(event.loaded / event.total * 100)); };
+            xhr.onload = () => { try { const result = JSON.parse(xhr.responseText); if (xhr.status >= 200 && xhr.status < 300) resolve(result); else reject(new Error(result.message || 'Image upload failed')); } catch { reject(new Error('Image upload failed')); } };
+            xhr.onerror = () => reject(new Error('Image upload failed'));
+            xhr.timeout = 60000;
+            xhr.ontimeout = () => reject(new Error('Image upload timed out. Check the library before uploading again.'));
+            xhr.send(file);
+        }),
+    },
     entities: new Proxy(/** @type {Record<string, Record<string, (...args: any[]) => Promise<any>>>} */ ({}), {
         get: (_, entity) => new Proxy({}, { get: (_, operation) => (...args) => request(`entities/${String(entity)}/${String(operation)}`, args) }),
     }),

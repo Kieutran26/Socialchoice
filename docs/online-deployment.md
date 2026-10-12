@@ -31,3 +31,9 @@ Live status 2026-10-12: Socialchoice Worker deployed at https://socialchoice-api
 
 Cutover verified: Vercel deployment 9edRC65B3Z64nvF2iYgRsyPE39oU from commit adaf9aa serves API JSON through https://socialchoice.vercel.app. Health200, anonymous session401, Vietnamese sign-in screen verified. Owner password login and Meta OAuth require owner interaction; neither is claimed as successful.
 
+
+## Private photo delivery
+
+Photo bytes are stored in image_chunks in the same SQLite actor; each chunk stays below the SQL 2 MB row limit. No namespace, binding or encryption-key changes and no paid bucket are required. The 200 MiB cap applies to encoded chunk bytes. Full workspace backups must include those rows as well as records/attempts.
+
+The actor alarm is now owned by confirmed photo Publish Now attempts. It advances one remote operation at a time and maintains a watchdog for a claimed operation. Do not add an independent scheduler that overwrites this alarm; coordinate any future work through the same persisted queue. Calendar plans do not set this alarm. Rollback code preserves storage, but older code cannot continue a photo workflow; verify no active photo attempt before rollback.

@@ -61,6 +61,7 @@ export default function CreatePost() {
 
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploading, setUploading] = useState(false);
     const [accounts, setAccounts] = useState([]);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
@@ -132,7 +133,7 @@ export default function CreatePost() {
                 time: parts.time,
                 timezone: post.timezone || DEFAULT_TIMEZONE,
                 status: duplicateId ? 'draft' : ['draft', 'scheduled'].includes(post.status) ? post.status : 'draft',
-                media: media.items,
+                media: (post.media_ids || []).map(id => media.items.find(image => image.id === id)).filter(Boolean),
             });
         })();
     }, [sourceId, loading, editId, duplicateId]);
@@ -161,7 +162,7 @@ export default function CreatePost() {
     if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
         warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
     }
-    if (form.media.length || form.account_ids.length !== 1) warnings.push(t("Publish now supports text and exactly one Facebook Page. Media and automatic publishing are not available yet."));
+    if (form.account_ids.length !== 1) warnings.push(t("Publish now supports text and up to 10 images on one Facebook Page. Video and automatic publishing are not available yet."));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
@@ -171,7 +172,7 @@ export default function CreatePost() {
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
-        if (action === 'publish' && (form.media.length || form.account_ids.length !== 1)) return t('Publish now supports text and exactly one Facebook Page');
+        if (action === 'publish' && (form.account_ids.length !== 1 || form.media.length > 10)) return t('Publish now requires exactly one Facebook Page');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
             return t("Pick a publishing time in the future, or use Publish now.");
@@ -243,7 +244,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t("Create a text post for one Facebook Page, or save a calendar plan.")}
+                description={t("Create a text or photo post for one Facebook Page, or save a calendar plan.")}
                 actions={
                     existing ? (
                         <>
@@ -278,7 +279,7 @@ export default function CreatePost() {
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label className="label-xs mb-1.5 block">{t("Brand")}</Label>
-                                    <Select value={form.brand_id} onValueChange={applyBrand}>
+                                    <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
                                         <SelectTrigger className="rounded-lg">
                                             <SelectValue placeholder={t("Select brand")} />
                                         </SelectTrigger>
@@ -339,9 +340,10 @@ export default function CreatePost() {
                         <h2 className="mb-3 text-[15px]">{t("Media")}</h2>
                         <MediaUploader
                             assets={form.media}
-                            onChange={(media) => setForm({ ...form, media })}
+                            onChange={(media) => setForm(prev => media.every(image => !image.brand_id || image.brand_id === prev.brand_id) ? { ...prev, media } : prev)}
                             brandId={form.brand_id}
                             demoMode={demoMode}
+                            onBusyChange={setUploading}
                         />
                     </section>
 
@@ -399,15 +401,15 @@ export default function CreatePost() {
                     ) : null}
 
                     <div className="panel space-y-2 p-4">
-                        <button type="button" className="btn-skew w-full" disabled={saving || demoMode} onClick={() => submit('publish')}>
+                        <button type="button" className="btn-skew w-full" disabled={saving || uploading || demoMode} onClick={() => submit('publish')}>
                             <PaperPlaneTilt size={15} weight="fill" /> {t("Publish now")} </button>
-                        <button type="button" className="btn-skew w-full" disabled={saving} onClick={() => submit('schedule')}>
+                        <button type="button" className="btn-skew w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
                             <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </button>
                         <Button
                             type="button"
                             variant="outline"
                             className="w-full rounded-lg"
-                            disabled={saving}
+                            disabled={saving || uploading}
                             onClick={() => submit('draft')}
                         >
                             <FloppyDisk size={15} className="mr-1.5" /> {t("Save draft")} </Button>

@@ -72,6 +72,12 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "media_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
       }
     },
     "required": [
@@ -338,6 +344,21 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "storage_id": {
+        "type": "string"
+      },
+      "sha256": {
+        "type": "string"
+      },
+      "width": {
+        "type": "number"
+      },
+      "height": {
+        "type": "number"
+      },
+      "filename": {
+        "type": "string"
       }
     },
     "required": [

@@ -49,7 +49,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
         },
         async execute(operation, req, res, args = []) {
             clean();
-            if (operation === 'status') return { ready: config.ready && auth.enabled, missing: config.missing, adminRequired: !auth.enabled, publishing: 'text_publish_now' };
+            if (operation === 'status') return { ready: config.ready && auth.enabled, missing: config.missing, adminRequired: !auth.enabled, publishing: 'text_photo_publish_now' };
             if (operation === 'pages' && (!config.ready || !auth.enabled)) return { pages: [], pending: false };
             if (operation === 'disconnect') {
                 if (!auth.enabled) fail('Sign in required', 401);

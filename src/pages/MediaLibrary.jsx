@@ -1,6 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
-import { useRef, useState } from 'react';
-import { FolderOpen, UploadSimple, Trash, MagnifyingGlass } from '@phosphor-icons/react';
+import { useState } from 'react';
+import { FolderOpen, Trash, MagnifyingGlass } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
@@ -16,14 +16,14 @@ import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Image } from '@/components/ui/image';
 import { useCallback, useEffect } from 'react';
-import { MEDIA_ACCEPT } from '@/lib/constants';
+import MediaUploader from '@/components/composer/MediaUploader';
 import { formatBytes, formatDay } from '@/lib/format';
 
 export default function MediaLibrary() {
     const { t } = useTranslation();
-    const { scope } = useWorkspace();
+    const { scope, brands, selectedBrandId, demoMode } = useWorkspace();
     const { toast } = useToast();
-    const inputRef = useRef(null);
+    const [uploadBrand, setUploadBrand] = useState(selectedBrandId === 'all' ? '' : selectedBrandId);
     const [loading, setLoading] = useState(true);
     const [assets, setAssets] = useState([]);
     const [search, setSearch] = useState('');
@@ -46,10 +46,6 @@ export default function MediaLibrary() {
         return () => clearTimeout(timer);
     }, [load, search]);
 
-    const upload = () => {
-        toast({ variant: 'destructive', title: t("Storage not configured"), description: t("Uploads are unavailable in Phase A.") });
-        if (inputRef.current) inputRef.current.value = '';
-    };
     const remove = async () => {
         const usage = await appClient.entities.Post.count({ media_ids: deleteTarget.id });
         if (usage > 0) {
@@ -71,25 +67,9 @@ export default function MediaLibrary() {
         <>
             <PageHeader
                 title={t("Media Library")}
-                description={t("Stored media references. Upload storage is not configured in Phase A.")}
-                actions={
-                    <>
-                        <input
-                            ref={inputRef}
-                            type="file"
-                            accept={MEDIA_ACCEPT}
-                            multiple
-                            disabled
-                            onChange={upload}
-                            className="hidden"
-                            aria-label={t("Upload media")}
-                        />
-                        <button type="button" className="btn-skew" disabled title={t("Upload storage is not configured in Phase A")}>
-                            <UploadSimple size={15} weight="bold" /> {t("Upload unavailable")} </button>
-                    </>
-                }
+                description={t("Private images stored in this workspace. Video uploads are not available yet.")}
             />
-            <p role="status" className="label-xs mb-5">{t("Media uploads require a configured storage backend. No file is uploaded in Phase A.")}</p>
+            <section className="panel p-4 mb-5"><Label className="label-xs block mb-2">{t('Brand for uploaded images')}</Label><select className="border rounded-lg p-2 mb-3 text-sm" aria-label={t('Brand for uploaded images')} value={uploadBrand} onChange={event => setUploadBrand(event.target.value)} disabled={demoMode}><option value="">{t('Choose brand')}</option>{brands.map(brand => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select><MediaUploader allowLibrary={false} assets={[]} onChange={() => load()} brandId={uploadBrand} demoMode={demoMode} /></section>
 
             <div className="panel mb-5 p-4">
                 <div className="flex flex-wrap items-end gap-3">
@@ -132,10 +112,8 @@ export default function MediaLibrary() {
                 <EmptyState
                     icon={FolderOpen}
                     title={t("No media yet")}
-                    description={t("Your media library is empty. Uploads become available after a storage backend is configured.")}
+                    description={t("Choose a brand above and upload images. They remain private until you approve a Facebook post.")}
                 >
-                    <button type="button" className="btn-skew" disabled title={t("Upload storage is not configured in Phase A")}>
-                        <UploadSimple size={15} weight="bold" /> {t("Upload unavailable")} </button>
                 </EmptyState>
             ) : (
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">

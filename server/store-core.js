@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 import schemas from './entity-schemas.json' with { type: 'json' };
 import { matches, paginate, aggregate } from './query.js';
 import { fail, validateRecord } from './validation.js';
+import { createImageStorage } from './image-storage.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -9,6 +10,7 @@ const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'an
 export function createStoreCore(db, transactionSync) {
     const verified = Symbol('verified platform metadata');
     const publisher = Symbol('confirmed publishing');
+    const imageWriter = Symbol('stored image metadata');
     let transactionDepth = 0;
     db.exec('CREATE TABLE IF NOT EXISTS records (entity TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(entity,id));');
     db.exec('CREATE TABLE IF NOT EXISTS meta_credentials (id TEXT PRIMARY KEY, encrypted TEXT NOT NULL);');
@@ -25,6 +27,8 @@ export function createStoreCore(db, transactionSync) {
             return JSON.parse(row.data);
         },
         saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(post_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
+        pendingAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='processing'").all().map(row => JSON.parse(row.data)),
+        imageWrite: input => store.write('MediaAsset', input, undefined, imageWriter),
         publishingWrite: (entity, input, id) => {
             if (!['Post', 'PublishJob', 'PostVariant', 'PublishingLog'].includes(entity)) fail('Invalid publishing entity');
             return store.write(entity, input, id, publisher);
@@ -57,6 +61,7 @@ export function createStoreCore(db, transactionSync) {
             const defaults = Object.fromEntries(Object.entries(schemas[entity].properties).filter(([, r]) => r.default !== undefined).map(([k, r]) => [k, r.default]));
             const now = new Date().toISOString();
             const record = { is_demo: false, ...defaults, ...previous, ...input, id: id || randomUUID(), created_date: previous?.created_date || now, updated_date: now };
+            if (entity === 'MediaAsset' && capability !== imageWriter && (previous?.storage_id || record.storage_id || record.sha256 || record.file_url?.startsWith('/api/media/files/'))) fail('Stored image metadata is server-owned', 409);
             if (capability !== publisher) {
                 const attempt = store.attemptForPost(entity === 'Post' ? record.id : record.post_id);
                 if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
@@ -82,6 +87,11 @@ export function createStoreCore(db, transactionSync) {
             }
             if (store.references(entity, id)) fail('Record has history or children. Archive/disconnect instead.', 409);
             if (entity === 'Post' && record.status !== 'draft') fail('Only drafts can be deleted; cancel scheduled posts instead', 409);
+            if (entity === 'MediaAsset' && record.storage_id) return store.transaction(() => {
+                store.images.remove(record.storage_id);
+                db.prepare('DELETE FROM records WHERE entity=? AND id=?').run(entity, id);
+                return { deleted: 1 };
+            });
             db.prepare('DELETE FROM records WHERE entity=? AND id=?').run(entity, id);
             return { deleted: 1 };
         },
@@ -122,5 +132,6 @@ export function createStoreCore(db, transactionSync) {
             }
         },
     };
+    store.images = createImageStorage(db, store);
     return store;
 }

@@ -20,8 +20,9 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     const store = createStore(dbPath);
     const meta = createMetaConnection(store, auth, metaSettings);
     const publisher = createFacebookPublisher(store, metaSettings);
+    publisher.resumePhotos();
     const server = createServer(createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
-    server.on('close', () => store.close());
+    server.on('close', () => { publisher.close(); store.close(); });
     return { server, store };
 }
 
