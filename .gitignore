@@ -7,3 +7,8 @@ base44/.app.jsonc
 plans/**/*.zip
 plans/npm-cache/
 *.log
+.wrangler/
+.pnpm-store/
+.dev.vars*
+worker-dist/
+vercel.json.before-api-proxy

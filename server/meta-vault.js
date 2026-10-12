@@ -1,4 +1,5 @@
 import { createCipheriv, createDecipheriv, randomBytes } from 'node:crypto';
+import { Buffer } from 'node:buffer';
 import { fail } from './validation.js';
 
 export function createMetaVault(store, keyHex) {
@@ -9,7 +10,7 @@ export function createMetaVault(store, keyHex) {
             const iv = randomBytes(12);
             const cipher = createCipheriv('aes-256-gcm', key, iv);
             cipher.setAAD(Buffer.from(id));
-            const encrypted = Buffer.concat([cipher.update(JSON.stringify(value)), cipher.final()]);
+            const encrypted = Buffer.concat([cipher.update(JSON.stringify(value), 'utf8'), cipher.final()]);
             store.saveCredential(id, JSON.stringify({ iv: iv.toString('base64'), tag: cipher.getAuthTag().toString('base64'), data: encrypted.toString('base64') }));
         },
         read(id) {

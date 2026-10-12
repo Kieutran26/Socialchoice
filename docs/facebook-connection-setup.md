@@ -13,7 +13,7 @@ Recommended on Windows: run `npm run setup:meta`. Enter App ID, the supported Gr
 5. Ensure the Socialchoice admin password has been set with `npm run setup:admin`. Rebuild (`npm run build`) and restart your existing app (`npm start`), or restart the development API/frontend pair. Stop/restart your current server rather than starting duplicates.
 6. Sign in, create a real active brand, then open Social Accounts → choose brand → Connect / reconnect Facebook. Sign in only on Facebook's official domain. Grant the allowed Page permissions. On return, choose the Pages actually returned by Meta and click Connect selected Pages. Select within ten minutes; restart/expiry requires starting OAuth again.
 
-Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The callback origin must match the app origin you use in the browser. For public HTTPS, it must match `SOCIALCHOICE_PUBLIC_ORIGIN` and the reverse proxy's preserved Host. No public server/domain has been created by this work.
+Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The callback origin must match the app origin you use in the browser. For public HTTPS, it must match `SOCIALCHOICE_PUBLIC_ORIGIN`. The proxy's backend Host must match `SOCIALCHOICE_BACKEND_ORIGIN` or Render's supplied backend URL. No public server/domain has been created by this work.
 
 ## Behavior and safety
 

@@ -4,10 +4,9 @@ import { createMetaGraph } from './meta-graph.js';
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
 
-export function createMetaConnection(store, auth, config = metaConfig()) {
+export function createMetaConnection(store, auth, config = metaConfig(), { states = new Map(), pending = new Map() } = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
     const vault = config.ready ? createMetaVault(store, config.key) : null;
-    const states = new Map(), pending = new Map();
     const ttl = 10 * 60 * 1000;
     const clean = () => {
         for (const map of [states, pending]) for (const [key, value] of map) if (value.expires <= Date.now()) map.delete(key);

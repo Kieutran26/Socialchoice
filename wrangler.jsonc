@@ -1,0 +1,20 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "socialchoice-api",
+  "main": "server/cloudflare-worker.js",
+  "account_id": "2e2290be67e66440324d34997c4acf8b",
+  "compatibility_date": "2026-10-06",
+  "compatibility_flags": ["nodejs_compat"],
+  "workers_dev": true,
+  "durable_objects": {
+    "bindings": [{ "name": "WORKSPACE", "class_name": "SocialchoiceWorkspace" }]
+  },
+  "migrations": [{ "tag": "workspace-storage", "new_sqlite_classes": ["SocialchoiceWorkspace"] }],
+  "vars": {
+    "SOCIALCHOICE_PUBLIC_ORIGIN": "https://socialchoice.vercel.app",
+    "SOCIALCHOICE_BACKEND_ORIGIN": "https://socialchoice-api.nguyenngockieutran.workers.dev",
+    "META_APP_ID": "1115808334255427",
+    "META_REDIRECT_URI": "https://socialchoice.vercel.app/api/meta/callback"
+  },
+  "observability": { "enabled": false }
+}

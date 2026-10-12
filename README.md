@@ -4,11 +4,11 @@ Standalone local content planning workspace. React/Vite frontend plus an owned N
 
 ## Run locally
 
-Prerequisite: Node.js 24 or newer, npm. No Base44 account, Deno, cloud credentials or paid connector required.
+Prerequisite: Node.js 24 or newer, pnpm. No Base44 account, Deno, cloud credentials or paid connector required locally.
 
 ```powershell
 cd D:\Socialchoice
-npm ci
+pnpm install --frozen-lockfile
 ```
 
 Start two terminals in the project folder:
@@ -54,17 +54,21 @@ The original source snapshot is plans/261012-0943-phase-a/source-before-phase-a.
 
 Run `npm run setup:admin` to enter a new Socialchoice password locally, then `npm run build` and `npm start`. Open http://127.0.0.1:3001. This serves the built UI and API from one Node process. Setup creates an ignored `.env.admin` containing a password hash; never paste passwords into chat. Sessions protect workspace data, expire after eight hours and are revoked by Sign out or server restart. Development remains loopback-only when no hash is configured.
 
-See [admin server setup](docs/admin-server-setup.md) for HTTPS proxy configuration, password recovery, backups and hosting prerequisites. No cloud server has been deployed.
+See [admin server setup](docs/admin-server-setup.md) for local password recovery and backups, and [online deployment](docs/online-deployment.md) for the authenticated Cloudflare backend.
 
 ## Facebook Page connection
 
 Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now and automatic delivery remain disabled.
 
+## Online deployment preparation
+
+The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta authorization remains pending.
+
 ## Not implemented yet
 
-Real publishing, platform metrics, server delivery worker/retries, media upload storage, cloud deployment. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
+Real publishing, platform metrics, server delivery worker/retries, media upload storage. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
 
-The API remains bound to loopback. Public deployment requires the configured admin password, exact HTTPS public origin, trusted reverse proxy, persistent disk and backup/supervision strategy described above. Do not expose the unauthenticated development mode.
+The API defaults to loopback locally. Hosted Node binding requires the configured admin password, exact HTTPS origin and persistent database path. The Cloudflare adapter requires private admin and encryption secrets and stores data in its SQLite actor. Vercel routes same-origin requests to the verified backend. Do not expose the unauthenticated development mode.
 
 Phase B needs owner-provided Meta App configuration in server environment variables and an authorized test Page. Never provide a Facebook password to this app or paste secrets into chat. OAuth must happen on Meta's official domain. No claim of approval, connection or successful publishing will be made without a real API test.
 

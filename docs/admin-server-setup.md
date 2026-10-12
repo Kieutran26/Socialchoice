@@ -8,13 +8,13 @@ From `D:\Socialchoice`, run `npm run setup:admin`. Enter a new Socialchoice pass
 
 Run `npm run build`, then `npm start`. Open `http://127.0.0.1:3001`. One server serves the web app and API. Sign in and use Sign out in the sidebar. English/Vietnamese can be selected before sign-in. The existing two-terminal development commands still work; `dev:api` also loads `.env.admin` and requires sign-in when a hash is configured.
 
-This repository currently has `package-lock.json`, npm setup instructions and no pnpm workspace manifest. Commands above follow the actual project files.
+The repository now contains `pnpm-lock.yaml` and `pnpm-workspace.yaml`. Deployment uses frozen pnpm installs. The npm run commands above remain valid script entry points; avoid reinstalling dependencies with different package managers interchangeably.
 
 ## Authentication boundary
 
 All workspace API routes require an admin session when configured. Sessions use random opaque cookies, HttpOnly, SameSite=Strict, an eight-hour absolute lifetime and server-side memory. Restarting the server invalidates all sessions, while preserving content. Login rotates the caller's prior session; logout revokes it. Five failed attempts lock login for the remaining fifteen-minute window across the single server. There is no registration, email recovery or Facebook password form. To recover, stop the service, move `.env.admin` to a protected backup, create a replacement locally, and restart. Do not delete the content database.
 
-Public mode requires an exact HTTPS `SOCIALCHOICE_PUBLIC_ORIGIN` and the admin hash. Its cookies also use Secure. The Node server still listens only on loopback: a trusted HTTPS reverse proxy must preserve the configured Host, terminate TLS and forward to this private port. Never expose the unauthenticated development mode. Restrict direct port access. Origin, fetch-site and application-header checks protect browser requests; a public origin without an admin hash fails startup.
+Public mode requires an exact HTTPS `SOCIALCHOICE_PUBLIC_ORIGIN` and the admin hash. Its cookies also use Secure. Loopback is the local default. Hosted configuration explicitly enables the authenticated public listener behind an HTTPS proxy, with an absolute persistent database path. The backend accepts the configured app Host and exact backend Host; browser Origin remains restricted to the public app origin. Never expose the unauthenticated development mode. Restrict direct port access. Origin, fetch-site and application-header checks protect browser requests; a public origin without an admin hash fails startup.
 
 ## Hosting handoff
 
