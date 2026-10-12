@@ -20,8 +20,8 @@ export const appClient = {
     }),
     auth: {
         me: () => request('session'),
-        logout: () => { window.location.assign('/'); },
-        loginViaEmailPassword: async (..._args) => { throw new Error('Hosted sign-in is not configured. This is a local-only workspace.'); },
+        logout: async () => { await request('auth/logout', []); window.location.assign('/'); },
+        loginViaEmailPassword: (password, legacyPassword = undefined) => request('auth/login', [legacyPassword ?? password]),
         loginWithProvider: (..._args) => { throw new Error('OAuth sign-in is not configured.'); },
         register: async (..._args) => { throw new Error('Hosted registration is not configured.'); },
         /** @returns {Promise<{access_token: string}>} */

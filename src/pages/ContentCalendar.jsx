@@ -13,8 +13,12 @@ import PostDetailSheet from '@/components/posts/PostDetailSheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { addDays, shiftMonths, startOfMonth, toUtcIso, todayInZone, weekdayIndex } from '@/lib/tz';
 import { dateKey } from '@/lib/format';
+import { formatCalendarDate } from '@/lib/format';
+import { useTranslation } from '@/lib/i18n';
+import { getLocale } from '@/lib/i18n-core';
 
 export default function ContentCalendar() {
+    const { t } = useTranslation();
     const { scope, brands, selectedBrandId, timezone } = useWorkspace();
     const [view, setView] = useState('month');
     const [anchor, setAnchor] = useState(() => todayInZone(timezone));
@@ -83,6 +87,7 @@ export default function ContentCalendar() {
     }, [load]);
 
     const postsByDay = useMemo(() => {
+        /** @type {Record<string, import('@/components/component-types').EntityRecord[]>} */
         const map = {};
         posts.forEach((post) => {
             if (!post.scheduled_at) return;
@@ -94,12 +99,12 @@ export default function ContentCalendar() {
 
     const label =
         view === 'month'
-            ? new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+            ? new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
                 new Date(`${anchor.slice(0, 7)}-01T00:00:00Z`),
             )
             : view === 'week'
-                ? `${range.start} → ${addDays(range.end, -1)}`
-                : `Next 60 days from ${anchor}`;
+                ? `${formatCalendarDate(range.start)} → ${formatCalendarDate(addDays(range.end, -1))}`
+                : t('Next 60 days from {date}', { date: formatCalendarDate(anchor) });
 
     const shift = (direction) => {
         if (view === 'month') setAnchor(shiftMonths(anchor, direction));
@@ -109,12 +114,12 @@ export default function ContentCalendar() {
     return (
         <>
             <PageHeader
-                title="Content Calendar"
-                description={`All scheduled and published content, shown in ${timezone}. Click any item to open it, reschedule it or edit it.`}
+                title={t('Content Calendar')}
+                description={t('All scheduled and published content, shown in {timezone}. Click any item to open it, reschedule it or edit it.', { timezone })}
                 actions={
                     <Link to="/create" className="btn-skew">
                         <Plus size={15} weight="bold" />
-                        Create Post
+                        {t('Create Post')}
                     </Link>
                 }
             />
@@ -138,11 +143,11 @@ export default function ContentCalendar() {
             ) : !posts.length ? (
                 <EmptyState
                     icon={CalendarDots}
-                    title="Nothing scheduled in this range"
-                    description="Move to another period, clear the filters, or schedule a post to see it appear here."
+                    title={t('Nothing scheduled in this range')}
+                    description={t('Move to another period, clear the filters, or schedule a post to see it appear here.')}
                 >
                     <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" /> Create Post
+                        <Plus size={15} weight="bold" /> {t('Create Post')}
                     </Link>
                 </EmptyState>
             ) : view === 'month' ? (
@@ -178,11 +183,10 @@ export default function ContentCalendar() {
             )}
 
             <p className="label-xs mt-3">
-                {selectedBrandId === 'all' ? 'Showing every brand' : 'Filtered to the selected brand'} · {posts.length} item
-                {posts.length === 1 ? '' : 's'} in view
+                {t(selectedBrandId === 'all' ? 'Showing every brand' : 'Filtered to the selected brand')} · {t('{count} items in view', { count: posts.length })}
             </p>
 
             {openPost ? <PostDetailSheet post={openPost} onClose={() => setOpenPost(null)} onChanged={load} /> : null}
         </>
     );
-} ContentPillars.jsx
+}

@@ -50,11 +50,17 @@ The original source snapshot is plans/261012-0943-phase-a/source-before-phase-a.
 - Explicit unconfigured integrations; server rejects manually forged live connected/published states.
 - Real data by default. Optional sample workspace is isolated and visibly labeled simulation.
 
+## Admin sign-in and standalone server
+
+Run `npm run setup:admin` to enter a new Socialchoice password locally, then `npm run build` and `npm start`. Open http://127.0.0.1:3001. This serves the built UI and API from one Node process. Setup creates an ignored `.env.admin` containing a password hash; never paste passwords into chat. Sessions protect workspace data, expire after eight hours and are revoked by Sign out or server restart. Development remains loopback-only when no hash is configured.
+
+See [admin server setup](docs/admin-server-setup.md) for HTTPS proxy configuration, password recovery, backups and hosting prerequisites. No cloud server has been deployed.
+
 ## Not implemented yet
 
-Facebook OAuth, Page discovery, real publishing, platform metrics, server delivery worker/retries, media upload storage, cloud deployment and production authentication. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
+Facebook OAuth, Page discovery, real publishing, platform metrics, server delivery worker/retries, media upload storage, cloud deployment. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
 
-This is a loopback-only personal workspace, not a public authenticated service. Before public deployment, add real admin sessions/owner authorization, HTTPS and a hosted persistence/backup strategy. Do not bind the API to a public interface or expose it through a tunnel. Production planning is documented in the migration report.
+The API remains bound to loopback. Public deployment requires the configured admin password, exact HTTPS public origin, trusted reverse proxy, persistent disk and backup/supervision strategy described above. Do not expose the unauthenticated development mode.
 
 Phase B needs owner-provided Meta App configuration in server environment variables and an authorized test Page. Never provide a Facebook password to this app or paste secrets into chat. OAuth must happen on Meta's official domain. No claim of approval, connection or successful publishing will be made without a real API test.
 

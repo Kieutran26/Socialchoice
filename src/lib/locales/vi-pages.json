@@ -291,5 +291,8 @@
   "Local workspace owner": "Chủ không gian cục bộ",
   " — perfectly balanced.": " — phân bổ cân bằng.",
   " — aim for 100% so the mix is intentional.": " — nên đặt tổng 100% để phân bổ rõ ràng.",
-  "no handle": "chưa có tên người dùng"
+  "no handle": "chưa có tên người dùng",
+  "Next 60 days from {date}": "60 ngày tiếp theo từ {date}",
+  "All scheduled and published content, shown in {timezone}. Click any item to open it, reschedule it or edit it.": "Tất cả nội dung đã lên lịch và đã đăng, hiển thị theo múi giờ {timezone}. Nhấn vào một mục để xem, đổi lịch hoặc sửa.",
+  "{count} items in view": "{count} mục đang hiển thị"
 }

@@ -113,5 +113,14 @@
   "{count}h ago": "{count} giờ trước",
   "in {count}h": "sau {count} giờ",
   "{count}d ago": "{count} ngày trước",
-  "in {count}d": "sau {count} ngày"
+  "in {count}d": "sau {count} ngày",
+  "Admin sign-in": "Đăng nhập quản trị",
+  "Use your Socialchoice password. Facebook connects separately through Meta.": "Dùng mật khẩu Socialchoice của bạn. Facebook được kết nối riêng qua Meta.",
+  "Socialchoice password": "Mật khẩu Socialchoice",
+  "Signing in…": "Đang đăng nhập…",
+  "Sign in": "Đăng nhập",
+  "Sign out": "Đăng xuất",
+  "Incorrect password": "Mật khẩu không đúng",
+  "Sign in required": "Vui lòng đăng nhập",
+  "Too many attempts. Try again in 15 minutes.": "Đã thử quá nhiều lần. Vui lòng thử lại sau 15 phút."
 }

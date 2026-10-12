@@ -2,8 +2,23 @@
   "missing": [],
   "raw": [
     {
+      "file": "src\\components\\admin-sign-in.jsx",
+      "line": 19,
+      "text": "socialchoice"
+    },
+    {
+      "file": "src\\components\\admin-sign-in.jsx",
+      "line": 28,
+      "text": "English"
+    },
+    {
+      "file": "src\\components\\admin-sign-in.jsx",
+      "line": 28,
+      "text": "Tiếng Việt"
+    },
+    {
       "file": "src\\components\\Layout.jsx",
-      "line": 10,
+      "line": 13,
       "text": "socialchoice"
     },
     {
