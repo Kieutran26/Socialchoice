@@ -1,5 +1,7 @@
 # Facebook text publishing
 
+Status: complete — real text Publish Now verified on the owner-approved Page and caption.
+
 Outcome: real Publish Now for a text draft to one authorized Facebook Page. Preserve UI, local/cloud persistence, Vietnamese labels and free hosting.
 
 Constraints: backend Page token only; owner-reviewed canonical snapshot; publishing scope and Page task required; platform ID confirmation only; no fake statuses or live test without exact owner approval. Calendar plans remain plans; media/multi-Page execution and scheduler are subsequent work.
@@ -10,4 +12,8 @@ Acceptance: validation/credential/history/idempotency checks, Node and actual Wo
 
 Phases: inspect/docs; implement server/storage/Graph; UI confirmation/localization; tests/review; deployFree; owner scope/reconnect and concrete post approval; live verification.
 
-Status: implementation, 34 tests, lint, typecheck, production build and independent review complete. Backend deployed on existing Free Worker (d88e407a58cd4dde8d92b7c9f3683ae5); public health reports text_publish_now and admin-session. Vercel UI deployment FYDEfjiPHxzzsQrxkKRHRpdjZXVa from 411b241 succeeded; Vietnamese Publish now and the connected Deszy Page were inspected online. Follow-up cancellation/history checks passed (12 focused tests). No Meta publishing permission changed and no real post sent. Real publication acceptance remains pending owner scope/reconnect and exact Page/content approval.
+Deployment checkpoint: implementation, 34 tests, lint, typecheck, production build and independent review complete. Backend deployed on existing Free Worker (d88e407a58cd4dde8d92b7c9f3683ae5); public health reports text_publish_now and admin-session. Vercel UI deployment FYDEfjiPHxzzsQrxkKRHRpdjZXVa from 411b241 succeeded; Vietnamese Publish now and the connected Deszy Page were inspected online. Follow-up cancellation/history checks passed (12 focused tests). No Meta publishing permission changed and no real post sent. Real publication acceptance remains pending owner scope/reconnect and exact Page/content approval.
+
+Owner subsequently approved the permission change. pages_manage_posts added to app 1115808334255427 (Ready for testing); OAuth limited to current Deszy Page, saved and imported. Real backend prepare succeeded, verifying publishing scope and a content creation task. Exact review dialog is open for the technical test text, awaiting owner approval to send. No real post sent yet.
+
+Completed: owner approved the exact test text and Deszy Page. One Publish Now request succeeded, returning Facebook ID 427858497068282_122224600130487033. Socialchoice shows Published with its persisted history/link. Opening that link on Facebook verified Deszy, the exact text, and Public visibility. No retries or additional posts. Text Publish Now acceptance achieved; media, multiple Pages and scheduled delivery remain outside this pilot.
