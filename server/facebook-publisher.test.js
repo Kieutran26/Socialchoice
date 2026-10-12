@@ -36,6 +36,8 @@ test('review uses exact Facebook caption and never returns credentials or create
         const replacement = publisher.prepare(post.id);
         assert.notEqual(replacement.attemptId, review.attemptId);
         assert.throws(() => publisher.status(review.attemptId), /not found/);
+        store.remove('Post', post.id);
+        assert.throws(() => publisher.status(replacement.attemptId), /not found/);
     } finally { store.close(); }
 });
 

@@ -67,12 +67,14 @@ export function createStoreCore(db, transactionSync) {
         },
         remove(entity, id) {
             const record = store.get(entity, id);
-            if (store.attemptForPost(entity === 'Post' ? id : record.post_id)) fail('Publishing history is locked; duplicate this post instead', 409);
+            const attempt = store.attemptForPost(entity === 'Post' ? id : record.post_id);
+            if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
             if (entity === 'SocialAccount' && record.credential_id) fail('Disconnect Facebook before removing this Page', 409);
             if (entity === 'Post' && record.status === 'draft') {
                 const jobs = store.all('PublishJob').filter((job) => job.post_id === id);
                 if (jobs.some((job) => !['pending', 'blocked', 'cancelled'].includes(job.status))) fail('Post has publishing attempts; preserve its history', 409);
                 return store.transaction(() => {
+                    db.prepare('DELETE FROM publish_attempts WHERE post_id=?').run(id);
                     db.prepare("DELETE FROM records WHERE entity IN ('PublishJob','PostVariant','PublishingLog') AND json_extract(data,'$.post_id')=?").run(id);
                     db.prepare('DELETE FROM records WHERE entity=? AND id=?').run(entity, id);
                     return { deleted: 1 };
