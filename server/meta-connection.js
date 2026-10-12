@@ -6,7 +6,7 @@ import { fail } from './validation.js';
 
 export function safeConnectionFailure(error) {
     const step = ['code_exchange', 'token_exchange', 'profile', 'permissions', 'pages'].includes(error?.metaStep) ? error.metaStep : 'connection';
-    return { step, ...(Number.isSafeInteger(error?.metaCode) ? { code: error.metaCode } : {}), ...(Number.isSafeInteger(error?.metaSubcode) ? { subcode: error.metaSubcode } : {}) };
+    return { step, ...(Number.isSafeInteger(error?.metaCode) ? { code: error.metaCode } : {}), ...(Number.isSafeInteger(error?.metaSubcode) ? { subcode: error.metaSubcode } : {}), ...(['timeout', 'network', 'response_format'].includes(error?.metaReason) ? { reason: error.metaReason } : {}), ...(Number.isSafeInteger(error?.metaHttpStatus) ? { httpStatus: error.metaHttpStatus } : {}) };
 }
 
 export function createMetaConnection(store, auth, config = metaConfig(), { states = new Map(), pending = new Map() } = {}) {

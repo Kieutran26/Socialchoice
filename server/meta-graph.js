@@ -4,8 +4,8 @@ import { fail } from './validation.js';
 export function createMetaGraph(config) {
     async function request(path, params = {}, token, method = 'GET') {
         const step = path === 'oauth/access_token' ? (params.grant_type ? 'token_exchange' : 'code_exchange') : ({ me: 'profile', 'me/permissions': 'permissions', 'me/accounts': 'pages' }[path] || 'page_check');
-        const reject = (message, status, code, subcode) => {
-            throw Object.assign(new Error(message), { status, metaStep: step, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
+        const reject = (message, status, code, subcode, reason) => {
+            throw Object.assign(new Error(message), { status, metaStep: step, metaReason: reason, metaHttpStatus: response?.status, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
         };
         const url = new URL(`https://graph.facebook.com/${config.version}/${path}`);
         const fields = new URLSearchParams(params);
@@ -14,8 +14,9 @@ export function createMetaGraph(config) {
         let response, data;
         try {
             response = await fetch(url, { method, redirect: 'error', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
-            data = await response.json();
-        } catch { reject('Meta request unavailable. Try again later.', 502); }
+        } catch (error) { reject('Meta request unavailable. Try again later.', 502, undefined, undefined, ['TimeoutError', 'AbortError'].includes(error.name) ? 'timeout' : 'network'); }
+        try { data = await response.json(); }
+        catch { reject('Meta returned an unexpected response', 502, undefined, undefined, 'response_format'); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) reject('Meta returned an unexpected response', 502);
         if (!response.ok || data.error) reject(data.error?.code === 190 ? 'Facebook authorization expired. Reconnect Facebook.' : 'Meta denied this request. Check app permissions and access.', [190, 10, 200].includes(data.error?.code) ? 409 : 502, data.error?.code, data.error?.error_subcode);
         return data;

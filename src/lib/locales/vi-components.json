@@ -181,5 +181,8 @@
   "Reading Facebook profile": "Đọc thông tin tài khoản Facebook",
   "Checking Facebook permissions": "Kiểm tra quyền Facebook",
   "Loading Facebook Pages": "Lấy danh sách Trang Facebook",
-  "Completing Facebook connection": "Hoàn tất kết nối Facebook"
+  "Completing Facebook connection": "Hoàn tất kết nối Facebook",
+  "Meta request timed out": "Meta phản hồi quá thời gian chờ",
+  "Cannot reach Meta": "Không thể truy cập máy chủ Meta",
+  "Unexpected Meta response": "Meta trả về phản hồi không đúng định dạng"
 }
