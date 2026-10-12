@@ -266,7 +266,7 @@ export default function Settings() {
                             </div>
                         </dl>
 
-                        <p className="label-xs mt-4"> {t("Calendar plans are saved locally. OAuth, automatic delivery, retry processing and platform confirmations are not implemented in Phase A. No Base44 subscription is required for this standalone app.")} </p>
+                        <p className="label-xs mt-4"> {t('Calendar plans are saved locally. Connect Facebook in Social Accounts after server configuration. Automatic delivery, retries and platform confirmations are not implemented yet.')} </p>
 
                         <Button
                             variant="outline"

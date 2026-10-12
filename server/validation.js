@@ -1,6 +1,6 @@
 export const fail = (message, status = 400) => { throw Object.assign(new Error(message), { status }); };
 
-export function validateRecord(entity, record, previous, schema, store) {
+export function validateRecord(entity, record, previous, schema, store, verified = false) {
     for (const key of Object.keys(record)) {
         if (!schema.properties[key] && !['id', 'created_date', 'updated_date'].includes(key)) fail(`Unsupported field: ${key}`);
     }
@@ -49,7 +49,10 @@ export function validateRecord(entity, record, previous, schema, store) {
         // Referenced parent records cannot be moved, which would corrupt descendants/history.
         if (store.references(entity, record.id)) fail('Referenced records cannot move between brands or workspaces', 409);
     }
-    if (entity === 'SocialAccount' && record.connection_status === 'connected') fail('Meta OAuth is not configured; a manual account cannot be connected', 409);
+    if (entity === 'SocialAccount' && !verified) {
+        if (record.credential_id !== previous?.credential_id || (record.credential_id && ['external_id', 'platform', 'account_type', 'scopes', 'connection_status', 'is_demo'].some(key => JSON.stringify(record[key]) !== JSON.stringify(previous?.[key])))) fail('Facebook connection metadata is server-owned', 409);
+        if (record.connection_status === 'connected' && !previous?.credential_id) fail('Meta OAuth is required; a manual account cannot be connected', 409);
+    }
     if (entity === 'SocialAccount' && record.connection_status === 'demo' && !record.is_demo) fail('Demo destinations must stay in the demo workspace');
     if (['Post', 'PublishJob'].includes(entity) && ['published', 'partially_published'].includes(record.status) && !record.is_demo) fail('Publishing requires confirmed platform results; unavailable in Phase A', 409);
     if (!record.is_demo && (record.external_post_id || record.published_at || record.published_url)) fail('Platform confirmation cannot be entered manually', 409);

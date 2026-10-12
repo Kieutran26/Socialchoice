@@ -56,9 +56,13 @@ Run `npm run setup:admin` to enter a new Socialchoice password locally, then `np
 
 See [admin server setup](docs/admin-server-setup.md) for HTTPS proxy configuration, password recovery, backups and hosting prerequisites. No cloud server has been deployed.
 
+## Facebook Page connection
+
+Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now and automatic delivery remain disabled.
+
 ## Not implemented yet
 
-Facebook OAuth, Page discovery, real publishing, platform metrics, server delivery worker/retries, media upload storage, cloud deployment. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
+Real publishing, platform metrics, server delivery worker/retries, media upload storage, cloud deployment. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
 
 The API remains bound to loopback. Public deployment requires the configured admin password, exact HTTPS public origin, trusted reverse proxy, persistent disk and backup/supervision strategy described above. Do not expose the unauthenticated development mode.
 

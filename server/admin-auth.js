@@ -17,6 +17,11 @@ export function createAdminAuth(passwordHash, secure = false) {
     const token = (req) => req.headers.cookie?.split(';').map(v => v.trim()).find(v => v.startsWith('socialchoice_session='))?.slice('socialchoice_session='.length);
     return {
         enabled: !!passwordHash,
+        sessionKey(req) {
+            this.require(req);
+            return token(req);
+        },
+        sessionActive(id) { return !!id && sessions.has(id) && sessions.get(id) > Date.now(); },
         login(req, res, password) {
             if (!passwordHash) fail('Admin sign-in is not configured', 409);
             const now = Date.now();

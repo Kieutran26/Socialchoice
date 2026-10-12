@@ -32,6 +32,12 @@ export const appClient = {
         setToken: (..._args) => { throw new Error('Hosted tokens are not used in local-only mode.'); },
     },
     publishing: { check: () => request('publishing/check', []) },
+    meta: {
+        status: () => request('meta/status'), pages: () => request('meta/pages'),
+        start: (brandId) => request('meta/start', [brandId]),
+        importPages: (ids) => request('meta/import', [ids]),
+        disconnect: (id) => request('meta/disconnect', [id]), check: (id) => request('meta/check', [id]),
+    },
     posts: { save: (plan) => request('posts/save', [plan]) },
     integrations: { Core: {
         /** @returns {Promise<{file_url: string}>} */

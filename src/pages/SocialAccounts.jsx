@@ -51,7 +51,8 @@ export default function SocialAccounts() {
     };
 
     const disconnect = async (account) => {
-        await appClient.entities.SocialAccount.update(account.id, { connection_status: 'disconnected' });
+        if (account.credential_id) await appClient.meta.disconnect(account.id);
+        else await appClient.entities.SocialAccount.update(account.id, { connection_status: 'disconnected' });
         toast({ title: t("{value1} disconnected", {value1: account.name}), description: t("No further jobs will be sent to this Page.") });
         load();
     };
@@ -91,7 +92,7 @@ export default function SocialAccounts() {
             />
 
             <div className="space-y-5">
-                <MetaConnectionCard accountCount={accounts.length} onAddManually={() => setAddOpen(true)} />
+                <MetaConnectionCard brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => setAddOpen(true)} />
 
                 {loading ? (
                     <Skeleton className="h-[320px] rounded-2xl" />
@@ -158,8 +159,16 @@ export default function SocialAccounts() {
                                                                 variant="outline"
                                                                 size="sm"
                                                                 className="h-8 rounded-lg text-[12px]"
-                                                                onClick={() => setFixTarget(account)}
+                                                                onClick={() => {
+                                                                    if (!account.credential_id) return setFixTarget(account);
+                                                                    appClient.meta.start(account.brand_id).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
+                                                                }}
                                                             > {t("Fix connection")} </Button>
+                                                            {account.credential_id && <Button variant="outline" size="sm" onClick={async () => {
+                                                                try { await appClient.meta.check(account.id); toast({ title: t('Facebook Page access verified') }); }
+                                                                catch (e) { toast({ variant: 'destructive', title: t(e.message) }); }
+                                                                finally { load(); }
+                                                            }}>{t('Check Facebook access')}</Button>}
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"

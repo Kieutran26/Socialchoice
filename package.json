@@ -10,10 +10,11 @@
     "lint:fix": "eslint . --fix",
     "typecheck": "tsc -p ./jsconfig.json",
     "preview": "vite preview",
-    "dev:api": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.admin server/index.js",
+    "dev:api": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.admin --env-file-if-exists=.env.meta server/index.js",
     "test": "node --test server/*.test.js",
-    "start": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.admin server/start.js",
-    "setup:admin": "powershell -NoProfile -File server/setup-admin.ps1"
+    "start": "node --env-file-if-exists=.env.local --env-file-if-exists=.env.admin --env-file-if-exists=.env.meta server/start.js",
+    "setup:admin": "powershell -NoProfile -File server/setup-admin.ps1",
+    "setup:meta": "powershell -NoProfile -File server/setup-meta.ps1"
   },
   "dependencies": {
     "@hello-pangea/dnd": "^17.0.0",
