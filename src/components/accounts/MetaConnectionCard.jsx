@@ -5,7 +5,7 @@ import { appClient } from '@/api/app-client';
 import { Button } from '@/components/ui/button';
 
 const connectionSteps = { code_exchange: 'Confirming Facebook sign-in', token_exchange: 'Preparing Facebook access', profile: 'Reading Facebook profile', permissions: 'Checking Facebook permissions', pages: 'Loading Facebook Pages', connection: 'Completing Facebook connection' };
-const connectionReasons = { timeout: 'Meta request timed out', network: 'Cannot reach Meta', response_format: 'Unexpected Meta response' };
+const connectionReasons = { timeout: 'Meta request timed out', network: 'Cannot reach Meta', response_format: 'Unexpected Meta response', redirect: 'Unexpected Meta response' };
 
 export default function MetaConnectionCard({ onAddManually, brands = [], defaultBrandId = '', onChanged = () => {}, demoMode = false }) {
     const { t } = useTranslation();

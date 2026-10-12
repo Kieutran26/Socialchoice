@@ -13,8 +13,10 @@ export function createMetaGraph(config) {
         if (method === 'GET') url.search = fields.toString();
         let response, data;
         try {
-            response = await fetch(url, { method, redirect: 'error', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
+            response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
         } catch (error) { reject('Meta request unavailable. Try again later.', 502, undefined, undefined, ['TimeoutError', 'AbortError'].includes(error.name) ? 'timeout' : 'network'); }
+        // Workers support manual/follow only. Never follow a redirect with credentials.
+        if (response.status >= 300 && response.status < 400) reject('Meta returned an unexpected redirect', 502, undefined, undefined, 'redirect');
         try { data = await response.json(); }
         catch { reject('Meta returned an unexpected response', 502, undefined, undefined, 'response_format'); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) reject('Meta returned an unexpected response', 502);
