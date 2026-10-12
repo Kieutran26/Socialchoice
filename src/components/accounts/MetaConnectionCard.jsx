@@ -4,6 +4,8 @@ import { useTranslation } from '@/lib/i18n';
 import { appClient } from '@/api/app-client';
 import { Button } from '@/components/ui/button';
 
+const connectionSteps = { code_exchange: 'Confirming Facebook sign-in', token_exchange: 'Preparing Facebook access', profile: 'Reading Facebook profile', permissions: 'Checking Facebook permissions', pages: 'Loading Facebook Pages', connection: 'Completing Facebook connection' };
+
 export default function MetaConnectionCard({ onAddManually, brands = [], defaultBrandId = '', onChanged = () => {}, demoMode = false }) {
     const { t } = useTranslation();
     const [status, setStatus] = useState(null);
@@ -39,6 +41,7 @@ export default function MetaConnectionCard({ onAddManually, brands = [], default
         <p className="label-xs mt-2">{t('Connect on Facebook, then choose the Pages you can access. Automatic publishing is not enabled yet.')}</p>
         {!status?.ready && <p className="label-xs mt-2">{t('Configure the Meta App on the server first. Never enter a Facebook password here.')}</p>}
         {error && <p role="alert" className="text-sm text-dangerFg mt-3">{t(error)}</p>}
+        {selection?.failure && <p role="alert" className="text-sm text-dangerFg mt-2">{t('Connection diagnostic')}: {t(connectionSteps[selection.failure.step] || connectionSteps.connection)} · {selection.failure.code ?? '—'}{selection.failure.subcode !== undefined ? ` / ${selection.failure.subcode}` : ''}</p>}
         <div className="flex flex-wrap items-center gap-3 mt-4">
             <select aria-label={t('Brand for Facebook Pages')} value={brandId} onChange={e => setBrandId(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="">{t('Choose brand')}</option>{brands.filter(b => !b.is_demo && b.status === 'active').map(b => <option key={b.id} value={b.id}>{b.name}</option>)}

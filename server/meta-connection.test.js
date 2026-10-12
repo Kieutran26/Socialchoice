@@ -8,13 +8,20 @@ import { spawnSync } from 'node:child_process';
 import { createStore } from './store.js';
 import { createMetaVault } from './meta-vault.js';
 import { metaConfig } from './meta-config.js';
-import { createMetaConnection } from './meta-connection.js';
+import { createMetaConnection, safeConnectionFailure } from './meta-connection.js';
 import { createAdminAuth, hashPassword } from './admin-auth.js';
 import { createApi } from './index.js';
 
 function configuration() {
     return metaConfig({ META_APP_ID: '123456', META_APP_SECRET: 'test-only-app-secret', META_GRAPH_VERSION: 'v25.0', META_REDIRECT_URI: 'http://127.0.0.1:3001/api/meta/callback', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex') });
 }
+
+test('connection diagnostics expose only a known step and numeric Meta codes', () => {
+    const sensitive = new Error('private token in a remote message');
+    Object.assign(sensitive, { metaStep: 'code_exchange', metaCode: 190, metaSubcode: 123, token: 'private token', request: 'private URL' });
+    assert.deepEqual(safeConnectionFailure(sensitive), { step: 'code_exchange', code: 190, subcode: 123 });
+    assert.deepEqual(safeConnectionFailure({ metaStep: 'private token', metaCode: 'private token', metaSubcode: NaN }), { step: 'connection' });
+});
 
 test('Meta configuration rejects incomplete credentials and nonlocal HTTP redirects', () => {
     assert.equal(metaConfig({}).ready, false);

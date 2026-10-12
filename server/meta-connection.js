@@ -4,6 +4,11 @@ import { createMetaGraph } from './meta-graph.js';
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
 
+export function safeConnectionFailure(error) {
+    const step = ['code_exchange', 'token_exchange', 'profile', 'permissions', 'pages'].includes(error?.metaStep) ? error.metaStep : 'connection';
+    return { step, ...(Number.isSafeInteger(error?.metaCode) ? { code: error.metaCode } : {}), ...(Number.isSafeInteger(error?.metaSubcode) ? { subcode: error.metaSubcode } : {}) };
+}
+
 export function createMetaConnection(store, auth, config = metaConfig(), { states = new Map(), pending = new Map() } = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
     const vault = config.ready ? createMetaVault(store, config.key) : null;
@@ -37,7 +42,10 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                 if (!auth.sessionActive(ticket.session)) fail('Sign in required', 401);
                 pending.set(ticket.session, { ...discovered, brandId: ticket.brandId, expires: Date.now() + ttl });
                 res.writeHead(303, { Location: config.origin + '/accounts?meta=select', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' }); res.end();
-            } catch { res.writeHead(303, { Location: config.origin + '/accounts?meta=failed', 'Referrer-Policy': 'no-referrer' }); res.end(); }
+            } catch (error) {
+                pending.set(ticket.session, { failure: safeConnectionFailure(error), expires: Date.now() + ttl });
+                res.writeHead(303, { Location: config.origin + '/accounts?meta=failed', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' }); res.end();
+            }
         },
         async execute(operation, req, res, args = []) {
             clean();
@@ -71,11 +79,12 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
             if (operation === 'pages') {
                 const result = pending.get(session);
                 if (!result) return { pages: [], pending: false };
+                if (result.failure) return { pages: [], pending: false, failure: result.failure };
                 return { pending: true, brandId: result.brandId, profileName: result.profile.name, scopes: result.scopes, pages: result.pages.map(p => ({ id: p.id, name: p.name, tasks: p.tasks || [] })) };
             }
             if (operation === 'import') {
                 const result = pending.get(session);
-                if (!result) fail('Facebook Page selection expired. Connect again.', 409);
+                if (!result || result.failure) fail('Facebook Page selection expired. Connect again.', 409);
                 requireBrand(result.brandId);
                 const ids = args[0];
                 if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !result.pages.some(p => p.id === id))) fail('Select Pages returned by Facebook');

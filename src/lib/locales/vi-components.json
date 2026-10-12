@@ -174,5 +174,12 @@
   "Calendar plans are saved locally. Connect Facebook in Social Accounts after server configuration. Automatic delivery, retries and platform confirmations are not implemented yet.": "Kế hoạch lịch đăng được lưu trên máy. Kết nối Facebook tại Tài khoản mạng xã hội sau khi cấu hình máy chủ. Tính năng đăng tự động, thử lại và xác nhận đăng từ nền tảng chưa được triển khai.",
   "Facebook connection changed. Check again.": "Kết nối Facebook đã thay đổi. Vui lòng kiểm tra lại.",
   "Meta returned an unexpected response": "Meta trả về dữ liệu không đúng định dạng. Vui lòng thử lại sau.",
-  "Open Socialchoice at the configured Facebook callback origin": "Mở Socialchoice tại đúng địa chỉ đã cấu hình cho callback Facebook."
+  "Open Socialchoice at the configured Facebook callback origin": "Mở Socialchoice tại đúng địa chỉ đã cấu hình cho callback Facebook.",
+  "Connection diagnostic": "Thông tin lỗi kết nối",
+  "Confirming Facebook sign-in": "Xác nhận đăng nhập Facebook",
+  "Preparing Facebook access": "Chuẩn bị quyền truy cập Facebook",
+  "Reading Facebook profile": "Đọc thông tin tài khoản Facebook",
+  "Checking Facebook permissions": "Kiểm tra quyền Facebook",
+  "Loading Facebook Pages": "Lấy danh sách Trang Facebook",
+  "Completing Facebook connection": "Hoàn tất kết nối Facebook"
 }

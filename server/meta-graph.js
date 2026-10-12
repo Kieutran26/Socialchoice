@@ -3,6 +3,10 @@ import { fail } from './validation.js';
 
 export function createMetaGraph(config) {
     async function request(path, params = {}, token, method = 'GET') {
+        const step = path === 'oauth/access_token' ? (params.grant_type ? 'token_exchange' : 'code_exchange') : ({ me: 'profile', 'me/permissions': 'permissions', 'me/accounts': 'pages' }[path] || 'page_check');
+        const reject = (message, status, code, subcode) => {
+            throw Object.assign(new Error(message), { status, metaStep: step, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
+        };
         const url = new URL(`https://graph.facebook.com/${config.version}/${path}`);
         const fields = new URLSearchParams(params);
         if (token) fields.set('appsecret_proof', createHmac('sha256', config.appSecret).update(token).digest('hex'));
@@ -11,9 +15,9 @@ export function createMetaGraph(config) {
         try {
             response = await fetch(url, { method, redirect: 'error', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
             data = await response.json();
-        } catch { fail('Meta request unavailable. Try again later.', 502); }
-        if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Meta returned an unexpected response', 502);
-        if (!response.ok || data.error) fail(data.error?.code === 190 ? 'Facebook authorization expired. Reconnect Facebook.' : 'Meta denied this request. Check app permissions and access.', [190, 10, 200].includes(data.error?.code) ? 409 : 502);
+        } catch { reject('Meta request unavailable. Try again later.', 502); }
+        if (!data || typeof data !== 'object' || Array.isArray(data)) reject('Meta returned an unexpected response', 502);
+        if (!response.ok || data.error) reject(data.error?.code === 190 ? 'Facebook authorization expired. Reconnect Facebook.' : 'Meta denied this request. Check app permissions and access.', [190, 10, 200].includes(data.error?.code) ? 409 : 502, data.error?.code, data.error?.error_subcode);
         return data;
     }
     return {
