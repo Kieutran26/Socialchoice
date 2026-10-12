@@ -249,7 +249,7 @@ export default function AllPosts() {
                 </>
             )}
 
-            {openPost ? <PostDetailSheet post={openPost} onClose={closeDetail} onChanged={load} /> : null}
+            {openPost ? <PostDetailSheet key={openPost.id} post={openPost} onClose={closeDetail} onChanged={load} /> : null}
 
             <ConfirmDialog
                 open={!!bulkAction}

@@ -1,7 +1,7 @@
 import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
-export function createHttpHandler({ store, auth, meta, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
     return async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -19,7 +19,7 @@ export function createHttpHandler({ store, auth, meta, metaSettings, publicOrigi
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);
             }
-            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: 'not_implemented' });
+            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: publisher ? 'text_publish_now' : 'not_implemented' });
             if (req.headers['x-socialchoice-client'] !== 'local-ui') fail('Application request header required', 403);
             if (req.url === '/api/auth/login' && req.method === 'POST') {
                 if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
@@ -43,10 +43,11 @@ export function createHttpHandler({ store, auth, meta, metaSettings, publicOrigi
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
             if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
-            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { picked: 0, processed: 0, published: 0, blocked: 0, failed: 0, deferred: 0, postsUpdated: 0, unavailable: true, message: 'Publishing and automatic delivery are not implemented in Phase A.' });
+            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: true, message: 'Automatic publishing is unavailable. Use Publish now for one text-only Facebook Page post.' });
+            const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status)$/);
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const savingPost = req.url === '/api/posts/save';
-            if ((!match && !savingPost) || req.method !== 'POST') fail('Endpoint not found', 404);
+            if ((!match && !savingPost && !publishingRoute) || req.method !== 'POST') fail('Endpoint not found', 404);
             if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
             let body = '';
             for await (const chunk of req) {
@@ -56,6 +57,10 @@ export function createHttpHandler({ store, auth, meta, metaSettings, publicOrigi
             let input;
             try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
             if (!Array.isArray(input.args)) fail('Arguments array required');
+            if (publishingRoute) {
+                if (!publisher || input.args.length !== 1 || typeof input.args[0] !== 'string') fail('Publishing request ID required');
+                return send(200, await publisher[publishingRoute[1]](input.args[0]));
+            }
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));
         } catch (error) {

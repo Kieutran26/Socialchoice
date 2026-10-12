@@ -8,10 +8,27 @@ const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'an
 
 export function createStoreCore(db, transactionSync) {
     const verified = Symbol('verified platform metadata');
+    const publisher = Symbol('confirmed publishing');
     let transactionDepth = 0;
     db.exec('CREATE TABLE IF NOT EXISTS records (entity TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(entity,id));');
     db.exec('CREATE TABLE IF NOT EXISTS meta_credentials (id TEXT PRIMARY KEY, encrypted TEXT NOT NULL);');
+    db.exec('CREATE TABLE IF NOT EXISTS publish_attempts (id TEXT PRIMARY KEY, post_id TEXT UNIQUE NOT NULL, data TEXT NOT NULL);');
     const store = {
+        attemptForPost: id => {
+            if (typeof id !== 'string') return null;
+            const row = db.prepare('SELECT data FROM publish_attempts WHERE post_id=?').get(id);
+            return row ? JSON.parse(row.data) : null;
+        },
+        attempt: id => {
+            const row = db.prepare('SELECT data FROM publish_attempts WHERE id=?').get(id);
+            if (!row) fail('Publishing confirmation not found', 404);
+            return JSON.parse(row.data);
+        },
+        saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(post_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
+        publishingWrite: (entity, input, id) => {
+            if (!['Post', 'PublishJob', 'PostVariant', 'PublishingLog'].includes(entity)) fail('Invalid publishing entity');
+            return store.write(entity, input, id, publisher);
+        },
         close: () => db.close(),
         saveCredential: (id, encrypted) => db.prepare('INSERT INTO meta_credentials VALUES (?,?) ON CONFLICT(id) DO UPDATE SET encrypted=excluded.encrypted').run(id, encrypted),
         readCredential: (id) => db.prepare('SELECT encrypted FROM meta_credentials WHERE id=?').get(id)?.encrypted,
@@ -40,12 +57,17 @@ export function createStoreCore(db, transactionSync) {
             const defaults = Object.fromEntries(Object.entries(schemas[entity].properties).filter(([, r]) => r.default !== undefined).map(([k, r]) => [k, r.default]));
             const now = new Date().toISOString();
             const record = { is_demo: false, ...defaults, ...previous, ...input, id: id || randomUUID(), created_date: previous?.created_date || now, updated_date: now };
-            validateRecord(entity, record, previous, schemas[entity], store, capability === verified);
+            if (capability !== publisher) {
+                const attempt = store.attemptForPost(entity === 'Post' ? record.id : record.post_id);
+                if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
+            }
+            validateRecord(entity, record, previous, schemas[entity], store, capability === verified, capability === publisher);
             db.prepare('INSERT INTO records VALUES (?,?,?) ON CONFLICT(entity,id) DO UPDATE SET data=excluded.data').run(entity, record.id, JSON.stringify(record));
             return record;
         },
         remove(entity, id) {
             const record = store.get(entity, id);
+            if (store.attemptForPost(entity === 'Post' ? id : record.post_id)) fail('Publishing history is locked; duplicate this post instead', 409);
             if (entity === 'SocialAccount' && record.credential_id) fail('Disconnect Facebook before removing this Page', 409);
             if (entity === 'Post' && record.status === 'draft') {
                 const jobs = store.all('PublishJob').filter((job) => job.post_id === id);

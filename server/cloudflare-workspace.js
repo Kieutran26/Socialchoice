@@ -1,3 +1,4 @@
+import { createFacebookPublisher } from './facebook-publisher.js';
 import { DurableObject } from 'cloudflare:workers';
 import { cloudflareSqlite } from './cloudflare-sqlite.js';
 import { createStoreCore } from './store-core.js';
@@ -23,8 +24,9 @@ export class SocialchoiceWorkspace extends DurableObject {
         const metaSettings = metaConfig(env);
         if (metaSettings.ready && metaSettings.origin !== publicOrigin) throw new Error('Meta callback origin mismatch');
         const meta = createMetaConnection(store, auth, metaSettings, { states: privateMap('oauth'), pending: privateMap('pages') });
+        const publisher = createFacebookPublisher(store, metaSettings);
         const allowedHosts = new Set([new URL(publicOrigin).hostname, new URL(backendOrigin).hostname]);
-        this.handler = createHttpHandler({ store, auth, meta, metaSettings, publicOrigin, allowedHosts });
+        this.handler = createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, allowedHosts });
     }
     async fetch(request) {
         if (!this.handler) return Response.json({ message: 'Configure private admin and storage secrets before deployment', ready: false }, { status: 503, headers: { 'Cache-Control': 'no-store' } });

@@ -24,6 +24,11 @@ export function createMetaGraph(config) {
         return data;
     }
     return {
+        async publishText(pageId, caption, token) {
+            const result = await request(`${pageId}/feed`, { message: caption, published: 'true' }, token, 'POST');
+            if (typeof result.id !== 'string' || !new RegExp(`^${pageId}_[0-9]+$`).test(result.id)) fail('Facebook returned no confirmed post ID', 502);
+            return { id: result.id, url: `https://www.facebook.com/${result.id}` };
+        },
         async exchange(code) {
             const short = await request('oauth/access_token', { client_id: config.appId, client_secret: config.appSecret, redirect_uri: config.redirectUri, code }, undefined, 'POST');
             if (typeof short.access_token !== 'string' || !short.access_token) fail('Meta returned no access token', 502);

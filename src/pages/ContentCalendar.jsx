@@ -186,7 +186,7 @@ export default function ContentCalendar() {
                 {t(selectedBrandId === 'all' ? 'Showing every brand' : 'Filtered to the selected brand')} · {t('{count} items in view', { count: posts.length })}
             </p>
 
-            {openPost ? <PostDetailSheet post={openPost} onClose={() => setOpenPost(null)} onChanged={load} /> : null}
+            {openPost ? <PostDetailSheet key={openPost.id} post={openPost} onClose={() => setOpenPost(null)} onChanged={load} /> : null}
         </>
     );
 }

@@ -104,7 +104,7 @@ export default function Settings() {
         try {
             const result = await runPublishingEngine({ scope: { is_demo: demoMode } });
             toast({
-                title: t("Publishing unavailable — Phase B required"),
+                title: t("Automatic publishing unavailable"),
                 description: t(result.message),
             });
             load();
@@ -266,7 +266,7 @@ export default function Settings() {
                             </div>
                         </dl>
 
-                        <p className="label-xs mt-4"> {t('Calendar plans are saved locally. Connect Facebook in Social Accounts after server configuration. Automatic delivery, retries and platform confirmations are not implemented yet.')} </p>
+                        <p className="label-xs mt-4"> {t('Publish now supports one text-only Facebook Page after authorization and review. Calendar plans are saved in this workspace; automatic delivery and retries are unavailable.')} </p>
 
                         <Button
                             variant="outline"

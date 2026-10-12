@@ -1,6 +1,6 @@
 export const fail = (message, status = 400) => { throw Object.assign(new Error(message), { status }); };
 
-export function validateRecord(entity, record, previous, schema, store, verified = false) {
+export function validateRecord(entity, record, previous, schema, store, verified = false, publisher = false) {
     for (const key of Object.keys(record)) {
         if (!schema.properties[key] && !['id', 'created_date', 'updated_date'].includes(key)) fail(`Unsupported field: ${key}`);
     }
@@ -54,9 +54,9 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (record.connection_status === 'connected' && !previous?.credential_id) fail('Meta OAuth is required; a manual account cannot be connected', 409);
     }
     if (entity === 'SocialAccount' && record.connection_status === 'demo' && !record.is_demo) fail('Demo destinations must stay in the demo workspace');
-    if (['Post', 'PublishJob'].includes(entity) && ['published', 'partially_published'].includes(record.status) && !record.is_demo) fail('Publishing requires confirmed platform results; unavailable in Phase A', 409);
-    if (!record.is_demo && (record.external_post_id || record.published_at || record.published_url)) fail('Platform confirmation cannot be entered manually', 409);
+    if (['Post', 'PublishJob', 'PostVariant'].includes(entity) && ['published', 'partially_published', 'unknown'].includes(record.status) && !record.is_demo && !publisher) fail('Publishing requires confirmed platform results', 409);
+    if (!record.is_demo && (record.external_post_id || record.published_at || record.published_url) && !publisher) fail('Platform confirmation cannot be entered manually', 409);
     if (entity === 'Post' && !record.brand_id) fail('Post brand is required');
     if (entity === 'Post' && record.status === 'scheduled' && (!record.scheduled_at || !record.account_ids?.length)) fail('Scheduled posts require a time and destinations');
-    if (entity === 'Post' && previous && !record.is_demo && ['published', 'partially_published', 'processing'].includes(previous.status)) fail('Execution history is locked; duplicate this post instead', 409);
+    if (entity === 'Post' && previous && !record.is_demo && ['published', 'partially_published', 'processing', 'unknown'].includes(previous.status) && !publisher) fail('Execution history is locked; duplicate this post instead', 409);
 }

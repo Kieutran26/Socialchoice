@@ -1,6 +1,6 @@
 # Facebook Pages connection
 
-Implemented connection code: server OAuth code exchange, long-lived user-token exchange, Page discovery, selected Page import, encrypted Page tokens, reconnect, Page-access check and local disconnect. The app requests `pages_show_list` and `pages_read_engagement`; publishing permissions and delivery remain a later step. No real connection is claimed until the owner completes a real Meta flow. No test Pages or fake tokens are inserted by runtime.
+Implemented connection code: server OAuth code exchange, long-lived user-token exchange, Page discovery, selected Page import, encrypted Page tokens, reconnect, Page-access check and local disconnect. The app requests `pages_show_list`, `pages_read_engagement` and `pages_manage_posts`. Existing read-only connections must reconnect and import the selected Page again to obtain publishing permission and fresh Page task metadata. No real connection is claimed until the owner completes a real Meta flow. No test Pages or fake tokens are inserted by runtime.
 
 ## Owner setup
 
@@ -22,7 +22,7 @@ Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The
 - Unselected Page tokens stay in temporary server memory locally; the cloud adapter encrypts pending selections in private SQLite storage so they survive actor restarts until expiry/import. The user token is used to discover Pages and is not persisted. Each imported Page stores its own token. Reconnect repeats Meta authorization and updates the selected Page's credential for the same brand/ID; multiple authorized Facebook profiles can be connected in successive flows. Facebook may reuse its active browser profile; switch profiles on Facebook itself, not by entering another profile's password in this app.
 - Check Facebook access makes a real Page identity request. `connected` records a successful authorization/import or last successful access check, not a promise that the token is still valid or can publish. Known authorization failure marks it expired; transport failures do not fabricate expiry. Reconnect handles token expiry/revocation. There is no background refresh or platform deauthorization webhook yet.
 - Disconnect deletes the local credential and keeps the destination/history. It does not revoke all permissions for the Facebook profile, which could affect other connected Pages. To remove the app's authorization at Meta, use Facebook's app/business integration settings; then check/reconnect affected Pages locally. Deletion requires disconnect first and continues to preserve publishing history.
-- Page connection does not enable Publish Now, automatic delivery, metrics or claim any published result. Those controls remain unavailable.
+- Publish Now requires a live draft, exactly one connected Facebook Page, no media, pages_manage_posts in both verified account and encrypted credential metadata, and CREATE_CONTENT or PROFILE_PLUS_CREATE_CONTENT in the Page tasks. Automatic delivery and metrics remain unavailable.
 
 ## Evidence and limitations
 
@@ -35,7 +35,7 @@ If authorization fails: verify exact callback/app mode/version/roles/permissions
 
 ## Public Socialchoice configuration
 
-Cloudflare backend and Vercel API cutover verified on 2026-10-12. Meta callback `https://socialchoice.vercel.app/api/meta/callback` was saved with owner approval, remained after reload, and Meta's URI validator reported valid. App remains unpublished; no OAuth/Page import or publishing success is claimed.
+Cloudflare backend and Vercel API cutover verified on 2026-10-12. Meta callback `https://socialchoice.vercel.app/api/meta/callback` was saved with owner approval, remained after reload, and Meta's URI validator reported valid. App remains unpublished. Real OAuth and Page discovery were verified after the transport fix below; publication is not yet verified.
 
 For owner secret entry, run `pnpm run setup:meta` locally. App ID: `1115808334255427`; callback: `https://socialchoice.vercel.app/api/meta/callback`; Graph version: the supported value shown by the Meta dashboard. Use the optional Business Login configuration ID only when that configuration is used. Enter the App Secret from app settings in the hidden prompt, never a Facebook password or chat message. Then run `pnpm run setup:cloudflare` to provision the private values into the existing named Worker. This preserves the cloud storage key; no redeployment or local server restart is needed for online secret updates. A configured health result does not imply Meta permission approval or a connected Page.
 
@@ -44,3 +44,15 @@ For owner secret entry, run `pnpm run setup:meta` locally. App ID: `111580833425
 Callback failures retain only an allowlisted step/reason and numeric HTTP/Meta codes, scoped to the signed-in session for ten minutes in encrypted cloud storage. Raw provider messages, URLs, authorization codes and token values are never shown. Starting a new flow clears old diagnostics.
 
 Cloudflare fetch supports manual/follow redirect handling. Meta requests use manual handling and reject3xx responses before parsing so authorization credentials cannot be forwarded to redirect destinations. Real OAuth and Page discovery were verified after this repair on2026-10-12; this does not claim Page import, publishing approval or successful publication. The app's pages_read_engagement permission was added with owner consent and displayed Ready for testing.
+
+## Text Publish Now
+
+Add pages_manage_posts to the app’s Pages use case with owner consent, complete Meta’s required access/testing steps, then reconnect under Social Accounts and import the intended Page. App dashboard permission availability does not by itself grant a token permission or prove publication.
+
+In Create Post, choose exactly one authorized Page, enter the text (the Facebook caption override takes precedence), then Publish now. The backend stores a ten-minute review of the exact Page and caption. Confirm and publish sends one POST to the official Graph Page /feed endpoint using the encrypted server-side Page token. Changed drafts, changed credentials or expired reviews require a fresh review.
+
+A synchronous SQLite transaction claims the private attempt before network I/O and records an immutable variant/job. Repeated confirmations return the existing result. Only a valid Page-prefixed Meta post ID enables Published, published_at and a Facebook link. Generic CRUD cannot forge confirmations or alter/delete attempted history. The Facebook URL is formed from the confirmed ID; an independently fetched permalink is not claimed.
+
+Timeouts, transport errors, malformed responses and ambiguous errors become Delivery unconfirmed, never an automatic resend. Interrupted processing becomes unconfirmed after sixty seconds when its status is checked; opening processing history checks that status. Check the Page before duplicating an uncertain post. Definite publishing-permission/token denials become Failed and retain history. Calendar plans do not automatically publish, and no media or multi-Page delivery is implemented.
+
+Validation uses isolated SQLite and the actual Workers runtime; no mocked successful Meta post is used. A real publishing success remains pending a specifically approved Page/content test.

@@ -1,3 +1,4 @@
+import { createFacebookPublisher } from './facebook-publisher.js';
 import { createHttpHandler } from './http-handler.js';
 import { createServer } from 'node:http';
 import { resolve } from 'node:path';
@@ -18,7 +19,8 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     if (metaSettings.ready && (publicOrigin ? metaSettings.origin !== publicOrigin : !['127.0.0.1', 'localhost'].includes(new URL(metaSettings.redirectUri).hostname))) throw new Error('Meta callback origin must match the Socialchoice app origin');
     const store = createStore(dbPath);
     const meta = createMetaConnection(store, auth, metaSettings);
-    const server = createServer(createHttpHandler({ store, auth, meta, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
+    const publisher = createFacebookPublisher(store, metaSettings);
+    const server = createServer(createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
     server.on('close', () => store.close());
     return { server, store };
 }

@@ -39,7 +39,7 @@ export default function MetaConnectionCard({ onAddManually, brands = [], default
     }
     return <section className="panel mb-5 p-5"><div className="flex gap-3"><WarningCircle size={22} className="text-warnFg shrink-0" /><div className="flex-1">
         <h2 className="text-base">{t(status?.ready ? 'Connect Facebook Pages' : 'Meta · Configuration required')}</h2>
-        <p className="label-xs mt-2">{t('Connect on Facebook, then choose the Pages you can access. Automatic publishing is not enabled yet.')}</p>
+        <p className="label-xs mt-2">{t('Connect on Facebook and grant Page access, including pages_manage_posts for Publish now. Select only the Pages you want to connect. Calendar delivery is not enabled.')}</p>
         {!status?.ready && <p className="label-xs mt-2">{t('Configure the Meta App on the server first. Never enter a Facebook password here.')}</p>}
         {error && <p role="alert" className="text-sm text-dangerFg mt-3">{t(error)}</p>}
         {selection?.failure && <p role="alert" className="text-sm text-dangerFg mt-2">{t('Connection diagnostic')}: {t(connectionSteps[selection.failure.step] || connectionSteps.connection)} · {selection.failure.code ?? '—'}{selection.failure.subcode !== undefined ? ` / ${selection.failure.subcode}` : ''}</p>}

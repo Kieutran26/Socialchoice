@@ -58,15 +58,15 @@ See [admin server setup](docs/admin-server-setup.md) for local password recovery
 
 ## Facebook Page connection
 
-Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now and automatic delivery remain disabled.
+Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now supports text to exactly one connected Facebook Page with pages_manage_posts and a content-creation task. It shows the exact Page/caption for confirmation, preserves one durable attempt and only records Published after Meta returns a valid post ID. Automatic delivery remains unavailable.
 
 ## Online deployment preparation
 
-The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta authorization remains pending.
+The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta OAuth and Page discovery have been verified; publishing permission and a real post must be verified separately.
 
 ## Not implemented yet
 
-Real publishing, platform metrics, server delivery worker/retries, media upload storage. Publish now is disabled. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
+Media/multi-Page publishing, platform metrics, server delivery worker/retries and media upload storage. Scheduled means a saved calendar plan; it does not promise future delivery. Sample published records are simulation only.
 
 The API defaults to loopback locally. Hosted Node binding requires the configured admin password, exact HTTPS origin and persistent database path. The Cloudflare adapter requires private admin and encryption secrets and stores data in its SQLite actor. Vercel routes same-origin requests to the verified backend. Do not expose the unauthenticated development mode.
 

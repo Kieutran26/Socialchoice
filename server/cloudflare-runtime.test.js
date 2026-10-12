@@ -42,6 +42,16 @@ test('Worker authentication and Vietnamese content survive runtime restart', asy
         assert.equal((await request('/api/session', undefined, cookie)).status, 200);
         const list = await request('/api/entities/Brand/list', [], cookie);
         assert.equal((await list.json()).items[0].name, brand.name);
+        const draftResponse = await request('/api/entities/Post/create', [{ title: 'Bản nháp kiểm tra', caption: 'Chưa gửi đến Facebook', brand_id: brand.id }], cookie);
+        assert.equal(draftResponse.status, 200);
+        const draft = await draftResponse.json();
+        assert.equal((await request('/api/publishing/prepare', [draft.id])).status, 401);
+        const prepare = await request('/api/publishing/prepare', [draft.id], cookie);
+        assert.equal(prepare.status, 409);
+        assert.match((await prepare.json()).message, /Configure Meta/);
+        assert.equal((await request('/api/publishing/publish', ['nonexistent'], cookie)).status, 404);
+        const history = await request('/api/entities/PublishJob/list', [], cookie);
+        assert.equal((await history.json()).items.length, 0);
         await request('/api/auth/logout', [], cookie);
         assert.equal((await request('/api/session', undefined, cookie)).status, 401);
         for (let n = 0; n < 5; n++) assert.equal((await request('/api/auth/login', ['incorrect'])).status, 401);

@@ -64,7 +64,8 @@
           "published",
           "failed",
           "blocked",
-          "cancelled"
+          "cancelled",
+          "unknown"
         ],
         "default": "scheduled"
       },
@@ -171,7 +172,8 @@
           "published",
           "partially_published",
           "failed",
-          "cancelled"
+          "cancelled",
+          "unknown"
         ],
         "default": "draft"
       },
@@ -371,7 +373,8 @@
           "published",
           "failed",
           "blocked",
-          "cancelled"
+          "cancelled",
+          "unknown"
         ],
         "default": "pending"
       },

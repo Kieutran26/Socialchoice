@@ -49,7 +49,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
         },
         async execute(operation, req, res, args = []) {
             clean();
-            if (operation === 'status') return { ready: config.ready && auth.enabled, missing: config.missing, adminRequired: !auth.enabled, publishing: 'not_implemented' };
+            if (operation === 'status') return { ready: config.ready && auth.enabled, missing: config.missing, adminRequired: !auth.enabled, publishing: 'text_publish_now' };
             if (operation === 'pages' && (!config.ready || !auth.enabled)) return { pages: [], pending: false };
             if (operation === 'disconnect') {
                 if (!auth.enabled) fail('Sign in required', 401);
@@ -72,7 +72,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                 states.set(state, { session, nonce, brandId: args[0], expires: Date.now() + ttl });
                 res.setHeader('Set-Cookie', cookie(nonce, ttl / 1000));
                 const url = new URL(`https://www.facebook.com/${config.version}/dialog/oauth`);
-                url.search = new URLSearchParams({ client_id: config.appId, redirect_uri: config.redirectUri, state, response_type: 'code', scope: 'pages_show_list,pages_read_engagement', auth_type: 'rerequest' }).toString();
+                url.search = new URLSearchParams({ client_id: config.appId, redirect_uri: config.redirectUri, state, response_type: 'code', scope: 'pages_show_list,pages_read_engagement,pages_manage_posts', auth_type: 'rerequest' }).toString();
                 if (config.loginConfigId) url.searchParams.set('config_id', config.loginConfigId);
                 return { url: url.href };
             }
@@ -93,7 +93,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                     const existing = store.all('SocialAccount').find(a => !a.is_demo && a.platform === 'facebook' && a.external_id === id && a.brand_id === result.brandId);
                     // A new identity prevents stale access checks from modifying a reconnected token.
                     const credentialId = randomUUID();
-                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes });
+                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes, tasks: page.tasks || [] });
                     const account = store.verifiedAccount({ name: page.name, external_id: id, brand_id: result.brandId, platform: 'facebook', account_type: 'page', is_demo: false, credential_id: credentialId, scopes: result.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
                     if (existing?.credential_id) vault.remove(existing.credential_id);
                     return account;

@@ -1,3 +1,4 @@
+import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -66,6 +67,7 @@ export default function CreatePost() {
     const [existing, setExisting] = useState(null);
     const [form, setForm] = useState(emptyForm(selectedBrandId === 'all' ? '' : selectedBrandId));
     const [deleteOpen, setDeleteOpen] = useState(false);
+    const [publishReview, setPublishReview] = useState(null);
 
     useEffect(() => {
         let active = true;
@@ -153,13 +155,13 @@ export default function CreatePost() {
     const warnings = [];
     if (selectedAccounts.length && selectedAccounts.every((a) => a.connection_status !== 'connected')) {
         warnings.push(
-            t("These destinations are planning references. Meta OAuth and publishing are not configured; no content will be sent."),
+            t("These destinations are planning references. Connect a Facebook Page before publishing."),
         );
     }
     if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
-        warnings.push(t("Platform integrations are not implemented in Phase A. Facebook Pages are the first Phase B integration."));
+        warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
     }
-    if (!form.media.length) warnings.push(t("No media attached. Media storage and publishing are later phases."));
+    if (form.media.length || form.account_ids.length !== 1) warnings.push(t("Publish now supports text and exactly one Facebook Page. Media and automatic publishing are not available yet."));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
@@ -169,7 +171,8 @@ export default function CreatePost() {
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
-        if (action !== 'draft' && !scheduledAt) return t("Set the publishing date and time.");
+        if (action === 'publish' && (form.media.length || form.account_ids.length !== 1)) return t('Publish now supports text and exactly one Facebook Page');
+        if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
             return t("Pick a publishing time in the future, or use Publish now.");
         }
@@ -177,10 +180,6 @@ export default function CreatePost() {
     };
 
     const submit = async (action) => {
-        if (action === 'publish') {
-            toast({ variant: 'destructive', title: t("Configuration required"), description: t("Facebook OAuth and publishing are not implemented in Phase A. Save a draft or a calendar plan.") });
-            return;
-        }
         const error = validate(action);
         if (error) {
             toast({ variant: 'destructive', title: t("Cannot save yet"), description: error });
@@ -188,7 +187,6 @@ export default function CreatePost() {
         }
         setSaving(true);
         try {
-            const nowIso = new Date().toISOString();
             const payload = {
                 brand_id: form.brand_id,
                 title: form.title.trim(),
@@ -199,12 +197,17 @@ export default function CreatePost() {
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
-                scheduled_at: action === 'publish' ? nowIso : scheduledAt,
-                status: action === 'draft' ? 'draft' : action === 'schedule' ? 'scheduled' : 'processing',
+                scheduled_at: action === 'publish' ? null : scheduledAt,
+                status: action === 'schedule' ? 'scheduled' : 'draft',
                 is_demo: demoMode,
             };
 
             const saved = await appClient.posts.save({ id: existing?.id, data: payload });
+            setExisting(saved);
+            if (action === 'publish') {
+                setPublishReview(await appClient.publishing.prepare(saved.id));
+                return;
+            }
             toast({
                 title: action === 'draft' ? t("Draft saved") : t("Calendar plan saved"),
                 description: action === 'draft' ? t("Find it again from All Posts.") : t("Calendar plan saved for {value1} {value2} ({value3}). Automatic publishing is not configured.", {value1: form.date, value2: form.time, value3: form.timezone}),
@@ -240,7 +243,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t("Write once and plan content for your destinations. Automatic publishing requires Phase B.")}
+                description={t("Create a text post for one Facebook Page, or save a calendar plan.")}
                 actions={
                     existing ? (
                         <>
@@ -396,7 +399,7 @@ export default function CreatePost() {
                     ) : null}
 
                     <div className="panel space-y-2 p-4">
-                        <button type="button" className="btn-skew w-full" disabled title={t("Facebook publishing requires Phase B")} onClick={() => submit('publish')}>
+                        <button type="button" className="btn-skew w-full" disabled={saving || demoMode} onClick={() => submit('publish')}>
                             <PaperPlaneTilt size={15} weight="fill" /> {t("Publish now")} </button>
                         <button type="button" className="btn-skew w-full" disabled={saving} onClick={() => submit('schedule')}>
                             <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </button>
@@ -409,11 +412,16 @@ export default function CreatePost() {
                         >
                             <FloppyDisk size={15} className="mr-1.5" /> {t("Save draft")} </Button>
                         <p className="label-xs flex gap-2 pt-1">
-                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Scheduling queues one job per destination for")} {form.timezone}{t(". Nothing is counted as published until the platform confirms it. Automatic publishing is not implemented in Phase A. Calendar plans do not send content to a social platform.")} </p>
+                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(". Publish now requires pages_manage_posts. Calendar plans do not send content automatically.")} </p>
                     </div>
                 </div>
             </div>
 
+            {publishReview && <PublishConfirmation review={publishReview} onClose={() => setPublishReview(null)} onResult={result => {
+                setPublishReview(null);
+                toast({ title: t(result.status === 'published' ? 'Facebook post published' : result.status === 'processing' ? 'Publishing is still processing' : 'Facebook delivery needs attention'), description: t(result.message || 'Open publishing history for the result.'), ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}) });
+                navigate('/posts?post=' + result.postId);
+            }} />}
             <ConfirmDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}

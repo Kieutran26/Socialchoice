@@ -33,6 +33,7 @@ export const POST_STATUSES = [
     'processing',
     'published',
     'partially_published',
+    'unknown',
     'failed',
     'cancelled',
 ];
@@ -43,6 +44,7 @@ export const POST_STATUS_LABEL = translatedLabels({
     processing: 'Processing',
     published: 'Published',
     partially_published: 'Partially published',
+    unknown: 'Delivery unconfirmed',
     failed: 'Failed',
     cancelled: 'Cancelled',
 });
@@ -53,6 +55,7 @@ export const POST_STATUS_TONE = {
     processing: 'warn',
     published: 'success',
     partially_published: 'warn',
+    unknown: 'warn',
     failed: 'danger',
     cancelled: 'neutral',
 };
@@ -61,6 +64,7 @@ export const JOB_STATUS_LABEL = translatedLabels({
     pending: 'Planned — no delivery worker',
     processing: 'Publishing',
     published: 'Published',
+    unknown: 'Delivery unconfirmed',
     failed: 'Failed',
     blocked: 'Blocked — setup required',
     cancelled: 'Cancelled',
@@ -70,6 +74,7 @@ export const JOB_STATUS_TONE = {
     pending: 'info',
     processing: 'warn',
     published: 'success',
+    unknown: 'warn',
     failed: 'danger',
     blocked: 'warn',
     cancelled: 'neutral',

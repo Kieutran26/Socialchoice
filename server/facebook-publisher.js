@@ -1,0 +1,93 @@
+import { randomUUID } from 'node:crypto';
+import { createMetaGraph } from './meta-graph.js';
+import { createMetaVault } from './meta-vault.js';
+import { fail } from './validation.js';
+
+const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
+
+// Claim the immutable approval in a synchronous transaction before any network I/O.
+export function createFacebookPublisher(store, config) {
+    const graph = config.ready ? createMetaGraph(config) : null;
+    const vault = config.ready ? createMetaVault(store, config.key) : null;
+    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, expiresAt: attempt.expiresAt, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
+
+    function destination(post) {
+        if (!config.ready) fail('Configure Meta before publishing', 409);
+        if (post.is_demo || post.status !== 'draft') fail('Publish now requires a live draft', 409);
+        const brand = store.get('Brand', post.brand_id);
+        if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
+        if (post.account_ids?.length !== 1 || post.media_ids?.length) fail('Publish now supports text and exactly one Facebook Page', 409);
+        const account = store.get('SocialAccount', post.account_ids[0]);
+        if (account.is_demo || account.brand_id !== post.brand_id || account.platform !== 'facebook' || account.account_type !== 'page' || account.connection_status !== 'connected' || !account.credential_id || !/^\d+$/.test(account.external_id)) fail('Connect a Facebook Page before publishing', 409);
+        const credential = vault.read(account.credential_id);
+        if (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts')) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
+        if (!credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
+        if (typeof credential.token !== 'string' || !credential.token) fail('Reconnect Facebook before publishing', 409);
+        const caption = post.platform_captions?.facebook || post.caption;
+        if (typeof caption !== 'string' || !caption.trim() || caption.length > 63206) fail('Facebook caption must contain between 1 and 63206 characters');
+        return { account, credential, caption };
+    }
+
+    function finish(attempt, status, message, result) {
+        return store.transaction(() => {
+            const current = store.attempt(attempt.id);
+            const now = new Date().toISOString();
+            const next = { ...current, status, message, ...(result ? { externalId: result.id, url: result.url } : {}) };
+            store.saveAttempt(next);
+            store.publishingWrite('PublishJob', { status, error_message: message || '', ...(result ? { external_post_id: result.id, published_url: result.url } : {}) }, current.jobId);
+            store.publishingWrite('PostVariant', { status }, current.variantId);
+            store.publishingWrite('Post', { status, ...(result ? { published_at: now } : {}) }, current.postId);
+            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: 'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || 'Facebook confirmed the post ID.', occurred_at: now, is_demo: false });
+            return summary(next);
+        });
+    }
+
+    return {
+        prepare(postId) {
+            if (typeof postId !== 'string') fail('Post ID required');
+            return store.transaction(() => {
+                const previous = store.attemptForPost(postId);
+                if (previous && previous.status !== 'prepared') fail('This post already has a publishing attempt. Check its history.', 409);
+                const post = store.get('Post', postId);
+                const { account, caption } = destination(post);
+                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, pageId: account.external_id, pageName: account.name, caption, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
+                store.saveAttempt(attempt);
+                return summary(attempt);
+            });
+        },
+        status(attemptId) {
+            const attempt = store.attemptForPost(attemptId) || store.attempt(attemptId);
+            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000) return finish(attempt, 'unknown', uncertainMessage);
+            return summary(attempt);
+        },
+        async publish(attemptId) {
+            if (typeof attemptId !== 'string') fail('Publishing confirmation ID required');
+            let credential;
+            const attempt = store.transaction(() => {
+                const value = store.attempt(attemptId);
+                if (value.status !== 'prepared') return value;
+                if (value.expiresAt <= Date.now()) fail('Publishing confirmation expired. Review the post again.', 409);
+                const post = store.get('Post', value.postId);
+                const checked = destination(post);
+                if (JSON.stringify(post) !== value.revision || checked.account.credential_id !== value.credentialId || checked.account.external_id !== value.pageId || checked.account.name !== value.pageName || checked.caption !== value.caption) fail('Post or Page changed. Review the post again.', 409);
+                credential = checked.credential;
+                const now = new Date().toISOString();
+                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: 'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false });
+                const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: 'facebook', caption: value.caption, status: 'processing', is_demo: false });
+                const claimed = { ...value, status: 'processing', startedAt: Date.now(), jobId: job.id, variantId: variant.id };
+                store.saveAttempt(claimed);
+                store.publishingWrite('Post', { status: 'processing' }, post.id);
+                return claimed;
+            });
+            if (!credential) return this.status(attempt.id);
+            let result;
+            try { result = await graph.publishText(attempt.pageId, attempt.caption, credential.token); }
+            catch (error) {
+                const denied = [190, 10, 200].includes(error.metaCode) && error.metaHttpStatus >= 400 && error.metaHttpStatus < 500;
+                return finish(attempt, denied ? 'failed' : 'unknown', denied ? 'Facebook denied publishing. Reconnect and check Page/app publishing permissions.' : uncertainMessage);
+            }
+            // If persistence fails after Meta accepted the post, never send it again.
+            return finish(attempt, 'published', '', result);
+        },
+    };
+}

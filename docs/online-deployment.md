@@ -15,7 +15,7 @@ Required private Worker secrets: `SOCIALCHOICE_ADMIN_PASSWORD_HASH` and a stable
 1. Run `pnpm test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. The Worker test builds the actual cloud bundle and verifies authentication, Vietnamese content, sessions and login throttling across runtime restarts in an isolated database.
 2. Deploy only the named Worker, preserving the SQLite namespace and migration tag on subsequent deployments. Privately set secrets. Verify its actual `/api/health` JSON and anonymous access rejection before connecting the UI.
 3. Run `node server/configure-api-proxy.js https://ACTUAL-BACKEND-ORIGIN` after verification. It places the API rewrite before the SPA fallback and creates an exclusive rollback backup. Deploy Vercel and verify health and login through the public app domain.
-4. Register `https://socialchoice.vercel.app/api/meta/callback` in Meta only after routing is working. Complete real OAuth and Page import before reporting a connected account. Publishing remains unavailable.
+4. Register `https://socialchoice.vercel.app/api/meta/callback` in Meta only after routing is working. Complete real OAuth and Page import before reporting a connected account. Text Publish Now requires the separately granted publishing scope and reviewed confirmation; calendar delivery remains unavailable.
 
 ## Persistence and rollback
 
@@ -23,7 +23,7 @@ Cloud starts empty. Local `data/socialchoice.sqlite` is untouched; no content or
 
 Do not delete a Durable Object namespace, rename its identity or change its encryption keys to fix code. Roll back Worker source while retaining storage; restore the previous Vercel deployment/config independently. A code rollback does not roll back data. Durable Object SQLite supports provider point-in-time recovery; retain independent private backups before any requested data migration. No cloud export/import feature is claimed here.
 
-Status: Cloudflare Free backend and Vercel API cutover verified online. Public Meta callback saved and validated. Owner password sign-in and real Meta OAuth remain pending owner credentials.
+Status: Cloudflare Free backend and Vercel API cutover verified online. Public Meta callback saved and validated. Owner sign-in and real Meta OAuth/Page discovery were verified. A real publication is still pending permission and an approved text post.
 
 Private CLI route after explicit scope approval: set `XDG_CONFIG_HOME=D:/Socialchoice/.wrangler/config` for Wrangler commands, authenticate with approved scopes, deploy `wrangler.jsonc`, then run `pnpm run setup:cloudflare`. That helper sends local admin hash and stable storage key through stdin, prints no values, optionally supplies existing private Meta settings, and never overwrites the saved key. Its `.env.cloudflare` and OAuth configuration directory are ignored by Git. Protect local backups and revoke Wrangler access when no longer needed. No CLI authentication or secret upload is claimed until verified.
 
