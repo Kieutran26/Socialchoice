@@ -25,7 +25,7 @@ export const PLATFORMS = [
     { value: 'reddit', label: 'Reddit', short: 'Reddit', live: false },
 ];
 
-export const PLATFORM_LABEL = PLATFORMS.reduce((acc, p) => ({ ...acc, [p.value]: p.short }), {});
+export const PLATFORM_LABEL = translatedLabels(Object.fromEntries(PLATFORMS.map((platform) => [platform.value, platform.value === 'facebook' ? 'Facebook Pages' : platform.short])));
 
 export const POST_STATUSES = [
     'draft',

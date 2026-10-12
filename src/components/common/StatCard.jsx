@@ -1,1 +1,3 @@
-export default function StatCard({ label, value, hint = '', icon: Icon = null }) { return <div className="panel p-5"><div className="flex justify-between label-xs">{label}{Icon && <Icon size={18} />}</div><p className="metric mt-3">{value}</p><p className="label-xs mt-2">{hint}</p></div>; }
+import { formatNumber } from '@/lib/format';
+export default function StatCard({ label, value, hint = '', icon: Icon = null }) { return <div className="panel p-5"><div className="flex justify-between label-xs">{label}{Icon && <Icon size={18} />}</div><p className="metric mt-3">{typeof value === 'number' ? formatNumber(value) : value}</p><p className="label-xs mt-2">{hint}</p></div>; }
+

@@ -25,6 +25,12 @@ Open http://127.0.0.1:5173. The API binds to 127.0.0.1:3001. Vite proxies /api t
 
 Create a brand under Settings, then its pillars and angles. Add destination references under Social Accounts to plan for multiple Pages. References remain Configuration required; they are not OAuth connections. Save drafts from Create Post; edit/duplicate from All Posts. Calendar plans appear in month/week/list views and can be rescheduled.
 
+## Interface language / Ngôn ngữ giao diện
+
+Open Settings → Language and choose English or Tiếng Việt. The interface changes immediately; the choice is saved in this browser and survives refresh. New browsers start in English. In Vietnamese: Cài đặt → Ngôn ngữ → Tiếng Việt.
+
+Navigation, forms, dialogs, notifications, filters, statuses, calendar and analytics labels are localized. Date/number display follows the chosen language; stored UTC timestamps, status keys, brand/post names and captions are unchanged. Native browser date-picker controls may follow the browser/OS language. No translation service or credentials are required.
+
 Optional server configuration is listed in .env.example. For overrides, copy it to .env.local and set matching API/frontend ports in both terminals. The API script reads .env.local; Vite loads it for its config. No secret values belong in VITE_* variables or Git. The default timezone is Asia/Ho_Chi_Minh and scheduled timestamps are stored in UTC.
 
 ## Data and backup

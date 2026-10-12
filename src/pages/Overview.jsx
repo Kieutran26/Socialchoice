@@ -92,8 +92,8 @@ export default function Overview() {
                         <SquaresFour size={15} weight="fill" />
                         {seeding ? t("Preparing sample data…") : t("Load sample workspace")}
                     </button>
-                    <Link to="/accounts" className="rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Manage destination references")} </Link>
-                    <Link to="/create" className="rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Create your first post")} </Link>
+                    <Link to="/accounts" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Manage destination references")} </Link>
+                    <Link to="/create" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Create your first post")} </Link>
                 </EmptyState>
             ) : (
                 <div className="space-y-5">

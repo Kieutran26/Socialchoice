@@ -151,7 +151,7 @@ export default function MediaLibrary() {
                             <div className="px-3 py-2.5">
                                 <p className="truncate text-[12px] font-medium">{asset.name}</p>
                                 <p className="label-xs mt-0.5">
-                                    {asset.file_type} · {formatBytes(asset.size_bytes)} · {formatDay(asset.created_date)}
+                                    {t(asset.file_type)} · {formatBytes(asset.size_bytes)} · {formatDay(asset.created_date)}
                                 </p>
                                 <div className="mt-2 flex items-center justify-between gap-2">
                                     {asset.is_demo ? <StatusBadge tone="info">{t("Demo")}</StatusBadge> : <span />}

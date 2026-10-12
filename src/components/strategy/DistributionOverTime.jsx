@@ -1,5 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
+import { formatCalendarDate, formatNumber } from '@/lib/format';
 import { appClient } from '@/api/app-client';
 export default function DistributionOverTime({ scope, filters }) { const { t } = useTranslation();
     const [rows, setRows] = useState([]), [error, setError] = useState('');
@@ -27,5 +28,6 @@ export default function DistributionOverTime({ scope, filters }) { const { t } =
         return () => { active = false; };
     }, [scope, filters]);
     const max = Math.max(1, ...rows.map(r => r.count));
-    return <section className="panel p-5"><h2 className="text-[15px]">{t("Scheduled content per week")}</h2><p className="label-xs mt-1">{t("Unique content posts with a calendar date.")}</p>{error && <p role="alert">{t(error)}</p>}{!rows.length && <p className="label-xs mt-4">{t("No scheduled content in this view.")}</p>}<div className="space-y-3 mt-4">{rows.map(r => <div key={r.bucket} className="text-xs"><div className="flex justify-between"><span>{String(r.bucket).slice(0, 10)}</span><span>{r.count}</span></div><div className="h-2 bg-muted rounded mt-1"><div className="h-2 bg-brand rounded" style={{ width: `${r.count / max * 100}%` }} /></div></div>)}</div></section>;
+    return <section className="panel p-5"><h2 className="text-[15px]">{t("Scheduled content per week")}</h2><p className="label-xs mt-1">{t("Unique content posts with a calendar date.")}</p>{error && <p role="alert">{t(error)}</p>}{!rows.length && <p className="label-xs mt-4">{t("No scheduled content in this view.")}</p>}<div className="space-y-3 mt-4">{rows.map(r => <div key={r.bucket} className="text-xs"><div className="flex justify-between"><span>{formatCalendarDate(r.bucket)}</span><span>{formatNumber(r.count)}</span></div><div className="h-2 bg-muted rounded mt-1"><div className="h-2 bg-brand rounded" style={{ width: `${r.count / max * 100}%` }} /></div></div>)}</div></section>;
 }
+

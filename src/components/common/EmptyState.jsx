@@ -1,1 +1,14 @@
-export default function EmptyState({ icon: Icon, title, description, children = null }) { return <div className="panel flex flex-col items-center p-10 text-center">{Icon && <Icon size={32} className="mb-4 text-muted-foreground" />}<h2 className="text-lg">{title}</h2><p className="label-xs my-3 max-w-lg">{description}</p>{children}</div>; }
+export default function EmptyState({ icon: Icon, title, description, children = null }) {
+    return (
+        <div className="panel flex flex-col items-center p-10 text-center">
+            {Icon && <Icon size={32} className="mb-4 text-muted-foreground" />}
+            <h2 className="text-lg">{title}</h2>
+            <p className="label-xs my-3 max-w-lg">{description}</p>
+            {children && (
+                <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+                    {children}
+                </div>
+            )}
+        </div>
+    );
+}

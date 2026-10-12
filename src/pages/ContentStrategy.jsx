@@ -9,7 +9,8 @@ import DistributionBar from '@/components/strategy/DistributionBar';
 import StrategyFilters from '@/components/strategy/StrategyFilters';
 import DistributionOverTime from '@/components/strategy/DistributionOverTime';
 import { Skeleton } from '@/components/ui/skeleton';
-import { percent } from '@/lib/format';
+import { percent, formatNumber } from '@/lib/format';
+import { PLATFORM_LABEL } from '@/lib/constants';
 
 const RANGE_DAYS = { past30: -30, past90: -90, next30: 30 };
 
@@ -153,7 +154,7 @@ export default function ContentStrategy() {
                 description={t("How your content is actually distributed against the targets you set for each pillar.")}
                 actions={
                     <span className="label-xs">
-                        {filters.platform === 'all' ? t("All platforms") : t("{value1} only", {value1: filters.platform})} · {rows.total} {t("total")} </span>
+                        {filters.platform === 'all' ? t("All platforms") : t("{value1} only", {value1: PLATFORM_LABEL[filters.platform] || filters.platform})} · {formatNumber(rows.total)} {t("total")} </span>
                 }
             />
 
@@ -245,7 +246,7 @@ export default function ContentStrategy() {
                                     {pillarStats.map((pillar) => (
                                         <tr key={pillar.id}>
                                             <td className="py-2">{pillar.name}</td>
-                                            <td className="py-2 text-right">{pillar.count}</td>
+                                            <td className="py-2 text-right">{formatNumber(pillar.count)}</td>
                                             <td className="py-2 text-right">{pillar.actual}%</td>
                                         </tr>
                                     ))}
@@ -269,7 +270,7 @@ export default function ContentStrategy() {
                                         .map((row) => (
                                             <tr key={row.angle_id || 'unassigned'}>
                                                 <td className="py-2">{angleName(row.angle_id)}</td>
-                                                <td className="py-2 text-right">{row.count}</td>
+                                                <td className="py-2 text-right">{formatNumber(row.count)}</td>
                                                 <td className="py-2 text-right">{percent(row.count, rows.total)}%</td>
                                             </tr>
                                         ))}

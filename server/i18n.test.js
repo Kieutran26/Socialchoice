@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { translate, setLanguage, getLanguage, getLocale, normalizeLanguage, subscribeLanguage, LANGUAGE_STORAGE_KEY } from '../src/lib/i18n-core.js';
-import { POST_STATUS_LABEL, CONNECTION_LABEL } from '../src/lib/constants.js';
+import { translate, setLanguage, getLanguage, getLocale, normalizeLanguage, subscribeLanguage, LANGUAGE_STORAGE_KEY, messages } from '../src/lib/i18n-core.js';
+import { POST_STATUS_LABEL, CONNECTION_LABEL, PLATFORM_LABEL, PLATFORMS } from '../src/lib/constants.js';
 import { localizeValidation } from '../src/components/ui/form-validation.js';
-import { dateKey, formatDateTime, formatNumber } from '../src/lib/format.js';
+import { dateKey, formatDateTime, formatNumber, formatCalendarDate } from '../src/lib/format.js';
 
 test('locale catalog interpolates labels and preserves supplied content', () => {
     assert.equal(translate('Draft', {}, 'vi'), 'Bản nháp');
@@ -12,7 +12,19 @@ test('locale catalog interpolates labels and preserves supplied content', () => 
     const content = 'Nội dung khách hàng viết — Green Brand 42';
     assert.equal(translate(content, {}, 'vi'), content);
     assert.equal(translate('{count}m ago', {}, 'vi'), '{count} phút trước');
-    assert.equal(normalizeLanguage('unsupported'), 'en');
+    assert.equal(normalizeLanguage('unsupported'), 'vi');
+    assert.equal(translate('s', {}, 'vi'), '');
+    assert.equal(translate('constructor', {}, 'vi'), 'constructor');
+    assert.equal(translate('Unsupported field: constructor', {}, 'vi'), 'Trường không được hỗ trợ: constructor');
+    assert.equal(translate('{count}m ago', {count: 12345}, 'vi'), '12.345 phút trước');
+});
+
+test('all Vietnamese templates preserve every interpolation slot', () => {
+    const slots = (text) => [...new Set([...text.matchAll(/\{(\w+)\}/g)].map((match) => match[1]))].sort();
+    for (const [key, value] of Object.entries(messages)) {
+        assert.equal(typeof value, 'string', key);
+        assert.deepEqual(slots(value), slots(key), `Interpolation mismatch: ${key}`);
+    }
 });
 
 test('language switch persists preference and changes system labels without changing keys', () => {
@@ -25,6 +37,7 @@ test('language switch persists preference and changes system labels without chan
         removeEventListener: (name, handler) => { if (events.get(name) === handler) events.delete(name); },
     };
     try {
+        setLanguage('en');
         let updates = 0;
         const unsubscribe = subscribeLanguage(() => updates++);
         setLanguage('vi');
@@ -33,22 +46,25 @@ test('language switch persists preference and changes system labels without chan
         assert.equal(stored.get(LANGUAGE_STORAGE_KEY), 'vi');
         assert.equal(POST_STATUS_LABEL.draft, 'Bản nháp');
         assert.equal(CONNECTION_LABEL.configuration_required, 'Cần cấu hình');
+        assert.equal(PLATFORM_LABEL.facebook, 'Trang Facebook');
+        assert.equal(PLATFORM_LABEL.facebook, PLATFORMS[0].label);
         assert.ok(Object.keys(POST_STATUS_LABEL).includes('published'));
         stored.set(LANGUAGE_STORAGE_KEY, 'en');
         events.get('storage')({ key: LANGUAGE_STORAGE_KEY });
         assert.equal(POST_STATUS_LABEL.draft, 'Draft');
+        assert.equal(PLATFORM_LABEL.facebook, 'Facebook Pages');
         assert.equal(getLanguage(), 'en');
         assert.equal(updates, 2);
         unsubscribe();
         assert.equal(events.size, 0);
-    } finally { setLanguage('en'); globalThis.window = previousWindow; }
+    } finally { setLanguage('vi'); globalThis.window = previousWindow; }
 });
 
 test('blocked browser storage does not break language switching', () => {
     const previousWindow = globalThis.window;
     globalThis.window = { localStorage: { setItem: () => { throw new Error('blocked'); } } };
-    try { setLanguage('vi'); assert.equal(getLanguage(), 'vi'); }
-    finally { setLanguage('en'); globalThis.window = previousWindow; }
+    try { setLanguage('en'); assert.equal(getLanguage(), 'en'); setLanguage('vi'); assert.equal(getLanguage(), 'vi'); }
+    finally { setLanguage('vi'); globalThis.window = previousWindow; }
 });
 
 test('structured server validation messages are localized without fabricating integration state', () => {
@@ -70,7 +86,8 @@ test('localized date and number display preserves calendar keys and UTC instant'
         assert.equal(key, '2026-10-20');
         assert.equal(formatNumber(12345), new Intl.NumberFormat('vi-VN').format(12345));
         assert.equal(new Date(instant).toISOString(), instant);
-    } finally { setLanguage('en'); }
+        assert.equal(formatCalendarDate('2026-10-20'), new Intl.DateTimeFormat('vi-VN', { timeZone: 'UTC', day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date('2026-10-20T00:00:00Z')));
+    } finally { setLanguage('vi'); }
 });
 
 test('Vietnamese required/range validation and English browser fallback', () => {
@@ -90,5 +107,5 @@ test('Vietnamese required/range validation and English browser fallback', () => 
         setLanguage('en');
         localizeValidation(control);
         assert.equal(control.message, '');
-    } finally { setLanguage('en'); }
+    } finally { setLanguage('vi'); }
 });

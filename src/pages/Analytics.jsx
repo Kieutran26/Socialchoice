@@ -20,7 +20,7 @@ import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { JOB_STATUS_LABEL, CONNECTION_LABEL, CONNECTION_TONE, PLATFORM_LABEL } from '@/lib/constants';
-import { formatNumber, percent } from '@/lib/format';
+import { formatNumber, percent, formatCalendarDate } from '@/lib/format';
 
 const JOB_COLORS = {
     published: '#79D94B',
@@ -141,14 +141,15 @@ export default function Analytics() {
                                             <CartesianGrid vertical={false} stroke="oklch(0.922 0 0)" />
                                             <XAxis
                                                 dataKey="week"
-                                                tickFormatter={(value) => value.slice(5)}
+                                                tickFormatter={(value) => formatCalendarDate(value, { year: undefined })}
                                                 tick={{ fontSize: 11, fill: 'oklch(0.556 0 0)' }}
                                                 axisLine={false}
                                                 tickLine={false}
                                             />
                                             <Tooltip
                                                 contentStyle={{ fontSize: 12, borderRadius: 8, border: '1px solid oklch(0.922 0 0)' }}
-                                                labelFormatter={(value) => t("Week of {value1}", {value1: value})}
+                                                labelFormatter={(value) => t("Week of {value1}", {value1: formatCalendarDate(value)})}
+                                                formatter={(value) => [formatNumber(Number(value)), t('Posts')]}
                                             />
                                             <Bar dataKey="count" name={t("Posts")} fill="#79D94B" radius={[3, 3, 0, 0]} />
                                         </BarChart>
@@ -245,7 +246,7 @@ export default function Analytics() {
                                                 <div className="flex items-center justify-between gap-3 text-[13px]">
                                                     <span className="truncate">{data.pillarMap[row.pillar_id] || t("Unassigned")}</span>
                                                     <span className="label-xs">
-                                                        {row.count} · {share}%
+                                                        {formatNumber(row.count)} · {share}%
                                                     </span>
                                                 </div>
                                                 <div className="mt-1.5 h-1.5 w-full overflow-hidden rounded-full bg-muted">

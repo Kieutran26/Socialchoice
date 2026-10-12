@@ -4,11 +4,11 @@ import components from './locales/vi-components.json' with { type: 'json' };
 
 export const LANGUAGE_STORAGE_KEY = 'socialchoice.language';
 export const messages = { ...common, ...components, ...pages };
-export const normalizeLanguage = (value) => value === 'vi' ? 'vi' : 'en';
+export const normalizeLanguage = (value) => value === 'en' ? 'en' : 'vi';
 const listeners = new Set();
 function storedLanguage() {
     try { return normalizeLanguage(window.localStorage.getItem(LANGUAGE_STORAGE_KEY)); }
-    catch { return 'en'; }
+    catch { return 'vi'; }
 }
 let language = storedLanguage();
 export const getLanguage = () => language;
@@ -35,7 +35,7 @@ export function subscribeLanguage(notify) {
 /** @param {string} key @param {Record<string, string | number>} [values] @param {string} [locale] */
 export function translate(key, values = {}, locale = language) {
     if (key == null) return '';
-    let template = locale === 'vi' ? messages[key] ?? key : key;
+    let template = locale === 'vi' && Object.hasOwn(messages, key) ? messages[key] : key;
     if (locale === 'vi' && template === key) {
         const patterns = [
             [/^Unsupported field: (.+)$/, 'Unsupported field: {field}'],
@@ -48,12 +48,16 @@ export function translate(key, values = {}, locale = language) {
             const match = key.match(/** @type {RegExp} */ (pattern));
             if (match) {
                 template = messages[/** @type {string} */ (message)];
-                values = { ...values, field: common[match[1]] || match[1] };
+                values = { ...values, field: Object.hasOwn(common, match[1]) ? common[match[1]] : match[1] };
                 break;
             }
         }
     }
-    return template.replace(/\{(\w+)\}/g, (match, name) => Object.hasOwn(values, name) ? String(values[name]) : match);
+    return template.replace(/\{(\w+)\}/g, (match, name) => {
+        if (!Object.hasOwn(values, name)) return match;
+        const value = values[name];
+        return typeof value === 'number' ? new Intl.NumberFormat(locale === 'vi' ? 'vi-VN' : 'en-GB').format(value) : String(value);
+    });
 }
 
 /** Dynamic label maps retain internal English status keys and react to the current UI language. */

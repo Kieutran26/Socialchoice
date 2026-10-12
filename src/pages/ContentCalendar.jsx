@@ -13,7 +13,7 @@ import ListView from '@/components/calendar/ListView';
 import PostDetailSheet from '@/components/posts/PostDetailSheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { addDays, shiftMonths, startOfMonth, toUtcIso, todayInZone, weekdayIndex } from '@/lib/tz';
-import { dateKey } from '@/lib/format';
+import { dateKey, formatCalendarDate } from '@/lib/format';
 
 export default function ContentCalendar() {
     const { t, language } = useTranslation();
@@ -102,8 +102,8 @@ export default function ContentCalendar() {
                 new Date(`${anchor.slice(0, 7)}-01T00:00:00Z`),
             )
             : view === 'week'
-                ? `${range.start} → ${addDays(range.end, -1)}`
-                : t("Next 60 days from {value1}", {value1: anchor});
+                ? `${formatCalendarDate(range.start)} → ${formatCalendarDate(addDays(range.end, -1))}`
+                : t("Next 60 days from {value1}", {value1: formatCalendarDate(anchor)});
 
     const shift = (direction) => {
         if (view === 'month') setAnchor(shiftMonths(anchor, direction));

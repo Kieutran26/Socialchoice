@@ -1,6 +1,10 @@
 import { DEFAULT_TIMEZONE } from './constants.js';
 import { getLocale, translate } from './i18n-core.js';
 
+/** Format a calendar key without changing its date through timezone conversion. */
+export const formatCalendarDate = (value, /** @type {Intl.DateTimeFormatOptions} */ options = {}) =>
+    value ? new Intl.DateTimeFormat(getLocale(), { day: '2-digit', month: '2-digit', year: 'numeric', ...options, timeZone: 'UTC' }).format(new Date(`${String(value).slice(0, 10)}T00:00:00Z`)) : '—';
+
 export const formatDateTime = (value, timeZone = DEFAULT_TIMEZONE) =>
     value
         ? new Intl.DateTimeFormat(getLocale(), {
