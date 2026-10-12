@@ -1,8 +1,7 @@
-import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDots, Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
-import { appClient } from '@/api/app-client';
+import { base44 } from '@/api/base44Client';
 import { useWorkspace } from '@/lib/workspace-context';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
@@ -13,10 +12,9 @@ import ListView from '@/components/calendar/ListView';
 import PostDetailSheet from '@/components/posts/PostDetailSheet';
 import { Skeleton } from '@/components/ui/skeleton';
 import { addDays, shiftMonths, startOfMonth, toUtcIso, todayInZone, weekdayIndex } from '@/lib/tz';
-import { dateKey, formatCalendarDate } from '@/lib/format';
+import { dateKey } from '@/lib/format';
 
 export default function ContentCalendar() {
-    const { t, language } = useTranslation();
     const { scope, brands, selectedBrandId, timezone } = useWorkspace();
     const [view, setView] = useState('month');
     const [anchor, setAnchor] = useState(() => todayInZone(timezone));
@@ -26,7 +24,7 @@ export default function ContentCalendar() {
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [openPost, setOpenPost] = useState(null);
-    const [filters, setFilters] = useState({ account_id: 'all', pillar_id: 'all', angle_id: 'all', status: 'all' });
+    const [filters, setFilters] = useState({ account_id: 'all', pillar_id: 'all', angle_id: 'all' });
 
     const range = useMemo(() => {
         if (view === 'month') {
@@ -57,9 +55,9 @@ export default function ContentCalendar() {
     const load = useCallback(async () => {
         setLoading(true);
         const [pillarPage, anglePage, accountPage] = await Promise.all([
-            appClient.entities.ContentPillar.filter(scope, { sort: 'name', limit: 300 }),
-            appClient.entities.ContentAngle.filter(scope, { sort: 'name', limit: 500 }),
-            appClient.entities.SocialAccount.filter(scope, { sort: 'name', limit: 300 }),
+            base44.entities.ContentPillar.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
+            base44.entities.ContentAngle.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 500 }),
+            base44.entities.SocialAccount.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
         ]);
         setPillars(pillarPage.items);
         setAngles(anglePage.items);
@@ -69,14 +67,13 @@ export default function ContentCalendar() {
             ...scope,
             scheduled_at: {
                 $gte: toUtcIso(range.start, '00:00', timezone),
-                $lt: toUtcIso(range.end, '00:00', timezone),
+                $lt: toUtcIso(addDays(range.end, 1), '00:00', timezone),
             },
         };
         if (filters.pillar_id !== 'all') query.pillar_id = filters.pillar_id;
         if (filters.angle_id !== 'all') query.angle_id = filters.angle_id;
         if (filters.account_id !== 'all') query.account_ids = filters.account_id;
-        if (filters.status !== 'all') query.status = filters.status;
-        const page = await appClient.entities.Post.filter(query, { sort: 'scheduled_at', limit: view === 'list' ? 200 : 300 });
+        const page = await base44.entities.Post.filter(query, { sort: 'scheduled_at', limit: view === 'list' ? 200 : 300 });
         setPosts(page.items);
         setLoading(false);
     }, [scope, range, filters, view, timezone]);
@@ -86,11 +83,10 @@ export default function ContentCalendar() {
     }, [load]);
 
     const postsByDay = useMemo(() => {
-        /** @type {Record<string, any[]>} */
         const map = {};
         posts.forEach((post) => {
             if (!post.scheduled_at) return;
-            const key = dateKey(post.scheduled_at, timezone);
+            const key = dateKey(post.scheduled_at, post.timezone || timezone);
             map[key] = [...(map[key] || []), post];
         });
         return map;
@@ -98,12 +94,12 @@ export default function ContentCalendar() {
 
     const label =
         view === 'month'
-            ? new Intl.DateTimeFormat(language === 'vi' ? 'vi-VN' : 'en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
+            ? new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
                 new Date(`${anchor.slice(0, 7)}-01T00:00:00Z`),
             )
             : view === 'week'
-                ? `${formatCalendarDate(range.start)} → ${formatCalendarDate(addDays(range.end, -1))}`
-                : t("Next 60 days from {value1}", {value1: formatCalendarDate(anchor)});
+                ? `${range.start} → ${addDays(range.end, -1)}`
+                : `Next 60 days from ${anchor}`;
 
     const shift = (direction) => {
         if (view === 'month') setAnchor(shiftMonths(anchor, direction));
@@ -113,11 +109,13 @@ export default function ContentCalendar() {
     return (
         <>
             <PageHeader
-                title={t("Content Calendar")}
-                description={t("All scheduled and published content, shown in {value1}. Click any item to open it, reschedule it or edit it.", {value1: timezone})}
+                title="Content Calendar"
+                description={`All scheduled and published content, shown in ${timezone}. Click any item to open it, reschedule it or edit it.`}
                 actions={
                     <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" /> {t("Create Post")} </Link>
+                        <Plus size={15} weight="bold" />
+                        Create Post
+                    </Link>
                 }
             />
 
@@ -140,11 +138,12 @@ export default function ContentCalendar() {
             ) : !posts.length ? (
                 <EmptyState
                     icon={CalendarDots}
-                    title={t("Nothing scheduled in this range")}
-                    description={t("Move to another period, clear the filters, or schedule a post to see it appear here.")}
+                    title="Nothing scheduled in this range"
+                    description="Move to another period, clear the filters, or schedule a post to see it appear here."
                 >
                     <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" /> {t("Create Post")} </Link>
+                        <Plus size={15} weight="bold" /> Create Post
+                    </Link>
                 </EmptyState>
             ) : view === 'month' ? (
                 <MonthView
@@ -179,9 +178,11 @@ export default function ContentCalendar() {
             )}
 
             <p className="label-xs mt-3">
-                {selectedBrandId === 'all' ? t("Showing every brand") : t("Filtered to the selected brand")} · {posts.length} {t("item")}{posts.length === 1 ? '' : t("s")} {t("in view")} </p>
+                {selectedBrandId === 'all' ? 'Showing every brand' : 'Filtered to the selected brand'} · {posts.length} item
+                {posts.length === 1 ? '' : 's'} in view
+            </p>
 
             {openPost ? <PostDetailSheet post={openPost} onClose={() => setOpenPost(null)} onChanged={load} /> : null}
         </>
     );
-}
+} ContentPillars.jsx
