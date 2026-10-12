@@ -1,0 +1,80 @@
+# Base44 sandbox environment for the Socialchoice workspace (imported repo).
+#
+# Development wiring: the owned Node/SQLite API and the React/Vite dev server run
+# from the bind-mounted source inside one container — the project's own two-terminal
+# dev pair (`npm run dev:api` + `npm run dev`). Vite is published on host port 3000
+# and proxies /api to the API on 127.0.0.1:3001 in the same container, so the API
+# keeps its loopback-only bind and its host/origin checks. Nothing but port 3000 is
+# exposed.
+#
+# Sandbox-specific behaviour (both documented in AGENTS.md; the flag is unset
+# outside the sandbox and shared behaviour is then unchanged):
+#   - server/index.js adds the preview host suffix and origin to the API allowlists
+#     only when BASE44_PREVIEW_MODE === "1".
+#   - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS lets the Vite dev server answer the
+#     preview host (Vite >= 6.1 appends it to server.allowedHosts).
+#
+# Bring up with: docker compose -f docker-compose.base44.yml up -d --build
+
+services:
+  app:
+    image: node:24-slim
+    working_dir: /app
+    restart: on-failure
+    ports:
+      - "3000:5173"
+    env_file:
+      - /run/base44/app.env
+    environment:
+      - BASE44_PREVIEW_MODE
+      - BASE44_SANDBOX_HOST_DOMAIN
+      - BASE44_PUBLIC_HOST_SUFFIX
+      - __VITE_ADDITIONAL_SERVER_ALLOWED_HOSTS=.${BASE44_SANDBOX_HOST_DOMAIN}
+    volumes:
+      - .:/app
+      - node_modules:/app/node_modules
+      - app_data:/app/data
+    command:
+      - bash
+      - -ec
+      - |
+        # Sync dependencies from the committed lockfile into the mounted volume.
+        # ($$ escapes a literal $ in compose; the shell sees a single $.)
+        want=$$(md5sum package-lock.json | cut -d' ' -f1)
+        if [ "$$(cat node_modules/.base44-lock 2>/dev/null)" != "$$want" ]; then
+          echo "installing dependencies from package-lock.json"
+          npm ci --no-audit --no-fund
+          echo "$$want" > node_modules/.base44-lock
+        fi
+        # API on 127.0.0.1:3001, Vite dev server on 0.0.0.0:5173 (published on 3000).
+        npm run dev:api & api=$$!
+        npm run dev -- --host 0.0.0.0 & web=$$!
+        trap 'kill $$api $$web 2>/dev/null' EXIT
+        wait -n "$$api" "$$web"
+        exit 1
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - |
+          import('node:http').then(({ default: http }) => {
+            const probe = (port, path) => new Promise((resolve) => {
+              const req = http.get({ host: '127.0.0.1', port, path, timeout: 4000 }, (res) => { res.resume(); resolve(res.statusCode === 200); });
+              req.on('error', () => resolve(false));
+              req.on('timeout', () => { req.destroy(); resolve(false); });
+            });
+            return Promise.all([probe(5173, '/'), probe(3001, '/api/health')]).then(([web, api]) => {
+              if (!web) console.error('frontend (vite, 5173) not responding');
+              if (!api) console.error('API (node, 3001) not responding');
+              process.exit(web && api ? 0 : 1);
+            });
+          });
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 240s
+
+volumes:
+  node_modules:
+  app_data:

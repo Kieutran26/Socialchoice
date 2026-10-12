@@ -1,0 +1,32 @@
+{
+  "previewPort": 3000,
+  "healthPath": "/",
+  "startCommand": "docker compose -f docker-compose.base44.yml up -d",
+  "secrets": [
+    {
+      "name": "META_APP_ID",
+      "description": "Optional. Meta (Facebook) app ID, from the Meta app dashboard. Only needed for the Facebook Page connection; the app boots and runs without it.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "META_APP_SECRET",
+      "description": "Optional. Meta app secret, from the Meta app dashboard. Server-only, never in VITE_* variables.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "META_GRAPH_VERSION",
+      "description": "Optional. Graph API version such as v21.0, from the Meta app dashboard.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "META_TOKEN_ENCRYPTION_KEY",
+      "description": "Optional. 64 hex characters, generated once by the owner; encrypts stored Page tokens.",
+      "requiredAtBoot": false
+    },
+    {
+      "name": "META_REDIRECT_URI",
+      "description": "Optional. Must match the app origin and the Valid OAuth Redirect URI registered in Meta (local development uses http://127.0.0.1:3001/api/meta/callback).",
+      "requiredAtBoot": false
+    }
+  ]
+}

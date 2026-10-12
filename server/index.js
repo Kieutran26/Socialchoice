@@ -16,6 +16,12 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     if (metaSettings.ready && (publicOrigin ? metaSettings.origin !== publicOrigin : !['127.0.0.1', 'localhost'].includes(new URL(metaSettings.redirectUri).hostname))) throw new Error('Meta callback origin must match the Socialchoice app origin');
     const store = createStore(dbPath);
     const meta = createMetaConnection(store, auth, metaSettings);
+    // Sandbox preview only: the Base44 preview proxy reaches the app through a per-session host/origin
+    // that is not loopback. When BASE44_PREVIEW_MODE is exactly "1" the preview host suffix and origin
+    // join the allowlists below; the API still binds loopback and every other check is unchanged. With
+    // the flag unset both lists are exactly as before.
+    const previewHostSuffix = process.env.BASE44_PREVIEW_MODE === '1' && process.env.BASE44_SANDBOX_HOST_DOMAIN ? `.${process.env.BASE44_SANDBOX_HOST_DOMAIN}` : null;
+    const previewOrigins = process.env.BASE44_PREVIEW_MODE === '1' && process.env.BASE44_PUBLIC_HOST_SUFFIX ? [`https://3000-${process.env.BASE44_PUBLIC_HOST_SUFFIX}`] : [];
     const server = createServer(async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -24,8 +30,9 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
         try {
             // Loopback-only API, no public authentication bypass. Reject cross-site/DNS rebinding requests.
             const host = req.headers.host?.split(':')[0];
-            if (!['127.0.0.1', 'localhost'].includes(host) && (!publicOrigin || req.headers.host !== new URL(publicOrigin).host)) fail('Local host required', 403);
-            const origins = publicOrigin ? [publicOrigin] : [`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`, `http://127.0.0.1:${req.socket.localPort}`, `http://localhost:${req.socket.localPort}`];
+            const previewHost = !!previewHostSuffix && !!host && host.endsWith(previewHostSuffix);
+            if (!previewHost && !['127.0.0.1', 'localhost'].includes(host) && (!publicOrigin || req.headers.host !== new URL(publicOrigin).host)) fail('Local host required', 403);
+            const origins = publicOrigin ? [publicOrigin] : [`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`, `http://127.0.0.1:${req.socket.localPort}`, `http://localhost:${req.socket.localPort}`, ...previewOrigins];
             if (req.method === 'GET' && req.url?.startsWith('/api/meta/callback?')) return await meta.callback(req, res);
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
