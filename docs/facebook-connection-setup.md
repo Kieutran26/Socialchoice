@@ -26,6 +26,8 @@ Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The
 
 ## Evidence and limitations
 
+Owner app created through Meta dashboard: Socialchoice, App ID `1115808334255427`, Pages management use case, unpublished. On 2026-10-12, saving the HTTP `127.0.0.1:3001` callback did not persist: the callback list was empty after reload and Meta's URI validator reported invalid. HTTPS enforcement was locked on. For this app, use a working HTTPS app origin before proceeding; the loopback example above is not verified usable. Browser evidence is recorded in plans/reports/meta-app-configuration-261012-1752-socialchoice-report.md. No live OAuth/Page import yet.
+
 Meta's [official Page-token collection](https://www.postman.com/meta/facebook/request/bqfxwbp/get-access-tokens-of-pages-you-manage) documents `me/accounts`, Page tokens and task metadata. Direct [manual-login docs](https://developers.facebook.com/docs/facebook-login/guides/advanced/manual-flow/) and [Pages getting started](https://developers.facebook.com/docs/pages-api/getting-started/) returned HTTP 429 during research. Network API success, exchange behavior and app-specific permission eligibility require real owner verification; do not treat local tests as Meta integration certification.
 
 If authorization fails: verify exact callback/app mode/version/roles/permissions in Meta; denied Page permission or no accessible Pages is shown clearly. Remote response bodies/token values are never echoed to the client. Live testing must be done with owner-provided local configuration and a permitted Page. No paid connector is needed, but hosting and platform approval requirements remain external.
