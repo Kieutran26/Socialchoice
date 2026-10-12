@@ -1,0 +1,452 @@
+{
+  "ContentPillar": {
+    "name": "ContentPillar",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "color": {
+        "type": "string",
+        "default": "#79D94B"
+      },
+      "target_percentage": {
+        "type": "number",
+        "default": 0
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "default": "active"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "brand_id"
+    ]
+  },
+  "PostVariant": {
+    "name": "PostVariant",
+    "type": "object",
+    "properties": {
+      "post_id": {
+        "type": "string"
+      },
+      "social_account_id": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string",
+        "default": "facebook"
+      },
+      "caption": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "scheduled",
+          "processing",
+          "published",
+          "failed",
+          "blocked",
+          "cancelled"
+        ],
+        "default": "scheduled"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "post_id"
+    ]
+  },
+  "PublishingLog": {
+    "name": "PublishingLog",
+    "type": "object",
+    "properties": {
+      "publish_job_id": {
+        "type": "string"
+      },
+      "post_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string",
+        "default": "facebook"
+      },
+      "level": {
+        "type": "string",
+        "enum": [
+          "info",
+          "success",
+          "warning",
+          "error"
+        ],
+        "default": "info"
+      },
+      "message": {
+        "type": "string"
+      },
+      "occurred_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "message"
+    ]
+  },
+  "Post": {
+    "name": "Post",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "caption": {
+        "type": "string"
+      },
+      "platform_captions": {
+        "type": "object"
+      },
+      "media_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "account_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "pillar_id": {
+        "type": "string"
+      },
+      "angle_id": {
+        "type": "string"
+      },
+      "scheduled_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "timezone": {
+        "type": "string",
+        "default": "Asia/Ho_Chi_Minh"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "draft",
+          "scheduled",
+          "processing",
+          "published",
+          "partially_published",
+          "failed",
+          "cancelled"
+        ],
+        "default": "draft"
+      },
+      "published_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "title"
+    ]
+  },
+  "SocialAccount": {
+    "name": "SocialAccount",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string",
+        "enum": [
+          "facebook",
+          "instagram",
+          "linkedin",
+          "tiktok",
+          "youtube",
+          "x",
+          "reddit"
+        ],
+        "default": "facebook"
+      },
+      "account_type": {
+        "type": "string",
+        "enum": [
+          "page",
+          "profile"
+        ],
+        "default": "page"
+      },
+      "name": {
+        "type": "string"
+      },
+      "username": {
+        "type": "string"
+      },
+      "external_id": {
+        "type": "string"
+      },
+      "avatar_url": {
+        "type": "string"
+      },
+      "followers": {
+        "type": "number"
+      },
+      "connection_status": {
+        "type": "string",
+        "enum": [
+          "connected",
+          "configuration_required",
+          "expired",
+          "disconnected",
+          "demo"
+        ],
+        "default": "configuration_required"
+      },
+      "credential_id": {
+        "type": "string"
+      },
+      "scopes": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "last_synced_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "platform"
+    ]
+  },
+  "Brand": {
+    "name": "Brand",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "color": {
+        "type": "string",
+        "default": "#79D94B"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "default": "active"
+      },
+      "timezone": {
+        "type": "string",
+        "default": "Asia/Ho_Chi_Minh"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "MediaAsset": {
+    "name": "MediaAsset",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "file_url": {
+        "type": "string"
+      },
+      "file_type": {
+        "type": "string",
+        "enum": [
+          "image",
+          "video"
+        ],
+        "default": "image"
+      },
+      "mime_type": {
+        "type": "string"
+      },
+      "size_bytes": {
+        "type": "number"
+      },
+      "notes": {
+        "type": "string"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "file_url"
+    ]
+  },
+  "PublishJob": {
+    "name": "PublishJob",
+    "type": "object",
+    "properties": {
+      "post_id": {
+        "type": "string"
+      },
+      "brand_id": {
+        "type": "string"
+      },
+      "social_account_id": {
+        "type": "string"
+      },
+      "account_name": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string",
+        "default": "facebook"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "pending",
+          "processing",
+          "published",
+          "failed",
+          "blocked",
+          "cancelled"
+        ],
+        "default": "pending"
+      },
+      "scheduled_for": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "attempts": {
+        "type": "number",
+        "default": 0
+      },
+      "max_attempts": {
+        "type": "number",
+        "default": 3
+      },
+      "next_attempt_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "external_post_id": {
+        "type": "string"
+      },
+      "published_url": {
+        "type": "string"
+      },
+      "error_message": {
+        "type": "string"
+      },
+      "last_attempt_at": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "post_id",
+      "social_account_id"
+    ]
+  },
+  "ContentAngle": {
+    "name": "ContentAngle",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "pillar_id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "default": "active"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "brand_id",
+      "pillar_id"
+    ]
+  }
+}

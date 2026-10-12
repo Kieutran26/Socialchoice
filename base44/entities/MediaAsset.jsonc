@@ -1,0 +1,40 @@
+{
+    "name": "MediaAsset",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "file_url": {
+            "type": "string"
+        },
+        "file_type": {
+            "type": "string",
+            "enum": [
+                "image",
+                "video"
+            ],
+            "default": "image"
+        },
+        "mime_type": {
+            "type": "string"
+        },
+        "size_bytes": {
+            "type": "number"
+        },
+        "notes": {
+            "type": "string"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "file_url"
+    ]
+}

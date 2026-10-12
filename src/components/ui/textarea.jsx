@@ -1,0 +1,2 @@
+import { forwardRef } from 'react';
+export const Textarea = forwardRef(function Textarea(/** @type {import('react').ComponentPropsWithoutRef<'textarea'>} */ { className = '', ...props }, /** @type {import('react').ForwardedRef<HTMLTextAreaElement>} */ ref) { return <textarea ref={ref} className={`w-full min-h-24 rounded-lg border border-input bg-white px-3 py-2 text-sm ${className}`} {...props} />; });

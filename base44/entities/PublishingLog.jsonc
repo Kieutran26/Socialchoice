@@ -1,0 +1,43 @@
+{
+    "name": "PublishingLog",
+    "type": "object",
+    "properties": {
+        "publish_job_id": {
+            "type": "string"
+        },
+        "post_id": {
+            "type": "string"
+        },
+        "account_name": {
+            "type": "string"
+        },
+        "platform": {
+            "type": "string",
+            "default": "facebook"
+        },
+        "level": {
+            "type": "string",
+            "enum": [
+                "info",
+                "success",
+                "warning",
+                "error"
+            ],
+            "default": "info"
+        },
+        "message": {
+            "type": "string"
+        },
+        "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "message"
+    ]
+}

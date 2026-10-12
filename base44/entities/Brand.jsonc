@@ -1,0 +1,35 @@
+{
+    "name": "Brand",
+    "type": "object",
+    "properties": {
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "color": {
+            "type": "string",
+            "default": "#79D94B"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "active",
+                "archived"
+            ],
+            "default": "active"
+        },
+        "timezone": {
+            "type": "string",
+            "default": "Asia/Ho_Chi_Minh"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name"
+    ]
+}

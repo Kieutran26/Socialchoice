@@ -1,0 +1,4 @@
+import { useTranslation } from '@/lib/i18n';
+import { Input } from '../ui/input';
+import { TIMEZONES } from '@/lib/constants';
+export default function ScheduleFields({ value, onChange }) { const { t } = useTranslation(); return <div className="grid gap-4 sm:grid-cols-2"><label className="text-xs">{t("Date")}<Input type="date" value={value.date} onChange={e => onChange({ date: e.target.value })} className="mt-2" /></label><label className="text-xs">{t("Time")}<Input type="time" value={value.time} onChange={e => onChange({ time: e.target.value })} className="mt-2" /></label><label className="text-xs sm:col-span-2">{t("Timezone")}<select className="w-full rounded-lg border p-2 mt-2 bg-white" value={value.timezone} onChange={e => onChange({ timezone: e.target.value })}>{TIMEZONES.map(zone => <option key={zone}>{zone}</option>)}</select></label></div>; }

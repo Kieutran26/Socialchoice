@@ -1,0 +1,71 @@
+{
+    "name": "PublishJob",
+    "type": "object",
+    "properties": {
+        "post_id": {
+            "type": "string"
+        },
+        "brand_id": {
+            "type": "string"
+        },
+        "social_account_id": {
+            "type": "string"
+        },
+        "account_name": {
+            "type": "string"
+        },
+        "platform": {
+            "type": "string",
+            "default": "facebook"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "pending",
+                "processing",
+                "published",
+                "failed",
+                "blocked",
+                "cancelled"
+            ],
+            "default": "pending"
+        },
+        "scheduled_for": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "attempts": {
+            "type": "number",
+            "default": 0
+        },
+        "max_attempts": {
+            "type": "number",
+            "default": 3
+        },
+        "next_attempt_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "external_post_id": {
+            "type": "string"
+        },
+        "published_url": {
+            "type": "string"
+        },
+        "error_message": {
+            "type": "string"
+        },
+        "last_attempt_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "post_id",
+        "social_account_id"
+    ]
+}

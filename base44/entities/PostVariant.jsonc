@@ -1,0 +1,39 @@
+{
+    "name": "PostVariant",
+    "type": "object",
+    "properties": {
+        "post_id": {
+            "type": "string"
+        },
+        "social_account_id": {
+            "type": "string"
+        },
+        "platform": {
+            "type": "string",
+            "default": "facebook"
+        },
+        "caption": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "scheduled",
+                "processing",
+                "published",
+                "failed",
+                "blocked",
+                "cancelled"
+            ],
+            "default": "scheduled"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "post_id"
+    ]
+}

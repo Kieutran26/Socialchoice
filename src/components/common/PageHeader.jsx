@@ -1,0 +1,1 @@
+export default function PageHeader({ title, description = '', actions = null }) { return <header className="mb-6 flex flex-wrap items-start justify-between gap-4"><div><h1 className="text-2xl">{title}</h1><p className="mt-2 text-sm text-muted-foreground max-w-3xl">{description}</p></div>{actions}</header>; }

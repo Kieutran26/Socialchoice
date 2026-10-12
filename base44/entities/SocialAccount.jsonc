@@ -1,0 +1,77 @@
+{
+    "name": "SocialAccount",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "platform": {
+            "type": "string",
+            "enum": [
+                "facebook",
+                "instagram",
+                "linkedin",
+                "tiktok",
+                "youtube",
+                "x",
+                "reddit"
+            ],
+            "default": "facebook"
+        },
+        "account_type": {
+            "type": "string",
+            "enum": [
+                "page",
+                "profile"
+            ],
+            "default": "page"
+        },
+        "name": {
+            "type": "string"
+        },
+        "username": {
+            "type": "string"
+        },
+        "external_id": {
+            "type": "string"
+        },
+        "avatar_url": {
+            "type": "string"
+        },
+        "followers": {
+            "type": "number"
+        },
+        "connection_status": {
+            "type": "string",
+            "enum": [
+                "connected",
+                "configuration_required",
+                "expired",
+                "disconnected",
+                "demo"
+            ],
+            "default": "configuration_required"
+        },
+        "credential_id": {
+            "type": "string"
+        },
+        "scopes": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "last_synced_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "platform"
+    ]
+}

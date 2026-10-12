@@ -1,0 +1,20 @@
+{
+  "missing": [],
+  "raw": [
+    {
+      "file": "src\\components\\Layout.jsx",
+      "line": 10,
+      "text": "socialchoice"
+    },
+    {
+      "file": "src\\pages\\Settings.jsx",
+      "line": 128,
+      "text": "English"
+    },
+    {
+      "file": "src\\pages\\Settings.jsx",
+      "line": 129,
+      "text": "Tiếng Việt"
+    }
+  ]
+}

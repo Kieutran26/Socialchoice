@@ -1,0 +1,71 @@
+{
+    "name": "Post",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "caption": {
+            "type": "string"
+        },
+        "platform_captions": {
+            "type": "object"
+        },
+        "media_ids": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "account_ids": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "pillar_id": {
+            "type": "string"
+        },
+        "angle_id": {
+            "type": "string"
+        },
+        "scheduled_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "timezone": {
+            "type": "string",
+            "default": "Asia/Ho_Chi_Minh"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "draft",
+                "scheduled",
+                "processing",
+                "published",
+                "partially_published",
+                "failed",
+                "cancelled"
+            ],
+            "default": "draft"
+        },
+        "published_at": {
+            "type": "string",
+            "format": "date-time"
+        },
+        "notes": {
+            "type": "string"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "title"
+    ]
+}

@@ -1,0 +1,9 @@
+node_modules/
+dist/
+data/
+.env*
+!.env.example
+base44/.app.jsonc
+plans/**/*.zip
+plans/npm-cache/
+*.log

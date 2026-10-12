@@ -1,0 +1,35 @@
+{
+    "name": "ContentAngle",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "pillar_id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "active",
+                "archived"
+            ],
+            "default": "active"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "brand_id",
+        "pillar_id"
+    ]
+}

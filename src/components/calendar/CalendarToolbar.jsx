@@ -1,0 +1,5 @@
+import { useTranslation } from '@/lib/i18n';
+import PostFilters from '../posts/PostFilters';
+import { Button } from '../ui/button';
+import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+export default function CalendarToolbar(/** @type {import("../component-types").FilterProps & {view: string, setView: (view: string) => void, label: string, onPrev: () => void, onNext: () => void, onToday: () => void}} */ { view, setView, label, onPrev, onNext, onToday, ...props }) { const { t } = useTranslation(); return <><div className="flex flex-wrap items-center gap-2 mb-4"><Button variant="outline" aria-label={t("Previous period")} onClick={onPrev}><CaretLeft /></Button><Button variant="outline" onClick={onToday}>{t("Today")}</Button><Button variant="outline" aria-label={t("Next period")} onClick={onNext}><CaretRight /></Button><h2 className="ml-2">{label}</h2><div className="flex gap-1 ml-auto">{['month', 'week', 'list'].map(v => <Button key={v} variant="outline" className={view === v ? 'bg-muted font-medium' : ''} onClick={() => setView(v)}>{t(v)}</Button>)}</div></div><PostFilters {...props} /></>; }

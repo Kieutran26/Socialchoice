@@ -1,0 +1,7 @@
+import * as SelectPrimitive from '@radix-ui/react-select';
+import { CaretDown, Check } from '@phosphor-icons/react';
+export const Select = SelectPrimitive.Root;
+export const SelectValue = SelectPrimitive.Value;
+export function SelectTrigger({ children, className = '', ...props }) { return <SelectPrimitive.Trigger className={`flex w-full items-center justify-between gap-2 border border-input rounded-lg bg-white px-3 py-2 text-sm ${className}`} {...props}>{children}<SelectPrimitive.Icon><CaretDown size={14} /></SelectPrimitive.Icon></SelectPrimitive.Trigger>; }
+export function SelectContent({ children, ...props }) { return <SelectPrimitive.Portal><SelectPrimitive.Content position="popper" className="z-50 max-h-72 overflow-auto rounded-lg border border-border bg-white p-1 min-w-[var(--radix-select-trigger-width)]" {...props}><SelectPrimitive.Viewport>{children}</SelectPrimitive.Viewport></SelectPrimitive.Content></SelectPrimitive.Portal>; }
+export function SelectItem(/** @type {import("@radix-ui/react-select").SelectItemProps} */ { children, ...props }) { return <SelectPrimitive.Item className="relative cursor-pointer rounded-md py-2 pl-7 pr-3 text-sm outline-none data-[highlighted]:bg-muted" {...props}><SelectPrimitive.ItemIndicator className="absolute left-2"><Check size={12} /></SelectPrimitive.ItemIndicator><SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText></SelectPrimitive.Item>; }

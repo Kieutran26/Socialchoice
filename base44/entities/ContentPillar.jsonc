@@ -1,0 +1,39 @@
+{
+    "name": "ContentPillar",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "color": {
+            "type": "string",
+            "default": "#79D94B"
+        },
+        "target_percentage": {
+            "type": "number",
+            "default": 0
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "active",
+                "archived"
+            ],
+            "default": "active"
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "brand_id"
+    ]
+}

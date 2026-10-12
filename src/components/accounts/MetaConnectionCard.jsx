@@ -1,0 +1,3 @@
+import { useTranslation } from '@/lib/i18n';
+import { WarningCircle } from '@phosphor-icons/react';
+export default function MetaConnectionCard(/** @type {{onAddManually: () => void, accountCount?: number}} */ { onAddManually }) { const { t } = useTranslation(); return <section className="panel mb-5 p-5"><div className="flex gap-3"><WarningCircle size={22} className="text-warnFg" /><div><h2 className="text-base">{t("Meta · Configuration required")}</h2><p className="label-xs mt-2">{t("OAuth, Page discovery and automatic publishing are not enabled. Destination references do not establish a connection.")}</p><button onClick={onAddManually} className="mt-4 border rounded-lg px-3 py-2 text-xs">{t("Add a destination reference")}</button></div></div></section>; }
