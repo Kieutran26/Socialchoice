@@ -23,8 +23,11 @@ Cloud starts empty. Local `data/socialchoice.sqlite` is untouched; no content or
 
 Do not delete a Durable Object namespace, rename its identity or change its encryption keys to fix code. Roll back Worker source while retaining storage; restore the previous Vercel deployment/config independently. A code rollback does not roll back data. Durable Object SQLite supports provider point-in-time recovery; retain independent private backups before any requested data migration. No cloud export/import feature is claimed here.
 
-Status: implementation validated locally; deployment, private configuration, Vercel cutover and real Meta OAuth must be verified separately.
+Status: Cloudflare Free backend and Vercel API cutover verified online. Public Meta callback saved and validated. Owner password sign-in and real Meta OAuth remain pending owner credentials.
 
 Private CLI route after explicit scope approval: set `XDG_CONFIG_HOME=D:/Socialchoice/.wrangler/config` for Wrangler commands, authenticate with approved scopes, deploy `wrangler.jsonc`, then run `pnpm run setup:cloudflare`. That helper sends local admin hash and stable storage key through stdin, prints no values, optionally supplies existing private Meta settings, and never overwrites the saved key. Its `.env.cloudflare` and OAuth configuration directory are ignored by Git. Protect local backups and revoke Wrangler access when no longer needed. No CLI authentication or secret upload is claimed until verified.
 
 Live status 2026-10-12: Socialchoice Worker deployed at https://socialchoice-api.nguyenngockieutran.workers.dev on the verified Free plan. Private admin/storage secrets provisioned; health200 and anonymous session401 verified. Owner scoped Wrangler authorization completed via device flow. Vercel cutover is prepared locally and still requires deployment verification. Meta remains configuration_required.
+
+Cutover verified: Vercel deployment 9edRC65B3Z64nvF2iYgRsyPE39oU from commit adaf9aa serves API JSON through https://socialchoice.vercel.app. Health200, anonymous session401, Vietnamese sign-in screen verified. Owner password login and Meta OAuth require owner interaction; neither is claimed as successful.
+

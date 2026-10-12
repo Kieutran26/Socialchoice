@@ -13,3 +13,11 @@ Required permission: automatic approval rejected scoped Wrangler login because a
 Unresolved: owner OAuth scope approval; live deployment/private config; Vercel cutover; actual Meta authorization/Page import.
 
 Live update: owner approved scoped Wrangler access and private admin/Meta configuration transfer. Device login completed; only socialchoice-api deployed on Free. Initial Worker version 5686328c-fb58-4e17-8332-2027bc135b2b; two private admin/storage secrets provisioned through stdin. https://socialchoice-api.nguyenngockieutran.workers.dev/api/health returns 200 JSON admin-session; anonymous /api/session returns401. No Meta secret file configured, no Meta secrets transferred. Local content unchanged. Vercel API rewrite prepared after live verification; deployment pending verification.
+
+Vercel live verification: commit adaf9aa deployed successfully as 9edRC65B3Z64nvF2iYgRsyPE39oU. https://socialchoice.vercel.app/api/health now returns200 JSON admin-session; anonymous /api/session returns401. Browser renders Vietnamese admin sign-in, preserving UI. Owner password login has not been performed by the agent. Cloud remains empty; no local content transferred.
+
+Meta HTTPS callback prepared but not saved; action-time approval requested for exact public URI. App Secret still required privately; publishing remains not implemented. CLI login/build/test processes completed and cleaned up.
+
+Meta callback final verification: owner approved exact HTTPS URI; saved, reloaded, still present; URI validator states valid. Screenshot: meta-https-callback-saved-261012-1918.png. App unpublished; App Secret/version/private token key not configured yet. No real OAuth/Page import/publishing claim.
+
+Current unresolved: owner private Meta configuration and real authorization; owner online password sign-in. Infrastructure and callback registration complete. Local data transfer not requested/performed. All agent-started shell processes exited; user process left untouched.

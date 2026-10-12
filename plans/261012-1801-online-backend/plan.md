@@ -1,11 +1,11 @@
 # Free Cloudflare backend
 
-Outcome: persistent authenticated online API for existing Vercel UI, free hosting, working HTTPS callback route. Preserve UI, local data and real integration statuses.
+Outcome: persistent authenticated online API for existing Vercel UI and working HTTPS Meta callback route. Preserve UI and local data; Free plan only; no fake integration status.
 
-Constraints: Free plan only; no upgrade, no automatic local content transfer; no fake Meta or publishing results. One admin workspace.
+Completed: shared portable backend, SQLite actor, encrypted persistent sessions/OAuth state, 29 passing tests, lint/typecheck/build, independent review, owner-authorized Wrangler device login and private admin/storage setup, Cloudflare Free deployment, Vercel Git deployment and API cutover, Meta HTTPS callback saved/reloaded/validated with owner approval.
 
-Phases: portable shared backend implemented; SQLite actor and encrypted persistent session/OAuth maps implemented; real runtime persistence tests passed. Review, cloud deployment, private secrets, Vercel cutover and Meta authorization pending.
+Evidence: backend and public app /api/health return200 JSON admin-session; public anonymous /api/session401; Vietnamese sign-in screen. Worker actual runtime verifies persistent content/sessions/throttle across restart. Local data preserved; cloud starts empty. Vercel commit adaf9aa, deployment9edRC65B3Z64nvF2iYgRsyPE39oU. See ../reports/free-backend-validation-261012-1841-socialchoice-report.md.
 
-Acceptance: real online health JSON, anonymous API denied, owner login and persistent CRUD, correct same-origin cookies, verified callback route. Local auth/planning regression tests and frontend checks pass.
+Remaining: owner private Meta App Secret/version/encryption-key setup; real Meta OAuth and authorized Page import. Owner password sign-in not performed by agent. Publishing out of this deployment scope and unavailable.
 
-References: ../../docs/online-deployment.md; ../../wrangler.jsonc. Supersedes paid Render proposal rejected by owner.
+Route/config/rollback: ../../docs/online-deployment.md; ../../wrangler.jsonc; ../../docs/facebook-connection-setup.md. Paid Render proposal rejected and superseded. No paid upgrade performed.
