@@ -378,5 +378,6 @@
   "Publishing failed": "Đăng bài thất bại",
   "Valid notification IDs required": "Cần mã thông báo hợp lệ",
   "Notification not found": "Không tìm thấy thông báo",
-  "Publishing notifications: {count} unread": "Thông báo đăng bài: {count} chưa đọc"
+  "Publishing notifications: {count} unread": "Thông báo đăng bài: {count} chưa đọc",
+  "Back": "Quay lại"
 }
