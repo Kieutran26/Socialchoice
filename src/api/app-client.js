@@ -7,7 +7,7 @@ async function request(path, args) {
     });
     const result = await response.json();
     if (!response.ok) {
-        const error = Object.assign(new Error(result.message || 'Request failed'), { status: response.status });
+        const error = Object.assign(new Error(result.message || 'Request failed'), { status: response.status, ...(result.diagnostic ? {diagnostic:result.diagnostic} : {}) });
         window.dispatchEvent(new CustomEvent('socialchoice:error', { detail: error.message }));
         throw error;
     }

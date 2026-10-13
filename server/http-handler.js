@@ -1,3 +1,4 @@
+import { safeConnectionFailure } from './meta-connection.js';
 import { createFacebookCollaboration } from './facebook-collaboration.js';
 import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
@@ -88,7 +89,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));
         } catch (error) {
-            send(error.status || 500, { message: error.status ? error.message : 'Internal server error' });
+            send(error.status || 500, { message: error.status ? error.message : 'Internal server error', ...(req.url?.startsWith('/api/collaboration/') ? {diagnostic:safeConnectionFailure(error)} : {}) });
         }
     };
 }

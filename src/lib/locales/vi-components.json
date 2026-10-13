@@ -315,5 +315,7 @@
   "Live list returned by Facebook. Presence in this list does not by itself confirm acceptance.": "Danh sách hiện tại do Facebook trả về. Có tên trong danh sách chưa đủ để xác nhận đã chấp nhận lời mời.",
   "Facebook returned no collaborators.": "Facebook chưa trả về người cộng tác.",
   "Facebook returned a partial list.": "Facebook trả về danh sách chưa đầy đủ.",
-  "Meta returned an unexpected collaborator response": "Meta trả về dữ liệu cộng tác không hợp lệ"
+  "Meta returned an unexpected collaborator response": "Meta trả về dữ liệu cộng tác không hợp lệ",
+  "Share this post": "Chia sẻ",
+  "Meta code: {code}": "Mã phản hồi Meta: {code}"
 }

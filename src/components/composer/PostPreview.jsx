@@ -51,7 +51,7 @@ export default function PostPreview({ caption, media, accounts, scheduledAt, tim
                 <div className="px-4 pb-4"><p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{visibleCaption || t('Your caption will appear here.')}{longCaption && !expanded ? '…' : ''}</p>{longCaption && <button type="button" className="mt-1 min-h-11 text-sm font-semibold underline underline-offset-2" onClick={() => setExpanded(!expanded)}>{t(expanded ? 'See less' : 'See more')}</button>}</div>
                 {media[0]?.file_type === 'video' ? <video src={media[0].file_url} controls preload="metadata" className="w-full max-h-[600px] bg-muted object-contain" /> : media.length > 0 && <PhotoGrid media={media} />}
                 <footer className="grid grid-cols-3 border-t mx-4 py-3 text-muted-foreground" aria-label={t('Preview only')}>
-                    {[['Like', ThumbsUp], ['Comment', ChatCircle], ['Share', ShareFat]].map(([label, Icon]) => <span key={String(label)} className="flex justify-center items-center gap-1.5 text-xs sm:text-sm"><Icon size={18} />{t(String(label))}</span>)}
+                    {[['Like', ThumbsUp], ['Comment', ChatCircle], ['Share this post', ShareFat]].map(([label, Icon]) => <span key={String(label)} className="flex justify-center items-center gap-1.5 text-xs sm:text-sm"><Icon size={18} />{t(String(label))}</span>)}
                 </footer>
             </article>
         </div>
