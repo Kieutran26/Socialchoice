@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { randomBytes } from 'node:crypto';
 import { createStore } from './store.js';
 import { createMetaVault } from './meta-vault.js';
-import { createFacebookCollaboration,collaboratorTarget } from './facebook-collaboration.js';
+import { createFacebookCollaboration,collaboratorTarget,reviewCollaboratorTarget } from './facebook-collaboration.js';
 
 test('collaborator identifiers cannot change the Meta host or endpoint',()=>{
  assert.equal(collaboratorTarget('https://www.facebook.com/apple'),'apple');assert.equal(collaboratorTarget('https://facebook.com/profile.php?id=1234'),'1234');
@@ -23,4 +23,14 @@ test('collaboration requires a real confirmed video; interrupted claims cannot r
  assert.throws(()=>store.execute('CollaborationInvite','list',[]),/server-only/);
  store.saveAttempt({...store.attempt('attempt'),media:[{file_type:'image'}]});assert.throws(()=>service.list('post'),/confirmed published/);
  }finally{store.close();}
+});
+
+
+test('unreadable numeric target is reviewed honestly without inventing identity or bypassing authorization',async()=>{
+ const denied=Object.assign(new Error('sanitized denial'),{metaCode:100,metaHttpStatus:400});
+ const graph={resolveCollaborationPage:async()=>{throw denied;}};
+ assert.deepEqual(await reviewCollaboratorTarget(graph,'100064606995009','test-only'),{id:'100064606995009',name:'100064606995009',metadataVerified:false});
+ await assert.rejects(()=>reviewCollaboratorTarget(graph,'apple','test-only'),/sanitized denial/);
+ const expired={resolveCollaborationPage:async()=>{throw Object.assign(new Error('expired'),{metaCode:190,metaHttpStatus:400});}};await assert.rejects(()=>reviewCollaboratorTarget(expired,'100064606995009','test-only'),/expired/);
+ const network={resolveCollaborationPage:async()=>{throw new Error('transport');}};await assert.rejects(()=>reviewCollaboratorTarget(network,'100064606995009','test-only'),/transport/);
 });

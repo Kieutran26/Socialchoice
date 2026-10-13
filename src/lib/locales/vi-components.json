@@ -317,5 +317,7 @@
   "Facebook returned a partial list.": "Facebook trả về danh sách chưa đầy đủ.",
   "Meta returned an unexpected collaborator response": "Meta trả về dữ liệu cộng tác không hợp lệ",
   "Share this post": "Chia sẻ",
-  "Meta code: {code}": "Mã phản hồi Meta: {code}"
+  "Meta code: {code}": "Mã phản hồi Meta: {code}",
+  "Meta could not read this Page’s name. Review the numeric ID you supplied; invitation access and recipient acceptance are not verified.": "Meta chưa đọc được tên Trang. Kiểm tra Page ID bạn cung cấp; chưa xác minh quyền gửi lời mời hay việc người nhận chấp nhận.",
+  "Open recipient Page": "Mở Trang nhận lời mời"
 }

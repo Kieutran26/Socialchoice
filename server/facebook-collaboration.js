@@ -15,6 +15,17 @@ export function collaboratorTarget(input) {
     return value;
 }
 
+// Recipient metadata lookup is optional for an explicitly supplied numeric ID.
+// Meta still authorizes and validates the actual invitation; do not invent a Page name.
+export async function reviewCollaboratorTarget(graph,target,token) {
+    try{return {...await graph.resolveCollaborationPage(target,token),metadataVerified:true};}
+    catch(error){
+        const unreadable=[100,10,200].includes(error.metaCode)&&error.metaHttpStatus>=400&&error.metaHttpStatus<500;
+        if(!unreadable||!/^\d{5,25}$/.test(target))throw error;
+        return {id:target,name:target,metadataVerified:false};
+    }
+}
+
 export function createFacebookCollaboration(store,config) {
     const graph=config.ready?createMetaGraph(config):null,vault=config.ready?createMetaVault(store,config.key):null;
     function context(postId) {
@@ -25,17 +36,17 @@ export function createFacebookCollaboration(store,config) {
         if(account.connection_status!=='connected'||account.credential_id!==attempt.credentialId) fail('Reconnect Facebook before publishing',409);
         return {attempt,token:vault.read(attempt.credentialId).token};
     }
-    const summary=value=>({id:value.id,postId:value.postId,videoId:value.videoId,pageName:value.pageName,targetId:value.targetId,targetName:value.targetName,status:value.status,message:value.message,expiresAt:value.expiresAt});
+    const summary=value=>({id:value.id,postId:value.postId,videoId:value.videoId,pageName:value.pageName,targetId:value.targetId,targetName:value.targetName,status:value.status,message:value.message,expiresAt:value.expiresAt,metadataVerified:value.metadataVerified});
     return {
         list(postId) {context(postId);return store.collaborations(postId).map(value=>summary(value.status==='sending'?{...value,status:'unknown',message:'Invitation outcome is unconfirmed. Do not resend.'}:value));},
         async remote(postId) {const {attempt,token}=context(postId);return graph.videoCollaborators(attempt.videoId,token);},
         async prepare(postId,input) {
-            const {attempt,token}=context(postId),target=await graph.resolveCollaborationPage(collaboratorTarget(input),token);
+            const {attempt,token}=context(postId),target=await reviewCollaboratorTarget(graph,collaboratorTarget(input),token);
             if(target.id===attempt.pageId) fail('Choose another Facebook Page',409);
             return store.transaction(()=>{
                 const existing=store.collaborations(postId).find(value=>value.targetId===target.id);
                 if(existing&&(existing.status!=='prepared'||existing.expiresAt>Date.now())) return summary(existing);
-                const value={id:randomUUID(),postId,videoId:attempt.videoId,pageName:attempt.pageName,credentialId:attempt.credentialId,targetId:target.id,targetName:target.name,status:'prepared',expiresAt:Date.now()+600000};
+                const value={id:randomUUID(),postId,videoId:attempt.videoId,pageName:attempt.pageName,credentialId:attempt.credentialId,targetId:target.id,targetName:target.name,metadataVerified:target.metadataVerified,status:'prepared',expiresAt:Date.now()+600000};
                 store.saveCollaboration(value);return summary(value);
             });
         },
