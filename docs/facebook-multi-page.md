@@ -1,0 +1,23 @@
+# Facebook multi-Page publishing
+
+Create Post → select 1–30 different connected Facebook Pages within one live brand → enter the common caption and shared photos/video. Per-Page content and schedule optionally overrides the caption or local publishing time; blank fields use the common values. Times use the selected timezone and are persisted in UTC. Page-specific times apply to Schedule, not Publish Now. Preview Page changes the Facebook preview to that Page's caption.
+
+Publish Now / Schedule first saves a draft and opens an exact review for every Page. Closing review makes no platform request. Confirmation checks all content revisions, media, Page identities and private publishing grants in one synchronous transaction. If any item changed, expired or lost authorization, the entire new confirmation fails without adding queued jobs. A review lasts ten minutes. Queued schedules must be at least one minute in the future.
+
+After confirmation, each Page has a durable private attempt and its own publishing job. Immediate multi-Page jobs are picked up by the same alarm as scheduled jobs; a single-Page text post keeps its existing direct delivery. Cloud jobs continue after closing the browser; local Node must keep running. Page failures do not block other Pages. Shared media is uploaded independently to each Page and each remote operation keeps the existing claim/checkpoint rules. No uncertain write is automatically repeated.
+
+Post details → Results by Page shows caption, time, progress, error and Facebook link for each destination. Waiting/processing destinations keep the post Scheduled/Processing. Only all-confirmed results mark Published; a confirmed success alongside failed/unknown/cancelled results is Partially published. Unknown without a confirmed success remains Delivery unconfirmed. The notification bell retains real failure/unknown notices per attempt.
+
+Cancel this Page schedule affects only an unstarted job. Cancel automatic schedule cancels all still-queued Pages; started deliveries remain unchanged. Content remains locked while any Page is queued or has execution history. If every Page was cancelled before execution, the post returns to an editable draft. To change content after execution, duplicate it deliberately and review the new destinations.
+
+Review retry for this Page is available only for a definitive failed attempt, including a local preflight rejection before sending. Reconnect/fix permissions first. The new review targets only that failed Page, keeps the frozen source content and preserves the old attempt/job/notification. Reconfirming or resending the old approval cannot trigger a retry. Published, processing, queued and unknown results are never eligible. Check Facebook before deliberately creating a new post for an unknown result.
+
+Bulk scheduling of separate drafts retains its one-Page-per-draft contract. Multi-Page posts use the composer. Platform metrics belong to the separate [Facebook analytics](facebook-analytics.md) feature; additional social platforms remain outside multi-Page publishing.
+
+## Storage and rollback
+
+On startup, the old unique-post attempt table is migrated transactionally to an indexed post lookup with separate attempt IDs. Legacy IDs, data, queue deadlines and notification read IDs are preserved. Reviewed groups are private rows; public entity APIs cannot write them. Node and Cloudflare SQLite use the same migration. No namespace/binding/key changes, paid service or credential transfer is involved.
+
+Back up local data with the server stopped before updating. Cloud code releases must preserve namespace and encryption keys; preserve a private backup/provider recovery point before release. After migration, old code enforcing one attempt per post is incompatible with multiple destinations: do not roll back only the publisher to the old implementation. Cancel unstarted multi-Page jobs and settle active deliveries first, then retain the migrated storage-compatible code or restore a coordinated pre-migration data/code backup. Data restore can lose newer work and requires owner approval.
+
+Status: locally implemented and verified. Tests cover group atomicity, credential revocation, content locking, Page cancellation/replay, failed-only retry, photo/video claims, interrupted operations, persistence, legacy migration through both adapters, authenticated routes and aggregate states. Browser fixture runs in memory with no delivery alarms or real Meta credentials. No live multi-Page write or online deployment was performed for this feature.

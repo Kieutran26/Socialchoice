@@ -39,6 +39,13 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (angle.status === 'archived' && record.angle_id !== previous?.angle_id) fail('Choose an active angle');
     }
     for (const id of record.account_ids || []) sameScope(store.get('SocialAccount', id));
+    if(entity==='Post' && record.destination_settings) {
+        for(const [id,settings] of Object.entries(record.destination_settings)) {
+            if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!['caption','scheduled_at'].includes(key))) fail('Invalid per-Page settings');
+            if(settings.caption!==undefined && (typeof settings.caption!=='string' || !settings.caption.trim() || settings.caption.length>63206)) fail('Facebook caption must contain between 1 and 63206 characters');
+            if(settings.scheduled_at!==undefined && (typeof settings.scheduled_at!=='string' || !Number.isFinite(Date.parse(settings.scheduled_at)) || !/(Z|[+-]\d\d:\d\d)$/.test(settings.scheduled_at))) fail('Invalid per-Page publishing time');
+        }
+    }
     for (const id of record.media_ids || []) sameScope(store.get('MediaAsset', id));
     if (record.social_account_id) sameScope(store.get('SocialAccount', record.social_account_id));
     if (record.post_id) {

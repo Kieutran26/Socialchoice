@@ -1,8 +1,9 @@
 import { createHmac } from 'node:crypto';
 import { fail } from './validation.js';
+import { createMetricsGraph } from './facebook-metrics-graph.js';
 
 export function createMetaGraph(config) {
-    async function request(path, params = {}, token, method = 'GET', file, host = 'graph.facebook.com') {
+    async function request(path, params = {}, token, method = 'GET', file, host = 'graph.facebook.com', timeout = 20000) {
         const step = path === 'oauth/access_token' ? (params.grant_type ? 'token_exchange' : 'code_exchange') : ({ me: 'profile', 'me/permissions': 'permissions', 'me/accounts': 'pages' }[path] || 'page_check');
         const reject = (message, status, code, subcode, reason) => {
             throw Object.assign(new Error(message), { status, metaStep: step, metaReason: reason, metaHttpStatus: response?.status, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
@@ -17,7 +18,7 @@ export function createMetaGraph(config) {
         if (method === 'GET') url.search = fields.toString();
         let response, data;
         try {
-            response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' && !file ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
+            response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(timeout), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method !== 'GET' && !file ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method !== 'GET' ? { body: fields } : {}) });
         } catch (error) { reject('Meta request unavailable. Try again later.', 502, undefined, undefined, ['TimeoutError', 'AbortError'].includes(error.name) ? 'timeout' : 'network'); }
         // Workers support manual/follow only. Never follow a redirect with credentials.
         if (response.status >= 300 && response.status < 400) reject('Meta returned an unexpected redirect', 502, undefined, undefined, 'redirect');
@@ -28,6 +29,7 @@ export function createMetaGraph(config) {
         return data;
     }
     return {
+        postMetrics:createMetricsGraph((id,params,token)=>request(id,params,token,'GET',undefined,'graph.facebook.com',8000)),
         async resolveCollaborationPage(target,token) {
             const result=await request(target,{fields:'id,name,category'},token);
             if(!/^\d+$/.test(result.id||'')||typeof result.name!=='string'||typeof result.category!=='string') fail('Meta could not verify this Facebook Page. Use its numeric Page ID.',409);

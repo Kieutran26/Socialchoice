@@ -32,15 +32,19 @@ function PhotoGrid({ media }) {
     </>;
 }
 
-export default function PostPreview({ caption, media, accounts, scheduledAt, timezone }) {
+export default function PostPreview({ caption: mainCaption, media, accounts, scheduledAt, timezone, pageSettings = {} }) {
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
-    const page = accounts.find(account => account.platform === 'facebook');
+    const [selectedPage,setSelectedPage]=useState('');
+    const pages=accounts.filter(account=>account.platform==='facebook');
+    const page = pages.find(account=>account.id===selectedPage) || pages[0];
+    const caption=pageSettings[page?.id]?.caption || mainCaption;
     const pageName = page?.name || t('Choose a Facebook Page');
     const longCaption = caption.length > 350 || caption.split('\n').length > 6;
     const visibleCaption = longCaption && !expanded ? caption.slice(0, 350).split('\n').slice(0, 6).join('\n') : caption;
     return <section className="panel p-4 sm:p-5 min-w-0" aria-label={t('Content preview')}>
         <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-base">{t('Content preview')}</h2><span className="label-xs">Facebook</span></div>
+        {pages.length>1 && <label className="block text-xs mb-4">{t('Preview Page')}<select aria-label={t('Preview Page')} className="w-full mt-2 border rounded-lg p-2 bg-background" value={page?.id || ''} onChange={event=>{setSelectedPage(event.target.value);setExpanded(false);}}>{pages.map(account=><option key={account.id} value={account.id}>{account.name}</option>)}</select></label>}
         <div className="rounded-xl border bg-muted p-3 sm:p-6">
             <article className="mx-auto max-w-[680px] overflow-hidden rounded-lg border bg-background" aria-label={t('Facebook post preview')}>
                 <header className="flex items-center gap-3 p-4">

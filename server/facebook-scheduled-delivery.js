@@ -1,4 +1,5 @@
 import { fail } from './validation.js';
+import { syncDeliveryState } from './publishing-state.js';
 
 export function createScheduledDelivery(store, prepare, summary, wake, publish) {
     const futureTime = input => {
@@ -8,11 +9,12 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
     };
     function reject(attempt, message) {
         store.transaction(() => {
-            const current = store.attemptForPost(attempt.postId);
+            const current = store.attempt(attempt.id);
             if (!current || current.id !== attempt.id || current.status !== 'queued') return;
             store.saveAttempt({ ...current, status: 'failed', message, rejectedAt:Date.now() });
             store.publishingWrite('PublishJob', { status: 'failed', error_message: message }, current.jobId);
-            store.publishingWrite('Post', { status: 'failed' }, current.postId);
+            if(current.multi) syncDeliveryState(store,current.postId);
+            else store.publishingWrite('Post', { status: 'failed' }, current.postId);
         });
     }
     return {

@@ -16,6 +16,7 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    metrics:{list:options=>request('metrics/list',[options]),refresh:options=>request('metrics/refresh',[options])},
     media: {
         uploadVideo,
         upload: (file, brandId, onProgress = (_value) => {}) => new Promise((resolve, reject) => {
@@ -50,7 +51,7 @@ export const appClient = {
         setToken: (..._args) => { throw new Error('Hosted tokens are not used in local-only mode.'); },
     },
     notifications: {list:()=>request('notifications/list',[]),read:ids=>request('notifications/read',[ids]),readAll:()=>request('notifications/readAll',[])},
-    publishing: {prepareBatch:entries=>request('publishing/prepareBatch',[entries]),confirmBatch:id=>request('publishing/confirmBatch',[id]),batchStatus:id=>request('publishing/batchStatus',[id]), prepareSchedule:(id,time,timezone)=>request('publishing/prepareSchedule',timezone ? [id,time,timezone] : [id,time]), schedule:id=>request('publishing/schedule',[id]), cancelSchedule:id=>request('publishing/cancelSchedule',[id]), check: () => request('publishing/check', []), prepare: id => request('publishing/prepare', [id]), publish: id => request('publishing/publish', [id]), status: id => request('publishing/status', [id]) },
+    publishing: {prepareRetry:(id,accountId)=>request('publishing/prepareRetry',[id,accountId]),cancelPage:id=>request('publishing/cancelPage',[id]),prepareBatch:entries=>request('publishing/prepareBatch',[entries]),confirmBatch:id=>request('publishing/confirmBatch',[id]),batchStatus:id=>request('publishing/batchStatus',[id]), prepareSchedule:(id,time,timezone)=>request('publishing/prepareSchedule',timezone ? [id,time,timezone] : [id,time]), schedule:id=>request('publishing/schedule',[id]), cancelSchedule:id=>request('publishing/cancelSchedule',[id]), check: () => request('publishing/check', []), prepare: id => request('publishing/prepare', [id]), publish: id => request('publishing/publish', [id]), status: id => request('publishing/status', [id]) },
     meta: {
         status: () => request('meta/status'), pages: () => request('meta/pages'),
         start: (brandId) => request('meta/start', [brandId]),

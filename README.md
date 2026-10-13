@@ -58,7 +58,7 @@ See [admin server setup](docs/admin-server-setup.md) for local password recovery
 
 ## Facebook Page connection
 
-Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now supports text, up to ten stored images, or one stored MP4/H.264 video to exactly one connected Facebook Page with pages_manage_posts and a content-creation task. It shows the exact Page/caption for confirmation, preserves one durable attempt and only records Published after a valid Page post ID, or a ready, published video with matching Page identity. Automatic scheduling is available after exact Page/content/time confirmation; see [scheduling](docs/facebook-scheduling.md).
+Meta OAuth, API Page discovery, selected Page import, encrypted server-only tokens, reconnect, access check and local disconnect are implemented. Run `npm run setup:meta` to configure your Meta App locally (hidden App Secret prompt), restart the app, then connect under Social Accounts. This requires an admin session and authorized Page access. Local configuration does not imply Meta approval or a verified live connection. See [Facebook connection setup](docs/facebook-connection-setup.md). Publish Now supports text, up to ten stored images, or one stored MP4/H.264 video to 1–30 different connected Facebook Pages within the same brand with pages_manage_posts and a content-creation task. It shows the exact Page/caption for confirmation, preserves one durable attempt and only records Published after a valid Page post ID, or a ready, published video with matching Page identity. Automatic scheduling is available after exact Page/content/time confirmation; see [scheduling](docs/facebook-scheduling.md).
 
 ## Online deployment preparation
 
@@ -66,7 +66,7 @@ The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare b
 
 ## Not implemented yet
 
-Multi-Page publishing, platform metrics and automatic resend of uncertain delivery are unavailable. Old calendar plans stay planning-only until explicitly confirmed for automatic delivery. Sample published records are simulation only.
+Reach/view metrics and automatic resend of uncertain delivery are unavailable. Facebook reaction/comment/share synchronization is implemented locally; see analytics below. Old calendar plans stay planning-only until explicitly confirmed for automatic delivery. Sample published records are simulation only.
 
 The API defaults to loopback locally. Hosted Node binding requires the configured admin password, exact HTTPS origin and persistent database path. The Cloudflare adapter requires private admin and encryption secrets and stores data in its SQLite actor. Vercel routes same-origin requests to the verified backend. Do not expose the unauthenticated development mode.
 
@@ -113,3 +113,17 @@ Facebook collaboration was removed at owner request after a real approved invita
 ## Bulk schedules and publishing notifications
 
 Select live drafts in All Posts to distribute and review a batch of up to50 scheduled posts. Confirmation is atomic and cannot replay remote writes. The header bell retains real failed/unconfirmed publishing notifications and read state. No paid provider is added. See [bulk scheduling](docs/facebook-scheduling.md) and [notifications](docs/publishing-notifications.md).
+
+## Multi-Page Facebook publication
+
+Select up to 30 connected Facebook Pages from the same live brand in Create Post. Use a shared caption/media or set a caption and publishing time per Page. Preview switches between Pages. Publish Now reviews every Page/caption/media; Schedule reviews every Page/time and confirms the entire group atomically. Queued Page jobs use the existing persistent alarm and continue with the browser closed.
+
+Post details show each Page's result, caption, time and confirmed Facebook link. Cancel an unstarted Page independently or cancel all remaining queued Pages. A post stays locked while any execution or approved queue exists. Published requires all current destination results to be confirmed; partial outcomes retain per-Page history. Retry is a fresh reviewed confirmation for one definitive failed Page only; published, processing, queued and unconfirmed destinations cannot be retried. No automatic resend is added.
+
+Existing single-Page posts and bulk scheduling of separate single-Page drafts remain supported. Multi-Page posts are scheduled through their composer. Local migration preserves old approval IDs/history, queued jobs and notification state; cloud and local adapters share it. See [multi-Page operations](docs/facebook-multi-page.md). This change is verified locally, including browser checks with an isolated in-memory fixture; no live multi-Page publication or online deployment is claimed.
+
+## Facebook performance analytics
+
+Analytics now supports server-only manual retrieval of lifetime reaction/comment/share counts for confirmed Facebook deliveries. Select publication dates/Page/Pillar, refresh up to three publications, inspect per-metric timestamps/availability, compare Pages/Pillars and rank publications by reactions. One connected Page is enough. Counts absent from Meta stay unavailable; confirmed zero remains zero. Failed refresh preserves clearly marked previous data. Reach/views and engagement rates are not inferred.
+
+Private snapshots/read leases persist in the existing SQLite backend and cannot be forged through entity APIs. No new paid service or background Meta polling is added. Existing delivery/weekly/content-mix statistics remain available. See [Facebook analytics](docs/facebook-analytics.md) for filters, coverage, permissions, limits and verification status. No live metrics retrieval or online deployment is claimed for this local change.

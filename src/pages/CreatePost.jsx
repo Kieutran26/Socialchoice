@@ -22,6 +22,7 @@ import MediaUploader from '@/components/composer/MediaUploader';
 import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import ScheduleFields from '@/components/composer/ScheduleFields';
 import PostPreview from '@/components/composer/PostPreview';
+import PageSettings from '@/components/composer/PageSettings';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -45,6 +46,7 @@ const emptyForm = (brandId) => ({
     timezone: DEFAULT_TIMEZONE,
     status: 'draft',
     media: [],
+    destination_settings: {},
 });
 
 export default function CreatePost() {
@@ -93,7 +95,7 @@ export default function CreatePost() {
             setForm((prev) => ({
                 ...prev,
                 brand_id: brandId,
-                account_ids: [], pillar_id: '', angle_id: '', media: [],
+                account_ids: [], pillar_id: '', angle_id: '', media: [], destination_settings: {},
                 timezone: brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE,
                 date: prev.date || preset.date,
                 time: prev.time || preset.time,
@@ -123,6 +125,10 @@ export default function CreatePost() {
                 brand_id: post.brand_id,
                 title: editId ? post.title : `${post.title} (copy)`,
                 caption: post.caption || '',
+                destination_settings: Object.fromEntries(Object.entries(post.destination_settings || {}).map(([id,setting]) => {
+                    const parts=toZonedParts(setting.scheduled_at,post.timezone || DEFAULT_TIMEZONE);
+                    return [id,{caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
+                })),
                 account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
                 pillar_id: post.pillar_id || '',
                 angle_id: post.angle_id || '',
@@ -154,7 +160,7 @@ export default function CreatePost() {
     if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
         warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
     }
-    if (form.account_ids.length !== 1) warnings.push(t("Immediate and scheduled publishing support one Facebook Page, up to 10 images or one MP4 video."));
+    if (form.account_ids.length > 30) warnings.push(t('Choose between 1 and 30 different Facebook Pages'));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
@@ -164,7 +170,8 @@ export default function CreatePost() {
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
-        if (['publish','schedule'].includes(action) && (form.account_ids.length !== 1 || form.media.length > 10)) return t('Publish now requires exactly one Facebook Page');
+        if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different Facebook Pages');
+        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>account.platform!=='facebook'||account.account_type!=='page'||account.connection_status!=='connected')) return t('Connect a Facebook Page before publishing');
         if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
@@ -186,6 +193,11 @@ export default function CreatePost() {
                 title: form.title.trim(),
                 caption: form.caption,
                 platform_captions: {},
+                destination_settings: Object.fromEntries(form.account_ids.map(id=>{
+                    const setting=form.destination_settings[id] || {};
+                    const [date,time]=setting.localTime?.split('T') || [];
+                    return [id,{...(setting.caption?.trim()?{caption:setting.caption}:{}),...(date&&time?{scheduled_at:toUtcIso(date,time,form.timezone)}:{})}];
+                })),
                 media_ids: form.media.map((asset) => asset.id),
                 account_ids: form.account_ids,
                 pillar_id: form.pillar_id || '',
@@ -329,6 +341,8 @@ export default function CreatePost() {
                         />
                     </section>
 
+                    <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
+
                     <section className="panel p-5">
                         <h2 className="mb-3 text-[15px]">{t("Media")}</h2>
                         <MediaUploader
@@ -363,7 +377,9 @@ export default function CreatePost() {
                         media={form.media}
                         accounts={selectedAccounts}
                         scheduledAt={scheduledAt}
-                        timezone={form.timezone}                    />
+                        timezone={form.timezone}
+                        pageSettings={form.destination_settings}
+                    />
 
                     {warnings.length ? (
                         <div className="panel p-4">

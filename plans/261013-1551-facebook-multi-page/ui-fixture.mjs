@@ -1,0 +1,18 @@
+import {createServer} from 'node:http';
+import {randomBytes} from 'node:crypto';
+import {createStore} from '../../server/store.js';
+import {createMetaVault} from '../../server/meta-vault.js';
+import {createFacebookPublisher} from '../../server/facebook-publisher.js';
+import {createHttpHandler} from '../../server/http-handler.js';
+import {createAdminAuth} from '../../server/admin-auth.js';
+import {serveSite} from '../../server/static-site.js';
+const store=createStore(':memory:');
+const config={ready:true,key:randomBytes(32).toString('hex'),appSecret:'local-fixture',version:'v26.0'};
+const brand=store.write('Brand',{name:'LOCAL TEST — Multi Pages'}),scopes=['pages_manage_posts'];
+const vault=createMetaVault(store,config.key);
+const accounts=['123456','234567'].map((external_id,index)=>{const credential_id='local-fixture-'+index;vault.save(credential_id,{token:'not-a-live-token',scopes,tasks:['CREATE_CONTENT']});return store.verifiedAccount({name:'LOCAL TEST Page '+(index+1),brand_id:brand.id,platform:'facebook',account_type:'page',external_id,credential_id,scopes,connection_status:'connected'});});
+store.write('Post',{title:'LOCAL TEST Multi-Page Draft',caption:'Shared local test caption',brand_id:brand.id,account_ids:accounts.map(a=>a.id)});
+const publisher=createFacebookPublisher(store,config,{wake:async()=>{}});
+const handler=createHttpHandler({store,auth:createAdminAuth(''),meta:{},publisher,metaSettings:config,frontendPort:3101,allowedHosts:new Set(['127.0.0.1','localhost']),serveStatic:(req,res)=>serveSite(req,res,'dist')});
+const server=createServer(handler);server.listen(3101,'127.0.0.1',()=>console.log('Local UI fixture PID '+process.pid+' port 3101 (in-memory, no delivery alarms)'));
+process.on('SIGTERM',()=>server.close());process.on('SIGINT',()=>server.close());server.on('close',()=>{publisher.close();store.close();});

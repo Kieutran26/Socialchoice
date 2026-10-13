@@ -193,6 +193,9 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "destination_settings": {
+        "type": "object"
       }
     },
     "required": [

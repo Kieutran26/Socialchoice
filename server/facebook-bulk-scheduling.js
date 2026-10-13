@@ -10,6 +10,7 @@ export function createBulkScheduling(store,scheduling,wake) {
                 const items=entries.map(entry=>{
                     const post=store.get('Post',entry.postId);
                     if(post.is_demo||post.status!=='draft')fail('Bulk scheduling requires only live drafts',409);
+                    if(post.account_ids?.length!==1)fail('Bulk schedules currently require one Page per post',409);
                     return {...scheduling.prepareSchedule(entry.postId,entry.time,entry.timezone),title:post.title};
                 });
                 const batch={id:randomUUID(),status:'prepared',expiresAt:Math.min(...items.map(item=>item.expiresAt)),items};

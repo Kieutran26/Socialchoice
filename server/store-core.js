@@ -4,6 +4,7 @@ import { matches, paginate, aggregate } from './query.js';
 import { fail, validateRecord } from './validation.js';
 import { createImageStorage } from './image-storage.js';
 import { createVideoStorage } from './video-storage.js';
+import { createMetricsStorage } from './facebook-metrics-storage.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -15,12 +16,40 @@ export function createStoreCore(db, transactionSync) {
     let transactionDepth = 0;
     db.exec('CREATE TABLE IF NOT EXISTS records (entity TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(entity,id));');
     db.exec('CREATE TABLE IF NOT EXISTS meta_credentials (id TEXT PRIMARY KEY, encrypted TEXT NOT NULL);');
-    db.exec('CREATE TABLE IF NOT EXISTS publish_attempts (id TEXT PRIMARY KEY, post_id TEXT UNIQUE NOT NULL, data TEXT NOT NULL);');
+    // Migrate the original one-attempt-per-post table without losing approvals/history.
+    const attemptTable = db.prepare("SELECT sql FROM sqlite_master WHERE type='table' AND name='publish_attempts'").get();
+    const migrateAttempts = () => {
+        db.exec('ALTER TABLE publish_attempts RENAME TO publish_attempts_old');
+        db.exec('CREATE TABLE publish_attempts (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, data TEXT NOT NULL)');
+        db.exec('INSERT INTO publish_attempts SELECT id,post_id,data FROM publish_attempts_old');
+        db.exec('DROP TABLE publish_attempts_old');
+    };
+    if (attemptTable?.sql.includes('post_id TEXT UNIQUE')) {
+        if (transactionSync) transactionSync(migrateAttempts);
+        else { db.exec('BEGIN IMMEDIATE'); try { migrateAttempts(); db.exec('COMMIT'); } catch(error) { db.exec('ROLLBACK'); throw error; } }
+    }
+    db.exec('CREATE TABLE IF NOT EXISTS publish_attempts (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS attempts_by_post ON publish_attempts(post_id);');
+    db.exec('CREATE TABLE IF NOT EXISTS publishing_reviews (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
     db.exec('CREATE TABLE IF NOT EXISTS collaboration_invites (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, target_id TEXT NOT NULL, data TEXT NOT NULL, UNIQUE(post_id,target_id));');
     db.exec('CREATE TABLE IF NOT EXISTS schedule_batches (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
     db.exec('CREATE TABLE IF NOT EXISTS notification_reads (id TEXT PRIMARY KEY, read_at INTEGER NOT NULL);');
     db.exec("CREATE INDEX IF NOT EXISTS publishing_problem_recent ON publish_attempts(COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) DESC) WHERE json_extract(data,'$.status') IN ('failed','unknown');");
     const store = {
+        savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id,JSON.stringify(value)),
+        publishingReview: id => {const row=db.prepare('SELECT data FROM publishing_reviews WHERE id=?').get(id);return row ? JSON.parse(row.data) : null;},
+        attemptsForPost: id => typeof id === 'string' ? db.prepare('SELECT data FROM publish_attempts WHERE post_id=? ORDER BY rowid').all(id).map(row=>JSON.parse(row.data)) : [],
+        currentAttempts: id => {
+            const current = new Map();
+            for (const attempt of store.attemptsForPost(id)) {
+                // An unconfirmed retry review does not hide a previous execution result.
+                if (attempt.status === 'prepared' && current.has(attempt.accountId) && !['prepared','cancelled'].includes(current.get(attempt.accountId).status)) continue;
+                current.set(attempt.accountId,attempt);
+            }
+            const postRow=db.prepare("SELECT data FROM records WHERE entity='Post' AND id=?").get(id);
+            const accountIds=postRow ? JSON.parse(postRow.data).account_ids : null;
+            // Cancelled history survives edits, but removed Pages are no longer current destinations.
+            return [...current.values()].filter(attempt=>!accountIds || accountIds.includes(attempt.accountId));
+        },
         saveScheduleBatch: value => db.prepare('INSERT INTO schedule_batches VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id,JSON.stringify(value)),
         scheduleBatch: id => { const row=db.prepare('SELECT data FROM schedule_batches WHERE id=?').get(id); if(!row) fail('Batch review not found',404); return JSON.parse(row.data); },
         notificationRows: () => db.prepare("WITH recent AS (SELECT id,data,COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) AS time FROM publish_attempts WHERE json_extract(data,'$.status') IN ('failed','unknown') ORDER BY time DESC LIMIT 100) SELECT recent.id||':'||json_extract(recent.data,'$.status') AS id,json_extract(recent.data,'$.postId') AS postId,json_extract(post.data,'$.title') AS title,json_extract(recent.data,'$.pageName') AS pageName,json_extract(recent.data,'$.status') AS status,json_extract(recent.data,'$.message') AS message,recent.time AS time,json_extract(post.data,'$.updated_date') AS updatedDate,read.read_at AS readAt FROM recent JOIN records post ON post.entity='Post' AND post.id=json_extract(recent.data,'$.postId') LEFT JOIN notification_reads read ON read.id=recent.id||':'||json_extract(recent.data,'$.status') ORDER BY (read.read_at IS NULL) DESC,recent.time DESC").all(),
@@ -33,15 +62,16 @@ export function createStoreCore(db, transactionSync) {
         collaboration: id => {const row=db.prepare('SELECT data FROM collaboration_invites WHERE id=?').get(id);if(!row)fail('Invitation not found',404);return JSON.parse(row.data);},
         attemptForPost: id => {
             if (typeof id !== 'string') return null;
-            const row = db.prepare('SELECT data FROM publish_attempts WHERE post_id=?').get(id);
-            return row ? JSON.parse(row.data) : null;
+            const attempts = store.currentAttempts(id);
+            return attempts.find(value=>!['prepared','cancelled'].includes(value.status)) || attempts.find(value=>value.status==='prepared') || null;
         },
         attempt: id => {
             const row = db.prepare('SELECT data FROM publish_attempts WHERE id=?').get(id);
             if (!row) fail('Publishing confirmation not found', 404);
             return JSON.parse(row.data);
         },
-        saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(post_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
+        saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
+        removePrepared: (postId,accountId) => db.prepare("DELETE FROM publish_attempts WHERE post_id=? AND json_extract(data,'$.status')='prepared' AND json_extract(data,'$.accountId')=?").run(postId,accountId),
         pendingAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='processing'").all().map(row => JSON.parse(row.data)),
         queuedAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='queued'").all().map(row => JSON.parse(row.data)),
         imageWrite: input => store.write('MediaAsset', input, undefined, imageWriter),
@@ -150,6 +180,7 @@ export function createStoreCore(db, transactionSync) {
         },
     };
     store.images = createImageStorage(db, store);
+    store.metrics = createMetricsStorage(db);
     store.videos = createVideoStorage(db, store);
     return store;
 }

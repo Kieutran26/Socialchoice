@@ -1,5 +1,6 @@
+import FacebookPerformance from '@/components/analytics/FacebookPerformance';
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChartBar } from '@phosphor-icons/react';
 import {
     BarChart,
@@ -33,12 +34,15 @@ const JOB_COLORS = {
 
 export default function Analytics() {
     const { t } = useTranslation();
-    const { scope } = useWorkspace();
+    const { scope,timezone } = useWorkspace();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
+    const [loadError,setLoadError]=useState('');
+    const loadRun=useRef(0);
 
     const load = useCallback(async () => {
-        setLoading(true);
+        const run=++loadRun.current;setLoading(true);setLoadError('');
+        try {
         const [postAgg, jobAgg, weekAgg, accounts, jobsPerAccount, pillarAgg, pillars] = await Promise.all([
             appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
             appClient.entities.PublishJob.aggregate({ query: scope, groupBy: 'status' }),
@@ -62,6 +66,7 @@ export default function Analytics() {
             perAccount[row.social_account_id] = row.count;
         });
 
+        if(run!==loadRun.current)return;
         setData({
             postStatus,
             jobStatus,
@@ -73,18 +78,19 @@ export default function Analytics() {
             pillarRows: pillarAgg.rows,
             pillarMap: Object.fromEntries(pillars.items.map((pillar) => [pillar.id, pillar.name])),
         });
-        setLoading(false);
+        } catch(error) {if(run===loadRun.current)setLoadError(error.message);}
+        finally {if(run===loadRun.current)setLoading(false);}
     }, [scope]);
 
     useEffect(() => {
-        load();
+        load();return()=>{loadRun.current++;};
     }, [load]);
 
     if (loading) {
         return (
             <>
                 <PageHeader title={t("Analytics")} description={t("Loading the latest numbers…")} />
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                     {[0, 1, 2, 3].map((key) => (
                         <Skeleton key={key} className="h-[104px] rounded-2xl" />
                     ))}
@@ -92,6 +98,8 @@ export default function Analytics() {
             </>
         );
     }
+
+    if(loadError)return <><PageHeader title={t('Analytics')}/><FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/><p role="alert" className="text-sm text-dangerFg">{t(loadError)}</p></>;
 
     const totalPosts = Object.values(data.postStatus).reduce((sum, value) => sum + value, 0);
     const totalJobs = Object.values(data.jobStatus).reduce((sum, value) => sum + value, 0);
@@ -111,6 +119,8 @@ export default function Analytics() {
                 description={t("What the workspace has produced, how each destination performed, and where content is concentrated.")}
             />
 
+            <FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/>
+
             {totalPosts === 0 && totalJobs === 0 ? (
                 <EmptyState
                     icon={ChartBar}
@@ -119,7 +129,7 @@ export default function Analytics() {
                 />
             ) : (
                 <div className="space-y-5">
-                    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard label={t("Content posts")} value={totalPosts} hint={t("{value1} publishing jobs created", {value1: totalJobs})} icon={ChartBar} />
                         <StatCard label={t("Scheduled")} value={data.postStatus.scheduled || 0} hint={t("Waiting for their publishing time")} />
                         <StatCard label={t("Published")} value={data.postStatus.published || 0} hint={t("Confirmed by the destination")} />
@@ -130,12 +140,12 @@ export default function Analytics() {
                         />
                     </div>
 
-                    <div className="grid gap-5 xl:grid-cols-3">
+                    <div className="grid grid-cols-1 gap-5 xl:grid-cols-3">
                         <div className="panel p-5 xl:col-span-2">
                             <h2 className="text-[15px]">{t("Content created per week")}</h2>
                             <p className="label-xs mt-1">{t("Based on when each post was written.")}</p>
                             {data.weekly.length ? (
-                                <div className="mt-4 h-[220px]">
+                                <div className="mt-4 h-[220px] overflow-hidden">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <BarChart data={data.weekly} margin={{ top: 4, right: 4, left: -22, bottom: 0 }}>
                                             <CartesianGrid vertical={false} stroke="oklch(0.922 0 0)" />
@@ -165,7 +175,7 @@ export default function Analytics() {
                             <p className="label-xs mt-1">{t("Every destination job, by final state.")}</p>
                             {jobPie.length ? (
                                 <>
-                                    <div className="mt-2 h-[180px]">
+                                    <div className="mt-2 h-[180px] overflow-hidden">
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie data={jobPie} dataKey="value" nameKey="name" innerRadius={44} outerRadius={70} paddingAngle={2}>
@@ -198,7 +208,7 @@ export default function Analytics() {
                         </div>
                     </div>
 
-                    <div className="grid gap-5 xl:grid-cols-2">
+                    <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
                         <div className="panel p-5">
                             <h2 className="text-[15px]">{t("Destinations")}</h2>
                             <div className="mt-3 overflow-x-auto">

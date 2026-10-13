@@ -60,12 +60,12 @@ test('changed caption, expiry, revoked credential and missing publish permission
     } finally { store.close(); }
 });
 
-test('text-only single-Page and real connected destination are required', () => {
+test('duplicate Pages are rejected and a real connected destination is required', () => {
     const store = createStore(':memory:');
     try {
         const { publisher, post, account } = fixture(store);
         store.write('Post', { account_ids: [account.id, account.id] }, post.id);
-        assert.throws(() => publisher.prepare(post.id), /exactly one/);
+        assert.throws(() => publisher.prepare(post.id), /different Facebook Pages/);
         store.write('Post', { account_ids: [account.id] }, post.id);
         store.verifiedAccount({ connection_status: 'expired' }, account.id);
         assert.throws(() => publisher.prepare(post.id), /Connect a Facebook/);

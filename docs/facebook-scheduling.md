@@ -1,6 +1,6 @@
 # Facebook automatic scheduling
 
-Create Post → choose one connected Facebook Page → enter caption/media → choose date, time and timezone → Schedule post → review the exact Page, caption, ordered media and time → Confirm automatic schedule. This requires pages_manage_posts and Page content permission. Choose at least one minute in the future.
+Create Post → choose 1–30 different connected Facebook Pages from the same brand → enter caption/media → choose date, time and timezone → Schedule post → review every exact Page, caption, ordered media and time → Confirm automatic schedule. This requires pages_manage_posts and Page content permission. Choose at least one minute in the future.
 
 Approved schedules persist privately and use the same Cloudflare Free Durable Object alarm as media delivery. The browser may close. Upload/publication starts at the selected time; Facebook processing can delay visibility, especially video. Local Node mode requires its server to remain running.
 
@@ -18,6 +18,8 @@ Reference: [Cloudflare alarms](https://developers.cloudflare.com/durable-objects
 
 All Posts → select 1–50 live drafts → Schedule selected drafts. Choose a start date/time/timezone and spacing in days or hours. Days preserve the chosen local hour across timezone changes; hours are elapsed hours. Reorder posts or override individual dates/times, then Review all schedules. The review shows every exact Page, caption, ordered media and time. Confirm all schedules commits the complete batch atomically. If one draft changed, expired, lost authorization or became ineligible, no new schedules from that confirmation are saved. Review again after fixing the issue.
 
-One connected Facebook Page per post remains required; a batch can include separate posts for different Pages/brands. Sample, published and already queued posts are excluded. Reviewing or closing the dialog never sends a post. Confirmation replay acknowledges the original batch and never revives cancelled schedules. Current delivery states remain in each post's details; batch confirmation is an approval record.
+Bulk scheduling of separate drafts requires one connected Facebook Page per post; a batch can include separate posts for different Pages/brands. Schedule a multi-Page post from Create Post, with optional caption/time overrides per Page. Sample, published and already queued posts are excluded. Reviewing or closing the dialog never sends a post. Confirmation replay acknowledges the original batch and never revives cancelled schedules. Current delivery states remain in each post's details; batch confirmation is an approval record.
 
 Notifications for real failed/unconfirmed delivery appear in the app header; see [publishing notifications](publishing-notifications.md).
+
+Multi-Page details show each approved destination separately. Cancel a queued Page without affecting siblings; cancel-all affects only unstarted destinations. Confirmed group replay cannot revive cancellation or retry another Page. See [multi-Page publishing](facebook-multi-page.md) for retry, migration and rollback.
