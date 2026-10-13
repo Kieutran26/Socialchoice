@@ -21,7 +21,6 @@ import AccountPicker from '@/components/composer/AccountPicker';
 import MediaUploader from '@/components/composer/MediaUploader';
 import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import ScheduleFields from '@/components/composer/ScheduleFields';
-import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import PostPreview from '@/components/composer/PostPreview';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -45,7 +44,6 @@ const emptyForm = (brandId) => ({
     time: '',
     timezone: DEFAULT_TIMEZONE,
     status: 'draft',
-    platform_captions: {},
     media: [],
 });
 
@@ -125,7 +123,6 @@ export default function CreatePost() {
                 brand_id: post.brand_id,
                 title: editId ? post.title : `${post.title} (copy)`,
                 caption: post.caption || '',
-                platform_captions: post.platform_captions || {},
                 account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
                 pillar_id: post.pillar_id || '',
                 angle_id: post.angle_id || '',
@@ -145,13 +142,8 @@ export default function CreatePost() {
         () => accounts.filter((a) => form.account_ids.includes(a.id)),
         [accounts, form.account_ids],
     );
-    const selectedPlatforms = useMemo(
-        () => Array.from(new Set(selectedAccounts.map((a) => a.platform))),
-        [selectedAccounts],
-    );
     const brand = brands.find((b) => b.id === form.brand_id);
     const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
-    const previewCaption = form.platform_captions[selectedPlatforms[0]] || form.caption;
 
     const warnings = [];
     if (selectedAccounts.length && selectedAccounts.every((a) => a.connection_status !== 'connected')) {
@@ -192,7 +184,7 @@ export default function CreatePost() {
                 brand_id: form.brand_id,
                 title: form.title.trim(),
                 caption: form.caption,
-                platform_captions: form.platform_captions,
+                platform_captions: {},
                 media_ids: form.media.map((asset) => asset.id),
                 account_ids: form.account_ids,
                 pillar_id: form.pillar_id || '',
@@ -362,21 +354,11 @@ export default function CreatePost() {
                         <ScheduleFields value={form} onChange={(patch) => setForm({ ...form, ...patch })} />
                     </section>
 
-                    <section className="panel p-5">
-                        <h2 className="mb-1 text-[15px]">{t("Platform captions")}</h2>
-                        <p className="label-xs mb-4"> {t("Override the main caption per platform without rewriting the whole post.")} </p>
-                        <PlatformCaptions
-                            platforms={selectedPlatforms}
-                            captions={form.platform_captions}
-                            mainCaption={form.caption}
-                            onChange={(platform_captions) => setForm({ ...form, platform_captions })}
-                        />
-                    </section>
                 </div>
 
                 <div className="composer-preview min-w-0 space-y-4">
                     <PostPreview
-                        caption={previewCaption}
+                        caption={form.caption}
                         media={form.media}
                         accounts={selectedAccounts}
                         scheduledAt={scheduledAt}
