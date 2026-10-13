@@ -63,8 +63,10 @@ The same pages_manage_posts and content creation Page task are used. Upload priv
 
 The server stores each operation claim before the remote call. A repeated or interrupted alarm cannot upload/publish the same uncertain operation again. Completed image uploads have durable checkpoints. Unknown outcomes keep history; inspect the Page before duplicating. Uploaded unpublished photo IDs are retained for diagnosis but automatic cleanup/deletion at Meta is not performed.
 
-Private files use the existing SQLite backend rather than a new paid storage product: 3 MiB per file, JPEG/PNG/still WebP, up to ten per post, 200 MiB encoded storage cap. Existing text posts retain their direct flow. Scheduled delivery remains unavailable. The owner reports successful approved photo publication; video delivery is implemented but requires a separate live test.
+Private files use the existing SQLite backend rather than a new paid storage product: 3 MiB per file, JPEG/PNG/still WebP, up to ten per post, 200 MiB encoded storage cap. Existing text posts retain their direct flow. Scheduled delivery remains unavailable. The owner reports successful approved photo publication; video delivery is implemented and an approved live test was verified on 2026-10-13.
 
 ## Video Publish Now
 
 One MP4/H.264 video (64 MiB maximum) may replace images. The existing pages_manage_posts grant and Page content task are checked before approval. Private upload/library/preview and the exact Page/caption/video review are required; see the root README for limits. The server uses Page /videos resumable start/transfer/finish requests, then checks status, published and Page identity before marking Published. A finish acknowledgement alone is insufficient. Uncertain writes are not resent; read-only processing checks may continue for up to 30 minutes. No live video success is claimed until an approved real publication is verified.
+
+Live video evidence: owner approved the exact6-second technical MP4 and caption for Deszy. Facebook confirmed processing and publication; independently opened video28554224697550946 showed the exact Page/caption, Public visibility and playback at4/6seconds. See plans/reports/facebook-video-publishing-261013-0941-socialchoice-report.md. This does not claim general public app approval or Advanced Access.

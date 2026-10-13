@@ -62,7 +62,7 @@ Meta OAuth, API Page discovery, selected Page import, encrypted server-only toke
 
 ## Online deployment preparation
 
-The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta OAuth, Page discovery and owner-approved text publication have been verified. The owner reports successful photo publication; video publication still requires a separate live test.
+The Vercel UI domain is `https://socialchoice.vercel.app`. Its free Cloudflare backend is deployed at `https://socialchoice-api.nguyenngockieutran.workers.dev`; health and anonymous access rejection are verified. `wrangler.jsonc` owns configuration; shared logic preserves local Node operation. `pnpm run setup:cloudflare` provisions private values after authorized Wrangler login. See [online deployment](docs/online-deployment.md) for persistence, cutover and rollback. Real Meta OAuth, Page discovery and owner-approved text publication have been verified. The owner reports successful photo publication. An owner-approved video publication was independently verified on Facebook on 2026-10-13.
 
 ## Not implemented yet
 
@@ -102,4 +102,4 @@ Select one MP4/H.264 video up to 64 MiB, with a caption and one connected Facebo
 
 The confirmation dialog shows the exact Page, caption and video. After approval, durable start/transfer/finish checkpoints run in the background. Video finalization alone does not mark Published: the server checks the known video ID for ready, published and matching Page identity. Read-only status checks may repeat safely for up to 30 minutes; uncertain write operations are not resent. Check Facebook before creating another post when the result is unconfirmed. This is Page video publication; no Reels-specific editing or scheduling is provided.
 
-The local 6-second H.264 fixture in server/fixtures/socialchoice-test-video.mp4 is generated technical test content without audio. Storage, access and persistence tests do not prove live Meta publication. See [video implementation record](plans/261013-0901-facebook-video-publishing/plan.md).
+The local 6-second H.264 fixture in server/fixtures/socialchoice-test-video.mp4 is generated technical test content without audio. Storage, access and persistence tests alone do not prove live Meta publication. The separately approved real video test is recorded in plans/reports/facebook-video-publishing-261013-0941-socialchoice-report.md. See [video implementation record](plans/261013-0901-facebook-video-publishing/plan.md).
