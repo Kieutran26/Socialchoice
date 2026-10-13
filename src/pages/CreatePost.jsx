@@ -233,10 +233,10 @@ export default function CreatePost() {
         return (
             <>
                 <PageHeader title={existing ? t("Edit post") : t("Create Post")} />
-                <div className="grid gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,7fr)]">
+                <div className="composer-shell"><div className="composer-columns grid gap-5">
                     <Skeleton className="h-[520px] rounded-2xl" />
                     <Skeleton className="h-[420px] rounded-2xl" />
-                </div>
+                </div></div>
             </>
         );
     }
@@ -272,7 +272,7 @@ export default function CreatePost() {
                 }
             />
 
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)]">
+            <div className="composer-shell"><div className="composer-columns grid gap-5">
                 <div className="min-w-0 space-y-5">
                     <section className="panel p-5">
                         <h2 className="mb-4 text-[15px]">{t("Basics")}</h2>
@@ -381,7 +381,7 @@ export default function CreatePost() {
                     </section>
                 </div>
 
-                <div className="min-w-0 space-y-4 xl:sticky xl:top-[76px] xl:self-start">
+                <div className="composer-preview min-w-0 space-y-4">
                     <PostPreview
                         caption={previewCaption}
                         media={form.media}
@@ -421,7 +421,7 @@ export default function CreatePost() {
                             <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(". Publish now requires pages_manage_posts. Calendar plans do not send content automatically.")} </p>
                     </div>
                 </div>
-            </div>
+            </div></div>
 
             {publishReview && <PublishConfirmation review={publishReview} onClose={() => setPublishReview(null)} onResult={result => {
                 setPublishReview(null);
