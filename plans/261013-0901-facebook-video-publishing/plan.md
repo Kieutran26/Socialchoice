@@ -11,3 +11,7 @@ Validation: isolated real MP4/storage/auth/range/claim tests, actual Workers per
 Review: no critical auth/storage/alarm/duplicate-write blocker. Corrected expired-reservation quota ordering and definitive Meta invalid-parameter/permission finish errors. README now owns implemented video behavior with live-test status explicit. SDK offset-error retries are intentionally not added: this accepted design retains Unknown for uncertain writes, without live evidence authorizing offset correction.
 
 Validation: 42 tests + new quota/rejection checks; lint, typecheck and build passed. Actual generated H.264 MP4 decoded locally and stored/read through Node and bundled Cloudflare actor across runtime restart. Live Meta video publication still pending exact owner approval.
+
+Deployment: commit e3075b0, Vercel 93znQTdjRuLLoMxD7u21KmDT2mUn Ready; Worker ecbb3c60515f48749562f73d29ff9878, existing namespace and private bindings preserved. Public video upload verified through owner session: 640x360 H.264,6 seconds, readyState4, no decoder error. Draft74b1e373-9d31-4c97-a9b9-cd3de8c0db6f saved, no publish attempt sent. Exact live video approval remains required.
+
+Final checks:44 tests passed; lint/typecheck/build passed. Browser playback clock advanced with paused=false and no error. Live Facebook video success remains unverified; do not mark this draft Published without actual Meta confirmation.

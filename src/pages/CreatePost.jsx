@@ -244,7 +244,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t("Create a text or photo post for one Facebook Page, or save a calendar plan.")}
+                description={t("Create a text, photo or video post for one Facebook Page, or save a calendar plan.")}
                 actions={
                     existing ? (
                         <>

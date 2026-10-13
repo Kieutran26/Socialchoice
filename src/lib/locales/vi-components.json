@@ -275,5 +275,6 @@
   "Invalid MP4 format": "Định dạng MP4 không hợp lệ",
   "Invalid MP4 atom": "Cấu trúc MP4 không hợp lệ",
   "Publish now supports text, up to 10 images, or one MP4 video on one Facebook Page. Automatic publishing is not available yet.": "Đăng ngay hỗ trợ văn bản, tối đa 10 ảnh hoặc một video MP4 lên một Trang Facebook. Chưa hỗ trợ đăng tự động.",
-  "Publish now supports text, images, or one MP4 video on one Facebook Page after authorization and review. Calendar plans do not send automatically; automatic retries are unavailable.": "Đăng ngay hỗ trợ văn bản, ảnh hoặc một video MP4 lên một Trang Facebook sau khi cấp quyền và xem lại. Lịch đã lưu chưa tự đăng; chưa hỗ trợ tự động đăng lại."
+  "Publish now supports text, images, or one MP4 video on one Facebook Page after authorization and review. Calendar plans do not send automatically; automatic retries are unavailable.": "Đăng ngay hỗ trợ văn bản, ảnh hoặc một video MP4 lên một Trang Facebook sau khi cấp quyền và xem lại. Lịch đã lưu chưa tự đăng; chưa hỗ trợ tự động đăng lại.",
+  "Create a text, photo or video post for one Facebook Page, or save a calendar plan.": "Tạo bài văn bản, ảnh hoặc video trên một Trang Facebook, hoặc lưu kế hoạch trên lịch."
 }
