@@ -3,6 +3,7 @@ import { createMetaGraph } from './meta-graph.js';
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
 import { createPhotoDelivery } from './facebook-photo-delivery.js';
+import { createVideoDelivery } from './facebook-video-delivery.js';
 
 const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
 
@@ -17,7 +18,7 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 export function createFacebookPublisher(store, config, options = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
     const vault = config.ready ? createMetaVault(store, config.key) : null;
-    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url })), uploadedPhotos: attempt.photoIds?.length || 0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
+    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
 
     function destination(post) {
         if (!config.ready) fail('Configure Meta before publishing', 409);
@@ -29,9 +30,10 @@ export function createFacebookPublisher(store, config, options = {}) {
         if (mediaIds.length > 10 || new Set(mediaIds).size !== mediaIds.length) fail('Choose up to 10 different images');
         const media = mediaIds.map(id => {
             const image = store.get('MediaAsset', id);
-            if (image.is_demo || image.brand_id !== post.brand_id || image.file_type !== 'image' || !image.storage_id || !store.images.has(image.storage_id)) fail('Choose stored images from the same live brand', 409);
+            if (image.is_demo || image.brand_id !== post.brand_id || !['image','video'].includes(image.file_type) || !image.storage_id || !store.images.has(image.storage_id)) fail('Choose stored media from the same live brand', 409);
             return image;
         });
+        if(media.some(asset=>asset.file_type==='video')&&media.length!==1) fail('Choose one video or up to 10 images, not both');
         const account = store.get('SocialAccount', post.account_ids[0]);
         if (account.is_demo || account.brand_id !== post.brand_id || account.platform !== 'facebook' || account.account_type !== 'page' || account.connection_status !== 'connected' || !account.credential_id || !/^\d+$/.test(account.external_id)) fail('Connect a Facebook Page before publishing', 409);
         const credential = vault.read(account.credential_id);
@@ -61,12 +63,17 @@ export function createFacebookPublisher(store, config, options = {}) {
     let timer;
     const wake = options.wake || (async time => {
         clearTimeout(timer);
-        timer = setTimeout(() => { void runPhotos().catch(() => {}); }, Math.max(0, time - Date.now()));
+        timer = setTimeout(() => { void runMedia().catch(() => {}); }, Math.max(0, time - Date.now()));
         timer.unref?.();
     });
     const runPhotos = createPhotoDelivery(store, vault, graph, finish, wake);
+    const runVideos = createVideoDelivery(store,vault,graph,finish,wake);
+    async function runMedia() {
+        try {await runPhotos();await runVideos();}
+        finally {const pending=store.pendingAttempts().filter(attempt=>attempt.media?.length);if(pending.length)await wake(Math.min(...pending.map(attempt=>attempt.busy?attempt.startedAt+61000:attempt.nextVideoCheck||Date.now()+100)));}
+    }
     return {
-        runPhotos,
+        runPhotos:runMedia,
         resumePhotos: () => store.pendingAttempts().some(attempt => attempt.media?.length) ? wake(Date.now() + 100) : undefined,
         close: () => clearTimeout(timer),
         prepare(postId) {
@@ -83,7 +90,7 @@ export function createFacebookPublisher(store, config, options = {}) {
         },
         status(attemptId) {
             const attempt = store.attemptForPost(attemptId) || store.attempt(attemptId);
-            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000) return finish(attempt, 'unknown', uncertainMessage);
+            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing') return finish(attempt, 'unknown', uncertainMessage);
             return summary(attempt);
         },
         async publish(attemptId) {

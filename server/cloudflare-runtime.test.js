@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -42,7 +42,16 @@ test('Worker authentication and Vietnamese content survive runtime restart', asy
         const upload = await runtime.dispatchFetch(origin+'/api/media/upload', { method:'POST', headers:{ cookie, 'x-socialchoice-client':'local-ui', 'content-type':'image/png', 'x-image-brand':brand.id, 'x-image-name':encodeURIComponent('ảnh-test.png') }, body:png });
         assert.equal(upload.status,200,await upload.clone().text());
         const asset = await upload.json();
+
+        const videoBytes=readFileSync(new URL('./fixtures/socialchoice-test-video.mp4',import.meta.url));
+        const videoStart=await request('/api/media/videos/start',[{brandId:brand.id,name:'video-test.mp4',type:'video/mp4',size:videoBytes.length}],cookie);
+        assert.equal(videoStart.status,200,await videoStart.clone().text());const videoSession=await videoStart.json();
+        const videoChunk=await runtime.dispatchFetch(origin+'/api/media/videos/'+videoSession.uploadId+'/chunk',{method:'POST',headers:{cookie,'x-socialchoice-client':'local-ui','content-type':'application/octet-stream','x-upload-offset':'0'},body:videoBytes});assert.equal(videoChunk.status,200,await videoChunk.clone().text());
         await runtime.dispose(); runtime = new Miniflare(options);
+        const videoComplete=await request('/api/media/videos/'+videoSession.uploadId+'/complete',[],cookie);assert.equal(videoComplete.status,200,await videoComplete.clone().text());const videoAsset=await videoComplete.json();
+        await runtime.dispose(); runtime = new Miniflare(options);
+        assert.equal((await runtime.dispatchFetch(origin+videoAsset.file_url,{headers:{range:'bytes=0-'}})).status,401);
+        const videoPreview=await runtime.dispatchFetch(origin+videoAsset.file_url,{headers:{cookie,range:'bytes=0-'}});assert.equal(videoPreview.status,206);assert.deepEqual(Buffer.from(await videoPreview.arrayBuffer()),videoBytes);
         assert.equal((await runtime.dispatchFetch(origin+asset.file_url)).status,401);
         const storedImage = await runtime.dispatchFetch(origin+asset.file_url,{headers:{cookie}});
         assert.equal(storedImage.status,200);

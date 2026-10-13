@@ -67,7 +67,7 @@ export default function MediaLibrary() {
         <>
             <PageHeader
                 title={t("Media Library")}
-                description={t("Private images stored in this workspace. Video uploads are not available yet.")}
+                description={t("Private images and MP4 videos stored in this workspace.")}
             />
             <section className="panel p-4 mb-5"><Label className="label-xs block mb-2">{t('Brand for uploaded images')}</Label><select className="border rounded-lg p-2 mb-3 text-sm" aria-label={t('Brand for uploaded images')} value={uploadBrand} onChange={event => setUploadBrand(event.target.value)} disabled={demoMode}><option value="">{t('Choose brand')}</option>{brands.map(brand => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select><MediaUploader allowLibrary={false} assets={[]} onChange={() => load()} brandId={uploadBrand} demoMode={demoMode} /></section>
 

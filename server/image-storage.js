@@ -3,8 +3,8 @@ import { Buffer } from 'node:buffer';
 import { fail } from './validation.js';
 
 export const MAX_IMAGE_BYTES = 3 * 1024 * 1024;
-const MAX_STORAGE_BYTES = 200 * 1024 * 1024;
-const CHUNK_BYTES = 256 * 1024;
+export const MAX_STORAGE_BYTES = 200 * 1024 * 1024;
+export const CHUNK_BYTES = 256 * 1024;
 
 export function validateImage(bytes, type) {
     if (!bytes.length || bytes.length > MAX_IMAGE_BYTES) fail('Images must be at most 3 MiB', 413);
@@ -45,8 +45,9 @@ export function createImageStorage(db, store) {
             if (typeof name !== 'string' || !name.trim() || name.length > 200 || /[\x00-\x1f]/.test(name)) fail('Valid image filename required');
             const dimensions = validateImage(bytes, type);
             return store.transaction(() => {
+                const reserved = store.videos?.reservedBytes() || 0;
                 const used = db.prepare('SELECT COALESCE(SUM(length(data)),0) AS used FROM image_chunks').get().used;
-                if (used + Math.ceil(bytes.length/3)*4 > MAX_STORAGE_BYTES) fail('Image storage is full. Remove unused images before uploading.', 409);
+                if (used + reserved + Math.ceil(bytes.length/3)*4 > MAX_STORAGE_BYTES) fail('Image storage is full. Remove unused images before uploading.', 409);
                 const storageId = randomUUID();
                 const asset = store.imageWrite({ brand_id: brandId, name, filename: name, file_type: 'image', mime_type: type, size_bytes: bytes.length, width: dimensions.width, height: dimensions.height, storage_id: storageId, sha256: createHash('sha256').update(bytes).digest('hex'), file_url: `/api/media/files/${storageId}`, is_demo: false });
                 for (let offset=0, part=0; offset<bytes.length; offset+=CHUNK_BYTES, part++) db.prepare('INSERT INTO image_chunks VALUES (?,?,?)').run(storageId, part, bytes.subarray(offset,offset+CHUNK_BYTES).toString('base64'));
@@ -57,6 +58,16 @@ export function createImageStorage(db, store) {
             const parts = db.prepare('SELECT data FROM image_chunks WHERE asset_id=? ORDER BY part').all(id);
             if (!parts.length) fail('Stored image not found', 404);
             return Buffer.concat(parts.map(part => Buffer.from(part.data,'base64')));
+        },
+        readSlice(id, start, end) {
+            if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end <= start || end-start > 8*1024*1024) fail('Invalid media byte range');
+            const first = Math.floor(start/CHUNK_BYTES), last = Math.floor((end-1)/CHUNK_BYTES);
+            const rows = db.prepare('SELECT part,data FROM image_chunks WHERE asset_id=? AND part>=? AND part<=? ORDER BY part').all(id,first,last);
+            if (rows.length !== last-first+1) fail('Stored media chunk is missing',409);
+            const bytes = Buffer.concat(rows.map(row => Buffer.from(row.data,'base64')));
+            const result = bytes.subarray(start-first*CHUNK_BYTES, end-first*CHUNK_BYTES);
+            if (result.length !== end-start) fail('Stored media chunk is incomplete',409);
+            return result;
         },
         remove: id => db.prepare('DELETE FROM image_chunks WHERE asset_id=?').run(id),
     };

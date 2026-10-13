@@ -1,3 +1,4 @@
+import { uploadVideo } from './video-upload.js';
 async function request(path, args) {
     const response = await fetch(`/api/${path}`, {
         method: args ? 'POST' : 'GET',
@@ -16,6 +17,7 @@ async function request(path, args) {
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
     media: {
+        uploadVideo,
         upload: (file, brandId, onProgress = (_value) => {}) => new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/media/upload');

@@ -2,16 +2,16 @@ import { createHmac } from 'node:crypto';
 import { fail } from './validation.js';
 
 export function createMetaGraph(config) {
-    async function request(path, params = {}, token, method = 'GET', file) {
+    async function request(path, params = {}, token, method = 'GET', file, host = 'graph.facebook.com') {
         const step = path === 'oauth/access_token' ? (params.grant_type ? 'token_exchange' : 'code_exchange') : ({ me: 'profile', 'me/permissions': 'permissions', 'me/accounts': 'pages' }[path] || 'page_check');
         const reject = (message, status, code, subcode, reason) => {
             throw Object.assign(new Error(message), { status, metaStep: step, metaReason: reason, metaHttpStatus: response?.status, ...(Number.isSafeInteger(code) ? { metaCode: code } : {}), ...(Number.isSafeInteger(subcode) ? { metaSubcode: subcode } : {}) });
         };
-        const url = new URL(`https://graph.facebook.com/${config.version}/${path}`);
+        const url = new URL(`https://${host}/${config.version}/${path}`);
         const fields = file ? new FormData() : new URLSearchParams(params);
         if (file) {
             for (const [key, value] of Object.entries(params)) fields.set(key, value);
-            fields.set('source', new Blob([new Uint8Array(file.bytes)], { type: file.type }), file.name);
+            fields.set(file.field || 'source', new Blob([new Uint8Array(file.bytes)], { type: file.type }), file.name);
         }
         if (token) fields.set('appsecret_proof', createHmac('sha256', config.appSecret).update(token).digest('hex'));
         if (method === 'GET') url.search = fields.toString();
@@ -28,6 +28,28 @@ export function createMetaGraph(config) {
         return data;
     }
     return {
+        async startVideo(pageId,size,token) {
+            const result=await request(`${pageId}/videos`,{upload_phase:'start',file_size:String(size)},token,'POST',undefined,'graph-video.facebook.com');
+            if(!/^\d+$/.test(result.video_id||'')||!/^\d+$/.test(result.upload_session_id||'')) fail('Meta returned an invalid video session',502);
+            return result;
+        },
+        transferVideo: (pageId,sessionId,start,file,token) => request(`${pageId}/videos`,{upload_phase:'transfer',upload_session_id:sessionId,start_offset:String(start)},token,'POST',{...file,field:'video_file_chunk'},'graph-video.facebook.com'),
+        async finishVideo(pageId,sessionId,caption,token) {
+            const result=await request(`${pageId}/videos`,{upload_phase:'finish',upload_session_id:sessionId,description:caption,published:'true'},token,'POST',undefined,'graph-video.facebook.com');
+            if(result.success!==true) fail('Meta did not confirm video finalization',502);
+        },
+        async videoStatus(pageId,videoId,token) {
+            const result=await request(videoId,{fields:'id,status,published,from,post_id'},token);
+            if(result.id!==videoId||!result.status||typeof result.status!=='object') fail('Meta returned an invalid video status',502);
+            const state=result.status.video_status;
+            if(state==='error'||result.status.processing_phase?.status==='error'||result.status.publishing_phase?.status==='error') return {state:'failed'};
+            if(state==='ready'&&result.published===true) {
+                const postId=typeof result.post_id==='string'&&new RegExp(`^${pageId}_[0-9]+$`).test(result.post_id)?result.post_id:null;
+                if(result.from?.id!==pageId&&!postId) fail('Facebook video Page identity mismatch',409);
+                return {state:'published',result:{id:postId||videoId,url:`https://www.facebook.com/watch/?v=${videoId}`}};
+            }
+            return {state:'processing'};
+        },
         async uploadPhoto(pageId, file, token) {
             const result = await request(`${pageId}/photos`, { published: 'false' }, token, 'POST', file);
             if (typeof result.id !== 'string' || !/^\d+$/.test(result.id)) fail('Facebook returned no confirmed photo ID', 502);

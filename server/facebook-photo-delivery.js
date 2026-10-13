@@ -3,7 +3,7 @@ const uncertain = 'Facebook delivery is unconfirmed. Check the Page before creat
 // Alarms may run more than once. Persist an operation claim before calling Meta.
 export function createPhotoDelivery(store, vault, graph, finish, wake) {
     return async function run() {
-        const pending = store.pendingAttempts().filter(attempt => attempt.media?.length);
+        const pending = store.pendingAttempts().filter(attempt => attempt.media?.length && attempt.media[0].file_type !== 'video');
         for (const candidate of pending) {
             if (candidate.busy) {
                 if (Date.now() - candidate.startedAt > 60000) finish(candidate, 'unknown', uncertain);
@@ -49,7 +49,7 @@ export function createPhotoDelivery(store, vault, graph, finish, wake) {
             });
             break;
         }
-        const remaining = store.pendingAttempts().filter(attempt => attempt.media?.length);
+        const remaining = store.pendingAttempts().filter(attempt => attempt.media?.length && attempt.media[0].file_type !== 'video');
         if (remaining.length) await wake(Math.min(...remaining.map(attempt => attempt.busy ? attempt.startedAt + 61000 : Date.now() + 100)));
     };
 }

@@ -2,6 +2,7 @@ import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
+import { videoUploadRequest, serveMedia } from './media-http.js';
 export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
     return async (req, res) => {
         const send = (status, value) => {
@@ -20,15 +21,13 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);
             }
-            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: publisher ? 'text_photo_publish_now' : 'not_implemented' });
+            if (req.url === '/api/health' && req.method === 'GET') return send(200, { backend: 'sqlite', mode: auth.enabled ? 'admin-session' : 'local-only', meta: metaSettings.ready ? 'configured' : 'configuration_required', publishing: publisher ? 'text_photo_video_publish_now' : 'not_implemented' });
             const imageRead = req.url.match(/^\/api\/media\/files\/([a-f0-9-]{36})$/);
             if (imageRead && req.method === 'GET') {
                 auth.require(req);
                 const asset = store.all('MediaAsset').find(asset => asset.storage_id === imageRead[1]);
                 if (!asset) fail('Stored image not found', 404);
-                const bytes = store.images.read(asset.storage_id);
-                res.writeHead(200, { 'Content-Type': asset.mime_type, 'Content-Length': String(bytes.length), 'Cache-Control': 'private, no-store', 'X-Content-Type-Options': 'nosniff', 'Content-Security-Policy': "default-src 'none'; sandbox" });
-                return res.end(bytes);
+                return serveMedia(req,res,store,asset);
             }
             if (req.headers['x-socialchoice-client'] !== 'local-ui') fail('Application request header required', 403);
             if (req.url === '/api/auth/login' && req.method === 'POST') {
@@ -41,6 +40,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, { ok: true });
             }
             auth.require(req);
+            if(await videoUploadRequest(req,store,send)) return;
             if (req.url === '/api/media/upload' && req.method === 'POST') {
                 const chunks = []; let length = 0;
                 for await (const chunk of req) { const bytes = Buffer.from(chunk); length += bytes.length; if (length > MAX_IMAGE_BYTES) fail('Images must be at most 3 MiB', 413); chunks.push(bytes); }

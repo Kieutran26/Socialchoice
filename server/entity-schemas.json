@@ -359,6 +359,9 @@
       },
       "filename": {
         "type": "string"
+      },
+      "duration_seconds": {
+        "type": "number"
       }
     },
     "required": [

@@ -3,6 +3,7 @@ import schemas from './entity-schemas.json' with { type: 'json' };
 import { matches, paginate, aggregate } from './query.js';
 import { fail, validateRecord } from './validation.js';
 import { createImageStorage } from './image-storage.js';
+import { createVideoStorage } from './video-storage.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -133,5 +134,6 @@ export function createStoreCore(db, transactionSync) {
         },
     };
     store.images = createImageStorage(db, store);
+    store.videos = createVideoStorage(db, store);
     return store;
 }

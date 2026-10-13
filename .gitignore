@@ -12,3 +12,5 @@ plans/npm-cache/
 .dev.vars*
 worker-dist/
 vercel.json.before-api-proxy
+
+.test-tools/

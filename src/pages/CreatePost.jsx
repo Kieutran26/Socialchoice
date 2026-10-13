@@ -162,7 +162,7 @@ export default function CreatePost() {
     if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
         warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
     }
-    if (form.account_ids.length !== 1) warnings.push(t("Publish now supports text and up to 10 images on one Facebook Page. Video and automatic publishing are not available yet."));
+    if (form.account_ids.length !== 1) warnings.push(t("Publish now supports text, up to 10 images, or one MP4 video on one Facebook Page. Automatic publishing is not available yet."));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
