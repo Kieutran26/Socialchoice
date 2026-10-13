@@ -16,6 +16,8 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
     try {
         assert.equal((await fetch(base + '/session', { headers })).status, 401);
         assert.equal((await post('/entities/Brand/create', [{ name: 'Blocked' }])).status, 401);
+        assert.equal((await post('/collaboration/prepare', ['absent','1234'])).status,401);
+        assert.equal((await post('/collaboration/invite', ['absent'])).status,401);
         assert.equal((await post('/auth/login', ['a separate test passphrase'], { Origin: 'https://evil.example' })).status, 403);
         assert.equal((await post('/auth/login', ['wrong'])).status, 401);
         const login = await post('/auth/login', ['a separate test passphrase']);
@@ -23,6 +25,8 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
         const cookie = login.headers.get('set-cookie');
         assert.match(cookie, /HttpOnly; SameSite=Strict/);
         const authenticated = { Cookie: cookie.split(';')[0] };
+        assert.equal((await post('/collaboration/prepare',['absent','1234'],{...authenticated,Origin:'https://evil.example'})).status,403);
+        assert.equal((await post('/collaboration/list',[1234],authenticated)).status,400);
         const session = await fetch(base + '/session', { headers: { ...headers, ...authenticated } });
         assert.equal((await session.json()).mode, 'admin-session');
         assert.equal((await post('/entities/Brand/create', [{ name: 'Real persisted brand' }], authenticated)).status, 200);

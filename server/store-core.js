@@ -16,7 +16,11 @@ export function createStoreCore(db, transactionSync) {
     db.exec('CREATE TABLE IF NOT EXISTS records (entity TEXT NOT NULL, id TEXT NOT NULL, data TEXT NOT NULL, PRIMARY KEY(entity,id));');
     db.exec('CREATE TABLE IF NOT EXISTS meta_credentials (id TEXT PRIMARY KEY, encrypted TEXT NOT NULL);');
     db.exec('CREATE TABLE IF NOT EXISTS publish_attempts (id TEXT PRIMARY KEY, post_id TEXT UNIQUE NOT NULL, data TEXT NOT NULL);');
+    db.exec('CREATE TABLE IF NOT EXISTS collaboration_invites (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, target_id TEXT NOT NULL, data TEXT NOT NULL, UNIQUE(post_id,target_id));');
     const store = {
+        saveCollaboration: value => db.prepare('INSERT INTO collaboration_invites VALUES (?,?,?,?) ON CONFLICT(post_id,target_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id,value.postId,value.targetId,JSON.stringify(value)),
+        collaborations: id => db.prepare('SELECT data FROM collaboration_invites WHERE post_id=?').all(id).map(row=>JSON.parse(row.data)),
+        collaboration: id => {const row=db.prepare('SELECT data FROM collaboration_invites WHERE id=?').get(id);if(!row)fail('Invitation not found',404);return JSON.parse(row.data);},
         attemptForPost: id => {
             if (typeof id !== 'string') return null;
             const row = db.prepare('SELECT data FROM publish_attempts WHERE post_id=?').get(id);

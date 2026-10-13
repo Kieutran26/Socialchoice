@@ -1,9 +1,11 @@
+import { createFacebookCollaboration } from './facebook-collaboration.js';
 import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
+    const collaboration=createFacebookCollaboration(store,metaSettings);
     return async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -61,9 +63,10 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
             if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: true, message: 'Automatic publishing is unavailable. Use Publish now for one Facebook Page with text and images.' });
             const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status)$/);
+            const collaborationRoute=req.url?.match(/^\/api\/collaboration\/(list|prepare|invite|remote)$/);
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const savingPost = req.url === '/api/posts/save';
-            if ((!match && !savingPost && !publishingRoute) || req.method !== 'POST') fail('Endpoint not found', 404);
+            if ((!match && !savingPost && !publishingRoute && !collaborationRoute) || req.method !== 'POST') fail('Endpoint not found', 404);
             if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
             let body = '';
             for await (const chunk of req) {
@@ -73,6 +76,11 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             let input;
             try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
             if (!Array.isArray(input.args)) fail('Arguments array required');
+            if(collaborationRoute) {
+                const operation=collaborationRoute[1];
+                if(input.args.length!==(operation==='prepare'?2:1)||input.args.some(arg=>typeof arg!=='string'))fail('Invalid collaboration request');
+                return send(200,await collaboration[operation](...input.args));
+            }
             if (publishingRoute) {
                 if (!publisher || input.args.length !== 1 || typeof input.args[0] !== 'string') fail('Publishing request ID required');
                 return send(200, await publisher[publishingRoute[1]](input.args[0]));

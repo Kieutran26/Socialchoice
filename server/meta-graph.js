@@ -28,6 +28,20 @@ export function createMetaGraph(config) {
         return data;
     }
     return {
+        async resolveCollaborationPage(target,token) {
+            const result=await request(target,{fields:'id,name,category'},token);
+            if(!/^\d+$/.test(result.id||'')||typeof result.name!=='string'||typeof result.category!=='string') fail('Meta could not verify this Facebook Page. Use its numeric Page ID.',409);
+            return {id:result.id,name:result.name};
+        },
+        async videoCollaborators(videoId,token) {
+            const result=await request(videoId+'/collaborators',{limit:'100',fields:'id,name'},token);
+            if(!Array.isArray(result.data)||result.data.some(row=>!/^\d+$/.test(row?.id||''))) fail('Meta returned an unexpected collaborator response',502);
+            return {entries:result.data.map(row=>({id:row.id,...(typeof row.name==='string'?{name:row.name}:{}),...(typeof row.status==='string'&&row.status.length<=80?{status:row.status}:{})})),hasMore:!!result.paging?.next};
+        },
+        async inviteCollaborator(videoId,targetId,token) {
+            const result=await request(videoId+'/collaborators',{target_id:targetId},token,'POST');
+            if(result.success!==true) fail('Meta did not confirm the collaboration invitation',502);
+        },
         async startVideo(pageId,size,token) {
             const result=await request(`${pageId}/videos`,{upload_phase:'start',file_size:String(size)},token,'POST',undefined,'graph-video.facebook.com');
             if(!/^\d+$/.test(result.video_id||'')||!/^\d+$/.test(result.upload_session_id||'')) fail('Meta returned an invalid video session',502);

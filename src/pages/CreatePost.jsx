@@ -1,7 +1,7 @@
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FloppyDisk,
     CalendarDots,
@@ -10,6 +10,7 @@ import {
     Copy,
     WarningCircle,
     Info,
+    Users,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -32,7 +33,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
-import { DEFAULT_TIMEZONE, POST_STATUS_LABEL, POST_STATUS_TONE, PLATFORM_LABEL } from '@/lib/constants';
+import { DEFAULT_TIMEZONE, POST_STATUS_LABEL, POST_STATUS_TONE } from '@/lib/constants';
 
 const emptyForm = (brandId) => ({
     brand_id: brandId || '',
@@ -232,7 +233,7 @@ export default function CreatePost() {
         return (
             <>
                 <PageHeader title={existing ? t("Edit post") : t("Create Post")} />
-                <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+                <div className="grid gap-5 xl:grid-cols-[minmax(0,3fr)_minmax(0,7fr)]">
                     <Skeleton className="h-[520px] rounded-2xl" />
                     <Skeleton className="h-[420px] rounded-2xl" />
                 </div>
@@ -271,12 +272,12 @@ export default function CreatePost() {
                 }
             />
 
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-                <div className="space-y-5">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,3fr)_minmax(0,7fr)]">
+                <div className="min-w-0 space-y-5">
                     <section className="panel p-5">
                         <h2 className="mb-4 text-[15px]">{t("Basics")}</h2>
                         <div className="space-y-4">
-                            <div className="grid gap-4 sm:grid-cols-2">
+                            <div className="grid gap-4">
                                 <div>
                                     <Label className="label-xs mb-1.5 block">{t("Brand")}</Label>
                                     <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
@@ -348,6 +349,12 @@ export default function CreatePost() {
                     </section>
 
                     <section className="panel p-5">
+                        <h2 className="mb-3 text-[15px] flex gap-2 items-center"><Users size={18}/>{t('Collaborate on Facebook')}</h2>
+                        <p className="label-xs">{t('Invite collaborators from the video details after publishing. Text and photo collaboration are not enabled here.')}</p>
+                        {existing?.status === 'published' && form.media[0]?.file_type === 'video' && <Link className="inline-block underline text-sm mt-3" to={'/posts?post='+existing.id}>{t('Open video details')}</Link>}
+                    </section>
+
+                    <section className="panel p-5">
                         <h2 className="mb-4 text-[15px]">{t("Content strategy")}</h2>
                         <PillarAngleFields
                             pillars={brandPillars}
@@ -374,16 +381,13 @@ export default function CreatePost() {
                     </section>
                 </div>
 
-                <div className="space-y-4 lg:sticky lg:top-[76px] lg:self-start">
+                <div className="min-w-0 space-y-4 xl:sticky xl:top-[76px] xl:self-start">
                     <PostPreview
-                        brand={brand}
                         caption={previewCaption}
                         media={form.media}
                         accounts={selectedAccounts}
                         scheduledAt={scheduledAt}
-                        timezone={form.timezone}
-                        platform={selectedPlatforms.length ? t(PLATFORM_LABEL[selectedPlatforms[0]]) : null}
-                    />
+                        timezone={form.timezone}                    />
 
                     {warnings.length ? (
                         <div className="panel p-4">
