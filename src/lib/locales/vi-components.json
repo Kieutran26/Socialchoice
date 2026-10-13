@@ -319,5 +319,7 @@
   "Share this post": "Chia sẻ",
   "Meta code: {code}": "Mã phản hồi Meta: {code}",
   "Meta could not read this Page’s name. Review the numeric ID you supplied; invitation access and recipient acceptance are not verified.": "Meta chưa đọc được tên Trang. Kiểm tra Page ID bạn cung cấp; chưa xác minh quyền gửi lời mời hay việc người nhận chấp nhận.",
-  "Open recipient Page": "Mở Trang nhận lời mời"
+  "Open recipient Page": "Mở Trang nhận lời mời",
+  "Drag images to change their order.": "Kéo thả ảnh để thay đổi thứ tự.",
+  "Drag image to reorder": "Kéo ảnh để đổi thứ tự"
 }

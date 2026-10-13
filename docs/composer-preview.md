@@ -5,3 +5,5 @@ Create Post uses 30/70 editor/preview on wide screens and stacks below 800px ava
 Facebook collaboration was removed at owner request on 2026-10-13 after an approved real test invitation was rejected. Collaboration API returns410 after authentication. Private attempt history is retained. No invitation success or recipient acceptance is claimed. Normal text/photo/video Publish Now remains available.
 
 Composer uses only Main caption. Platform-specific caption inputs are removed. Saving or publishing through the composer clears old platform overrides so preview and delivery use the visible main caption. Existing records are unchanged until saved.
+
+Selected images can be dragged onto another image to reorder. The grip supports pointer/touch input; arrow buttons provide keyboard reordering. Preview and publication use the resulting media order. Video playback remains interactive.
