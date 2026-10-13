@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { DotsThree, Globe, ThumbsUp, ChatCircle, ShareFat, Users } from '@phosphor-icons/react';
+import { DotsThree, Globe, ThumbsUp, ChatCircle, ShareFat } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/lib/format';
@@ -57,6 +57,5 @@ export default function PostPreview({ caption, media, accounts, scheduledAt, tim
         </div>
         <p className="label-xs mt-3">{t('Preview approximates Facebook. Final cropping and layout can vary by device.')}</p>
         {scheduledAt && <p className="label-xs mt-2">{formatDateTime(scheduledAt, timezone)}</p>}
-        <div className="mt-4 border-t pt-3 flex gap-2"><Users size={16} className="shrink-0 mt-0.5" /><p className="label-xs">{t('Facebook collaboration invitations are available from a published video’s details. Names appear together only after the recipient accepts.')}</p></div>
     </section>;
 }

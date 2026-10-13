@@ -26,7 +26,7 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
         assert.match(cookie, /HttpOnly; SameSite=Strict/);
         const authenticated = { Cookie: cookie.split(';')[0] };
         assert.equal((await post('/collaboration/prepare',['absent','1234'],{...authenticated,Origin:'https://evil.example'})).status,403);
-        assert.equal((await post('/collaboration/list',[1234],authenticated)).status,400);
+        assert.equal((await post('/collaboration/list',[1234],authenticated)).status,410);
         const session = await fetch(base + '/session', { headers: { ...headers, ...authenticated } });
         assert.equal((await session.json()).mode, 'admin-session');
         assert.equal((await post('/entities/Brand/create', [{ name: 'Real persisted brand' }], authenticated)).status, 200);

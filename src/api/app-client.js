@@ -49,7 +49,6 @@ export const appClient = {
         resetPassword: async (..._args) => { throw new Error('Password recovery is not configured.'); },
         setToken: (..._args) => { throw new Error('Hosted tokens are not used in local-only mode.'); },
     },
-    collaboration: {remote:id=>request('collaboration/remote',[id]),list: id=>request('collaboration/list',[id]),prepare:(id,target)=>request('collaboration/prepare',[id,target]),invite:id=>request('collaboration/invite',[id])},
     publishing: { check: () => request('publishing/check', []), prepare: id => request('publishing/prepare', [id]), publish: id => request('publishing/publish', [id]), status: id => request('publishing/status', [id]) },
     meta: {
         status: () => request('meta/status'), pages: () => request('meta/pages'),

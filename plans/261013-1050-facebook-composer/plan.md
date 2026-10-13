@@ -23,3 +23,5 @@ LiveUIverified1440/768/375 with no horizontal overflow/brokenimages; image overl
 Owner supplied numericID100064606995009. PublicFacebook redirects thatID toApple; Meta metadataAPI100/33. Updated review to permit explicitly supplied numericID without claimingverifiedname/eligibility after knownmetadata-access denials only. Actual Meta inviteauthorization stillrequired.47tests passed; invitationnot sent.
 
 Finalcanvasratio verified online at default1280px:282/658 columns, no overflow/brokenimages.47tests + lint/type/build passed. ID-only Apple invitation review shown; ownerapprovalpending, no invitePOSTsent.
+
+Owner decision2026-10-13: approved real invitation rejected. Remove collaboration UI/client and disable API; preserve private history/published video and30/70 preview.

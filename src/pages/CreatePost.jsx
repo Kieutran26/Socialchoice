@@ -1,7 +1,7 @@
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FloppyDisk,
     CalendarDots,
@@ -10,7 +10,6 @@ import {
     Copy,
     WarningCircle,
     Info,
-    Users,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -346,12 +345,6 @@ export default function CreatePost() {
                             demoMode={demoMode}
                             onBusyChange={setUploading}
                         />
-                    </section>
-
-                    <section className="panel p-5">
-                        <h2 className="mb-3 text-[15px] flex gap-2 items-center"><Users size={18}/>{t('Collaborate on Facebook')}</h2>
-                        <p className="label-xs">{t('Invite collaborators from the video details after publishing. Text and photo collaboration are not enabled here.')}</p>
-                        {existing?.status === 'published' && form.media[0]?.file_type === 'video' && <Link className="inline-block underline text-sm mt-3" to={'/posts?post='+existing.id}>{t('Open video details')}</Link>}
                     </section>
 
                     <section className="panel p-5">

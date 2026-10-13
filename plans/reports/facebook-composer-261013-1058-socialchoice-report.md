@@ -21,3 +21,11 @@ Unresolved: Meta eligibility/access for video collaborator API; real approved in
 Responsive refinement: scoped container query replaces viewport breakpoint so a sufficiently wide in-app panel also shows30/70. No global layout changes. lint/type/build pass. Metadata fallback deployed27f4157/Vercel9HjPAGP6zLtc7XXZLjHi7TDJ3iJa Ready, Worker81e6fdf115a749c59290f50df2922a72. No invitation sent.
 
 Final layout deploymentc23cf74/Vercel7DmeSHyJtstTNWgtMMfUJVWJAv2Q Ready. Browser default1280px measured282/658px columns (30/70), document1265px, no brokenimages. Prepared an honest ID-only review for100064606995009 after API metadata100/33; explicit owner invitation approval requested. No invitation sent at this record.
+
+## Owner decision and invitation outcome
+
+Owner approved exact Apple invitation on 2026-10-13. First review expired without Meta write; refreshed review used same approval. One actual POST rejected by Meta, stored failed. Exact numeric diagnostics not retained; no success/acceptance claimed. Published video unchanged.
+
+Owner requested removal if unsuccessful. Collaboration controls/helpers/client removed; authenticated API disabled with410. Private history retained. 30/70 preview and text/photo/video publication retained.
+
+Unresolved: none for removal; Meta collaboration remains unverified/unavailable.
