@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes } from 'node:crypto';
@@ -84,4 +84,17 @@ test('reviewing a legacy plan preserves its date and jobs until approval, includ
  store.verifiedAccount({connection_status:'connected'},account.id);await publisher.schedule(review.attemptId);
  assert.equal(store.get('Post',post.id).scheduled_at,newTime);assert.equal(store.get('Post',post.id).timezone,'Asia/Tokyo');assert.equal(store.all('PublishJob').length,1);
  }finally{publisher.close();store.close();}
+});
+
+test('photo order and real stored MP4 are frozen in approved schedules without sending media',async()=>{
+ for(const kind of ['photos','video']){const {store,post,publisher}=fixture();try{let media;
+ if(kind==='photos'){const bytes=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX6kAAAAASUVORK5CYII=','base64');
+ media=[store.images.upload(post.brand_id,'first.png','image/png',bytes),store.images.upload(post.brand_id,'second.png','image/png',bytes)].reverse();}
+ else{const bytes=readFileSync(new URL('./fixtures/socialchoice-test-video.mp4',import.meta.url)),upload=store.videos.start({brandId:post.brand_id,name:'test-video.mp4',type:'video/mp4',size:bytes.length});
+ for(let offset=0;offset<bytes.length;offset+=1024*1024)store.videos.append(upload.uploadId,offset,bytes.subarray(offset,offset+1024*1024));media=[store.videos.complete(upload.uploadId)];}
+ store.write('Post',{media_ids:media.map(asset=>asset.id)},post.id);const review=publisher.prepareSchedule(post.id,new Date(Date.now()+600000).toISOString());
+ assert.deepEqual(review.media.map(asset=>asset.id),media.map(asset=>asset.id));await publisher.schedule(review.attemptId);
+ assert.deepEqual(store.attempt(review.attemptId).media.map(asset=>asset.id),media.map(asset=>asset.id));assert.equal(store.pendingAttempts().length,0);
+ await publisher.cancelSchedule(post.id);assert.equal(store.pendingAttempts().length,0);
+ }finally{publisher.close();store.close();}}
 });
