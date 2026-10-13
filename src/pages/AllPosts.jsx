@@ -1,3 +1,4 @@
+import BulkScheduleDialog from '@/components/posts/BulkScheduleDialog';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -31,6 +32,7 @@ export default function AllPosts() {
     const [hasMore, setHasMore] = useState(false);
     const [selected, setSelected] = useState([]);
     const [openPost, setOpenPost] = useState(null);
+    const [scheduleOpen,setScheduleOpen]=useState(false);
     const [bulkAction, setBulkAction] = useState(null);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
@@ -187,6 +189,7 @@ export default function AllPosts() {
             {selected.length ? (
                 <div className="panel mb-4 flex flex-wrap items-center gap-2 px-4 py-3">
                     <span className="text-[12px]">{selected.length} {t("selected")}</span>
+                    <Button variant="outline" size="sm" disabled={scope.is_demo || selected.length>50 || eligible(['draft']).length!==selected.length} title={t("Select between 1 and 50 different live drafts")} onClick={()=>setScheduleOpen(true)}>{t("Schedule selected drafts")}</Button>
                     <Button
                         variant="outline"
                         size="sm"
@@ -255,6 +258,7 @@ export default function AllPosts() {
 
             {openPost ? <PostDetailSheet key={openPost.id} post={openPost} onClose={closeDetail} onChanged={load} /> : null}
 
+            {scheduleOpen && <BulkScheduleDialog posts={eligible(['draft'])} timezone={timezone} onClose={()=>setScheduleOpen(false)} onScheduled={()=>{setScheduleOpen(false);toast({title:t('All automatic schedules confirmed')});load();}}/>}
             <ConfirmDialog
                 open={!!bulkAction}
                 onOpenChange={(value) => !value && setBulkAction(null)}

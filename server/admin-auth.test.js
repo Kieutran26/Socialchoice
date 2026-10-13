@@ -21,6 +21,10 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
         assert.equal((await post('/publishing/prepareSchedule',['absent',new Date(Date.now()+600000).toISOString()])).status,401);
         assert.equal((await post('/publishing/schedule',['absent'])).status,401);
         assert.equal((await post('/publishing/cancelSchedule',['absent'])).status,401);
+        assert.equal((await post('/publishing/prepareBatch',[[]])).status,401);
+        assert.equal((await post('/publishing/confirmBatch',['absent'])).status,401);
+        assert.equal((await post('/notifications/list',[])).status,401);
+        assert.equal((await post('/notifications/readAll',[])).status,401);
         assert.equal((await post('/auth/login', ['a separate test passphrase'], { Origin: 'https://evil.example' })).status, 403);
         assert.equal((await post('/auth/login', ['wrong'])).status, 401);
         const login = await post('/auth/login', ['a separate test passphrase']);
@@ -32,6 +36,10 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
         assert.equal((await post('/collaboration/list',[1234],authenticated)).status,410);
         assert.equal((await post('/publishing/prepareSchedule',['absent','later'],{...authenticated,Origin:'https://evil.example'})).status,403);
         assert.equal((await post('/publishing/prepareSchedule',['absent'],authenticated)).status,400);
+        assert.equal((await post('/notifications/read',[[]],{...authenticated,Origin:'https://evil.example'})).status,403);
+        assert.equal((await post('/publishing/prepareBatch',[[]],authenticated)).status,400);
+        assert.equal((await post('/notifications/list',[],authenticated)).status,200);
+        assert.equal((await post('/notifications/read',[['forged-id']],authenticated)).status,404);
         const session = await fetch(base + '/session', { headers: { ...headers, ...authenticated } });
         assert.equal((await session.json()).mode, 'admin-session');
         assert.equal((await post('/entities/Brand/create', [{ name: 'Real persisted brand' }], authenticated)).status, 200);

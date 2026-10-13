@@ -109,3 +109,7 @@ The local 6-second H.264 fixture in server/fixtures/socialchoice-test-video.mp4 
 Create Post uses a 30/70 editor/preview split on wide screens and stacks below 800px available canvas. Facebook-style preview shows the selected Page, expandable caption, ordered photo mosaics, image inspection and native video playback. Final Facebook layout/cropping may differ by device.
 
 Facebook collaboration was removed at owner request after a real approved invitation was rejected on 2026-10-13. No success or acceptance is claimed. Private attempt history is retained; authenticated collaboration endpoints are disabled. Normal text/photo/video publishing remains available. See [preview details](docs/composer-preview.md).
+
+## Bulk schedules and publishing notifications
+
+Select live drafts in All Posts to distribute and review a batch of up to50 scheduled posts. Confirmation is atomic and cannot replay remote writes. The header bell retains real failed/unconfirmed publishing notifications and read state. No paid provider is added. See [bulk scheduling](docs/facebook-scheduling.md) and [notifications](docs/publishing-notifications.md).

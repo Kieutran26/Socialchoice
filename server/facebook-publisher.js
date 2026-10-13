@@ -1,3 +1,4 @@
+import { createBulkScheduling } from './facebook-bulk-scheduling.js';
 import { createScheduledDelivery } from './facebook-scheduled-delivery.js';
 import { randomUUID } from 'node:crypto';
 import { createMetaGraph } from './meta-graph.js';
@@ -51,7 +52,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             const current = store.attempt(attempt.id);
             if (!canFinishPublication(current, attempt, status, !!result)) return summary(current);
             const now = new Date().toISOString();
-            const next = { ...current, status, message, ...(result ? { externalId: result.id, url: result.url } : {}) };
+            const next = { ...current, status, message, finishedAt:Date.now(), ...(result ? { externalId: result.id, url: result.url } : {}) };
             store.saveAttempt(next);
             store.publishingWrite('PublishJob', { status, error_message: message || '', ...(result ? { external_post_id: result.id, published_url: result.url } : {}) }, current.jobId);
             store.publishingWrite('PostVariant', { status }, current.variantId);
@@ -139,5 +140,5 @@ export function createFacebookPublisher(store, config, options = {}) {
         },
     };
     const scheduling = createScheduledDelivery(store, id => api.prepare(id,true), summary, wake, id => api.publish(id));
-    return Object.assign(api,scheduling);
+    return Object.assign(api,scheduling,createBulkScheduling(store,scheduling,wake));
 }

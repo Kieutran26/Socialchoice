@@ -13,3 +13,11 @@ Status: implemented and locally verified. Owner-approved text schedule for14:40 
 Operations: preserve namespace, keys and single-admin identity. Shared alarm always selects the earliest queue/media checkpoint. No paid service or independent cron is added. Before rolling back to code without queue support, cancel every unstarted automatic schedule and ensure no media delivery is processing; older code cannot execute new queued approvals. Storage rollback is separate from code rollback.
 
 Reference: [Cloudflare alarms](https://developers.cloudflare.com/durable-objects/api/alarms/).
+
+## Bulk schedules
+
+All Posts → select 1–50 live drafts → Schedule selected drafts. Choose a start date/time/timezone and spacing in days or hours. Days preserve the chosen local hour across timezone changes; hours are elapsed hours. Reorder posts or override individual dates/times, then Review all schedules. The review shows every exact Page, caption, ordered media and time. Confirm all schedules commits the complete batch atomically. If one draft changed, expired, lost authorization or became ineligible, no new schedules from that confirmation are saved. Review again after fixing the issue.
+
+One connected Facebook Page per post remains required; a batch can include separate posts for different Pages/brands. Sample, published and already queued posts are excluded. Reviewing or closing the dialog never sends a post. Confirmation replay acknowledges the original batch and never revives cancelled schedules. Current delivery states remain in each post's details; batch confirmation is an approval record.
+
+Notifications for real failed/unconfirmed delivery appear in the app header; see [publishing notifications](publishing-notifications.md).

@@ -10,7 +10,7 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
         store.transaction(() => {
             const current = store.attemptForPost(attempt.postId);
             if (!current || current.id !== attempt.id || current.status !== 'queued') return;
-            store.saveAttempt({ ...current, status: 'failed', message });
+            store.saveAttempt({ ...current, status: 'failed', message, rejectedAt:Date.now() });
             store.publishingWrite('PublishJob', { status: 'failed', error_message: message }, current.jobId);
             store.publishingWrite('Post', { status: 'failed' }, current.postId);
         });
@@ -26,8 +26,8 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 return summary(attempt);
             });
         },
-        async schedule(attemptId) {
-            const result = store.transaction(() => {
+        enqueue(attemptId) {
+            return store.transaction(() => {
                 const value = store.attempt(attemptId);
                 if (value.status === 'queued') return summary(value);
                 if (value.status !== 'prepared' || !value.scheduledFor || value.expiresAt <= Date.now()) fail('Scheduling confirmation expired. Review again.', 409);
@@ -47,7 +47,10 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:'facebook',level:'info',message:'Automatic Facebook publishing is confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
                 return summary(queued);
             });
-            await wake(Date.now() + 100);
+        },
+        async schedule(attemptId) {
+            const result = this.enqueue(attemptId);
+            await wake(Date.now()+100);
             return result;
         },
         async cancelSchedule(postId) {
