@@ -3,7 +3,7 @@ import { CHUNK_BYTES, MAX_STORAGE_BYTES } from './image-storage.js';
 import { inspectMp4 } from './mp4-validation.js';
 import { fail } from './validation.js';
 
-export const MAX_VIDEO_BYTES=64*1024*1024;
+export const MAX_VIDEO_BYTES=100*1000*1000;
 export const VIDEO_UPLOAD_CHUNK=1024*1024;
 const encoded = size => Math.ceil(size/3)*4 + Math.ceil(size/CHUNK_BYTES)*4;
 
@@ -25,7 +25,7 @@ export function createVideoStorage(db,store) {
             const {brandId,name,size,type}=input;
             const brand=store.get('Brand',brandId);
             if(brand.is_demo||brand.status!=='active') fail('Choose an active live brand',409);
-            if(type!=='video/mp4'||typeof name!=='string'||!name.trim()||name.length>200||/[\x00-\x1f]/.test(name)||!Number.isSafeInteger(size)||size<32||size>MAX_VIDEO_BYTES) fail('Choose an MP4 video up to 64 MiB');
+            if(type!=='video/mp4'||typeof name!=='string'||!name.trim()||name.length>200||/[\x00-\x1f]/.test(name)||!Number.isSafeInteger(size)||size<32||size>MAX_VIDEO_BYTES) fail('Choose an MP4 video up to 100 MB');
             return store.transaction(()=>{
                 const reserved=storage.reservedBytes();
                 const used=db.prepare('SELECT COALESCE(SUM(length(data)),0) AS used FROM image_chunks').get().used;

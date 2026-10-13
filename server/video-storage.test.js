@@ -27,7 +27,7 @@ test('private video chunks are ordered, replay-safe, validated and finalized onc
  const store=createStore(':memory:');try {
  const brand=store.write('Brand',{name:'Video storage fixture'}),bytes=mp4Fixture();
  assert.throws(()=>store.videos.start(),/Invalid video/);
- assert.throws(()=>store.videos.start({brandId:brand.id,name:'too-large.mp4',type:'video/mp4',size:65*1024*1024}),/64 MiB/);
+ assert.throws(()=>store.videos.start({brandId:brand.id,name:'too-large.mp4',type:'video/mp4',size:100*1000*1000+1}),/100 MB/);
  const session=store.videos.start({brandId:brand.id,name:'structure-only.mp4',type:'video/mp4',size:bytes.length});
  assert.throws(()=>store.videos.complete(session.uploadId),/incomplete/);
  assert.throws(()=>store.videos.append(session.uploadId,1024*1024,bytes.subarray(1024*1024)),/offset mismatch/);
@@ -95,3 +95,9 @@ test('upload reservations share the storage quota and cancellation releases it',
 });
 
 test('only known explicit request or permission rejection is definitive',()=>{assert.equal(definitiveVideoRejection({metaCode:100,metaHttpStatus:400}),true);assert.equal(definitiveVideoRejection({metaCode:190,metaHttpStatus:401}),true);assert.equal(definitiveVideoRejection({metaCode:100,metaHttpStatus:500}),false);assert.equal(definitiveVideoRejection({metaHttpStatus:400}),false);});
+
+test('video size limit accepts exactly 100 MB and rejects one byte more',()=>{
+ const store=createStore(':memory:');try{const brand=store.write('Brand',{name:'Video boundary'}),input={brandId:brand.id,name:'boundary.mp4',type:'video/mp4',size:100*1000*1000};
+ const upload=store.videos.start(input);assert.equal(upload.size,input.size);store.videos.cancel(upload.uploadId);assert.throws(()=>store.videos.start({...input,size:input.size+1}),/100 MB/);
+ }finally{store.close();}
+});

@@ -24,7 +24,7 @@ export default function MediaUploader({ assets, onChange, brandId, demoMode, onB
         try {
             for (const file of files) {
                 if (file.type === 'video/mp4' || /\.mp4$/i.test(file.name)) {
-                    if (file.size > 64*1024*1024) throw new Error('Choose an MP4 video up to 64 MiB');
+                    if (file.size > 100*1000*1000) throw new Error('Choose an MP4 video up to 100 MB');
                     setProgress(0); added.push(await appClient.media.uploadVideo(file,brandId,setProgress)); onChange([...added]); continue;
                 }
                 if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 3 * 1024 * 1024) throw new Error('Choose JPEG, PNG or WebP images up to 3 MiB each');
@@ -53,7 +53,7 @@ export default function MediaUploader({ assets, onChange, brandId, demoMode, onB
     function pointerTarget(event) { return document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-sortable-media]')?.getAttribute('data-sortable-media'); }
     function move(index, offset) { const next = [...assets]; [next[index], next[index+offset]] = [next[index+offset], next[index]]; onChange(next); }
     return <div>
-        <p className="label-xs mb-3">{t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 64 MiB.')}</p>
+        <p className="label-xs mb-3">{t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 100 MB.')}</p>
         <input ref={input} aria-label={t('Upload media')} type="file" accept="image/jpeg,image/png,image/webp,video/mp4" multiple className="hidden" disabled={busy || !brandId || demoMode} onChange={upload} />
         <div className="flex flex-wrap gap-3"><button type="button" className="btn-skew" disabled={busy || !brandId || demoMode} onClick={() => input.current.click()}><UploadSimple size={15} />{t('Upload media')}</button>{allowLibrary && <button type="button" className="border rounded-lg px-3 text-xs" disabled={busy || !brandId || demoMode} onClick={chooseLibrary}><ImageSquare className="inline mr-1" size={15} />{t('Choose from library')}</button>}</div>
         {busy && <p role="status" className="label-xs mt-3">{t('Uploading media')} · {progress}%</p>}

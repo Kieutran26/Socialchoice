@@ -98,7 +98,7 @@ After confirmation, Cloudflare alarms upload each photo unpublished and create o
 
 ## Private video uploads and publication
 
-Select one MP4/H.264 video up to 64 MiB, with a caption and one connected Facebook Page. Uploads use authenticated 1 MiB requests, private SQLite chunks and bounded byte-range previews. Images and videos share the 200 MiB encoded workspace cap; incomplete upload reservations expire after one hour and are cleaned on later media requests. No paid storage is required. Video format checks inspect bounded MP4 metadata; Facebook remains the authority for actual decoding and publication.
+Select one MP4/H.264 video up to 100 MB, with a caption and one connected Facebook Page. Uploads use authenticated 1 MiB requests, private SQLite chunks and bounded byte-range previews. Images and videos share the 200 MiB encoded workspace cap; incomplete upload reservations expire after one hour and are cleaned on later media requests. No paid storage is required. Video format checks inspect bounded MP4 metadata; Facebook remains the authority for actual decoding and publication.
 
 The confirmation dialog shows the exact Page, caption and video. After approval, durable start/transfer/finish checkpoints run in the background. Video finalization alone does not mark Published: the server checks the known video ID for ready, published and matching Page identity. Read-only status checks may repeat safely for up to 30 minutes; uncertain write operations are not resent. Check Facebook before creating another post when the result is unconfirmed. This is Page video publication; no Reels-specific editing or scheduling is provided.
 
