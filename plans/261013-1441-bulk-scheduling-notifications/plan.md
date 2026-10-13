@@ -6,3 +6,5 @@ Notifications: persistent in-app bell for actual failed/unconfirmed private publ
 
 Preserve existing typography/palette/buttons. Bounded scrollable dialog and responsive notification panel. Tests: atomic rollback, revision/expiry/replay, no queue from review, notification auth/dedup/ack/persistence/unknown-resolution. Full lint/type/build/tests, reviewer, Free deploy, browser verification. No real batch enabled without exact approval.
 Register: Product. Scene: owner distributes ready Facebook drafts and reviews delivery problems on desktop/mobile. Direction: existing neutral workspace, because operational clarity matters. Color: existing white/charcoal and green CTA; warning/error tokens only for actual state. Type: Mona Sans/Space Grotesk. Signature: bounded batch review and discreet header bell. Dials: variance3,motion2,density6.
+
+Complete:62tests/lint/type/build, requiredreviewDONE, FreeWorker/Verceldeployed. Live2draftreview/reorder/daydistribution/peritemoverride/cancelverified; actualnotification0emptyverifiedandmobilelayoutfixed. No newMeta postsorconfirmedtestbatch. See ../reports/bulk-scheduling-notifications-261013-1441-socialchoice-report.md.
