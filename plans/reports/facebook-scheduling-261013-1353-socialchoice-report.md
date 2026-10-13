@@ -17,3 +17,7 @@ Deployment: Worker e6994486-80d9-436f-b542-12d2bf03aeed, source77bc6d3/Vercel su
 Owner approved exact14:40 Asia/Ho_Chi_Minh test; confirmation accepted at14:25-14:26. Post6446d346-68ea-4e6f-8327-885537548d66 shows Scheduled, automatic enabled, Deszy Waiting. Settings separately showsonequeued/next14:40/oneconnected. Savedconfirmed/settingsscreenshots. Closed taskpost/settingstabs beforedue to avoid relying on browserstatuspoll. Actualpublication remains pending14:40; no secondpost/testqueued.
 
 Additional focused test confirms ordered photo and actual stored MP4 snapshots freeze in approved future queues without remote upload. Full55tests passed. Public health200/meta configured, anonymous session401.
+
+Live result2026-10-13 after14:40: owner reports successful publication. After tasktabsclosedbeforedue, reopened post6446d346-68ea-4e6f-8327-885537548d66 at14:41+; app confirmedPublished, DeszyhistoryPublished, realURL https://www.facebook.com/427858497068282_122224688360487033. Exactapprovedcaption retained. Screenshot schedule-published.png. No duplicate sent. Scheduledtextconfirmed through actual backend result and ownerFacebook observation; photo/video scheduled delivery not independently exercised live.
+
+Unresolved: optional real scheduled photo/video tests require separate exact owner approval. No blocker for verified text schedule.
