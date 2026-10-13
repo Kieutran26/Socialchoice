@@ -145,16 +145,20 @@ export default function AllPosts() {
             toast({ title: t('{count} drafts deleted', {count: targets.length}) });
         }
         if (action === 'cancel') {
-            const targets = eligible(['scheduled', 'processing']);
+            const targets = eligible(['scheduled']);
             if (!targets.length) {
                 toast({ variant: 'destructive', title: t("Only scheduled posts can be cancelled") });
                 return;
             }
-            await appClient.entities.PublishJob.updateMany(
-                { post_id: { $in: targets.map((post) => post.id) }, status: 'pending' },
-                { $set: { status: 'cancelled', error_message: 'Cancelled in bulk.' } },
-            );
-            await appClient.entities.Post.bulkUpdate(targets.map((post) => ({ id: post.id, status: 'cancelled' })));
+            for (const post of targets) {
+                let automatic = false;
+                try { automatic = (await appClient.publishing.status(post.id)).status === 'queued'; } catch (error) { if (error.status !== 404) throw error; }
+                if (automatic) await appClient.publishing.cancelSchedule(post.id);
+                else {
+                    await appClient.entities.PublishJob.updateMany({ post_id: post.id, status:'pending' },{ $set:{status:'cancelled',error_message:'Cancelled in bulk.'} });
+                    await appClient.entities.Post.update(post.id,{status:'cancelled'});
+                }
+            }
             toast({ title: t('{count} posts cancelled', {count: targets.length}) });
         }
         setBulkAction(null);

@@ -154,7 +154,7 @@ export default function CreatePost() {
     if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
         warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
     }
-    if (form.account_ids.length !== 1) warnings.push(t("Publish now supports text, up to 10 images, or one MP4 video on one Facebook Page. Automatic publishing is not available yet."));
+    if (form.account_ids.length !== 1) warnings.push(t("Immediate and scheduled publishing support one Facebook Page, up to 10 images or one MP4 video."));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
@@ -164,7 +164,8 @@ export default function CreatePost() {
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
-        if (action === 'publish' && (form.account_ids.length !== 1 || form.media.length > 10)) return t('Publish now requires exactly one Facebook Page');
+        if (['publish','schedule'].includes(action) && (form.account_ids.length !== 1 || form.media.length > 10)) return t('Publish now requires exactly one Facebook Page');
+        if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
             return t("Pick a publishing time in the future, or use Publish now.");
@@ -191,14 +192,14 @@ export default function CreatePost() {
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
                 scheduled_at: action === 'publish' ? null : scheduledAt,
-                status: action === 'schedule' ? 'scheduled' : 'draft',
+                status: action === 'schedule' && demoMode ? 'scheduled' : 'draft',
                 is_demo: demoMode,
             };
 
             const saved = await appClient.posts.save({ id: existing?.id, data: payload });
             setExisting(saved);
-            if (action === 'publish') {
-                setPublishReview(await appClient.publishing.prepare(saved.id));
+            if (action === 'publish' || action === 'schedule' && !demoMode) {
+                setPublishReview(action === 'schedule' ? await appClient.publishing.prepareSchedule(saved.id,scheduledAt,form.timezone) : await appClient.publishing.prepare(saved.id));
                 return;
             }
             toast({
@@ -236,7 +237,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t("Create a text, photo or video post for one Facebook Page, or save a calendar plan.")}
+                description={t("Create a Facebook text, photo or video post. Publish now or confirm automatic scheduling.")}
                 actions={
                     existing ? (
                         <>
@@ -393,14 +394,14 @@ export default function CreatePost() {
                         >
                             <FloppyDisk size={15} className="mr-1.5" /> {t("Save draft")} </Button>
                         <p className="label-xs flex gap-2 pt-1">
-                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(". Publish now requires pages_manage_posts. Calendar plans do not send content automatically.")} </p>
+                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(". Automatic publishing starts at the confirmed time, even when this browser is closed.")} </p>
                     </div>
                 </div>
             </div></div>
 
             {publishReview && <PublishConfirmation review={publishReview} onClose={() => setPublishReview(null)} onResult={result => {
                 setPublishReview(null);
-                toast({ title: t(result.status === 'published' ? 'Facebook post published' : result.status === 'processing' ? 'Publishing is still processing' : 'Facebook delivery needs attention'), description: t(result.message || 'Open publishing history for the result.'), ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}) });
+                toast({ title: t(result.status === 'queued' ? 'Automatic Facebook schedule confirmed' : result.status === 'published' ? 'Facebook post published' : result.status === 'processing' ? 'Publishing is still processing' : 'Facebook delivery needs attention'), description: t(result.message || 'Open publishing history for the result.'), ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}) });
                 navigate('/posts?post=' + result.postId);
             }} />}
             <ConfirmDialog

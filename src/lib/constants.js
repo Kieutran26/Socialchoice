@@ -40,7 +40,7 @@ export const POST_STATUSES = [
 
 export const POST_STATUS_LABEL = translatedLabels({
     draft: 'Draft',
-    scheduled: 'Planned — publishing unavailable',
+    scheduled: 'Scheduled',
     processing: 'Processing',
     published: 'Published',
     partially_published: 'Partially published',
@@ -61,7 +61,7 @@ export const POST_STATUS_TONE = {
 };
 
 export const JOB_STATUS_LABEL = translatedLabels({
-    pending: 'Planned — no delivery worker',
+    pending: 'Waiting',
     processing: 'Publishing',
     published: 'Published',
     unknown: 'Delivery unconfirmed',

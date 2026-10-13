@@ -59,8 +59,8 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
             if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
-            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: true, message: 'Automatic publishing is unavailable. Use Publish now for one Facebook Page with text and images.' });
-            const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status)$/);
+            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: !metaSettings.ready, queued: store.queuedAttempts().length, nextDue: store.queuedAttempts().length ? new Date(Math.min(...store.queuedAttempts().map(attempt=>attempt.scheduledFor))).toISOString() : null, message: metaSettings.ready ? 'Confirmed Facebook schedules run automatically. Uncertain deliveries are not resent.' : 'Configure Meta before publishing' });
+            const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status|prepareSchedule|schedule|cancelSchedule)$/);
             if (req.url?.startsWith('/api/collaboration/')) fail('Facebook collaboration is unavailable', 410);
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const savingPost = req.url === '/api/posts/save';
@@ -75,8 +75,8 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
             if (!Array.isArray(input.args)) fail('Arguments array required');
             if (publishingRoute) {
-                if (!publisher || input.args.length !== 1 || typeof input.args[0] !== 'string') fail('Publishing request ID required');
-                return send(200, await publisher[publishingRoute[1]](input.args[0]));
+                if (!publisher || !(publishingRoute[1] === 'prepareSchedule' ? [2,3] : [1]).includes(input.args.length) || input.args.some(arg=>typeof arg !== 'string')) fail('Publishing request ID required');
+                return send(200, await publisher[publishingRoute[1]](...input.args));
             }
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));

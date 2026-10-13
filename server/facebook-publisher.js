@@ -1,3 +1,4 @@
+import { createScheduledDelivery } from './facebook-scheduled-delivery.js';
 import { randomUUID } from 'node:crypto';
 import { createMetaGraph } from './meta-graph.js';
 import { createMetaVault } from './meta-vault.js';
@@ -18,11 +19,11 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 export function createFacebookPublisher(store, config, options = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
     const vault = config.ready ? createMetaVault(store, config.key) : null;
-    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
+    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
 
-    function destination(post) {
+    function destination(post, scheduled = false) {
         if (!config.ready) fail('Configure Meta before publishing', 409);
-        if (post.is_demo || post.status !== 'draft') fail('Publish now requires a live draft', 409);
+        if (post.is_demo || post.status !== (scheduled ? 'scheduled' : 'draft')) fail('Publish now requires a live draft', 409);
         const brand = store.get('Brand', post.brand_id);
         if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
         if (post.account_ids?.length !== 1) fail('Publish now requires exactly one Facebook Page', 409);
@@ -60,36 +61,43 @@ export function createFacebookPublisher(store, config, options = {}) {
         });
     }
 
-    let timer;
-    const wake = options.wake || (async time => {
-        clearTimeout(timer);
-        timer = setTimeout(() => { void runMedia().catch(() => {}); }, Math.max(0, time - Date.now()));
+    let timer, timerAt, wakeChain = Promise.resolve();
+    const wake = options.wake ? time => { const next = wakeChain.catch(()=>{}).then(()=>options.wake(time)); wakeChain = next; return next; } : (async time => {
+        if (timer && timerAt <= time) return;
+        clearTimeout(timer); timerAt = time;
+        timer = setTimeout(() => { timer = null; timerAt = null; void runMedia().catch(() => {}); }, Math.min(2147483647, Math.max(0, time - Date.now())));
         timer.unref?.();
     });
     const runPhotos = createPhotoDelivery(store, vault, graph, finish, wake);
     const runVideos = createVideoDelivery(store,vault,graph,finish,wake);
     async function runMedia() {
-        try {await runPhotos();await runVideos();}
-        finally {const pending=store.pendingAttempts().filter(attempt=>attempt.media?.length);if(pending.length)await wake(Math.min(...pending.map(attempt=>attempt.busy?attempt.startedAt+61000:attempt.nextVideoCheck||Date.now()+100)));}
+        try { for(const attempt of store.pendingAttempts().filter(value=>!value.media?.length && Date.now()-value.startedAt>60000)) finish(attempt,'unknown',uncertainMessage); await scheduling.runDue();await runPhotos();await runVideos();}
+        finally { await resume(); }
     }
-    return {
+    async function resume() {
+        const times = [...store.queuedAttempts().map(attempt=>attempt.scheduledFor), ...store.pendingAttempts().map(attempt=>!attempt.media?.length || attempt.busy ? attempt.startedAt+61000 : attempt.nextVideoCheck||Date.now()+100)];
+        if(times.length) await wake(Math.max(Date.now()+100,Math.min(...times)));
+    }
+    const api = {
         runPhotos:runMedia,
-        resumePhotos: () => store.pendingAttempts().some(attempt => attempt.media?.length) ? wake(Date.now() + 100) : undefined,
+        resumePhotos: resume,
         close: () => clearTimeout(timer),
-        prepare(postId) {
+        prepare(postId, calendarReview = false) {
             if (typeof postId !== 'string') fail('Post ID required');
             return store.transaction(() => {
                 const previous = store.attemptForPost(postId);
                 if (previous && previous.status !== 'prepared') fail('This post already has a publishing attempt. Check its history.', 409);
                 const post = store.get('Post', postId);
-                const { account, caption, media } = destination(post);
-                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, pageId: account.external_id, pageName: account.name, caption, media, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
+                const { account, caption, media } = destination(post, calendarReview && post.status === 'scheduled');
+                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, pageId: account.external_id, pageName: account.name, caption, media, timezone: post.timezone, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
                 store.saveAttempt(attempt);
                 return summary(attempt);
             });
         },
         status(attemptId) {
-            const attempt = store.attemptForPost(attemptId) || store.attempt(attemptId);
+            const byPost = store.attemptForPost(attemptId);
+            if ((!byPost || byPost.status === 'prepared') && store.all('Post').some(post=>post.id === attemptId && post.status === 'scheduled')) return { postId: attemptId, status: 'calendar_plan' };
+            const attempt = byPost || store.attempt(attemptId);
             if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing') return finish(attempt, 'unknown', uncertainMessage);
             return summary(attempt);
         },
@@ -98,14 +106,18 @@ export function createFacebookPublisher(store, config, options = {}) {
             let credential;
             const attempt = store.transaction(() => {
                 const value = store.attempt(attemptId);
-                if (value.status !== 'prepared') return value;
-                if (value.expiresAt <= Date.now()) fail('Publishing confirmation expired. Review the post again.', 409);
+                const scheduled = value.status === 'queued';
+                if (!scheduled && value.status !== 'prepared') return value;
+                if (!scheduled && value.scheduledFor) fail('Confirm the automatic schedule instead',409);
+                if (scheduled && value.scheduledFor > Date.now()) fail('Scheduled publishing time has not arrived',409);
+                if (scheduled && Date.now()-value.scheduledFor > 15*60000) fail('Scheduled publishing was missed by more than 15 minutes. Duplicate as a draft and schedule again.',409);
+                if (!scheduled && value.expiresAt <= Date.now()) fail('Publishing confirmation expired. Review the post again.', 409);
                 const post = store.get('Post', value.postId);
-                const checked = destination(post);
+                const checked = destination(post, scheduled);
                 if (JSON.stringify(post) !== value.revision || checked.account.credential_id !== value.credentialId || checked.account.external_id !== value.pageId || checked.account.name !== value.pageName || checked.caption !== value.caption) fail('Post or Page changed. Review the post again.', 409);
                 credential = checked.credential;
                 const now = new Date().toISOString();
-                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: 'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false });
+                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: 'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false }, scheduled ? value.jobId : undefined);
                 if (JSON.stringify(checked.media) !== JSON.stringify(value.media || [])) fail('Post or Page changed. Review the post again.', 409);
                 const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: 'facebook', caption: value.caption, media_ids: post.media_ids || [], status: 'processing', is_demo: false });
                 const claimed = { ...value, status: 'processing', startedAt: Date.now(), jobId: job.id, variantId: variant.id };
@@ -115,6 +127,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             });
             if (!credential) return this.status(attempt.id);
             if (attempt.media?.length) { await wake(Date.now() + 100); return summary(attempt); }
+            await wake(attempt.startedAt + 61000);
             let result;
             try { result = await graph.publishText(attempt.pageId, attempt.caption, credential.token); }
             catch (error) {
@@ -125,4 +138,6 @@ export function createFacebookPublisher(store, config, options = {}) {
             return finish(attempt, 'published', '', result);
         },
     };
+    const scheduling = createScheduledDelivery(store, id => api.prepare(id,true), summary, wake, id => api.publish(id));
+    return Object.assign(api,scheduling);
 }

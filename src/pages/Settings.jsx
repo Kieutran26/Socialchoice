@@ -23,7 +23,7 @@ export default function Settings() {
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
     const [counts, setCounts] = useState({ posts: {}, accounts: {} });
-    const [engine, setEngine] = useState({ queued: 0, nextDue: null, connected: 0 });
+    const [engine, setEngine] = useState({ queued: 0, nextDue: null, connected: 0, available: false });
     const [formOpen, setFormOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
@@ -32,7 +32,7 @@ export default function Settings() {
 
     const load = useCallback(async () => {
         setLoading(true);
-        const [postAgg, accountAgg, queuedCount, nextDue, connectedCount, me, brandPage] = await Promise.all([
+        const [postAgg, accountAgg, queuedCount, nextDue, connectedCount, me, brandPage, scheduling] = await Promise.all([
             appClient.entities.Post.aggregate({ query: { is_demo: demoMode }, groupBy: 'brand_id' }),
             appClient.entities.SocialAccount.aggregate({ query: { is_demo: demoMode }, groupBy: 'brand_id' }),
             appClient.entities.PublishJob.count({ is_demo: demoMode, status: 'pending' }),
@@ -43,12 +43,13 @@ export default function Settings() {
             appClient.entities.SocialAccount.count({ is_demo: demoMode, connection_status: 'connected' }),
             appClient.auth.me().catch(() => null),
             appClient.entities.Brand.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
+            appClient.publishing.check(),
         ]);
         setCounts({
             posts: Object.fromEntries(postAgg.rows.map((row) => [row.brand_id, row.count])),
             accounts: Object.fromEntries(accountAgg.rows.map((row) => [row.brand_id, row.count])),
         });
-        setEngine({ queued: queuedCount, nextDue: nextDue.items[0]?.scheduled_for || null, connected: connectedCount });
+        setEngine({ queued: demoMode ? queuedCount : scheduling.queued, nextDue: demoMode ? nextDue.items[0]?.scheduled_for || null : scheduling.nextDue, connected: connectedCount, available: !scheduling.unavailable && !demoMode });
         setUser(me);
         setBrands(brandPage.items);
         setLoading(false);
@@ -104,7 +105,7 @@ export default function Settings() {
         try {
             const result = await runPublishingEngine({ scope: { is_demo: demoMode } });
             toast({
-                title: t("Automatic publishing unavailable"),
+                title: t(result.unavailable ? "Automatic publishing unavailable" : "Automatic publishing ready"),
                 description: t(result.message),
             });
             load();
@@ -257,16 +258,16 @@ export default function Settings() {
                             <div className="flex items-center justify-between gap-3">
                                 <dt className="text-muted-foreground">{t("Automatic background runs")}</dt>
                                 <dd>
-                                    <StatusBadge tone="warn">{t("Not implemented — Phase B")}</StatusBadge>
+                                    <StatusBadge tone={engine.available ? "success" : "warn"}>{t(engine.available ? "Available after schedule confirmation" : "Configuration required")}</StatusBadge>
                                 </dd>
                             </div>
                             <div className="flex items-center justify-between gap-3">
                                 <dt className="text-muted-foreground">{t("Retry policy")}</dt>
-                                <dd>{t("Not implemented — Phase B")}</dd>
+                                <dd>{t("Uncertain deliveries are not resent")}</dd>
                             </div>
                         </dl>
 
-                        <p className="label-xs mt-4"> {t('Publish now supports text, images, or one MP4 video on one Facebook Page after authorization and review. Calendar plans do not send automatically; automatic retries are unavailable.')} </p>
+                        <p className="label-xs mt-4"> {t('Confirmed Facebook schedules start automatically, even with the browser closed. Old calendar plans require confirmation.')} </p>
 
                         <Button
                             variant="outline"

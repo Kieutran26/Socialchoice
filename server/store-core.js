@@ -33,6 +33,7 @@ export function createStoreCore(db, transactionSync) {
         },
         saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(post_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
         pendingAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='processing'").all().map(row => JSON.parse(row.data)),
+        queuedAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='queued'").all().map(row => JSON.parse(row.data)),
         imageWrite: input => store.write('MediaAsset', input, undefined, imageWriter),
         publishingWrite: (entity, input, id) => {
             if (!['Post', 'PublishJob', 'PostVariant', 'PublishingLog'].includes(entity)) fail('Invalid publishing entity');
@@ -69,6 +70,7 @@ export function createStoreCore(db, transactionSync) {
             if (entity === 'MediaAsset' && capability !== imageWriter && (previous?.storage_id || record.storage_id || record.sha256 || record.file_url?.startsWith('/api/media/files/'))) fail('Stored image metadata is server-owned', 409);
             if (capability !== publisher) {
                 const attempt = store.attemptForPost(entity === 'Post' ? record.id : record.post_id);
+                if (attempt?.status === 'queued') fail('Cancel the automatic schedule before editing this post',409);
                 if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
             }
             validateRecord(entity, record, previous, schemas[entity], store, capability === verified, capability === publisher);
