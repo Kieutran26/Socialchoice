@@ -9,7 +9,7 @@ export function videoOffsets(value,size,expectedStart) {
 
 export function createVideoDelivery(store,vault,graph,finish,wake) {
     return async function run() {
-        const pending=store.pendingAttempts().filter(attempt=>attempt.platform!=='instagram' && attempt.media?.[0]?.file_type==='video');
+        const pending=store.pendingAttempts().filter(attempt=>(attempt.platform||'facebook')==='facebook' && attempt.media?.[0]?.file_type==='video');
         for(const candidate of pending) {
             if(candidate.nextVideoCheck>Date.now()) continue;
             if(candidate.busy) {

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Buffer } from 'node:buffer';
-import { randomBytes,randomUUID } from 'node:crypto';
+import { createHmac,randomBytes,randomUUID } from 'node:crypto';
 import { createStore } from './store.js';
 import { createMetaVault } from './meta-vault.js';
 import { createFacebookPublisher } from './facebook-publisher.js';
@@ -53,6 +53,11 @@ test('signed media capability rejects tampering, terminal attempt and revoked cr
         const req={url:url.pathname+url.search,method:'HEAD',headers:{}};
         let headers;const res={writeHead:(status,value)=>{assert.equal(status,200);headers=value;},end:()=>{}};
         assert.equal(access.serve(req,res),true);assert.equal(headers['Content-Length'],String(f.jpeg.length));
+        const expires=Number(url.searchParams.get('expires'));
+        const legacySignature=createHmac('sha256',Buffer.from(f.config.key,'hex')).update(JSON.stringify(['instagram-media-v1',attempt.id,attempt.credentialId,f.media.id,f.media.storage_id,f.media.sha256,expires])).digest('hex');
+        assert.equal(url.searchParams.get('signature'),legacySignature);
+        const legacyUrl=new URL(url);legacyUrl.searchParams.set('signature',legacySignature);
+        assert.equal(access.serve({...req,url:legacyUrl.pathname+legacyUrl.search},res),true);
         assert.throws(()=>access.serve({...req,url:req.url.replace(/signature=(.)/,(_match,character)=>'signature='+(character==='0'?'1':'0'))},res),/invalid/);
         f.store.saveAttempt({...attempt,status:'published'});assert.throws(()=>access.serve(req,res),/no longer active/);
         f.store.saveAttempt(attempt);f.store.verifiedAccount({credential_id:'replacement'},f.account.id);assert.throws(()=>access.serve(req,res),/authorization changed/);

@@ -1,3 +1,5 @@
+import LinkedinConnectionCard from '@/components/accounts/LinkedinConnectionCard';
+import TiktokConnectionCard from '@/components/accounts/TiktokConnectionCard';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { PlugsConnected, Plus, Trash, Plugs, WarningCircle } from '@phosphor-icons/react';
@@ -51,9 +53,9 @@ export default function SocialAccounts() {
     };
 
     const disconnect = async (account) => {
-        if (account.credential_id) await appClient.meta.disconnect(account.id);
+        if (account.credential_id) await (account.platform==='linkedin'?appClient.linkedin:account.platform==='tiktok'?appClient.tiktok:account.platform==='threads'?appClient.threads:appClient.meta).disconnect(account.id);
         else await appClient.entities.SocialAccount.update(account.id, { connection_status: 'disconnected' });
-        toast({ title: t("{value1} disconnected", {value1: account.name}), description: t("No further jobs will be sent to this Page.") });
+        toast({ title: t("{value1} disconnected", {value1: account.name}), description: t("No new jobs will start for this account. An already started request may still complete.") });
         load();
     };
 
@@ -84,7 +86,7 @@ export default function SocialAccounts() {
         <>
             <PageHeader
                 title={t("Social Accounts")}
-                description={t('Manage connected Facebook Pages and Instagram professional accounts, grouped by brand.')}
+                description={t('Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.')}
                 actions={
                     <button type="button" className="btn-skew" onClick={() => setAddOpen(true)}>
                         <Plus size={15} weight="bold" /> {t("Add destination")} </button>
@@ -92,7 +94,9 @@ export default function SocialAccounts() {
             />
 
             <div className="space-y-5">
-                <MetaConnectionCard brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => setAddOpen(true)} />
+                <LinkedinConnectionCard brands={brands} demoMode={demoMode} onChanged={load} />
+                <TiktokConnectionCard brands={brands} demoMode={demoMode} onChanged={load} />
+            <MetaConnectionCard brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => setAddOpen(true)} />
 
                 {loading ? (
                     <Skeleton className="h-[320px] rounded-2xl" />
@@ -161,14 +165,14 @@ export default function SocialAccounts() {
                                                                 className="h-8 rounded-lg text-[12px]"
                                                                 onClick={() => {
                                                                     if (!account.credential_id) return setFixTarget(account);
-                                                                    appClient.meta.start(account.brand_id, account.platform).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
+                                                                    (account.platform==='linkedin'?appClient.linkedin.start(account.brand_id):account.platform==='tiktok'?appClient.tiktok.start(account.brand_id):account.platform==='threads'?appClient.threads.start(account.brand_id):appClient.meta.start(account.brand_id, account.platform)).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
                                                                 }}
                                                             > {t("Fix connection")} </Button>
                                                             {account.credential_id && <Button variant="outline" size="sm" onClick={async () => {
-                                                                try { await appClient.meta.check(account.id); toast({ title: t(account.platform === 'instagram' ? 'Instagram access verified' : 'Facebook Page access verified') }); }
+                                                                try { await (account.platform==='linkedin'?appClient.linkedin:account.platform==='tiktok'?appClient.tiktok:account.platform==='threads'?appClient.threads:appClient.meta).check(account.id); toast({ title: t(account.platform==='linkedin'?'LinkedIn access verified':account.platform==='tiktok'?'TikTok access verified':account.platform==='threads'?'Threads access verified':account.platform === 'instagram' ? 'Instagram access verified' : 'Facebook Page access verified') }); }
                                                                 catch (e) { toast({ variant: 'destructive', title: t(e.message) }); }
                                                                 finally { load(); }
-                                                            }}>{t(account.platform === 'instagram' ? 'Check Instagram access' : 'Check Facebook access')}</Button>}
+                                                            }}>{t(account.platform==='linkedin'?'Check LinkedIn access':account.platform==='tiktok'?'Check TikTok access':account.platform==='threads'?'Check Threads access':account.platform === 'instagram' ? 'Check Instagram access' : 'Check Facebook access')}</Button>}
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"

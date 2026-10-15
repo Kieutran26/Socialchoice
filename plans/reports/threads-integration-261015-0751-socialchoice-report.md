@@ -1,0 +1,16 @@
+# Threads integration delivery
+
+Scope: connect Threads, reviewed text/JPEG/MP4 publication and confirmed automatic schedules, preserving Facebook/Instagram. Implemented distinct product OAuth/config/Graph adapter, session/nonce/flow-isolated callback and explicit profile import, strict app/profile/grant/expiry validation, encrypted credential and stale-check guards, durable create/process/publish/verify claims, bounded read recovery, no uncertain-write resend, platform-aware shared alarm/job/history, signed media platform separation with legacy Instagram signature preservation, UI/account/composer/preview support and private setup helpers.
+
+Validation: full110/110server tests, lint/typecheck/build and Wrangler dry-run pass. Existing large-bundle warning remains. Initial full run exposed a changed unconfigured Facebook error; original contract restored before final passing run. Independent review completed with no release-blocking findings; see review-261015-0751-threads-report.md. Tests are isolated/synthetic contract checks; no real Threads exchange/publishing success claimed.
+
+Meta UI: added Access Threads API use case to existing owner app, confirmed threads_basic and individually added threads_content_publish as Ready for testing. Saved/re-rendered exact owned callback https://socialchoice.vercel.app/api/threads/callback. Threads product ID1880622033307199 observed; product secret remained masked. No additional Insights/reply/deletion/search/Instagram-share permission enabled. Screenshots threads-meta-permissions-261015.jpg and threads-meta-callback-261015.jpg narrowly excluded from Git.
+
+Private setup: .env.threads created only through owner hidden prompt/stdin input and never overwrites existing file or encryption key. Cloud helper sends only THREADS_APP_SECRET to existing named Worker with public ID/callback match guards. No product secret read or upload occurred; no token generated or account grant/import/publication performed. Backend deployment does not itself authorize secret transfer or account access.
+
+Release: prepared static-only prebuilt artifact in ignored .test-tools/threads-release; runtime/manifest preserves namespace/class/binding/migration/object identity and stable existing keys. Worker c60c62c3-a5c7-477c-819e-db6fed68e418 and Vercel dpl_EP4GGVLGXS2qZNPC15WDzebwLgaC deployed to production. Public accounts UI200, exact deployed JavaScript SHA-256 match to tested artifact, health200, anonymous session401 and Threads status401 verified. Invalid anonymous media request rejected401. No product secret uploaded; connection remains pending private setup.
+
+Unresolved: owner authorization for private product-secret transfer to backend, actual Threads OAuth/debug-token schema/grant/profile import, exact owner-reviewed live publication and scheduled execution. No Git commit/push of new Threads changes yet.
+
+
+Update 2026-10-15 08:24: owner explicitly approved product-secret read and storage. Meta reauthentication completed by owner. THREADS_APP_SECRET saved privately to the existing Worker through stdin; upload succeeded, other keys unchanged. No secret value logged or committed. Authenticated readiness/OAuth verification pending owner Socialchoice sign-in because session expired. No account import or publication claimed.

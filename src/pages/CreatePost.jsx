@@ -1,3 +1,4 @@
+import TiktokSettings from '@/components/composer/TiktokSettings';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -127,7 +128,7 @@ export default function CreatePost() {
                 caption: post.caption || '',
                 destination_settings: Object.fromEntries(Object.entries(post.destination_settings || {}).map(([id,setting]) => {
                     const parts=toZonedParts(setting.scheduled_at,post.timezone || DEFAULT_TIMEZONE);
-                    return [id,{caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
+                    return [id,{tiktok:setting.tiktok,caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
                 })),
                 account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
                 pillar_id: post.pillar_id || '',
@@ -153,15 +154,17 @@ export default function CreatePost() {
 
     const warnings = [];
     if (selectedAccounts.some(a=>a.platform==='instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
+    if (selectedAccounts.some(a=>a.platform==='linkedin'))warnings.push(t('LinkedIn supports up to 3000 characters, JPEG/PNG images or one MP4 video up to 30 MiB. Posts are public.'));
+    if (selectedAccounts.some(a=>a.platform==='threads'))warnings.push(t('Threads supports text or one photo/video, with a caption up to 500 characters.'));
     if (selectedAccounts.length && selectedAccounts.every((a) => a.connection_status !== 'connected')) {
         warnings.push(
-            t("These destinations are planning references. Connect a Facebook Page before publishing."),
+            t("These destinations are planning references. Connect a publishing account before publishing."),
         );
     }
-    if (selectedAccounts.some((a) => !['facebook','instagram'].includes(a.platform))) {
-        warnings.push(t('Publishing supports connected Facebook Pages and Instagram professional accounts.'));
+    if (selectedAccounts.some((a) => !['facebook','instagram','threads','tiktok','linkedin'].includes(a.platform))) {
+        warnings.push(t('Publishing supports connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts.'));
     }
-    if (form.account_ids.length > 30) warnings.push(t('Choose between 1 and 30 different Facebook Pages'));
+    if (form.account_ids.length > 30) warnings.push(t('Choose between 1 and 30 different publishing accounts'));
     if (!form.pillar_id || !form.angle_id) {
         warnings.push(t("Assign a pillar and an angle so this post counts towards your distribution targets."));
     }
@@ -171,10 +174,12 @@ export default function CreatePost() {
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
-        if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different Facebook Pages');
-        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>!['facebook','instagram'].includes(account.platform)||(account.platform==='facebook'&&account.account_type!=='page')||account.connection_status!=='connected')) return t('Connect a Facebook Page or Instagram professional account before publishing');
+        if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different publishing accounts');
+        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>!['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform)||(account.platform==='facebook'&&account.account_type!=='page')||account.connection_status!=='connected')) return t('Connect the selected publishing accounts before publishing');
+        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='threads') && form.media.length>1)return t('Threads currently supports one photo or one video per post.');
         if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && !form.media.length) return t('Instagram requires photos or one video. Text-only posts are not supported.');
         if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && form.media.length!==1) return t('Instagram currently supports one JPEG photo or one MP4 video per post.');
+        if(['publish','schedule'].includes(action)&&selectedAccounts.some(a=>a.platform==='tiktok')&&(form.media.length!==1||form.media[0].file_type!=='video'))return t('TikTok requires one MP4 video.');
         if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
@@ -199,7 +204,7 @@ export default function CreatePost() {
                 destination_settings: Object.fromEntries(form.account_ids.map(id=>{
                     const setting=form.destination_settings[id] || {};
                     const [date,time]=setting.localTime?.split('T') || [];
-                    return [id,{...(setting.caption?.trim()?{caption:setting.caption}:{}),...(date&&time?{scheduled_at:toUtcIso(date,time,form.timezone)}:{})}];
+                    return [id,{...(setting.tiktok?{tiktok:setting.tiktok}:{}),...(setting.caption?.trim()?{caption:setting.caption}:{}),...(date&&time?{scheduled_at:toUtcIso(date,time,form.timezone)}:{})}];
                 })),
                 media_ids: form.media.map((asset) => asset.id),
                 account_ids: form.account_ids,
@@ -252,7 +257,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t('Create a Facebook or Instagram post. Publish now or confirm automatic scheduling.')}
+                description={t('Create a Facebook, Instagram, Threads, TikTok or LinkedIn post. Publish now or confirm automatic scheduling.')}
                 actions={
                     existing ? (
                         <>
@@ -344,6 +349,7 @@ export default function CreatePost() {
                         />
                     </section>
 
+                    {selectedAccounts.filter(a=>a.platform==='tiktok').map(account=><TiktokSettings key={account.id} account={account} value={form.destination_settings[account.id]?.tiktok} onChange={tiktok=>setForm(current=>({...current,destination_settings:{...current.destination_settings,[account.id]:{...current.destination_settings[account.id],tiktok}}}))}/>)}
                     <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
 
                     <section className="panel p-5">

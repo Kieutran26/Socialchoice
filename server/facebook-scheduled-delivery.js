@@ -46,7 +46,7 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: value.platform||'facebook', status: 'pending', scheduled_for: scheduled.scheduled_at, attempts: 0, max_attempts: 1, error_message: '', is_demo: false }, existing?.id);
                 const queued = { ...value, status: 'queued', approvedAt: Date.now(), revision: JSON.stringify(scheduled), jobId: job.id };
                 store.saveAttempt(queued);
-                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:value.platform==='instagram'?'Automatic Instagram publishing is confirmed.':'Automatic Facebook publishing is confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
+                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:value.platform==='linkedin'?'Automatic LinkedIn publishing is confirmed.':value.platform==='threads'?'Automatic Threads publishing is confirmed.':value.platform==='instagram'?'Automatic Instagram publishing is confirmed.':'Automatic Facebook publishing is confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
                 return summary(queued);
             });
         },
@@ -73,7 +73,7 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 if (attempt.scheduledFor > Date.now()) continue;
                 if (Date.now() - attempt.scheduledFor > 15 * 60000) { reject(attempt, 'Scheduled publishing was missed by more than 15 minutes. Duplicate as a draft and schedule again.'); continue; }
                 try { await publish(attempt.id); }
-                catch { reject(attempt, 'Scheduled publishing could not start. Check Facebook access, then duplicate as a draft to try again.'); }
+                catch { reject(attempt, 'Scheduled publishing could not start. Check destination access, then duplicate as a draft to try again.'); }
             }
         },
     };

@@ -1,3 +1,11 @@
+import { createLinkedinGraph, linkedinMemberId } from './linkedin-graph.js';
+import { createLinkedinDelivery } from './linkedin-delivery.js';
+import { createTiktokGraph } from './tiktok-graph.js';
+import { createTiktokTokens } from './tiktok-tokens.js';
+import { createTiktokDelivery } from './tiktok-delivery.js';
+import { validateTiktokOptions } from './tiktok-options.js';
+import { createThreadsGraph } from './threads-graph.js';
+import { createThreadsDelivery } from './threads-delivery.js';
 import { createInstagramGraph } from './instagram-graph.js';
 import { createInstagramDelivery } from './instagram-delivery.js';
 import { createInstagramMediaAccess } from './instagram-media-access.js';
@@ -24,13 +32,23 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 // Claim the immutable approval in a synchronous transaction before any network I/O.
 export function createFacebookPublisher(store, config, options = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
-    const vault = config.ready ? createMetaVault(store, config.key) : null;
+    const linkedinConfig=options.linkedinConfig||{};
+    const linkedinVault=linkedinConfig.ready?createMetaVault(store,linkedinConfig.key):null;
+    const linkedinGraph=options.linkedinGraph||(linkedinConfig.ready?createLinkedinGraph(linkedinConfig):null);
+    const threadsConfig=options.threadsConfig||{};
+    const tiktokConfig=options.tiktokConfig||{}, creators=options.tiktokCreators||new Map();
+    const tiktokGraph=options.tiktokGraph||(tiktokConfig.ready?createTiktokGraph(tiktokConfig):null);
+    const tiktokTokens=options.tiktokTokens||createTiktokTokens(store,tiktokConfig,tiktokGraph);
+    const vault = config.ready || threadsConfig.ready ? createMetaVault(store, config.key||threadsConfig.key) : null;
+    const threadsVault=threadsConfig.ready?createMetaVault(store,threadsConfig.key):null;
+    const threadsGraph=threadsConfig.ready?createThreadsGraph(threadsConfig):null;
     const instagramGraph=config.ready?createInstagramGraph(config):null;
-    const instagramMedia=createInstagramMediaAccess(store,config);
-    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, platform:attempt.platform||'facebook', multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
+    const instagramMedia=createInstagramMediaAccess(store,config,threadsConfig,tiktokConfig);
+    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, platform:attempt.platform||'facebook', multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, tiktokOptions:attempt.tiktokOptions, tiktokCreator:attempt.tiktokCreator, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.platform==='tiktok'&&attempt.externalId?{providerPublishId:attempt.externalId}:{}), ...(attempt.message ? { message: attempt.message } : {}) });
 
     function destination(post, scheduled = false, accountId, execution = false) {
-        if (!config.ready) fail('Configure Meta before publishing', 409);
+        if(!config.ready&&!threadsConfig.ready&&!tiktokConfig.ready&&!linkedinConfig.ready)fail('Configure Meta before publishing',409);
+
         if (post.is_demo || (!execution && post.status !== (scheduled ? 'scheduled' : 'draft'))) fail('Publish now requires a live draft', 409);
         const brand = store.get('Brand', post.brand_id);
         if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
@@ -45,12 +63,33 @@ export function createFacebookPublisher(store, config, options = {}) {
         });
         if(media.some(asset=>asset.file_type==='video')&&media.length!==1) fail('Choose one video or up to 10 images, not both');
         const account = store.get('SocialAccount', accountId || post.account_ids[0]);
-        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram'].includes(account.platform) || account.account_type !== (account.platform==='instagram'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !/^\d+$/.test(account.external_id)) fail('Connect a Facebook Page before publishing', 409);
-        const credential = vault.read(account.credential_id);
+        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform) || account.account_type !== (account.platform!=='facebook'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !(account.platform==='linkedin'?linkedinMemberId(account.external_id):(account.platform==='tiktok'?/^[\w.-]{1,256}$/:/^\d+$/).test(account.external_id))) fail('Connect a Facebook Page before publishing', 409);
+        if(!(account.platform==='linkedin'?linkedinConfig.ready:account.platform==='tiktok'?tiktokConfig.ready:account.platform==='threads'?threadsConfig.ready:config.ready))fail('Configure the destination integration before publishing',409);
+        const credential = account.platform==='tiktok'?tiktokTokens.peek(account):(account.platform==='linkedin'?linkedinVault:account.platform==='threads'?threadsVault:vault).read(account.credential_id);
         if (account.platform==='facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
-        if (!credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
+        if (!['threads','tiktok','linkedin'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
         if (typeof credential.token !== 'string' || !credential.token) fail('Reconnect Facebook before publishing', 409);
         const caption = post.destination_settings?.[account.id]?.caption ?? (post.platform_captions?.[account.platform] || post.caption);
+        if(account.platform==='linkedin') {
+            if(credential.platform!=='linkedin'||credential.profileId!==account.external_id||!Number.isSafeInteger(credential.expiresAt)||credential.expiresAt<=Date.now()||!['openid','profile','w_member_social'].every(scope=>account.scopes?.includes(scope)&&credential.scopes?.includes(scope)))fail('Reconnect LinkedIn and grant publishing permissions',409);
+            if(typeof caption!=='string'||!caption.trim()||Array.from(caption).length>3000)fail('LinkedIn caption must contain between 1 and 3000 characters');
+            if(media.some(asset=>!['image/jpeg','image/png','video/mp4'].includes(asset.mime_type)))fail('LinkedIn supports stored JPEG/PNG images or one MP4 video',409);
+            if(media.some(asset=>asset.file_type==='video'&&asset.size_bytes>30*1024*1024))fail('LinkedIn videos must be at most 30 MiB',409);
+        }
+        if(account.platform==='tiktok') {
+            const info=creators.get(account.id);
+            if(!execution&&(!info||info.credentialId!==account.credential_id||info.expires<=Date.now()))fail('Refresh TikTok creator settings before reviewing publication',409);
+            const savedInfo=post.destination_settings?.[account.id]?.tiktok;
+            validateTiktokOptions(savedInfo,execution?{privacy:['SELF_ONLY'],maxDuration:Infinity,commentDisabled:false,duetDisabled:false,stitchDisabled:false}:info,media);
+            if(caption.length>2200)fail('TikTok caption must contain at most 2200 characters');
+            instagramMedia.url({id:'validation',credentialId:account.credential_id,platform:'tiktok'},media[0]);
+        }
+        if(account.platform==='threads') {
+            if(credential.platform!=='threads'||credential.profileId!==account.external_id||!Number.isFinite(credential.expiresAt)||credential.expiresAt<=Date.now()||!['threads_basic','threads_content_publish'].every(scope=>account.scopes?.includes(scope)&&credential.scopes?.includes(scope)))fail('Reconnect Threads and grant publishing permissions',409);
+            if(media.length>1||media.length===1&&!(media[0].mime_type==='image/jpeg'||media[0].file_type==='video'&&media[0].mime_type==='video/mp4'))fail('Threads requires text, one JPEG image or one MP4 video',409);
+            if(typeof caption!=='string'||!caption.trim()||Array.from(caption).length>500)fail('Threads caption must contain between 1 and 500 characters');
+            if(media.length)instagramMedia.url({id:'validation',credentialId:account.credential_id,platform:'threads'},media[0]);
+        }
         if(account.platform==='instagram') {
             if(!['instagram_basic','instagram_content_publish'].every(scope=>account.scopes?.includes(scope)&&credential.scopes?.includes(scope))||!/^\d+$/.test(credential.pageId||'')) fail('Reconnect Instagram and grant publishing permissions',409);
             if(media.length!==1||!(media[0].mime_type==='image/jpeg'||media[0].file_type==='video'&&media[0].mime_type==='video/mp4')) fail('Instagram requires one JPEG image or one MP4 Reel',409);
@@ -73,7 +112,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             store.publishingWrite('PostVariant', { status }, current.variantId);
             if(current.multi) syncDeliveryState(store,current.postId);
             else store.publishingWrite('Post', { status, ...(result ? { published_at: now } : {}) }, current.postId);
-            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: current.platform||'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || (current.platform==='instagram'?'Instagram confirmed the media ID and profile.':'Facebook confirmed the post ID.'), occurred_at: now, is_demo: false });
+            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: current.platform||'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || (current.platform==='linkedin'?'LinkedIn confirmed the publication ID.':current.platform==='tiktok'?'TikTok confirmed private publication completion. The reference is a publish ID, not a public post link.':current.platform==='threads'?'Threads confirmed the media ID and profile.':current.platform==='instagram'?'Instagram confirmed the media ID and profile.':'Facebook confirmed the post ID.'), occurred_at: now, is_demo: false });
             return summary(next);
         });
     }
@@ -88,12 +127,15 @@ export function createFacebookPublisher(store, config, options = {}) {
     const runPhotos = createPhotoDelivery(store, vault, graph, finish, wake);
     const runVideos = createVideoDelivery(store,vault,graph,finish,wake);
     const runInstagram=createInstagramDelivery(store,vault,instagramGraph,instagramMedia,finish,wake);
+    const runLinkedin=createLinkedinDelivery(store,linkedinVault,linkedinGraph,finish,wake);
+    const runThreads=createThreadsDelivery(store,threadsVault,threadsGraph,instagramMedia,finish,wake);
+    const runTiktok=createTiktokDelivery(store,tiktokTokens,tiktokGraph,instagramMedia,finish,wake);
     async function runMedia() {
-        try { for(const attempt of store.pendingAttempts().filter(value=>!value.media?.length && Date.now()-value.startedAt>60000)) finish(attempt,'unknown',uncertainMessage); await scheduling.runDue();await runPhotos();await runVideos();await runInstagram();}
+        try { for(const attempt of store.pendingAttempts().filter(value=>(value.platform||'facebook')==='facebook' && !value.media?.length && Date.now()-value.startedAt>60000)) finish(attempt,'unknown',uncertainMessage); await scheduling.runDue();await runPhotos();await runVideos();await runInstagram();await runThreads();await runTiktok();await runLinkedin();}
         finally { await resume(); }
     }
     async function resume() {
-        const times = [...store.queuedAttempts().map(attempt=>attempt.scheduledFor), ...store.pendingAttempts().map(attempt=>!attempt.media?.length || attempt.busy ? attempt.startedAt+61000 : attempt.nextVideoCheck||Date.now()+100)];
+        const times = [...store.queuedAttempts().map(attempt=>attempt.scheduledFor), ...store.pendingAttempts().map(attempt=>(attempt.platform||'facebook')==='facebook'&&!attempt.media?.length || attempt.busy ? attempt.startedAt+61000 : attempt.nextVideoCheck||Date.now()+100)];
         if(times.length) await wake(Math.max(Date.now()+100,Math.min(...times)));
     }
     const api = {
@@ -108,7 +150,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 if (previous && !['prepared','cancelled'].includes(previous.status) && (!retry || previous.status!=='failed')) fail('This post already has a publishing attempt. Check its history.', 409);
                 const post = store.get('Post', postId);
                 const { account, caption, media } = destination(post, calendarReview && post.status === 'scheduled',accountId,retry);
-                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, platform:account.platform, facebookPageId:account.platform==='instagram'?vault.read(account.credential_id).pageId:undefined, pageId: account.external_id, pageName: account.name, caption, media, timezone: post.timezone, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
+                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, platform:account.platform, facebookPageId:account.platform==='instagram'?vault.read(account.credential_id).pageId:undefined, pageId: account.external_id, pageName: account.name, caption, media, tiktokOptions:post.destination_settings?.[account.id]?.tiktok, tiktokCreator:creators.get(account.id)?.nickname, timezone: post.timezone, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
                 store.removePrepared(postId,account.id);store.saveAttempt(attempt);
                 return summary(attempt);
             });
@@ -119,7 +161,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             const byPost = store.attemptForPost(attemptId);
             if ((!byPost || byPost.status === 'prepared') && store.all('Post').some(post=>post.id === attemptId && post.status === 'scheduled')) return { postId: attemptId, status: 'calendar_plan' };
             const attempt = byPost || store.attempt(attemptId);
-            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing' && !['processing','verify'].includes(attempt.instagramStage)) return finish(attempt, 'unknown', attempt.platform==='instagram'?'Instagram delivery is unconfirmed. Check the profile before creating another post; this attempt will not be resent.':uncertainMessage);
+            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing' && !['processing','verify'].includes(attempt.instagramStage) && !['threads','tiktok','linkedin'].includes(attempt.platform)) return finish(attempt, 'unknown', attempt.platform==='instagram'?'Instagram delivery is unconfirmed. Check the profile before creating another post; this attempt will not be resent.':uncertainMessage);
             return summary(attempt);
         },
         async publish(attemptId) {
@@ -136,7 +178,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 if (scheduled && Date.now()-value.scheduledFor > 15*60000) fail('Scheduled publishing was missed by more than 15 minutes. Duplicate as a draft and schedule again.',409);
                 if (!scheduled && value.expiresAt <= Date.now()) fail('Publishing confirmation expired. Review the post again.', 409);
                 const post = store.get('Post', value.postId);
-                const checked = destination(post, scheduled,value.multi?value.accountId:undefined,!!value.multi);
+                const checked = destination(post, scheduled,value.multi?value.accountId:undefined,scheduled||!!value.multi);
                 if ((value.multi?contentRevision(post):JSON.stringify(post)) !== value.revision || checked.account.credential_id !== value.credentialId || checked.account.external_id !== value.pageId || checked.account.name !== value.pageName || checked.caption !== value.caption) fail('Post or Page changed. Review the post again.', 409);
                 credential = checked.credential;
                 const now = new Date().toISOString();
@@ -150,7 +192,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 return claimed;
             });
             if (!credential) return this.status(attempt.id);
-            if (attempt.media?.length) { await wake(Date.now() + 100); return summary(attempt); }
+            if (attempt.media?.length || ['threads','tiktok','linkedin'].includes(attempt.platform)) { await wake(Date.now() + 100); return summary(attempt); }
             await wake(attempt.startedAt + 61000);
             let result;
             try { result = await graph.publishText(attempt.pageId, attempt.caption, credential.token); }

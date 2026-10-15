@@ -18,8 +18,9 @@ export const TIMEZONES = [
 export const PLATFORMS = [
     { value: 'facebook', get label() { return translate('Facebook Pages'); }, short: 'Facebook', live: false },
     { value: 'instagram', label: 'Instagram', short: 'Instagram', live: false },
-    { value: 'linkedin', label: 'LinkedIn', short: 'LinkedIn', live: false },
-    { value: 'tiktok', label: 'TikTok', short: 'TikTok', live: false },
+    { value: 'threads', label: 'Threads', short: 'Threads', live: false },
+    { value: 'linkedin', label: 'LinkedIn', short: 'LinkedIn', live: true },
+    { value: 'tiktok', label: 'TikTok', short: 'TikTok', live: true },
     { value: 'youtube', label: 'YouTube', short: 'YouTube', live: false },
     { value: 'x', label: 'X', short: 'X', live: false },
     { value: 'reddit', label: 'Reddit', short: 'Reddit', live: false },

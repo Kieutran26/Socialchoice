@@ -135,3 +135,15 @@ Rollout2026-10-13: the reviewed multi-Page/Analytics build and permission fixes 
 ## Instagram
 
 Instagram integration uses Facebook Login to discover and explicitly connect a Page-linked Business/Creator account. Create Post supports one stored JPEG photo or one MP4 Reel, with a reviewed caption/profile, immediate publication or confirmed automatic schedule. Each destination keeps durable independent results; uncertain writes are not resent. Approved media is served through expiring signed backend links while the library remains private. See [Instagram setup and publishing](docs/instagram-publishing.md) for owner linkage, app permissions, supported formats and verification boundaries. No live Instagram success is claimed yet.
+
+## Threads
+
+Threads has its own OAuth, product credentials and verified user token. Connect under Social Accounts, review text or one stored JPEG/MP4 and publish now or confirm an automatic schedule. Threads keeps independent durable results and uses signed private media; uncertain writes are not resent. Existing Facebook/Instagram connections remain independent. See [Threads setup and publishing](docs/threads-publishing.md) for private configuration, limits and verification status. Live Threads grant/publication is not yet claimed.
+
+## TikTok sandbox
+
+TikTok supports explicitly connected sandbox accounts, one reviewed MP4 video with required privacy/interaction/disclosure/music choices, immediate posting and confirmed automatic schedules. Only private visibility is enabled. Separate encrypted credentials and safe refresh preserve other integrations; uncertain init requests are not resent. Private completion retains TikTok's publishing reference without inventing a public link. See [TikTok setup and publishing](docs/tiktok-publishing.md). Live OAuth/publication remains unverified until an owner-authorized real test.
+
+## LinkedIn personal profiles
+
+Personal LinkedIn connection, reviewed public text/JPEG/PNG/MP4 publication and automatic scheduling are implemented. Tokens stay encrypted server-side; uncertain writes are not resent. Company Pages require a separate Community Management app and approval and remain unavailable. See [LinkedIn setup and publishing](docs/linkedin-publishing.md). Live authorization and publication must be verified separately from local tests.

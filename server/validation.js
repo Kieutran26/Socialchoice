@@ -41,7 +41,8 @@ export function validateRecord(entity, record, previous, schema, store, verified
     for (const id of record.account_ids || []) sameScope(store.get('SocialAccount', id));
     if(entity==='Post' && record.destination_settings) {
         for(const [id,settings] of Object.entries(record.destination_settings)) {
-            if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!['caption','scheduled_at'].includes(key))) fail('Invalid per-Page settings');
+            if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!['caption','scheduled_at','tiktok'].includes(key))) fail('Invalid per-Page settings');
+            if(settings.tiktok!==undefined && (store.get('SocialAccount',id).platform!=='tiktok'||typeof settings.tiktok!=='object'||!settings.tiktok||Array.isArray(settings.tiktok)||JSON.stringify(settings.tiktok).length>2048))fail('Invalid TikTok options');
             if(settings.caption!==undefined && (typeof settings.caption!=='string' || !settings.caption.trim() || settings.caption.length>63206)) fail('Facebook caption must contain between 1 and 63206 characters');
             if(settings.scheduled_at!==undefined && (typeof settings.scheduled_at!=='string' || !Number.isFinite(Date.parse(settings.scheduled_at)) || !/(Z|[+-]\d\d:\d\d)$/.test(settings.scheduled_at))) fail('Invalid per-Page publishing time');
         }
@@ -57,7 +58,7 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (store.references(entity, record.id)) fail('Referenced records cannot move between brands or workspaces', 409);
     }
     if (entity === 'SocialAccount' && !verified) {
-        if (record.credential_id !== previous?.credential_id || (record.credential_id && ['external_id', 'platform', 'account_type', 'scopes', 'connection_status', 'is_demo', ...(record.platform==='instagram'?['username']:[])].some(key => JSON.stringify(record[key]) !== JSON.stringify(previous?.[key])))) fail('Facebook connection metadata is server-owned', 409);
+        if (record.credential_id !== previous?.credential_id || (record.credential_id && ['external_id', 'platform', 'account_type', 'scopes', 'connection_status', 'is_demo', ...(['instagram','threads','tiktok'].includes(record.platform)?['username']:[])].some(key => JSON.stringify(record[key]) !== JSON.stringify(previous?.[key])))) fail('Facebook connection metadata is server-owned', 409);
         if (record.connection_status === 'connected' && !previous?.credential_id) fail('Meta OAuth is required; a manual account cannot be connected', 409);
     }
     if (entity === 'SocialAccount' && record.connection_status === 'demo' && !record.is_demo) fail('Demo destinations must stay in the demo workspace');

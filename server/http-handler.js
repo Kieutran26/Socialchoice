@@ -6,10 +6,10 @@ import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
-    const instagramMedia=createInstagramMediaAccess(store,metaSettings);
+    const instagramMedia=createInstagramMediaAccess(store,metaSettings,threadsSettings,tiktokSettings);
     return async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -21,6 +21,9 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (!allowedHosts.has(host)) fail('Allowed host required', 403);
             const origins = publicOrigin ? [publicOrigin] : [`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`, `http://127.0.0.1:${req.socket.localPort}`, `http://localhost:${req.socket.localPort}`];
             if (req.method === 'GET' && req.url?.startsWith('/api/meta/callback?')) return await meta.callback(req, res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req,res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req,res);
+            if (req.method==='GET'&&req.url?.startsWith('/api/tiktok/callback?')&&tiktok)return await tiktok.callback(req,res);
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
             if (instagramMedia.serve(req,res)) return;
@@ -55,14 +58,19 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, store.images.upload(req.headers['x-image-brand'], name, req.headers['content-type'], Buffer.concat(chunks)));
             }
             const metaRoute = req.url?.match(/^\/api\/meta\/(status|start|pages|import|disconnect|check)$/);
-            if (metaRoute) {
-                if (req.method === 'GET' && ['status', 'pages'].includes(metaRoute[1])) return send(200, await meta.execute(metaRoute[1], req, res));
+            const threadsRoute=req.url?.match(/^\/api\/threads\/(status|start|profile|import|disconnect|check)$/);
+            const tiktokRoute=req.url?.match(/^\/api\/tiktok\/(status|start|profile|import|disconnect|check|creator)$/);
+            const linkedinRoute=req.url?.match(/^\/api\/linkedin\/(status|start|profile|import|disconnect|check)$/);
+            if (metaRoute || threadsRoute || tiktokRoute || linkedinRoute) {
+                const service=linkedinRoute?linkedin:tiktokRoute?tiktok:threadsRoute?threads:meta,operation=(linkedinRoute||tiktokRoute||threadsRoute||metaRoute)[1];
+                if(!service)fail('Threads is not configured',409);
+                if (req.method === 'GET' && ['status', 'pages','profile'].includes(operation)) return send(200, await service.execute(operation, req, res));
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';
                 for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
                 let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
                 if (!Array.isArray(input?.args)) fail('Arguments array required');
-                return send(200, await meta.execute(metaRoute[1], req, res, input.args));
+                return send(200, await service.execute(operation, req, res, input.args));
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
             if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
@@ -88,6 +96,10 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (publishingRoute) {
                 if(publishingRoute[1]==='prepareBatch'){if(!publisher||input.args.length!==1)fail('Batch entries required');return send(200,publisher.prepareBatch(input.args[0]));}
                 if (!publisher || !(publishingRoute[1] === 'prepareSchedule' ? [2,3] : publishingRoute[1] === 'prepareRetry' ? [2] : [1]).includes(input.args.length) || input.args.some(arg=>typeof arg !== 'string')) fail('Publishing request ID required');
+                if(tiktok&&['prepare','prepareSchedule','prepareRetry'].includes(publishingRoute[1])) {
+                    const post=store.get('Post',input.args[0]);
+                    for(const id of post.account_ids||[])if(store.get('SocialAccount',id).platform==='tiktok')await tiktok.execute('creator',req,res,[id]);
+                }
                 return send(200, await publisher[publishingRoute[1]](...input.args));
             }
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
