@@ -57,7 +57,7 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (store.references(entity, record.id)) fail('Referenced records cannot move between brands or workspaces', 409);
     }
     if (entity === 'SocialAccount' && !verified) {
-        if (record.credential_id !== previous?.credential_id || (record.credential_id && ['external_id', 'platform', 'account_type', 'scopes', 'connection_status', 'is_demo'].some(key => JSON.stringify(record[key]) !== JSON.stringify(previous?.[key])))) fail('Facebook connection metadata is server-owned', 409);
+        if (record.credential_id !== previous?.credential_id || (record.credential_id && ['external_id', 'platform', 'account_type', 'scopes', 'connection_status', 'is_demo', ...(record.platform==='instagram'?['username']:[])].some(key => JSON.stringify(record[key]) !== JSON.stringify(previous?.[key])))) fail('Facebook connection metadata is server-owned', 409);
         if (record.connection_status === 'connected' && !previous?.credential_id) fail('Meta OAuth is required; a manual account cannot be connected', 409);
     }
     if (entity === 'SocialAccount' && record.connection_status === 'demo' && !record.is_demo) fail('Demo destinations must stay in the demo workspace');

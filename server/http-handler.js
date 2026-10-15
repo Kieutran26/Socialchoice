@@ -1,5 +1,6 @@
 import { createPublishingNotifications } from './publishing-notifications.js';
 import { createFacebookMetrics } from './facebook-metrics.js';
+import { createInstagramMediaAccess } from './instagram-media-access.js';
 import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
@@ -8,6 +9,7 @@ import { videoUploadRequest, serveMedia } from './media-http.js';
 export function createHttpHandler({ store, auth, meta, publisher, metaSettings, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
+    const instagramMedia=createInstagramMediaAccess(store,metaSettings);
     return async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -21,6 +23,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (req.method === 'GET' && req.url?.startsWith('/api/meta/callback?')) return await meta.callback(req, res);
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
+            if (instagramMedia.serve(req,res)) return;
             if (!req.url.startsWith('/api/')) {
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);

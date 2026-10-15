@@ -62,7 +62,7 @@ export default function PostDetailSheet({ post, onClose, onChanged }) {
             <p className="font-medium break-words">{item.pageName} · {item.pageId}</p><StatusBadge tone={POST_STATUS_TONE[item.status==='queued'?'scheduled':item.status]}>{t(item.status==='queued'?'Scheduled':POST_STATUS_LABEL[item.status] || item.status)}</StatusBadge>
             <p className="whitespace-pre-wrap break-words text-xs">{item.caption}</p>
             {item.scheduledFor && <p className="label-xs">{formatDateTime(new Date(item.scheduledFor).toISOString(),item.timezone)}</p>}
-            {item.status==='processing' && item.media?.length>0 && <p role="status" className="label-xs">{t(item.media[0].file_type==='video'?'Uploading video to Facebook':'Uploading photos to Facebook')}</p>}
+            {item.status==='processing' && item.media?.length>0 && <p role="status" className="label-xs">{t(item.platform==='instagram'?'Instagram is processing the media':item.media[0].file_type==='video'?'Uploading video to Facebook':'Uploading photos to Facebook')}</p>}
             {item.message && <p className="text-dangerFg text-xs">{t(item.message)}</p>}
             {item.publishedUrl && <a href={item.publishedUrl} target="_blank" rel="noreferrer" className="underline text-xs">{t('View published post')}</a>}
             {item.status==='queued' && <Button variant="outline" disabled={busy} onClick={()=>action(()=>item.multi?appClient.publishing.cancelPage(item.attemptId):appClient.publishing.cancelSchedule(post.id))}>{t('Cancel this Page schedule')}</Button>}

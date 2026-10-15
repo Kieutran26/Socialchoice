@@ -54,7 +54,7 @@ export const appClient = {
     publishing: {prepareRetry:(id,accountId)=>request('publishing/prepareRetry',[id,accountId]),cancelPage:id=>request('publishing/cancelPage',[id]),prepareBatch:entries=>request('publishing/prepareBatch',[entries]),confirmBatch:id=>request('publishing/confirmBatch',[id]),batchStatus:id=>request('publishing/batchStatus',[id]), prepareSchedule:(id,time,timezone)=>request('publishing/prepareSchedule',timezone ? [id,time,timezone] : [id,time]), schedule:id=>request('publishing/schedule',[id]), cancelSchedule:id=>request('publishing/cancelSchedule',[id]), check: () => request('publishing/check', []), prepare: id => request('publishing/prepare', [id]), publish: id => request('publishing/publish', [id]), status: id => request('publishing/status', [id]) },
     meta: {
         status: () => request('meta/status'), pages: () => request('meta/pages'),
-        start: (brandId) => request('meta/start', [brandId]),
+        start: (brandId, platform = 'facebook') => request('meta/start', [brandId, platform]),
         importPages: (ids) => request('meta/import', [ids]),
         disconnect: (id) => request('meta/disconnect', [id]), check: (id) => request('meta/check', [id]),
     },

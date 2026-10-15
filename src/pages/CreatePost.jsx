@@ -152,13 +152,14 @@ export default function CreatePost() {
     const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
 
     const warnings = [];
+    if (selectedAccounts.some(a=>a.platform==='instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
     if (selectedAccounts.length && selectedAccounts.every((a) => a.connection_status !== 'connected')) {
         warnings.push(
             t("These destinations are planning references. Connect a Facebook Page before publishing."),
         );
     }
-    if (selectedAccounts.some((a) => a.platform !== 'facebook')) {
-        warnings.push(t("Publish now is available only for Facebook Pages. Other destinations are calendar references."));
+    if (selectedAccounts.some((a) => !['facebook','instagram'].includes(a.platform))) {
+        warnings.push(t('Publishing supports connected Facebook Pages and Instagram professional accounts.'));
     }
     if (form.account_ids.length > 30) warnings.push(t('Choose between 1 and 30 different Facebook Pages'));
     if (!form.pillar_id || !form.angle_id) {
@@ -171,7 +172,9 @@ export default function CreatePost() {
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
         if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different Facebook Pages');
-        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>account.platform!=='facebook'||account.account_type!=='page'||account.connection_status!=='connected')) return t('Connect a Facebook Page before publishing');
+        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>!['facebook','instagram'].includes(account.platform)||(account.platform==='facebook'&&account.account_type!=='page')||account.connection_status!=='connected')) return t('Connect a Facebook Page or Instagram professional account before publishing');
+        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && !form.media.length) return t('Instagram requires photos or one video. Text-only posts are not supported.');
+        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && form.media.length!==1) return t('Instagram currently supports one JPEG photo or one MP4 video per post.');
         if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
         if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
@@ -249,7 +252,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t("Create a Facebook text, photo or video post. Publish now or confirm automatic scheduling.")}
+                description={t('Create a Facebook or Instagram post. Publish now or confirm automatic scheduling.')}
                 actions={
                     existing ? (
                         <>
@@ -417,7 +420,7 @@ export default function CreatePost() {
 
             {publishReview && <PublishConfirmation review={publishReview} onClose={() => setPublishReview(null)} onResult={result => {
                 setPublishReview(null);
-                toast({ title: t(result.status === 'queued' ? 'Automatic Facebook schedule confirmed' : result.status === 'published' ? 'Facebook post published' : result.status === 'processing' ? 'Publishing is still processing' : 'Facebook delivery needs attention'), description: t(result.message || 'Open publishing history for the result.'), ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}) });
+                toast({ title: t(result.status === 'queued' ? 'Automatic schedule confirmed' : result.status === 'published' ? 'Post published' : result.status === 'processing' ? 'Publishing is still processing' : 'Delivery needs attention'), description: t(result.message || 'Open publishing history for the result.'), ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}) });
                 navigate('/posts?post=' + result.postId);
             }} />}
             <ConfirmDialog
@@ -432,5 +435,3 @@ export default function CreatePost() {
         </>
     );
 }
-
-

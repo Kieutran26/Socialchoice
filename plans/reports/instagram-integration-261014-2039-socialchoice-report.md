@@ -1,0 +1,15 @@
+# Instagram integration delivery
+
+Owner scope: connection, photo/video publication and automatic scheduling. Instagram exists but is not yet linked to Page Deszy.
+
+Implemented: opt-in Instagram Facebook OAuth scopes and bounded linked-account discovery/selection; independent encrypted credentials, verified profile/Page linkage, reconnect/check/disconnect; exact caption/media/profile review, persistent Instagram container create/process/publish/verify stages, replay-safe claims and bounded read polling; existing scheduler/alarm with platform-aware jobs and Facebook runner isolation; expiring signed private-media delivery with exact GET/HEAD/range behavior and lazy bounded Node/Workers streaming; composer/account/preview/result integration and Vietnamese labels. Supports one JPEG feed photo or one MP4 Reel, up to2200caption characters. No text-only, Stories or carousel in this scope.
+
+Validation: final92/92full server tests passed; lint, typecheck, Vite build and Wrangler cloud dry-run passed. Existing large-bundle warning remains. Independent review found no critical/high production defect. Its failing HTTP fixture lacked the encrypted credential required by the final authorization guard; adding the real encrypted test credential fixed the fixture without weakening the guard, then focused and full suites passed. First Wrangler dry-run used the default log path and failed a local permission check; rerun with the established project-local XDG_CONFIG_HOME passed without changing permissions.
+
+Rollout: existing Worker deployed version2f1fb2e5-a87f-4e8b-9526-686c5f4a5d5b; Vercel deployment dpl_Ez2cQWU1bCyvBgF1H7yRGpG2cHxZ aliased socialchoice.vercel.app. Existing namespace, binding, migration tag, actor identity and private keys retained. Static-only prebuilt release under ignored .test-tools/instagram-release includes dist plus equivalent API/SPA routing; no data, diagnostic artifacts or credentials uploaded. First Vercel attempt returned Not authorized; existing account/project access was verified, project relink refreshed the project access, then deployment succeeded.
+
+Online verification: /accounts200 and deployed /assets/index-DXakhozZ.js exactly matches local tested artifact SHA-256; health200 configured/admin-session; anonymous session/meta-status401; invalid/expired public Instagram-media capability403. No authenticated browser OAuth, Instagram grant/import, real publication, schedule execution or Insights result claimed. No real Graph write, secret upload, paid service, namespace/key change or Git commit/push performed.
+
+Owner next steps: link a Business/Creator Instagram profile to Deszy, enable instagram_basic and instagram_content_publish with required Page scopes in the existing Meta App and complete Meta-required access/testing; then choose Instagram in Social Accounts and authorize/import the returned profile. Real publication test needs an exact owner-reviewed image/video/caption confirmation.
+
+Unresolved: owner Page linkage and Meta consent; real JPEG/Reel publication and scheduled execution validation. Documentation: docs/instagram-publishing.md.

@@ -25,7 +25,7 @@ export function createMetaGraph(config) {
         try { data = await response.json(); }
         catch { reject('Meta returned an unexpected response', 502, undefined, undefined, 'response_format'); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) reject('Meta returned an unexpected response', 502);
-        if (!response.ok || data.error) reject(data.error?.code === 190 ? 'Facebook authorization expired. Reconnect Facebook.' : 'Meta denied this request. Check app permissions and access.', [190, 10, 200].includes(data.error?.code) ? 409 : 502, data.error?.code, data.error?.error_subcode);
+        if (!response.ok || data.error) reject(data.error?.code === 190 ? 'Facebook authorization expired. Reconnect Facebook.' : 'Meta denied this request. Check app permissions and access.', [190, 10, 200].includes(data.error?.code) ? 409 : 502, data.error?.code, data.error?.error_subcode, typeof data.error?.message==='string' && data.error.message.includes('pages_read_user_content') ? 'user_content_permission_required' : undefined);
         return data;
     }
     return {
@@ -83,23 +83,42 @@ export function createMetaGraph(config) {
             if (typeof long.access_token !== 'string' || !long.access_token) fail('Meta returned no access token', 502);
             return long.access_token;
         },
-        async discover(token) {
+        async discover(token, platform = 'facebook') {
             const profile = await request('me', { fields: 'id,name' }, token);
             const permissions = await request('me/permissions', {}, token);
             if (!/^\d+$/.test(profile.id) || typeof profile.name !== 'string' || !Array.isArray(permissions.data) || permissions.data.some(p => !p || typeof p.permission !== 'string' || typeof p.status !== 'string')) fail('Meta returned an unexpected response', 502);
             const scopes = permissions.data.filter(p => p.status === 'granted').map(p => p.permission);
             if (!scopes.includes('pages_show_list')) fail('Facebook Page permission was not granted', 409);
+            if (platform === 'instagram' && !['instagram_basic', 'instagram_content_publish', 'pages_read_engagement'].every(scope => scopes.includes(scope))) fail('Instagram publishing permissions were not granted', 409);
             const pages = []; let after;
             for (let i = 0; i < 50; i++) {
-                const result = await request('me/accounts', { fields: 'id,name,access_token,tasks', limit: '100', ...(after ? { after } : {}) }, token);
+                const result = await request('me/accounts', { fields: platform === 'instagram' ? 'id,name,access_token,tasks,instagram_business_account{id,username}' : 'id,name,access_token,tasks', limit: '100', ...(after ? { after } : {}) }, token);
                 if (!Array.isArray(result.data) || result.data.some(p => !p || typeof p.id !== 'string' || !/^\d+$/.test(p.id) || typeof p.name !== 'string' || (p.access_token !== undefined && typeof p.access_token !== 'string') || (p.tasks !== undefined && (!Array.isArray(p.tasks) || p.tasks.some(task => typeof task !== 'string'))))) fail('Meta returned an unexpected response', 502);
                 pages.push(...result.data.filter(p => typeof p.access_token === 'string' && p.access_token));
-                if (!result.paging?.next) return { profile, scopes, pages };
+                if (!result.paging?.next) {
+                    if (platform !== 'instagram') return { profile, scopes, pages };
+                    const accounts = [];
+                    for (const page of pages) {
+                        const ig = page.instagram_business_account;
+                        if (!ig) continue;
+                        if (!/^\d+$/.test(ig.id || '') || typeof ig.username !== 'string' || !ig.username || ig.username.length > 100) fail('Meta returned an invalid linked Instagram account', 502);
+                        if (!accounts.some(a => a.id === ig.id)) accounts.push({ id: ig.id, name: ig.username, username: ig.username, pageId: page.id, pageName: page.name, access_token: page.access_token, tasks: page.tasks || [] });
+                    }
+                    return { profile, scopes, pages: accounts };
+                }
                 const next = result.paging.cursors?.after;
                 if (!next || next === after) fail('Meta Page list pagination incomplete', 502);
                 after = next;
             }
             fail('Meta Page list exceeds supported size', 502);
+        },
+        async checkInstagram(id, pageId, token) {
+            if (!/^\d+$/.test(pageId || '')) fail('Instagram Page linkage unavailable. Reconnect Instagram.', 409);
+            const page = await request(pageId, { fields: 'id,instagram_business_account{id,username}' }, token);
+            if (page.id !== pageId || page.instagram_business_account?.id !== id) fail('Instagram Page linkage changed. Reconnect Instagram.', 409);
+            const result = await request(id, { fields: 'id,username' }, token);
+            if (result.id !== id || typeof result.username !== 'string' || !result.username) fail('Instagram identity mismatch', 409);
+            return { id, name: result.username, username: result.username };
         },
         async check(pageId, token) {
             const result = await request(pageId, { fields: 'id,name' }, token);

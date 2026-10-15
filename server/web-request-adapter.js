@@ -10,6 +10,16 @@ export async function handleWebRequest(request, handler) {
         setHeader: (key, value) => responseHeaders.set(key, value),
         writeHead(code, values) { status = code; for (const [key, value] of Object.entries(values || {})) responseHeaders.set(key, value); },
         end(value = '') { body = value; },
+        stream(iterable) {
+            const iterator=iterable[Symbol.iterator]();
+            body=new ReadableStream({
+                pull(controller) {
+                    try {const next=iterator.next();if(next.done)controller.close();else controller.enqueue(new Uint8Array(next.value));}
+                    catch(error){controller.error(error);iterator.return?.();}
+                },
+                cancel(){iterator.return?.();},
+            });
+        },
     };
     await handler(req, res);
     return new Response(body, { status, headers: responseHeaders });

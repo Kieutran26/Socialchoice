@@ -38,9 +38,9 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
             try {
                 requireBrand(ticket.brandId);
                 const userToken = await graph.exchange(code);
-                const discovered = await graph.discover(userToken);
+                const discovered = await graph.discover(userToken, ticket.platform);
                 if (!auth.sessionActive(ticket.session)) fail('Sign in required', 401);
-                pending.set(ticket.session, { ...discovered, brandId: ticket.brandId, expires: Date.now() + ttl });
+                pending.set(ticket.session, { ...discovered, brandId: ticket.brandId, platform: ticket.platform, expires: Date.now() + ttl });
                 res.writeHead(303, { Location: config.origin + '/accounts?meta=select', 'Referrer-Policy': 'no-referrer', 'Cache-Control': 'no-store' }); res.end();
             } catch (error) {
                 pending.set(ticket.session, { failure: safeConnectionFailure(error), expires: Date.now() + ttl });
@@ -54,9 +54,9 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
             if (operation === 'disconnect') {
                 if (!auth.enabled) fail('Sign in required', 401);
                 const account = store.get('SocialAccount', args[0]);
-                if (account.is_demo || account.platform !== 'facebook' || !account.credential_id) fail('This destination has no Facebook connection', 409);
+                if (account.is_demo || !['facebook', 'instagram'].includes(account.platform) || !account.credential_id) fail('This destination has no Meta connection', 409);
                 store.transaction(() => {
-                    store.deleteCredential(account.credential_id);
+                    if (!store.all('SocialAccount').some(a => a.id !== account.id && a.credential_id === account.credential_id)) store.deleteCredential(account.credential_id);
                     store.verifiedAccount({ credential_id: null, scopes: [], connection_status: 'disconnected' }, account.id);
                 });
                 return { disconnected: true };
@@ -66,13 +66,15 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
             if (operation === 'start') {
                 if (req.headers.origin && req.headers.origin !== config.origin) fail('Open Socialchoice at the configured Facebook callback origin', 409);
                 requireBrand(args[0]);
+                const platform = args[1] || 'facebook';
+                if (!['facebook', 'instagram'].includes(platform)) fail('Unsupported connection platform');
                 if (states.size >= 100) fail('Too many Facebook connection requests', 429);
                 pending.delete(session);
                 const state = randomBytes(32).toString('hex'), nonce = randomBytes(32).toString('hex');
-                states.set(state, { session, nonce, brandId: args[0], expires: Date.now() + ttl });
+                states.set(state, { session, nonce, brandId: args[0], platform, expires: Date.now() + ttl });
                 res.setHeader('Set-Cookie', cookie(nonce, ttl / 1000));
                 const url = new URL(`https://www.facebook.com/${config.version}/dialog/oauth`);
-                url.search = new URLSearchParams({ client_id: config.appId, redirect_uri: config.redirectUri, state, response_type: 'code', scope: 'pages_show_list,pages_read_engagement,pages_manage_posts', auth_type: 'rerequest' }).toString();
+                url.search = new URLSearchParams({ client_id: config.appId, redirect_uri: config.redirectUri, state, response_type: 'code', scope: platform === 'instagram' ? 'pages_show_list,pages_read_engagement,instagram_basic,instagram_content_publish' : 'pages_show_list,pages_read_engagement,pages_manage_posts,pages_read_user_content', auth_type: 'rerequest' }).toString();
                 if (config.loginConfigId) url.searchParams.set('config_id', config.loginConfigId);
                 return { url: url.href };
             }
@@ -80,7 +82,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                 const result = pending.get(session);
                 if (!result) return { pages: [], pending: false };
                 if (result.failure) return { pages: [], pending: false, failure: result.failure };
-                return { pending: true, brandId: result.brandId, profileName: result.profile.name, scopes: result.scopes, pages: result.pages.map(p => ({ id: p.id, name: p.name, tasks: p.tasks || [] })) };
+                return { pending: true, platform: result.platform || 'facebook', brandId: result.brandId, profileName: result.profile.name, scopes: result.scopes, pages: result.pages.map(p => ({ id: p.id, name: p.name, tasks: p.tasks || [], ...(result.platform === 'instagram' ? { username: p.username, pageId: p.pageId, pageName: p.pageName } : {}) })) };
             }
             if (operation === 'import') {
                 const result = pending.get(session);
@@ -90,28 +92,28 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                 if (!Array.isArray(ids) || !ids.length || ids.length > 100 || ids.some(id => !result.pages.some(p => p.id === id))) fail('Select Pages returned by Facebook');
                 const imported = store.transaction(() => [...new Set(ids)].map(id => {
                     const page = result.pages.find(p => p.id === id);
-                    const existing = store.all('SocialAccount').find(a => !a.is_demo && a.platform === 'facebook' && a.external_id === id && a.brand_id === result.brandId);
+                    const existing = store.all('SocialAccount').find(a => !a.is_demo && a.platform === (result.platform || 'facebook') && a.external_id === id && a.brand_id === result.brandId);
                     // A new identity prevents stale access checks from modifying a reconnected token.
                     const credentialId = randomUUID();
-                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes, tasks: page.tasks || [] });
-                    const account = store.verifiedAccount({ name: page.name, external_id: id, brand_id: result.brandId, platform: 'facebook', account_type: 'page', is_demo: false, credential_id: credentialId, scopes: result.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
-                    if (existing?.credential_id) vault.remove(existing.credential_id);
+                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes, tasks: page.tasks || [], ...(result.platform === 'instagram' ? { pageId: page.pageId, platform: 'instagram' } : {}) });
+                    const account = store.verifiedAccount({ name: page.name, external_id: id, brand_id: result.brandId, platform: result.platform || 'facebook', account_type: result.platform === 'instagram' ? 'profile' : 'page', ...(result.platform === 'instagram' ? { username: page.username } : {}), is_demo: false, credential_id: credentialId, scopes: result.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
+                    if (existing?.credential_id && !store.all('SocialAccount').some(a => a.credential_id === existing.credential_id)) vault.remove(existing.credential_id);
                     return account;
                 }));
                 pending.delete(session);
                 return { imported: imported.length };
             }
             const account = store.get('SocialAccount', args[0]);
-            if (account.is_demo || account.platform !== 'facebook' || !account.credential_id) fail('This destination has no Facebook connection', 409);
+            if (account.is_demo || !['facebook', 'instagram'].includes(account.platform) || !account.credential_id) fail('This destination has no Meta connection', 409);
             if (operation === 'check') {
                 try {
                     const credential = vault.read(account.credential_id);
-                    const page = await graph.check(account.external_id, credential.token);
+                    const page = account.platform === 'instagram' ? await graph.checkInstagram(account.external_id, credential.pageId, credential.token) : await graph.check(account.external_id, credential.token);
                     if (store.get('SocialAccount', account.id).credential_id !== account.credential_id) fail('Facebook connection changed. Check again.', 409);
-                    store.verifiedAccount({ name: page.name, connection_status: 'connected', last_synced_at: new Date().toISOString() }, account.id);
+                    store.verifiedAccount({ name: page.name, ...(account.platform === 'instagram' ? { username: page.username } : {}), connection_status: 'connected', last_synced_at: new Date().toISOString() }, account.id);
                     return { connected: true };
                 } catch (error) {
-                    if (error.status === 409 && store.get('SocialAccount', account.id).credential_id === account.credential_id) store.verifiedAccount({ connection_status: 'expired' }, account.id);
+                    if (error.metaCode === 190 && store.get('SocialAccount', account.id).credential_id === account.credential_id) store.verifiedAccount({ connection_status: 'expired' }, account.id);
                     throw error;
                 }
             }

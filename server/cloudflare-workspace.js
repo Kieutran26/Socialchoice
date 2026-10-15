@@ -22,6 +22,7 @@ export class SocialchoiceWorkspace extends DurableObject {
         const privateMap = name => new SqliteMap(store, env.SOCIALCHOICE_STORAGE_KEY, name);
         const auth = createAdminAuth(env.SOCIALCHOICE_ADMIN_PASSWORD_HASH, true, { sessions: privateMap('sessions'), throttle: privateMap('throttle') });
         const metaSettings = metaConfig(env);
+        metaSettings.mediaOrigin = backendOrigin;
         if (metaSettings.ready && metaSettings.origin !== publicOrigin) throw new Error('Meta callback origin mismatch');
         const meta = createMetaConnection(store, auth, metaSettings, { states: privateMap('oauth'), pending: privateMap('pages') });
         const publisher = createFacebookPublisher(store, metaSettings, { wake: async time => { const alarm = await ctx.storage.getAlarm(); if (!alarm || time < alarm) await ctx.storage.setAlarm(time); } });

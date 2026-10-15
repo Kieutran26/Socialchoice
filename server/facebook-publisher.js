@@ -1,3 +1,6 @@
+import { createInstagramGraph } from './instagram-graph.js';
+import { createInstagramDelivery } from './instagram-delivery.js';
+import { createInstagramMediaAccess } from './instagram-media-access.js';
 import { createBulkScheduling } from './facebook-bulk-scheduling.js';
 import { createScheduledDelivery } from './facebook-scheduled-delivery.js';
 import { randomUUID } from 'node:crypto';
@@ -22,7 +25,9 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 export function createFacebookPublisher(store, config, options = {}) {
     const graph = config.ready ? createMetaGraph(config) : null;
     const vault = config.ready ? createMetaVault(store, config.key) : null;
-    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
+    const instagramGraph=config.ready?createInstagramGraph(config):null;
+    const instagramMedia=createInstagramMediaAccess(store,config);
+    const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, platform:attempt.platform||'facebook', multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.message ? { message: attempt.message } : {}) });
 
     function destination(post, scheduled = false, accountId, execution = false) {
         if (!config.ready) fail('Configure Meta before publishing', 409);
@@ -40,12 +45,19 @@ export function createFacebookPublisher(store, config, options = {}) {
         });
         if(media.some(asset=>asset.file_type==='video')&&media.length!==1) fail('Choose one video or up to 10 images, not both');
         const account = store.get('SocialAccount', accountId || post.account_ids[0]);
-        if (account.is_demo || account.brand_id !== post.brand_id || account.platform !== 'facebook' || account.account_type !== 'page' || account.connection_status !== 'connected' || !account.credential_id || !/^\d+$/.test(account.external_id)) fail('Connect a Facebook Page before publishing', 409);
+        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram'].includes(account.platform) || account.account_type !== (account.platform==='instagram'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !/^\d+$/.test(account.external_id)) fail('Connect a Facebook Page before publishing', 409);
         const credential = vault.read(account.credential_id);
-        if (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts')) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
+        if (account.platform==='facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
         if (!credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
         if (typeof credential.token !== 'string' || !credential.token) fail('Reconnect Facebook before publishing', 409);
-        const caption = post.destination_settings?.[account.id]?.caption ?? (post.platform_captions?.facebook || post.caption);
+        const caption = post.destination_settings?.[account.id]?.caption ?? (post.platform_captions?.[account.platform] || post.caption);
+        if(account.platform==='instagram') {
+            if(!['instagram_basic','instagram_content_publish'].every(scope=>account.scopes?.includes(scope)&&credential.scopes?.includes(scope))||!/^\d+$/.test(credential.pageId||'')) fail('Reconnect Instagram and grant publishing permissions',409);
+            if(media.length!==1||!(media[0].mime_type==='image/jpeg'||media[0].file_type==='video'&&media[0].mime_type==='video/mp4')) fail('Instagram requires one JPEG image or one MP4 Reel',409);
+            if(media[0].file_type==='image'&&(media[0].width/media[0].height<0.8||media[0].width/media[0].height>1.91)) fail('Instagram image aspect ratio must be between 4:5 and 1.91:1',409);
+            if(typeof caption!=='string'||!caption.trim()||caption.length>2200) fail('Instagram caption must contain between 1 and 2200 characters');
+            instagramMedia.url({id:'validation',credentialId:account.credential_id},media[0]);
+        }
         if (typeof caption !== 'string' || !caption.trim() || caption.length > 63206) fail('Facebook caption must contain between 1 and 63206 characters');
         return { account, credential, caption, media };
     }
@@ -61,7 +73,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             store.publishingWrite('PostVariant', { status }, current.variantId);
             if(current.multi) syncDeliveryState(store,current.postId);
             else store.publishingWrite('Post', { status, ...(result ? { published_at: now } : {}) }, current.postId);
-            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: 'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || 'Facebook confirmed the post ID.', occurred_at: now, is_demo: false });
+            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: current.platform||'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || (current.platform==='instagram'?'Instagram confirmed the media ID and profile.':'Facebook confirmed the post ID.'), occurred_at: now, is_demo: false });
             return summary(next);
         });
     }
@@ -75,8 +87,9 @@ export function createFacebookPublisher(store, config, options = {}) {
     });
     const runPhotos = createPhotoDelivery(store, vault, graph, finish, wake);
     const runVideos = createVideoDelivery(store,vault,graph,finish,wake);
+    const runInstagram=createInstagramDelivery(store,vault,instagramGraph,instagramMedia,finish,wake);
     async function runMedia() {
-        try { for(const attempt of store.pendingAttempts().filter(value=>!value.media?.length && Date.now()-value.startedAt>60000)) finish(attempt,'unknown',uncertainMessage); await scheduling.runDue();await runPhotos();await runVideos();}
+        try { for(const attempt of store.pendingAttempts().filter(value=>!value.media?.length && Date.now()-value.startedAt>60000)) finish(attempt,'unknown',uncertainMessage); await scheduling.runDue();await runPhotos();await runVideos();await runInstagram();}
         finally { await resume(); }
     }
     async function resume() {
@@ -95,7 +108,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 if (previous && !['prepared','cancelled'].includes(previous.status) && (!retry || previous.status!=='failed')) fail('This post already has a publishing attempt. Check its history.', 409);
                 const post = store.get('Post', postId);
                 const { account, caption, media } = destination(post, calendarReview && post.status === 'scheduled',accountId,retry);
-                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, pageId: account.external_id, pageName: account.name, caption, media, timezone: post.timezone, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
+                const attempt = { id: randomUUID(), postId, accountId: account.id, credentialId: account.credential_id, platform:account.platform, facebookPageId:account.platform==='instagram'?vault.read(account.credential_id).pageId:undefined, pageId: account.external_id, pageName: account.name, caption, media, timezone: post.timezone, revision: JSON.stringify(post), status: 'prepared', expiresAt: Date.now() + 10 * 60 * 1000 };
                 store.removePrepared(postId,account.id);store.saveAttempt(attempt);
                 return summary(attempt);
             });
@@ -106,7 +119,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             const byPost = store.attemptForPost(attemptId);
             if ((!byPost || byPost.status === 'prepared') && store.all('Post').some(post=>post.id === attemptId && post.status === 'scheduled')) return { postId: attemptId, status: 'calendar_plan' };
             const attempt = byPost || store.attempt(attemptId);
-            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing') return finish(attempt, 'unknown', uncertainMessage);
+            if (attempt.status === 'processing' && Date.now() - attempt.startedAt > 60000 && (attempt.busy || !attempt.media?.length) && attempt.videoStage!=='processing' && !['processing','verify'].includes(attempt.instagramStage)) return finish(attempt, 'unknown', attempt.platform==='instagram'?'Instagram delivery is unconfirmed. Check the profile before creating another post; this attempt will not be resent.':uncertainMessage);
             return summary(attempt);
         },
         async publish(attemptId) {
@@ -127,9 +140,9 @@ export function createFacebookPublisher(store, config, options = {}) {
                 if ((value.multi?contentRevision(post):JSON.stringify(post)) !== value.revision || checked.account.credential_id !== value.credentialId || checked.account.external_id !== value.pageId || checked.account.name !== value.pageName || checked.caption !== value.caption) fail('Post or Page changed. Review the post again.', 409);
                 credential = checked.credential;
                 const now = new Date().toISOString();
-                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: 'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false }, scheduled ? value.jobId : undefined);
+                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: value.platform||'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false }, scheduled ? value.jobId : undefined);
                 if (JSON.stringify(checked.media) !== JSON.stringify(value.media || [])) fail('Post or Page changed. Review the post again.', 409);
-                const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: 'facebook', caption: value.caption, media_ids: post.media_ids || [], status: 'processing', is_demo: false });
+                const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: value.platform||'facebook', caption: value.caption, media_ids: post.media_ids || [], status: 'processing', is_demo: false });
                 const claimed = { ...value, status: 'processing', startedAt: Date.now(), jobId: job.id, variantId: variant.id };
                 store.saveAttempt(claimed);
                 if(value.multi) syncDeliveryState(store,post.id);

@@ -57,9 +57,9 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
             }
             for(const value of values) {
                 const post=store.get('Post',value.postId);
-                const job=store.publishingWrite('PublishJob',{post_id:post.id,brand_id:post.brand_id,social_account_id:value.accountId,account_name:value.pageName,platform:'facebook',status:'pending',scheduled_for:new Date(value.scheduledFor||Date.now()).toISOString(),attempts:0,max_attempts:1,is_demo:false});
+                const job=store.publishingWrite('PublishJob',{post_id:post.id,brand_id:post.brand_id,social_account_id:value.accountId,account_name:value.pageName,platform:value.platform||'facebook',status:'pending',scheduled_for:new Date(value.scheduledFor||Date.now()).toISOString(),attempts:0,max_attempts:1,is_demo:false});
                 store.saveAttempt({...value,status:'queued',scheduledFor:value.scheduledFor||Date.now(),approvedAt:Date.now(),jobId:job.id,immediate:!scheduled});
-                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:'facebook',level:'info',message:'Facebook Page delivery confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
+                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:value.platform==='instagram'?'Instagram profile delivery confirmed.':'Facebook Page delivery confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
             }
             syncDeliveryState(store,review.postId);
             const confirmed={...review,status:scheduled?'queued':'processing'};store.savePublishingReview(confirmed);return reviewSummary(confirmed);
@@ -70,7 +70,7 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
         if(!value.multi || value.status!=='queued') fail('Only an unstarted automatic schedule can be cancelled',409);
         store.saveAttempt({...value,status:'cancelled',cancelledAt:Date.now()});
         store.publishingWrite('PublishJob',{status:'cancelled',error_message:'Automatic schedule cancelled.'},value.jobId);
-        store.publishingWrite('PublishingLog',{post_id:value.postId,publish_job_id:value.jobId,account_name:value.pageName,platform:'facebook',level:'info',message:'Automatic schedule cancelled.',occurred_at:new Date().toISOString(),is_demo:false});
+        store.publishingWrite('PublishingLog',{post_id:value.postId,publish_job_id:value.jobId,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:'Automatic schedule cancelled.',occurred_at:new Date().toISOString(),is_demo:false});
     }
     return {
         preparePages,

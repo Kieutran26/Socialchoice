@@ -16,6 +16,7 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     const allowedHosts = new Set(['127.0.0.1', 'localhost', ...(publicOrigin ? [new URL(publicOrigin).hostname] : []), ...(backendOrigin ? [new URL(backendOrigin).hostname] : [])]);
     const auth = createAdminAuth(passwordHash, !!publicOrigin);
     const metaSettings = metaConfig();
+    metaSettings.mediaOrigin = backendOrigin || publicOrigin;
     if (metaSettings.ready && (publicOrigin ? metaSettings.origin !== publicOrigin : !['127.0.0.1', 'localhost'].includes(new URL(metaSettings.redirectUri).hostname))) throw new Error('Meta callback origin must match the Socialchoice app origin');
     const store = createStore(dbPath);
     const meta = createMetaConnection(store, auth, metaSettings);

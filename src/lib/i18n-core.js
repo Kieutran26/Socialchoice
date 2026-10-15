@@ -1,9 +1,10 @@
 import common from './locales/vi-common.json' with { type: 'json' };
 import pages from './locales/vi-pages.json' with { type: 'json' };
 import components from './locales/vi-components.json' with { type: 'json' };
+import instagram from './locales/vi-instagram.json' with { type: 'json' };
 
 export const LANGUAGE_STORAGE_KEY = 'socialchoice.language';
-export const messages = { ...common, ...components, ...pages };
+export const messages = { ...common, ...components, ...pages, ...instagram };
 export const normalizeLanguage = (value) => value === 'en' ? 'en' : 'vi';
 const listeners = new Set();
 function storedLanguage() {

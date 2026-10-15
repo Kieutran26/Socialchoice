@@ -84,7 +84,7 @@ export default function SocialAccounts() {
         <>
             <PageHeader
                 title={t("Social Accounts")}
-                description={t("Every destination this workspace can publish to, grouped by brand. Facebook Pages are the publishing targets — personal timelines are not supported by the official API.")}
+                description={t('Manage connected Facebook Pages and Instagram professional accounts, grouped by brand.')}
                 actions={
                     <button type="button" className="btn-skew" onClick={() => setAddOpen(true)}>
                         <Plus size={15} weight="bold" /> {t("Add destination")} </button>
@@ -161,14 +161,14 @@ export default function SocialAccounts() {
                                                                 className="h-8 rounded-lg text-[12px]"
                                                                 onClick={() => {
                                                                     if (!account.credential_id) return setFixTarget(account);
-                                                                    appClient.meta.start(account.brand_id).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
+                                                                    appClient.meta.start(account.brand_id, account.platform).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
                                                                 }}
                                                             > {t("Fix connection")} </Button>
                                                             {account.credential_id && <Button variant="outline" size="sm" onClick={async () => {
-                                                                try { await appClient.meta.check(account.id); toast({ title: t('Facebook Page access verified') }); }
+                                                                try { await appClient.meta.check(account.id); toast({ title: t(account.platform === 'instagram' ? 'Instagram access verified' : 'Facebook Page access verified') }); }
                                                                 catch (e) { toast({ variant: 'destructive', title: t(e.message) }); }
                                                                 finally { load(); }
-                                                            }}>{t('Check Facebook access')}</Button>}
+                                                            }}>{t(account.platform === 'instagram' ? 'Check Instagram access' : 'Check Facebook access')}</Button>}
                                                             <Button
                                                                 variant="ghost"
                                                                 size="sm"

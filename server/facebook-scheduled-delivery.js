@@ -43,10 +43,10 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 if (current.credentialId !== value.credentialId || JSON.stringify(current.media) !== JSON.stringify(value.media)) fail('Post or Page changed. Review the post again.', 409);
                 const scheduled = store.publishingWrite('Post', { status: 'scheduled', timezone:value.timezone, scheduled_at: new Date(value.scheduledFor).toISOString() }, post.id);
                 const existing = store.all('PublishJob').find(job => job.post_id === post.id && job.social_account_id === value.accountId);
-                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: 'facebook', status: 'pending', scheduled_for: scheduled.scheduled_at, attempts: 0, max_attempts: 1, error_message: '', is_demo: false }, existing?.id);
+                const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: value.platform||'facebook', status: 'pending', scheduled_for: scheduled.scheduled_at, attempts: 0, max_attempts: 1, error_message: '', is_demo: false }, existing?.id);
                 const queued = { ...value, status: 'queued', approvedAt: Date.now(), revision: JSON.stringify(scheduled), jobId: job.id };
                 store.saveAttempt(queued);
-                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:'facebook',level:'info',message:'Automatic Facebook publishing is confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
+                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:value.platform==='instagram'?'Automatic Instagram publishing is confirmed.':'Automatic Facebook publishing is confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
                 return summary(queued);
             });
         },
@@ -62,7 +62,7 @@ export function createScheduledDelivery(store, prepare, summary, wake, publish) 
                 store.publishingWrite('PublishJob', { status: 'cancelled', error_message: 'Automatic schedule cancelled.' }, attempt.jobId);
                 const post = store.publishingWrite('Post', { status: 'draft', scheduled_at: null }, postId);
                 store.saveAttempt({ ...attempt, status: 'prepared', expiresAt: 0, scheduledFor: undefined, cancelledAt: Date.now(), revision: JSON.stringify(post) });
-                store.publishingWrite('PublishingLog',{post_id:postId,publish_job_id:attempt.jobId,account_name:attempt.pageName,platform:'facebook',level:'info',message:'Automatic schedule cancelled.',occurred_at:new Date().toISOString(),is_demo:false});
+                store.publishingWrite('PublishingLog',{post_id:postId,publish_job_id:attempt.jobId,account_name:attempt.pageName,platform:attempt.platform||'facebook',level:'info',message:'Automatic schedule cancelled.',occurred_at:new Date().toISOString(),is_demo:false});
                 return { postId, status: 'draft' };
             });
             await wake(Date.now() + 100);

@@ -66,6 +66,7 @@ test('OAuth start binds state to admin session and cookie; invalid/cancelled/rep
         const result = await meta.execute('start', req, res, [brand.id]);
         const url = new URL(result.url);
         assert.equal(url.hostname, 'www.facebook.com');
+        assert.ok(url.searchParams.get('scope').split(',').includes('pages_read_user_content'));
         assert.equal(url.searchParams.has('client_secret'), false);
         const state = url.searchParams.get('state');
         await assert.rejects(() => meta.callback({ url: `/api/meta/callback?state=${state}&error=access_denied`, headers: {} }, res), { status: 400 });

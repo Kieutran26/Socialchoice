@@ -14,3 +14,6 @@ worker-dist/
 vercel.json.before-api-proxy
 
 .test-tools/
+plans/261013-2157-one-page-analytics-test/live-*
+plans/reports/instagram-meta-permissions-261014.jpg
+plans/reports/instagram-oauth-review-261014.jpg
