@@ -14,9 +14,9 @@ export function metricOptions(input={}) {
     return {...options,start,end};
 }
 export function performanceReport(candidates,ready) {
-    const rows=candidates.items.map(({attempt,post,account,pillar,metric})=>({
+    const rows=candidates.items.map(({attempt,post,account,pillar,metric,publishedAt})=>({
         attemptId:attempt.id,postId:post.id,title:post.title,pageName:account.name,accountId:account.id,pillarId:post.pillar_id||'',pillarName:pillar?.name||'',
-        publishedAt:new Date(attempt.finishedAt).toISOString(),publishedUrl:attempt.url?.startsWith('https://www.facebook.com/')?attempt.url:null,
+        publishedAt:new Date(publishedAt??attempt.finishedAt).toISOString(),publishedUrl:attempt.url?.startsWith('https://www.facebook.com/')?attempt.url:null,
         checkedAt:metric?.lastAttemptAt||null,metrics:Object.fromEntries(metricNames.map(name=>{
             const saved=metric?.[name];return [name,{value:saved?.value??null,updatedAt:saved?.updatedAt||null,error:saved?.error||null,stale:!!saved?.updatedAt&&(!!saved.error||Date.now()-saved.updatedAt>86400000)}];
         })),

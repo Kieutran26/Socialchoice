@@ -1,0 +1,19 @@
+# One-Page real analytics verification
+
+Date:2026-10-13 Asia/Saigon. Result: real read test completed on Deszy; reaction/comment counters blocked by an explicitly identified Meta permission. No successful counter retrieval, OAuth permission grant or new online deployment is claimed.
+
+Verified by authorized read-only requests: exact owned Cloudflare account/namespace; Deszy Page connection; four privately confirmed Socialchoice publications; valid PAGE token for the configured Meta App with pages_show_list/pages_read_engagement/pages_manage_posts and granular grants for this Page. Page id/name and published_posts metadata reads returned200. Token/secret values were kept in memory, never printed.
+
+Actual metric reads through the application's service returned unavailable counts, not invented zero. Three stored text/photo/scheduled IDs produced code10; the known video object returned code100/subcode33 (unsupported/not-found/access ambiguity). A separate existing post returned by the Page's own published_posts list also denied reaction/comment summaries. Its actual Meta error explicitly states pages_read_user_content or Page Public Content Access is required. Combined published_posts count expansion returned the same named permission error. Therefore reconnect/App permission work is required; this is not solved by entering fake counts or changing local scopes manually. No arbitrary post import was performed.
+
+Live tests used current source against an isolated in-memory SQLite copy of authorized remote metadata/encrypted credentials. All remote SQL was SELECT-only and Graph operations were GET. Snapshots were transient, production attempts/posts/media/schedules/connections were unchanged. Sanitized detailed diagnostic files and their Page-specific helper scripts are excluded from Git by a narrowly scoped live-* ignore rule. No sessions were decrypted, no password/auth cookie was extracted, and no user login controls were bypassed; the authorized management API and existing server-owned Page credential were used.
+
+Found/fixed: every legacy published attempt lacked finishedAt but corresponding Post had server-confirmed published_at. Analytics now reads that timestamp as a compatibility fallback, preserving attempts/history; new per-attempt finishedAt takes precedence. Regression tests cover exact millisecond date bounds and preservation.
+
+Source fixes also request pages_read_user_content on the official reconnect OAuth URL, preserve a bounded user_content_permission_required error enum and display actionable bilingual reconnect guidance. Existing publishing grants/behavior remain unchanged; adding a requested scope does not grant it automatically. Owner must enable/authorize the permission through Meta, followed by real Page reimport. Source changes are not yet deployed.
+
+Validation:80/80 full tests, typecheck/lint/build passed. Existing large-bundle build warning remains. Independent review found no fallback date/persistence regression; its unignored diagnostic concern was addressed with the scoped ignore rule. Final OAuth/reason/UI review completed with no evidenced concerns. No development/background service was started for this test; the pre-existing local server51580:3001 was untouched. Native browser controller failed initialization, so online UI/login was not claimed.
+
+Owning docs: README.md, docs/facebook-analytics.md and docs/facebook-connection-setup.md now record actual access requirements and result. Production Worker remains the previously verified version; its namespace/keys/bindings were not changed.
+
+Unresolved: Meta App enablement and owner consent for pages_read_user_content; deploy the reviewed source and reconnect/import Deszy before rerunning online Analytics. Advanced Access/general app approval is not claimed. Counter access for the video remains unconfirmed until authorization/object availability can be checked again.

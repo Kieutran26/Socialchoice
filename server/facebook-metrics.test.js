@@ -48,6 +48,12 @@ test('metric reader uses bounded count-only queries and isolates unsupported/per
     await assert.rejects(()=>read('123','https://evil.example/','token'),/identity/);assert.equal(calls.length,3);
 });
 
+test('Facebook missing user-content grant is preserved as an actionable reconnect reason',async()=>{
+    const read=createMetricsGraph(async()=>{throw Object.assign(new Error('Permission fixture'),{metaCode:10,metaReason:'user_content_permission_required'});});
+    const result=await read('123','123_1','not-a-live-token');
+    for(const metric of Object.values(result)){assert.equal(metric.value,null);assert.equal(metric.error,'user_content_permission_required');}
+});
+
 test('eligible reports exclude drafts/demo/unknown/forged jobs, deduplicate IDs and isolate brand/Page/Pillar/date',()=>{
     const f=fixture();try{
         const service=createFacebookMetrics(f.store,{ready:false});const initial=service.list(f.filters);
@@ -96,4 +102,18 @@ test('snapshots and cooldown survive restart; malformed filters and missing gran
         const attempt=f.store.attempt('fixture-0');f.store.metrics.save(attempt.id,{...f.store.metrics.read(attempt.id),lastAttemptAt:0});f.store.verifiedAccount({scopes:[]},accountId);await reopened.refresh(filters);assert.equal(calls,1);
         for(const input of [null,[],{externalId:'evil'},{start:'bad',end:'bad'},{start:'2020-01-01',end:'2026-01-01'},{accountId:100}])assert.throws(()=>metricOptions(input),/filters|date range/);
     }finally{f?.store.close();rmSync(folder,{recursive:true,force:true});}
+});
+
+test('legacy confirmed deliveries use the server-confirmed Post timestamp without rewriting attempt history',()=>{
+    const f=fixture(':memory:',1);try{
+        const publishedAt=new Date(Date.now()-3600000).toISOString();
+        f.store.saveAttempt({...f.attempts[0],finishedAt:undefined});
+        f.store.publishingWrite('Post',{status:'published',published_at:publishedAt},f.attempts[0].postId);
+        const service=createFacebookMetrics(f.store,{ready:false});
+        const report=service.list(f.filters);assert.equal(report.total,1);assert.equal(report.rows[0].publishedAt,publishedAt);
+        assert.equal(f.store.attempt(f.attempts[0].id).finishedAt,undefined);
+        assert.equal(service.list({...f.filters,start:new Date(Date.parse(publishedAt)+1).toISOString()}).total,0);
+        f.store.saveAttempt(f.attempts[0]);
+        assert.equal(service.list(f.filters).rows[0].publishedAt,new Date(f.attempts[0].finishedAt).toISOString());
+    }finally{f.store.close();}
 });

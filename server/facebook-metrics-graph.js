@@ -14,7 +14,7 @@ export function createMetricsGraph(read) {
         if(!/^\d+$/.test(pageId)||!new RegExp(`^(?:${pageId}_[0-9]+|[0-9]+)$`).test(externalId))fail('Confirmed Facebook post identity required',409);
         const entries=await Promise.all(Object.entries(METRIC_FIELDS).map(async([metric,field])=>{
             try {const data=await read(externalId,{fields:`id,from,${field}`},token);return [metric,{value:parseFacebookMetric(data,pageId,externalId,metric)}];}
-            catch(error){return [metric,{value:null,error:[190,10,200].includes(error.metaCode)?'permission_required':error.metaCode===100?'metric_unavailable':'read_failed'}];}
+            catch(error){return [metric,{value:null,error:error.metaReason==='user_content_permission_required'?'user_content_permission_required':[190,10,200].includes(error.metaCode)?'permission_required':error.metaCode===100?'metric_unavailable':'read_failed'}];}
         }));
         return Object.fromEntries(entries);
     };
