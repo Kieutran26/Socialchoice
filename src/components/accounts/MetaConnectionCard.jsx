@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 const connectionSteps = { code_exchange: 'Confirming Facebook sign-in', token_exchange: 'Preparing Facebook access', profile: 'Reading Facebook profile', permissions: 'Checking Facebook permissions', pages: 'Loading Facebook Pages', connection: 'Completing Facebook connection' };
 const connectionReasons = { timeout: 'Meta request timed out', network: 'Cannot reach Meta', response_format: 'Unexpected Meta response', redirect: 'Unexpected Meta response' };
 
-export default function MetaConnectionCard({ onAddManually, brands = [], defaultBrandId = '', onChanged = () => {}, demoMode = false }) {
+export default function MetaConnectionCard({ onAddManually = null, brands = [], defaultBrandId = '', onChanged = () => {}, demoMode = false, initialPlatform = 'facebook', lockPlatform = false, embedded = false, onBusyChange = (_value) => {}, onPlatformResolved = (_value) => {} }) {
     const { t } = useTranslation();
     const [status, setStatus] = useState(null);
     const [threadsStatus,setThreadsStatus]=useState(null);
@@ -16,21 +16,26 @@ export default function MetaConnectionCard({ onAddManually, brands = [], default
     const [selected, setSelected] = useState([]);
     const [error, setError] = useState('');
     const [busy, setBusy] = useState(false);
-    const [platform, setPlatform] = useState('facebook');
+    const [platform, setPlatform] = useState(initialPlatform);
+    useEffect(() => { onBusyChange(busy); return () => onBusyChange(false); }, [busy, onBusyChange]);
     useEffect(() => { setBrandId(defaultBrandId); }, [defaultBrandId]);
     useEffect(() => {
         let active = true;
         Promise.all([appClient.meta.status(), appClient.meta.pages(),appClient.threads.status(),appClient.threads.profile()]).then(([health, pages,threadsHealth,profile]) => {
             if (active) {
                 setStatus(health);setThreadsStatus(threadsHealth);
-                const threadsFlow=new URLSearchParams(window.location.search).has('threads');
-                setSelection(threadsFlow ? {...profile,pages:profile.profile?[{...profile.profile,name:profile.profile.username}]:[]} : pages);
+                const metaReturn=new URLSearchParams(window.location.search).has('meta');
+                const threadsFlow=lockPlatform ? initialPlatform==='threads' : new URLSearchParams(window.location.search).has('threads');
+                const pending=threadsFlow ? {...profile,pages:profile.profile?[{...profile.profile,name:profile.profile.username}]:[]} : pages;
+                setSelection(!lockPlatform || metaReturn || pending.platform===initialPlatform ? pending : null);
+                if(pending.pending && pending.brandId && (!lockPlatform || metaReturn || pending.platform===initialPlatform))setBrandId(pending.brandId);
                 if(threadsFlow)setPlatform('threads');
+                else if(metaReturn && pages.pending && pages.platform){setPlatform(pages.platform);onPlatformResolved(pages.platform);}
             }
         }).catch(e => { if (active) setError(e.message); });
         const result = new URLSearchParams(window.location.search).get('meta');
-        if (result === 'failed') setError('Facebook connection failed. Check Meta app configuration and permissions, then try again.');
-        if (result === 'cancelled') setError('Facebook connection cancelled.');
+        if (result === 'failed') setError('Meta connection failed. Check app configuration and permissions, then try again.');
+        if (result === 'cancelled') setError('Meta connection cancelled.');
         const threadsResult=new URLSearchParams(window.location.search).get('threads');
         if(threadsResult==='failed')setError('Threads connection failed. Check app configuration and permissions.');
         if(threadsResult==='cancelled')setError('Threads connection cancelled.');
@@ -47,23 +52,24 @@ export default function MetaConnectionCard({ onAddManually, brands = [], default
         catch (e) { setError(e.message); }
         finally { setBusy(false); }
     }
-    return <section className="panel mb-5 p-5"><div className="flex gap-3"><WarningCircle size={22} className="text-warnFg shrink-0" /><div className="flex-1">
-        <h2 className="text-base">{t('Connect Facebook, Instagram and Threads')}</h2>
-        <p className="label-xs mt-2">{t('Choose a platform and authorize it on its official sign-in page. Instagram requires a professional account linked to a Facebook Page.')}</p>
-        {!status?.ready && <p className="label-xs mt-2">{t('Configure the Meta App on the server first. Never enter a Facebook password here.')}</p>}
+    return <section className={embedded ? 'space-y-3' : 'panel mb-5 p-5'}><div className="flex gap-3">{!embedded && <WarningCircle size={22} className="text-warnFg shrink-0" />}<div className="flex-1">
+        {!embedded && <h2 className="text-base">{t('Connect Facebook, Instagram and Threads')}</h2>}
+        {!embedded && <p className="label-xs mt-2">{t('Choose a platform and authorize it on its official sign-in page. Instagram requires a professional account linked to a Facebook Page.')}</p>}
+        {embedded && platform==='instagram' && <p className="label-xs">{t('Instagram requires a Business or Creator account linked to a Facebook Page.')}</p>}
+        {!(platform==='threads'?threadsStatus?.ready:status?.ready) && <p className="label-xs mt-2">{t('Configure the Meta App on the server first. Never enter a Facebook password here.')}</p>}
         {platform==='threads' && <p className="label-xs mt-2">{t(threadsStatus?.ready?'Threads uses its own sign-in and permission grant. Select only the profile you want to connect.':'Threads setup is required on the server before connecting. Its app credentials are separate from Facebook and Instagram.')}</p>}
         {error && <p role="alert" className="text-sm text-dangerFg mt-3">{t(error)}</p>}
         {selection?.failure && <p role="alert" className="text-sm text-dangerFg mt-2">{t('Connection diagnostic')}: {t(connectionSteps[selection.failure.step] || connectionSteps.connection)} · {selection.failure.code ?? '—'}{selection.failure.subcode !== undefined ? ` / ${selection.failure.subcode}` : ''}</p>}
         {selection?.failure?.reason && <p className="text-sm text-dangerFg mt-1">{t(connectionReasons[selection.failure.reason])} · HTTP {selection.failure.httpStatus ?? '—'}</p>}
         <div className="flex flex-wrap items-center gap-3 mt-4">
-            <select aria-label={t('Connection platform')} value={platform} onChange={e => setPlatform(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
+            {!lockPlatform && <select aria-label={t('Connection platform')} value={platform} onChange={e => setPlatform(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="threads">Threads</option>
-            </select>
-            <select aria-label={t('Brand for Facebook Pages')} value={brandId} onChange={e => setBrandId(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
+            </select>}
+            <select aria-label={t(lockPlatform ? 'Channel brand' : 'Brand for Facebook Pages')} value={brandId} onChange={e => setBrandId(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="">{t('Choose brand')}</option>{brands.filter(b => !b.is_demo && b.status === 'active').map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
             <Button onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</Button>
-            <button onClick={onAddManually} className="border rounded-lg px-3 py-2 text-xs">{t('Add a destination reference')}</button>
+            {onAddManually && <button type="button" onClick={onAddManually} className="border rounded-lg px-3 py-2 text-xs">{t('Add a destination reference')}</button>}
         </div>
         {selection?.pending && <div className="border-t mt-5 pt-4">
             <h3 className="text-sm font-medium">{t(selection.platform==='threads'?'Choose the Threads profile to connect':selection.platform === 'instagram' ? 'Choose Instagram accounts to connect' : 'Choose Pages to connect')}</h3>

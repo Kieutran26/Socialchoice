@@ -1,5 +1,4 @@
-import LinkedinConnectionCard from '@/components/accounts/LinkedinConnectionCard';
-import TiktokConnectionCard from '@/components/accounts/TiktokConnectionCard';
+import AddChannelDialog, { hasConnectionReturn } from '@/components/accounts/add-channel-dialog';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { PlugsConnected, Plus, Trash, Plugs, WarningCircle } from '@phosphor-icons/react';
@@ -10,7 +9,6 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import MetaConnectionCard from '@/components/accounts/MetaConnectionCard';
 import AddAccountDialog from '@/components/accounts/AddAccountDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +23,7 @@ export default function SocialAccounts() {
     const [loading, setLoading] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const [addOpen, setAddOpen] = useState(false);
+    const [channelOpen,setChannelOpen]=useState(hasConnectionReturn);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [fixTarget, setFixTarget] = useState(null);
 
@@ -88,26 +87,22 @@ export default function SocialAccounts() {
                 title={t("Social Accounts")}
                 description={t('Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.')}
                 actions={
-                    <button type="button" className="btn-skew" onClick={() => setAddOpen(true)}>
-                        <Plus size={15} weight="bold" /> {t("Add destination")} </button>
+                    <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
+                        <Plus size={15} weight="bold" /> {t("Add channel")} </button>
                 }
             />
 
             <div className="space-y-5">
-                <LinkedinConnectionCard brands={brands} demoMode={demoMode} onChanged={load} />
-                <TiktokConnectionCard brands={brands} demoMode={demoMode} onChanged={load} />
-            <MetaConnectionCard brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => setAddOpen(true)} />
-
                 {loading ? (
                     <Skeleton className="h-[320px] rounded-2xl" />
                 ) : !accounts.length ? (
                     <EmptyState
                         icon={PlugsConnected}
                         title={t("No destinations yet")}
-                        description={t("Add the Facebook Pages you manage, then group them under the brand each one belongs to. Pages imported from Meta appear here with their real IDs once the connection is enabled.")}
+                        description={t("Connect your social accounts and group them by brand. Accounts appear here after you approve the connection.")}
                     >
-                        <button type="button" className="btn-skew" onClick={() => setAddOpen(true)}>
-                            <Plus size={15} weight="bold" /> {t("Add a destination")} </button>
+                        <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
+                            <Plus size={15} weight="bold" /> {t("Add channel")} </button>
                     </EmptyState>
                 ) : (
                     <>
@@ -203,6 +198,8 @@ export default function SocialAccounts() {
                     </>
                 )}
             </div>
+
+            <AddChannelDialog open={channelOpen} onOpenChange={setChannelOpen} brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => {setChannelOpen(false);setAddOpen(true);}} />
 
             <AddAccountDialog
                 open={addOpen}

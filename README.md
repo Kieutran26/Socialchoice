@@ -147,3 +147,11 @@ TikTok supports explicitly connected sandbox accounts, one reviewed MP4 video wi
 ## LinkedIn personal profiles
 
 Personal LinkedIn connection, reviewed public text/JPEG/PNG/MP4 publication and automatic scheduling are implemented. Tokens stay encrypted server-side; uncertain writes are not resent. Company Pages require a separate Community Management app and approval and remain unavailable. See [LinkedIn setup and publishing](docs/linkedin-publishing.md). Live authorization and publication must be verified separately from local tests.
+
+## Add channel
+
+Social Accounts → Add channel opens a platform grid with actual server readiness, supported formats and a separate planning-reference link. Existing OAuth and explicit account selection continue in the same dialog. See [channel connection guide](docs/channel-connections.md).
+
+## Content navigation
+
+The sidebar groups Create Post, All Posts, Content Calendar, Content Strategy, Content Pillars, Content Angles and Media Library under a collapsible Content section. Opening a content route expands its group; selecting a route closes the mobile drawer. Overview, Social Accounts, Analytics and Settings remain outside the group.

@@ -440,5 +440,7 @@
   "measured": "đã có số liệu",
   "Refresh has a one-minute cooldown per publication. Availability updates automatically.": "Mỗi lượt đăng cần chờ một phút giữa các lần cập nhật. Nút cập nhật sẽ tự khả dụng trở lại.",
   "Name": "Tên",
-  "Reconnect Facebook and grant pages_read_user_content": "Kết nối lại Facebook và cấp quyền đọc nội dung người dùng trên Page"
+  "Reconnect Facebook and grant pages_read_user_content": "Kết nối lại Facebook và cấp quyền đọc nội dung người dùng trên Page",
+  "Content": "Nội dung",
+  "Main navigation": "Điều hướng chính"
 }

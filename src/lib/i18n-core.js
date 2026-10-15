@@ -1,3 +1,4 @@
+import channels from './locales/vi-channels.json' with { type: 'json' };
 import linkedin from './locales/vi-linkedin.json' with { type: 'json' };
 import tiktok from './locales/vi-tiktok.json' with { type: 'json' };
 import common from './locales/vi-common.json' with { type: 'json' };
@@ -7,7 +8,7 @@ import instagram from './locales/vi-instagram.json' with { type: 'json' };
 import threads from './locales/vi-threads.json' with { type: 'json' };
 
 export const LANGUAGE_STORAGE_KEY = 'socialchoice.language';
-export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin };
+export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin, ...channels };
 export const normalizeLanguage = (value) => value === 'en' ? 'en' : 'vi';
 const listeners = new Set();
 function storedLanguage() {
