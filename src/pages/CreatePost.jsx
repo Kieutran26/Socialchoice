@@ -24,6 +24,9 @@ import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import ScheduleFields from '@/components/composer/ScheduleFields';
 import PostPreview from '@/components/composer/PostPreview';
 import PageSettings from '@/components/composer/PageSettings';
+import PlatformCaptions from '@/components/composer/PlatformCaptions';
+import DestinationChecks from '@/components/composer/DestinationChecks';
+import { PUBLISHING_PLATFORMS, destinationIssues } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -39,6 +42,7 @@ const emptyForm = (brandId) => ({
     brand_id: brandId || '',
     title: '',
     caption: '',
+    platform_captions: {},
     account_ids: [],
     pillar_id: '',
     angle_id: '',
@@ -64,6 +68,7 @@ export default function CreatePost() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [accounts, setAccounts] = useState([]);
+    const [tiktokCreators, setTiktokCreators] = useState({});
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [existing, setExisting] = useState(null);
@@ -96,7 +101,7 @@ export default function CreatePost() {
             setForm((prev) => ({
                 ...prev,
                 brand_id: brandId,
-                account_ids: [], pillar_id: '', angle_id: '', media: [], destination_settings: {},
+                account_ids: [], pillar_id: '', angle_id: '', media: [], destination_settings: {}, platform_captions: {},
                 timezone: brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE,
                 date: prev.date || preset.date,
                 time: prev.time || preset.time,
@@ -126,6 +131,7 @@ export default function CreatePost() {
                 brand_id: post.brand_id,
                 title: editId ? post.title : `${post.title} (copy)`,
                 caption: post.caption || '',
+                platform_captions: post.platform_captions || {},
                 destination_settings: Object.fromEntries(Object.entries(post.destination_settings || {}).map(([id,setting]) => {
                     const parts=toZonedParts(setting.scheduled_at,post.timezone || DEFAULT_TIMEZONE);
                     return [id,{tiktok:setting.tiktok,caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
@@ -151,6 +157,8 @@ export default function CreatePost() {
     );
     const brand = brands.find((b) => b.id === form.brand_id);
     const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
+    const platforms = [...new Set(selectedAccounts.map(account => account.platform))].filter(platform => PUBLISHING_PLATFORMS.includes(platform));
+    const checks = selectedAccounts.map(account => ({ account, issues: destinationIssues(form, account, form.media, demoMode, tiktokCreators[account.id]) }));
 
     const warnings = [];
     if (selectedAccounts.some(a=>a.platform==='instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
@@ -175,15 +183,19 @@ export default function CreatePost() {
         if (!form.caption.trim()) return t("The main caption cannot be empty.");
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
         if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different publishing accounts');
-        if (['publish','schedule'].includes(action) && !demoMode && selectedAccounts.some(account=>!['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform)||(account.platform==='facebook'&&account.account_type!=='page')||account.connection_status!=='connected')) return t('Connect the selected publishing accounts before publishing');
-        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='threads') && form.media.length>1)return t('Threads currently supports one photo or one video per post.');
-        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && !form.media.length) return t('Instagram requires photos or one video. Text-only posts are not supported.');
-        if (['publish','schedule'].includes(action) && selectedAccounts.some(account=>account.platform==='instagram') && form.media.length!==1) return t('Instagram currently supports one JPEG photo or one MP4 video per post.');
-        if(['publish','schedule'].includes(action)&&selectedAccounts.some(a=>a.platform==='tiktok')&&(form.media.length!==1||form.media[0].file_type!=='video'))return t('TikTok requires one MP4 video.');
+        if (['publish','schedule'].includes(action) && !demoMode) {
+            const failed = checks.find(check => check.issues.length);
+            if (failed) return `${failed.account.name}: ${t(failed.issues[0])}`;
+        }
         if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
         if (action === 'schedule' && !scheduledAt) return t("Set the publishing date and time.");
-        if (action === 'schedule' && new Date(scheduledAt) <= new Date()) {
-            return t("Pick a publishing time in the future, or use Publish now.");
+        if (action === 'schedule') {
+            for (const account of selectedAccounts) {
+                const localTime = form.destination_settings[account.id]?.localTime;
+                const [date, time] = localTime?.split('T') || [];
+                const instant = localTime ? toUtcIso(date, time, form.timezone) : scheduledAt;
+                if (!instant || Date.parse(instant) < Date.now() + 60000) return `${account.name}: ${t('Choose a publishing time at least one minute in the future')}`;
+            }
         }
         return null;
     };
@@ -200,7 +212,7 @@ export default function CreatePost() {
                 brand_id: form.brand_id,
                 title: form.title.trim(),
                 caption: form.caption,
-                platform_captions: {},
+                platform_captions: Object.fromEntries(Object.entries(form.platform_captions).filter(([,caption]) => caption.trim())),
                 destination_settings: Object.fromEntries(form.account_ids.map(id=>{
                     const setting=form.destination_settings[id] || {};
                     const [date,time]=setting.localTime?.split('T') || [];
@@ -257,7 +269,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t('Create a Facebook, Instagram, Threads, TikTok or LinkedIn post. Publish now or confirm automatic scheduling.')}
+                description={t('Compose once for multiple platforms. Customize captions, review each channel and publish now or schedule.')}
                 actions={
                     existing ? (
                         <>
@@ -349,7 +361,8 @@ export default function CreatePost() {
                         />
                     </section>
 
-                    {selectedAccounts.filter(a=>a.platform==='tiktok').map(account=><TiktokSettings key={account.id} account={account} value={form.destination_settings[account.id]?.tiktok} onChange={tiktok=>setForm(current=>({...current,destination_settings:{...current.destination_settings,[account.id]:{...current.destination_settings[account.id],tiktok}}}))}/>)}
+                    <PlatformCaptions platforms={platforms} captions={form.platform_captions} mainCaption={form.caption} onChange={platform_captions=>setForm(current=>({...current,platform_captions}))} />
+                    {selectedAccounts.filter(a=>a.platform==='tiktok').map(account=><TiktokSettings key={account.id} account={account} value={form.destination_settings[account.id]?.tiktok} onCreatorChange={creator=>setTiktokCreators(current=>({...current,[account.id]:creator}))} onChange={tiktok=>setForm(current=>({...current,destination_settings:{...current.destination_settings,[account.id]:{...current.destination_settings[account.id],tiktok}}}))}/>)}
                     <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
 
                     <section className="panel p-5">
@@ -388,7 +401,10 @@ export default function CreatePost() {
                         scheduledAt={scheduledAt}
                         timezone={form.timezone}
                         pageSettings={form.destination_settings}
+                        platformCaptions={form.platform_captions}
                     />
+
+                    <DestinationChecks checks={checks} post={form} />
 
                     {warnings.length ? (
                         <div className="panel p-4">

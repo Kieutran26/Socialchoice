@@ -6,6 +6,10 @@ This is a Base44 app repository. Treat it as user-owned application code, keep c
 
 Start with `README.md` for local setup, environment variables, and publish workflow.
 
+## UI Design Contract — Required
+
+Before creating, changing or reviewing UI, MUST read [docs/design-system.md](docs/design-system.md) and the affected shared components. This is the Socialchoice design contract for all AI agents and contributors. Preserve its tokens, typography, icons, skewed primary buttons, component patterns and responsive layout. Do not redesign or change global styles unless the user requests that scope. Reuse existing components; follow the anti-drift checklist and update the contract alongside intentional design changes.
+
 ## Base44 References
 
 - CLI overview: https://docs.base44.com/developers/references/cli/get-started/overview.md

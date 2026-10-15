@@ -19,9 +19,10 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
             const post=store.get('Post',postId);
             if(!time && !retryAccount && post.status!=='draft')fail('Publish now requires a live draft',409);
             const ids=retryAccount ? [retryAccount] : post.account_ids;
-            if (!ids?.length || ids.length>30 || new Set(ids).size!==ids.length) fail('Choose between 1 and 30 different Facebook Pages');
+            if (!ids?.length || ids.length>30 || new Set(ids).size!==ids.length) fail('Choose between 1 and 30 different publishing accounts');
             const accounts=ids.map(id=>store.get('SocialAccount',id));
-            if(new Set(accounts.map(account=>account.external_id)).size!==ids.length) fail('Choose different Facebook Pages');
+            // Provider IDs are unique within a platform, not across providers.
+            if(new Set(accounts.map(account=>JSON.stringify([account.platform,account.external_id]))).size!==ids.length) fail('Choose different publishing accounts');
             const items=ids.map(accountId=>{
                 const reviewed=prepare(postId,true,accountId,!!retryAccount);
                 const value=store.attempt(reviewed.attemptId);
@@ -59,7 +60,7 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
                 const post=store.get('Post',value.postId);
                 const job=store.publishingWrite('PublishJob',{post_id:post.id,brand_id:post.brand_id,social_account_id:value.accountId,account_name:value.pageName,platform:value.platform||'facebook',status:'pending',scheduled_for:new Date(value.scheduledFor||Date.now()).toISOString(),attempts:0,max_attempts:1,is_demo:false});
                 store.saveAttempt({...value,status:'queued',scheduledFor:value.scheduledFor||Date.now(),approvedAt:Date.now(),jobId:job.id,immediate:!scheduled});
-                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:value.platform==='instagram'?'Instagram profile delivery confirmed.':'Facebook Page delivery confirmed.',occurred_at:new Date().toISOString(),is_demo:false});
+                store.publishingWrite('PublishingLog',{post_id:post.id,publish_job_id:job.id,account_name:value.pageName,platform:value.platform||'facebook',level:'info',message:'Destination delivery approved; awaiting platform confirmation.',occurred_at:new Date().toISOString(),is_demo:false});
             }
             syncDeliveryState(store,review.postId);
             const confirmed={...review,status:scheduled?'queued':'processing'};store.savePublishingReview(confirmed);return reviewSummary(confirmed);

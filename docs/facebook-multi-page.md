@@ -12,7 +12,7 @@ Cancel this Page schedule affects only an unstarted job. Cancel automatic schedu
 
 Review retry for this Page is available only for a definitive failed attempt, including a local preflight rejection before sending. Reconnect/fix permissions first. The new review targets only that failed Page, keeps the frozen source content and preserves the old attempt/job/notification. Reconfirming or resending the old approval cannot trigger a retry. Published, processing, queued and unknown results are never eligible. Check Facebook before deliberately creating a new post for an unknown result.
 
-Bulk scheduling of separate drafts retains its one-Page-per-draft contract. Multi-Page posts use the composer. Platform metrics belong to the separate [Facebook analytics](facebook-analytics.md) feature; additional social platforms remain outside multi-Page publishing.
+Bulk scheduling of separate drafts retains its one-account-per-draft contract. Multi-account posts use the composer. The same grouped approval/queue also supports mixed Facebook, Instagram, Threads, TikTok and LinkedIn destinations; see [cross-platform composer](composer-preview.md). Platform metrics belong to the separate [Facebook analytics](facebook-analytics.md) feature.
 
 ## Storage and rollback
 

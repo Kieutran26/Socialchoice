@@ -65,7 +65,7 @@ test('duplicate Pages are rejected and a real connected destination is required'
     try {
         const { publisher, post, account } = fixture(store);
         store.write('Post', { account_ids: [account.id, account.id] }, post.id);
-        assert.throws(() => publisher.prepare(post.id), /different Facebook Pages/);
+        assert.throws(() => publisher.prepare(post.id), /different publishing accounts/);
         store.write('Post', { account_ids: [account.id] }, post.id);
         store.verifiedAccount({ connection_status: 'expired' }, account.id);
         assert.throws(() => publisher.prepare(post.id), /Connect a Facebook/);

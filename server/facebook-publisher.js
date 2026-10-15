@@ -19,6 +19,7 @@ import { createPhotoDelivery } from './facebook-photo-delivery.js';
 import { createVideoDelivery } from './facebook-video-delivery.js';
 import { createMultiPageDelivery } from './facebook-multi-page.js';
 import { contentRevision, syncDeliveryState } from './publishing-state.js';
+import { resolveCaption } from '../src/lib/publishing-content.js';
 
 const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
 
@@ -47,13 +48,13 @@ export function createFacebookPublisher(store, config, options = {}) {
     const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, platform:attempt.platform||'facebook', multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, tiktokOptions:attempt.tiktokOptions, tiktokCreator:attempt.tiktokCreator, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.platform==='tiktok'&&attempt.externalId?{providerPublishId:attempt.externalId}:{}), ...(attempt.message ? { message: attempt.message } : {}) });
 
     function destination(post, scheduled = false, accountId, execution = false) {
-        if(!config.ready&&!threadsConfig.ready&&!tiktokConfig.ready&&!linkedinConfig.ready)fail('Configure Meta before publishing',409);
+        if(!config.ready&&!threadsConfig.ready&&!tiktokConfig.ready&&!linkedinConfig.ready)fail('Configure the destination integration before publishing',409);
 
         if (post.is_demo || (!execution && post.status !== (scheduled ? 'scheduled' : 'draft'))) fail('Publish now requires a live draft', 409);
         const brand = store.get('Brand', post.brand_id);
         if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
-        if (!accountId && post.account_ids?.length !== 1) fail('Publish now requires exactly one Facebook Page', 409);
-        if(accountId && !post.account_ids?.includes(accountId)) fail('Choose a Page selected for this post',409);
+        if (!accountId && post.account_ids?.length !== 1) fail('Choose at least one publishing account', 409);
+        if(accountId && !post.account_ids?.includes(accountId)) fail('Choose an account selected for this post',409);
         const mediaIds = post.media_ids || [];
         if (mediaIds.length > 10 || new Set(mediaIds).size !== mediaIds.length) fail('Choose up to 10 different images');
         const media = mediaIds.map(id => {
@@ -63,13 +64,13 @@ export function createFacebookPublisher(store, config, options = {}) {
         });
         if(media.some(asset=>asset.file_type==='video')&&media.length!==1) fail('Choose one video or up to 10 images, not both');
         const account = store.get('SocialAccount', accountId || post.account_ids[0]);
-        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform) || account.account_type !== (account.platform!=='facebook'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !(account.platform==='linkedin'?linkedinMemberId(account.external_id):(account.platform==='tiktok'?/^[\w.-]{1,256}$/:/^\d+$/).test(account.external_id))) fail('Connect a Facebook Page before publishing', 409);
+        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform) || account.account_type !== (account.platform!=='facebook'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !(account.platform==='linkedin'?linkedinMemberId(account.external_id):(account.platform==='tiktok'?/^[\w.-]{1,256}$/:/^\d+$/).test(account.external_id))) fail(account.platform==='facebook'?'Connect a Facebook Page before publishing':'Connect the selected publishing accounts before publishing', 409);
         if(!(account.platform==='linkedin'?linkedinConfig.ready:account.platform==='tiktok'?tiktokConfig.ready:account.platform==='threads'?threadsConfig.ready:config.ready))fail('Configure the destination integration before publishing',409);
         const credential = account.platform==='tiktok'?tiktokTokens.peek(account):(account.platform==='linkedin'?linkedinVault:account.platform==='threads'?threadsVault:vault).read(account.credential_id);
         if (account.platform==='facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
         if (!['threads','tiktok','linkedin'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
-        if (typeof credential.token !== 'string' || !credential.token) fail('Reconnect Facebook before publishing', 409);
-        const caption = post.destination_settings?.[account.id]?.caption ?? (post.platform_captions?.[account.platform] || post.caption);
+        if (typeof credential.token !== 'string' || !credential.token) fail(account.platform==='facebook'?'Reconnect Facebook before publishing':'Reconnect the selected account before publishing', 409);
+        const caption = resolveCaption(post, account);
         if(account.platform==='linkedin') {
             if(credential.platform!=='linkedin'||credential.profileId!==account.external_id||!Number.isSafeInteger(credential.expiresAt)||credential.expiresAt<=Date.now()||!['openid','profile','w_member_social'].every(scope=>account.scopes?.includes(scope)&&credential.scopes?.includes(scope)))fail('Reconnect LinkedIn and grant publishing permissions',409);
             if(typeof caption!=='string'||!caption.trim()||Array.from(caption).length>3000)fail('LinkedIn caption must contain between 1 and 3000 characters');

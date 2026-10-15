@@ -2,6 +2,8 @@
 
 Standalone local content planning workspace. React/Vite frontend plus an owned Node/SQLite backend. The existing page layout, neutral palette, Mona Sans/Space Grotesk typography, Phosphor icons and skewed green buttons are retained. The supplied source had missing components and a broken entry file; Phase A restores them without replacing the existing page designs.
 
+UI source of truth: [Design system and AI implementation contract](docs/design-system.md). Read it before changing the interface; it documents current tokens, components, responsive behavior and the checklist for preventing visual drift.
+
 ## Run locally
 
 Prerequisite: Node.js 24 or newer, pnpm. No Base44 account, Deno, cloud credentials or paid connector required locally.
@@ -155,3 +157,7 @@ Social Accounts → Add channel opens a platform grid with actual server readine
 ## Content navigation
 
 The sidebar groups Create Post, All Posts, Content Calendar, Content Strategy, Content Pillars, Content Angles and Media Library under a collapsible Content section. Opening a content route expands its group; selecting a route closes the mobile drawer. Overview, Social Accounts, Analytics and Settings remain outside the group.
+
+## Cross-platform composer
+
+Select up to30 connected accounts from Facebook, Instagram, Threads, TikTok and LinkedIn within one brand. Compose shared content, optionally override captions by platform or account, inspect Channel checks, then review every destination before Publish now or Schedule. Shared media must fit all selected channels. Draft/edit/duplicate and preview preserve the same caption precedence; details retain independent account results and cancellation. See [composer behavior and verification](docs/composer-preview.md). Verified locally with isolated tests and browser fixtures; no live cross-platform publication or deployment is claimed.

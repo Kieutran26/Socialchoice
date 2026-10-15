@@ -65,7 +65,7 @@ test('Worker authentication and Vietnamese content survive runtime restart', asy
         assert.equal((await request('/api/publishing/prepare', [draft.id])).status, 401);
         const prepare = await request('/api/publishing/prepare', [draft.id], cookie);
         assert.equal(prepare.status, 409);
-        assert.match((await prepare.json()).message, /Configure Meta/);
+        assert.match((await prepare.json()).message, /Configure the destination integration before publishing/);
         assert.equal((await request('/api/publishing/publish', ['nonexistent'], cookie)).status, 404);
         const history = await request('/api/entities/PublishJob/list', [], cookie);
         assert.equal((await history.json()).items.length, 0);

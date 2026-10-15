@@ -3,10 +3,10 @@ import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
 
 const empty={privacy:'',allowComment:false,allowDuet:false,allowStitch:false,commercial:false,ownBrand:false,brandedContent:false,aiGenerated:false,musicConsent:false};
-export default function TiktokSettings({ account, value, onChange }) {
+export default function TiktokSettings({ account, value, onChange, onCreatorChange = (_creator) => {} }) {
     const { t }=useTranslation();
     const [creator,setCreator]=useState(null),[error,setError]=useState(''),[busy,setBusy]=useState(false),[refresh,setRefresh]=useState(0);
-    useEffect(()=>{let active=true;setBusy(true);setCreator(null);setError('');appClient.tiktok.creator(account.id).then(info=>{if(active){setCreator(info);onChange({...empty});}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[account.id,account.credential_id,refresh]); // Choices always reset when fresh creator settings arrive.
+    useEffect(()=>{let active=true;setBusy(true);setCreator(null);onCreatorChange(null);setError('');appClient.tiktok.creator(account.id).then(info=>{if(active){setCreator(info);onCreatorChange(info);onChange({...empty});}}).catch(e=>{if(active)setError(e.message);}).finally(()=>{if(active)setBusy(false);});return()=>{active=false;};},[account.id,account.credential_id,refresh]); // Choices always reset when fresh creator settings arrive.
     const options=value||empty;
     const change=patch=>onChange({...options,...patch,...(patch.commercial===false?{ownBrand:false,brandedContent:false}:{})});
     const checkbox=(key,label,disabled=false)=><label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1" checked={!!options[key]} disabled={busy||!creator||disabled} onChange={e=>change({[key]:e.target.checked})}/>{t(label)}</label>;

@@ -21,7 +21,7 @@ export default function PublishConfirmation({ review, onClose, onResult }) {
         } finally { setBusy(false); }
     }
     return <Dialog open onOpenChange={open => !open && !busy && onClose()}><DialogContent className="max-w-2xl"><DialogHeader><DialogTitle>{t('Confirm publication')}</DialogTitle></DialogHeader>
-        <p className="text-sm mb-4">{t(review.scheduledFor ? 'Review every Page, caption, media and publishing time before confirming.' : 'This will publish the reviewed content to every Page below.')}</p>
+        <p className="text-sm mb-4">{t(review.scheduledFor ? 'Review every account, caption, media and publishing time before confirming.' : 'This will publish the reviewed content to every account below.')}</p>
         <div className="space-y-4">{items.map(item=><section key={item.attemptId} className="rounded-lg border p-4 min-w-0">
             <p className="font-medium break-words">{item.pageName} <span className="label-xs">· {item.platform==='linkedin'?'LinkedIn':item.platform==='tiktok'?'TikTok':item.platform==='threads'?'Threads':item.platform === 'instagram' ? 'Instagram' : 'Facebook'} · {item.pageId}</span></p>
             {review.scheduledFor && <p className="text-sm my-2">{formatDateTime(new Date(item.scheduledFor).toISOString(),item.timezone || 'Asia/Ho_Chi_Minh')} · {item.timezone || 'Asia/Ho_Chi_Minh'}</p>}

@@ -39,6 +39,7 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (angle.status === 'archived' && record.angle_id !== previous?.angle_id) fail('Choose an active angle');
     }
     for (const id of record.account_ids || []) sameScope(store.get('SocialAccount', id));
+    if (entity === 'Post' && record.platform_captions && Object.values(record.platform_captions).some(caption => typeof caption !== 'string' || caption.length > 63206)) fail('Invalid platform captions');
     if(entity==='Post' && record.destination_settings) {
         for(const [id,settings] of Object.entries(record.destination_settings)) {
             if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!['caption','scheduled_at','tiktok'].includes(key))) fail('Invalid per-Page settings');
