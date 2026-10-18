@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { appClient } from '@/api/app-client';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Mail, ArrowLeft, Loader2 } from "lucide-react";
+import { EnvelopeSimple as Mail, ArrowLeft, SpinnerGap as Loader2 } from "@phosphor-icons/react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ForgotPassword() {
@@ -59,16 +58,16 @@ export default function ForgotPassword() {
                             />
                         </div>
                     </div>
-                    <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+                    <button type="submit" className="btn-skew w-full h-12 font-medium" disabled={loading}>
                         {loading ? (
                             <>
-                                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                                <Loader2 weight="duotone" size={16} className="w-4 h-4 mr-2 animate-spin" />
                                 Sending...
                             </>
                         ) : (
                             "Send reset link"
                         )}
-                    </Button>
+                    </button>
                 </form>
             )}
         </AuthLayout>

@@ -4,10 +4,10 @@ import { appClient } from '@/api/app-client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { UserPlus, Mail, Lock, Loader2 } from "lucide-react";
+import { UserPlus, EnvelopeSimple as Mail, Lock, SpinnerGap as Loader2 } from "@phosphor-icons/react";
 import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
+import { GoogleLogo as GoogleIcon } from "@phosphor-icons/react";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
@@ -101,25 +101,25 @@ export default function Register() {
                         </InputOTPGroup>
                     </InputOTP>
                 </div>
-                <Button
-                    className="w-full h-12 font-medium"
+                <button type="button"
+                    className="btn-skew w-full"
                     onClick={handleVerify}
                     disabled={loading || otpCode.length < 6}
                 >
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 size={16} weight="duotone" className="animate-spin" />
                             Verifying...
                         </>
                     ) : (
                         "Verify"
                     )}
-                </Button>
+                </button>
                 <p className="text-center text-sm text-muted-foreground mt-4">
                     Didn't receive the code?{" "}
-                    <button onClick={handleResend} className="text-primary font-medium hover:underline">
+                    <Button variant="ghost" type="button" onClick={handleResend} className="h-auto p-0 text-primary font-medium hover:underline">
                         Resend
-                    </button>
+                    </Button>
                 </p>
             </AuthLayout>
         );
@@ -147,7 +147,7 @@ export default function Register() {
                 className="w-full h-12 text-sm font-medium mb-6"
                 onClick={handleGoogle}
             >
-                <GoogleIcon className="w-5 h-5 mr-2" />
+                <GoogleIcon size={16} weight="duotone" />
                 Continue with Google
             </Button>
 
@@ -216,16 +216,16 @@ export default function Register() {
                         />
                     </div>
                 </div>
-                <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+                <button type="submit" className="btn-skew w-full h-12 font-medium" disabled={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 weight="duotone" size={16} className="w-4 h-4 mr-2 animate-spin" />
                             Creating account...
                         </>
                     ) : (
                         "Create account"
                     )}
-                </Button>
+                </button>
             </form>
         </AuthLayout>
     );

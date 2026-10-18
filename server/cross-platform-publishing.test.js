@@ -113,3 +113,86 @@ test('duplicate identities within one platform are rejected; malformed platform 
         assert.throws(() => f.store.write('Post', { platform_captions: { threads: { caption: 'invalid' } } }, f.post.id), /Invalid platform captions/);
     } finally { f.close(); }
 });
+
+const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX6kAAAAASUVORK5CYII=', 'base64');
+
+test('platform media persists, inherits, allows text-only and protects override references', () => {
+    const f = fixture();
+    try {
+        const image = f.store.images.upload(f.post.brand_id, 'image.png', 'image/png', png);
+        const overrides = { facebook: [image.id], threads: [], linkedin: [] };
+        const post = savePostPlan(f.store, { id: f.post.id, data: { status: 'draft', platform_media_ids: overrides } });
+        const review = f.publisher.prepare(post.id);
+        assert.deepEqual(review.items.map(item => item.media.map(asset => asset.id)), [[image.id], post.media_ids, [], post.media_ids, []]);
+        assert.throws(() => f.store.remove('MediaAsset', image.id), /history/);
+        const { id, created_date, updated_date, ...data } = post;
+        const duplicate = savePostPlan(f.store, { data });
+        assert.deepEqual(duplicate.platform_media_ids, overrides);
+        assert.deepEqual(f.store.get('Post', duplicate.id).platform_media_ids, overrides);
+        for (const invalid of [null, [], { youtube: [] }, { facebook: 'bad' }, { facebook: [3] }, { facebook: [''] }, { facebook: [image.id, image.id] }, { facebook: Array(11).fill(image.id) }]) {
+            assert.throws(() => f.store.write('Post', { platform_media_ids: invalid }, post.id), /Invalid platform[ _]media/);
+        }
+        const other = f.store.write('Brand', { name: 'Other brand' });
+        const foreign = f.store.images.upload(other.id, 'foreign.png', 'image/png', png);
+        assert.throws(() => f.store.write('Post', { platform_media_ids: { facebook: [foreign.id] } }, post.id), /Cross-brand/);
+        assert.throws(() => f.store.write('Post', { platform_media_ids: { instagram: ['missing'] } }, post.id), /not found/);
+        const demo = f.store.write('MediaAsset', { name: 'demo', file_url: 'https://example.invalid/demo.png', file_type: 'image', is_demo: true });
+        assert.throws(() => f.store.write('Post', { platform_media_ids: { facebook: [demo.id] } }, post.id), /Cross-brand or demo/);
+        f.store.write('Post', { platform_media_ids: { instagram: [] } }, post.id);
+        assert.throws(() => f.publisher.prepare(post.id), /Instagram requires/);
+    } finally { f.close(); }
+});
+
+test('mixed image/video schedule keeps immutable destination snapshots and effective variants', async () => {
+    const f = fixture();
+    try {
+        const image = f.store.images.upload(f.post.brand_id, 'image.png', 'image/png', png);
+        f.store.write('Post', { platform_media_ids: { facebook: [image.id], threads: [], linkedin: [] } }, f.post.id);
+        const stale = f.publisher.prepareSchedule(f.post.id, future());
+        f.store.write('Post', { platform_media_ids: { facebook: [], threads: [], linkedin: [] } }, f.post.id);
+        await assert.rejects(() => f.publisher.schedule(stale.attemptId), /changed/);
+        assert.equal(f.store.queuedAttempts().length, 0);
+        f.store.write('Post', { platform_media_ids: { facebook: [image.id], threads: [], linkedin: [] } }, f.post.id);
+        const review = f.publisher.prepareSchedule(f.post.id, future());
+        await f.publisher.schedule(review.attemptId);
+        await f.publisher.schedule(review.attemptId);
+        assert.equal(f.store.all('PublishJob').length, 5);
+        assert.throws(() => f.store.write('Post', { platform_media_ids: {} }, f.post.id), /schedule|locked/);
+        assert.throws(() => f.store.remove('MediaAsset', image.id), /history/);
+        const instagram = review.items.find(item => item.platform === 'instagram');
+        const value = f.store.attempt(instagram.attemptId);
+        assert.deepEqual(value.media.map(asset => asset.id), f.post.media_ids);
+        // Claim media delivery only: the wake callback is inert and no provider request runs.
+        f.store.saveAttempt({ ...value, scheduledFor: Date.now() - 1 });
+        await f.publisher.publish(value.id);
+        await f.publisher.publish(value.id);
+        assert.deepEqual(f.store.all('PostVariant').map(variant => variant.media_ids), [f.post.media_ids]);
+        assert.equal(f.store.all('PublishJob').length, 5);
+        assert.deepEqual(f.store.attempt(review.items[0].attemptId).media.map(asset => asset.id), [image.id]);
+    } finally { f.close(); }
+});
+
+
+test('reviewed retry retains the failed destination platform media without resending siblings', async () => {
+    const f = fixture();
+    try {
+        const image = f.store.images.upload(f.post.brand_id, 'image.png', 'image/png', png);
+        f.store.write('Post', { platform_media_ids: { facebook: [image.id], threads: [], linkedin: [] } }, f.post.id);
+        const review = f.publisher.prepare(f.post.id);
+        await f.publisher.publish(review.attemptId);
+        for (const item of review.items) f.store.saveAttempt({ ...f.store.attempt(item.attemptId), scheduledFor: Date.now() + 600000 });
+        const facebook = review.items[0];
+        f.store.saveAttempt({ ...f.store.attempt(facebook.attemptId), scheduledFor: Date.now() - 1 });
+        f.store.verifiedAccount({ connection_status: 'disconnected' }, f.accounts[0].id);
+        await f.publisher.runDue();
+        assert.equal(f.store.attempt(facebook.attemptId).status, 'failed');
+        f.store.verifiedAccount({ connection_status: 'connected' }, f.accounts[0].id);
+        const retry = f.publisher.prepareRetry(f.post.id, f.accounts[0].id);
+        assert.deepEqual(retry.items[0].media.map(asset => asset.id), [image.id]);
+        await f.publisher.publish(retry.attemptId);
+        await f.publisher.publish(retry.attemptId);
+        assert.equal(f.store.all('PublishJob').length, 6);
+        assert.equal(f.store.queuedAttempts().length, 5);
+        assert.equal(f.store.attempt(facebook.attemptId).status, 'failed');
+    } finally { f.close(); }
+});

@@ -89,7 +89,7 @@ export default function Overview() {
                     description={t("Create a brand in Settings to start writing drafts and planning your calendar. The optional sample workspace is simulation only and never touches Meta.")}
                 >
                     <button type="button" className="btn-skew" onClick={() => switchMode(true)} disabled={seeding}>
-                        <SquaresFour size={15} weight="fill" />
+                        <SquaresFour size={16} weight="duotone" />
                         {seeding ? t("Preparing sample data…") : t("Load sample workspace")}
                     </button>
                     <Link to="/accounts" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Manage destination references")} </Link>
@@ -144,7 +144,7 @@ export default function Overview() {
                                 <p className="label-xs mt-1">{t("Finish them off or schedule them for the coming weeks.")}</p>
                             </div>
                             <Link to="/posts?status=draft" className="btn-skew">
-                                <PaperPlaneTilt size={15} weight="fill" /> {t("Review drafts")} </Link>
+                                <PaperPlaneTilt size={16} weight="duotone" /> {t("Review drafts")} </Link>
                         </div>
                     ) : null}
                 </div>

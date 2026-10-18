@@ -1,6 +1,6 @@
 # Socialchoice Design System — AI implementation contract
 
-Version: 1.0 · Baseline: 2026-10-15 · Applies to all application UI.
+Version: 1.2 · Updated: 2026-10-18 · Applies to all application UI.
 
 Mục đích: AI hoặc developer thêm tính năng mà vẫn giữ đúng giao diện Socialchoice hiện có. Đây là hợp đồng triển khai, không phải đề xuất thiết kế lại. `MUST` = bắt buộc; `MUST NOT` = không được; `SHOULD` = mặc định nên làm.
 
@@ -19,10 +19,10 @@ Tài liệu này ghi lại hệ thống đang dùng. Các quy tắc cho UI mới
 ## 2. Visual identity / những thứ phải giữ
 
 - Premium minimalist SaaS: phẳng, gọn, nền trắng, trung tính, border mảnh, khoảng trắng có chủ đích.
-- Green dùng có tiết chế cho CTA, selection và nhận diện; không phủ xanh dashboard hoặc mọi card.
+- Green dùng cho action chính (.btn-skew, primary buttons), selection và nhận diện; không phủ xanh dashboard hoặc mọi card.
 - Typography: Mona Sans cho heading; Space Grotesk cho nội dung.
 - Icon: `@phosphor-icons/react`. Không thêm Lucide, Font Awesome, emoji hoặc icon library khác vào UI.
-- Nút chính có nền xanh, chữ xanh đậm, nghiêng nhẹ và bóng cứng 4px.
+- Nút chính `.btn-skew`: nền xanh thương hiệu (`--brand-green` #79d94b), chữ xanh đậm (`--brand-green-ink` #203d17), viền `--brand-green-dark`, phẳng, radius 10px; không nghiêng, không bóng.
 - MUST NOT thêm gradient, glassmorphism, glow, decorative blobs, đổ bóng mềm hàng loạt, nền tím/xanh dương hoặc phong cách landing-page vào workspace.
 - MUST NOT thay bằng Inter/Poppins/Plus Jakarta Sans chỉ vì template hoặc package có sẵn. Font được tải trong HTML không tự động trở thành font được phép dùng.
 - Giữ light interface. `darkMode: ['class']` trong Tailwind không có nghĩa app đã có dark theme hoàn chỉnh; không tự thêm dark mode.
@@ -52,10 +52,10 @@ MUST dùng class semantic (`bg-card`, `text-foreground`, `border-border`) hoặc
 
 | CSS variable | Giá trị | Cách dùng |
 |---|---|---|
-| `--brand-green` | `#79d94b` | CTA; Tailwind `brand` |
-| `--brand-green-hover` | `#86e357` | Hover `.btn-skew` |
-| `--brand-green-dark` | `#568f38` | Border/bóng CTA; `brand-dark` |
-| `--brand-green-ink` | `#203d17` | Chữ CTA/selection; `brand-ink` |
+| `--brand-green` | `#79d94b` | Identity/selection/primary action; Tailwind `brand` |
+| `--brand-green-hover` | `#86e357` | Brand button hover tint |
+| `--brand-green-dark` | `#568f38` | Border/active identity; `brand-dark` |
+| `--brand-green-ink` | `#203d17` | Chữ button và selection; `brand-ink` |
 | `--brand-gray` | `#eaeaea` | Neutral identity; `brand-neutral` |
 
 ### Semantic tokens — giá trị bên trong `oklch(...)`
@@ -65,8 +65,8 @@ MUST dùng class semantic (`bg-card`, `text-foreground`, `border-border`) hoặc
 | `--background`, `--card`, `--popover` | `1 0 0` | Nền trắng |
 | `--foreground`, `--card-foreground`, `--popover-foreground` | `0.269 0 0` | Chữ chính |
 | `--surface` | `0.985 0 0` | Surface phụ/sidebar thực tế |
-| `--primary`, `--ring` | `0.7457 0.1639 137.671` | Primary semantic/focus |
-| `--primary-foreground` | `0.3281 0.0721 137.671` | Chữ trên primary |
+| `--primary`, `--ring` | `0.7457 0.1639 137.671` | Primary semantic/focus (brand green) |
+| `--primary-foreground` | `0.3281 0.0721 137.671` | Chữ trên primary (brand green ink) |
 | `--secondary`, `--muted`, `--accent` | `0.97 0 0` | Nền trung tính phụ |
 | `--secondary-foreground`, `--accent-foreground` | `0.269 0 0` | Chữ trên nền phụ |
 | `--muted-foreground` | `0.556 0 0` | Nhãn/helper/metadata |
@@ -74,7 +74,7 @@ MUST dùng class semantic (`bg-card`, `text-foreground`, `border-border`) hoặc
 | `--destructive` | `0.577 0.245 27.325` | Destructive semantic |
 | `--destructive-foreground` | `1 0 0` | Foreground destructive |
 
-`--primary` là bộ OKLCH riêng, không được tự coi là phép chuyển chính xác của `#79d94b`. `.btn-skew` dùng **brand variables**; không thay nền của nó bằng `bg-primary` vì thấy gần giống.
+Color tokens chứa OKLCH channels, không có wrapper. Consume bằng `oklch(var(--token))`. `.btn-skew` và primary button dùng màu xanh thương hiệu (`--brand-green` / `--brand-green-ink`).
 
 ### Status và chart
 
@@ -127,7 +127,7 @@ Hệ spacing hiện dùng Tailwind mặc định (1rem = 16px trong baseline): `
 | `rounded-2xl` | 10.8px |
 | `rounded-3xl` | 13.2px |
 
-`rounded-lg` không phải 8px và `rounded-2xl` không phải 16px của theme Tailwind mặc định. `.panel` dùng `rounded-2xl`; `.btn-skew` có radius **12px riêng**. Không “sửa cho đồng nhất” hai giá trị này. `rounded-full` chỉ cho avatar/chấm tròn, không thay toàn bộ button/card bằng pill.
+`rounded-lg` không phải 8px và `rounded-2xl` không phải 16px của theme Tailwind mặc định. `.panel` dùng `rounded-2xl`; `.btn-skew` có radius **10px riêng**. Không “sửa cho đồng nhất” hai giá trị này. `rounded-full` chỉ cho avatar/chấm tròn, không thay toàn bộ button/card bằng pill.
 
 ## 7. Layout và responsive
 
@@ -154,7 +154,7 @@ MUST giữ `min-w-0` cho cột có caption/media. Caption/tên dài dùng `break
 | Heading + mô tả + actions | `common/PageHeader` | Không tạo page header style riêng |
 | Panel | `.panel` | Nền card, border1px, radius2xl, không có soft shadow |
 | KPI | `common/StatCard` | `.metric`, số format qua `formatNumber` |
-| CTA | `ui/button` default hoặc `.btn-skew` | Không override background/transform/shadow |
+| CTA | `.btn-skew` | Một primary action mỗi surface; không override background/transform/shadow |
 | Secondary action | `Button variant="outline"` | Border trung tính, hover muted |
 | Subtle action | `Button variant="ghost"` | Border transparent; không dựng variant chưa có |
 | Field | `ui/input`, `ui/textarea`, `ui/select`, `ui/label` | White, border-input, rounded-lg, padding3/2 |
@@ -166,19 +166,18 @@ MUST giữ `min-w-0` cho cột có caption/media. Caption/tên dài dùng `break
 | Review đăng bài | `posts/PublishConfirmation` | Xem đúng tài khoản/nội dung/tệp/giờ trước xác nhận |
 | Danh sách bài | `posts/PostTable` | Header muted, row border, hover muted/50 |
 
-**Đọc implementation, không giả định API shadcn đầy đủ:** `Button` hiện chỉ phân nhánh style cho `default`, `outline`/non-default và `ghost`; `size="sm"` đổi text-xs, không có hệ height chuẩn 32/40/48px. Không truyền `variant="destructive"`, `size="icon"` rồi cho rằng có styling tương ứng. Các thư viện cài trong package không phải quyền dùng một style mới.
+### Button systems
 
-### Nút chính: hành vi phải giữ
-
-- `.btn-skew` base: padding9px18px, gap8px, font13px/500/line-height1, radius12px, skewX(-5deg).
-- Rest: nền brand-green, chữ brand-green-ink, border1px brand-green-dark, shadow `0 4px 0` brand-green-dark.
-- Hover: nền brand-green-hover.
-- Active: `skewX(-5deg) translateY(4px)` và shadow0.
-- Disabled: opacity0.5, cursor not-allowed; không bị nhún khi bấm.
-- Timing: transform/shadow100ms, background120ms.
-- `Button` wrapper thêm `text-sm` (14px) hoặc `size="sm"` thêm `text-xs` (12px); đây là override hiện có, không nhầm với base13px của class.
-
-Không thêm `shadow-lg`, `rounded-full`, `bg-blue-600`, `hover:scale-*` vào CTA. Icon CTA thường14–16px, dùng icon Phosphor, không emoji.
+- Một primary CTA mỗi page, dialog hoặc panel độc lập: dùng native button/link với `.btn-skew`.
+- Header đã có primary: CTA lặp ở empty state dùng `Button variant="outline"`, link qua `asChild`.
+- Composer: Publish now là primary; Schedule và Save draft dùng outline. Media upload trong composer là secondary; trong Media Library là primary.
+- Các nút khác dùng shadcn `Button` (class-variance-authority + Radix Slot), giữ event handlers, ref và type.
+- Variants: default (primary + shadow, hover primary/90), destructive (destructive, hover /90), outline (transparent border, hover accent), secondary (secondary, hover /80), ghost (transparent, hover accent), link (underline on hover).
+- Sizes: default h9 px4 py2; sm h8 px3 text-xs; lg h10 px8; icon h9 w9. Base rounded-md, text-sm, font-medium, focus ring, disabled opacity0.5/cursor not-allowed. Tile/image/navigation controls may preserve contextual dimensions.
+- Primary: nền brand-green (`#79d94b`), chữ brand-green-ink (`#203d17`); viền `var(--brand-green-dark)` 1px; radius 10px; padding 9px 16px; Space Grotesk 13px/500/line-height 1; gap 8px.
+- Hover enabled: background `var(--brand-green-hover)` (`#86e357`); active background `var(--brand-green-dark)` (`#568f38`). Disabled giữ shape, chỉ opacity 0.5 và cursor. Focus dùng ring token. Transition background-color/border-color/opacity 120ms ease.
+- Không gradients, glassmorphism, skew transform hoặc shadow trên primary. Không hardcode hex trên buttons.
+- Icons: Phosphor; trong primary size 16, weight duotone.
 
 ## 9. States, accessibility và nội dung
 
@@ -188,7 +187,7 @@ Không thêm `shadow-lg`, `rounded-full`, `bg-blue-600`, `hover:scale-*` vào CT
 - UI dùng `useTranslation().t(...)`; bổ sung bản dịch vào locale phù hợp. Không hardcode riêng tiếng Anh trên màn mới. Không dịch caption/tên do người dùng nhập.
 - Hiển thị ngày/số qua `format.js`, timezone qua contract hiện có; không tự gọi `toLocaleString()` thiếu timezone rồi tạo kết quả khác màn kế bên.
 - Input mới MUST có label liên kết bằng `htmlFor`/`id` hoặc label bao control; placeholder không thay label. Icon-only button phải có accessible name.
-- Giữ focus-visible: outline2px brand-green-dark, offset2px. Không bỏ outline nếu không có thay thế nhìn thấy được.
+- Giữ focus-visible: outline2px ring token, offset2px. Không bỏ outline nếu không có thay thế nhìn thấy được.
 - Dùng button/link thật; hỗ trợ bàn phím. UI mới phải có vùng bấm tối thiểu24×24px hoặc spacing tương đương; ưu tiên44px ở thao tác touch chính. Đây là yêu cầu cho thay đổi mới, không phải chứng nhận các control cũ đã đạt.
 - Lỗi quan trọng có `role="alert"`; trạng thái đang chạy có `role="status"` khi phù hợp. Không chỉ toast nếu người dùng cần sửa một field cụ thể.
 - Giữ chữ đọc được trên nền status. Nếu phát hiện vấn đề contrast, sửa đúng phạm vi và kiểm tra thực tế; không tự đổi palette toàn app.
@@ -219,9 +218,9 @@ export default function TitleEditor({ title, onTitleChange, onSave, busy }) {
                     onChange={event => onTitleChange(event.target.value)} />
             </div>
             <div className="flex flex-wrap justify-end gap-3">
-                <Button disabled={busy} onClick={onSave}>
+                <button type="button" className="btn-skew" disabled={busy} onClick={onSave}>
                     {t(busy ? 'Saving…' : 'Save draft')}
-                </Button>
+                </button>
             </div>
         </section>
     </>;
@@ -231,7 +230,7 @@ export default function TitleEditor({ title, onTitleChange, onSave, busy }) {
 ## 11. Anti-drift checklist trước khi giao
 
 - [ ] Đã đọc màn/component tương tự; không tạo bản sao của primitive có sẵn.
-- [ ] Font, green/neutral palette, border, radius, skewed CTA và navigation giữ đúng contract.
+- [ ] Font, neutral/green identity palette, border, radius, flat brand-green CTA và navigation giữ đúng contract.
 - [ ] Không sửa global token/layout ngoài phạm vi yêu cầu; không cài UI/icon/font library mới vì tiện.
 - [ ] State loading/empty/error/disabled có ý nghĩa thật; không thêm số liệu hoặc trạng thái đăng giả.
 - [ ] Nhãn/dịch/format nhất quán; caption và tên dài không phá bố cục.
@@ -244,4 +243,4 @@ export default function TitleEditor({ title, onTitleChange, onSave, busy }) {
 
 ## 12. Short instruction để mang sang AI khác
 
-> Before editing Socialchoice UI, read `docs/design-system.md`, `README.md`, the affected component and a similar existing screen. Preserve the documented light neutral/green identity, Mona Sans/Space Grotesk typography, Phosphor icons, skewed green primary buttons, custom radii, layout and responsive contracts. Reuse existing tokens and components. Do not redesign, change global styles or add a new UI system unless the user explicitly requests that scope. Verify relevant states and desktop/mobile behavior; report what was actually checked. Update the design contract only when an intentional design change is requested.
+> Before editing Socialchoice UI, read `docs/design-system.md`, `README.md`, the affected component and a similar existing screen. Preserve the documented light neutral/green identity, Mona Sans/Space Grotesk typography, Phosphor icons, flat brand-green primary buttons, custom radii, layout and responsive contracts. Reuse existing tokens and components. Do not redesign, change global styles or add a new UI system unless the user explicitly requests that scope. Verify relevant states and desktop/mobile behavior; report what was actually checked. Update the design contract only when an intentional design change is requested.

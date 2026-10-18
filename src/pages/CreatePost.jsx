@@ -1,3 +1,4 @@
+import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import TiktokSettings from '@/components/composer/TiktokSettings';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
@@ -19,6 +20,7 @@ import PageHeader from '@/components/common/PageHeader';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import StatusBadge from '@/components/common/StatusBadge';
 import AccountPicker from '@/components/composer/AccountPicker';
+import PlatformMedia from '@/components/composer/platform-media';
 import MediaUploader from '@/components/composer/MediaUploader';
 import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import ScheduleFields from '@/components/composer/ScheduleFields';
@@ -26,7 +28,7 @@ import PostPreview from '@/components/composer/PostPreview';
 import PageSettings from '@/components/composer/PageSettings';
 import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import DestinationChecks from '@/components/composer/DestinationChecks';
-import { PUBLISHING_PLATFORMS, destinationIssues } from '@/lib/publishing-content';
+import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -51,6 +53,7 @@ const emptyForm = (brandId) => ({
     timezone: DEFAULT_TIMEZONE,
     status: 'draft',
     media: [],
+    platform_media: {},
     destination_settings: {},
 });
 
@@ -101,7 +104,7 @@ export default function CreatePost() {
             setForm((prev) => ({
                 ...prev,
                 brand_id: brandId,
-                account_ids: [], pillar_id: '', angle_id: '', media: [], destination_settings: {}, platform_captions: {},
+                account_ids: [], pillar_id: '', angle_id: '', media: [], platform_media: {}, destination_settings: {}, platform_captions: {},
                 timezone: brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE,
                 date: prev.date || preset.date,
                 time: prev.time || preset.time,
@@ -120,8 +123,8 @@ export default function CreatePost() {
         (async () => {
             const post = await appClient.entities.Post.get(sourceId);
             const [media, jobs] = await Promise.all([
-                post.media_ids?.length
-                    ? appClient.entities.MediaAsset.filter({ id: { $in: post.media_ids } }, { limit: 50 })
+                referencedMediaIds(post).length
+                    ? appClient.entities.MediaAsset.filter({ id: { $in: referencedMediaIds(post) } }, { limit: 60 })
                     : Promise.resolve({ items: [] }),
                 appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }),
             ]);
@@ -132,6 +135,7 @@ export default function CreatePost() {
                 title: editId ? post.title : `${post.title} (copy)`,
                 caption: post.caption || '',
                 platform_captions: post.platform_captions || {},
+                platform_media: Object.fromEntries(Object.entries(post.platform_media_ids || {}).map(([platform, ids]) => [platform, ids.map(id => media.items.find(asset => asset.id === id)).filter(Boolean)])),
                 destination_settings: Object.fromEntries(Object.entries(post.destination_settings || {}).map(([id,setting]) => {
                     const parts=toZonedParts(setting.scheduled_at,post.timezone || DEFAULT_TIMEZONE);
                     return [id,{tiktok:setting.tiktok,caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
@@ -158,7 +162,7 @@ export default function CreatePost() {
     const brand = brands.find((b) => b.id === form.brand_id);
     const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
     const platforms = [...new Set(selectedAccounts.map(account => account.platform))].filter(platform => PUBLISHING_PLATFORMS.includes(platform));
-    const checks = selectedAccounts.map(account => ({ account, issues: destinationIssues(form, account, form.media, demoMode, tiktokCreators[account.id]) }));
+    const checks = selectedAccounts.map(account => ({ account, issues: destinationIssues(form, account, resolveMedia(form, account), demoMode, tiktokCreators[account.id]) }));
 
     const warnings = [];
     if (selectedAccounts.some(a=>a.platform==='instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
@@ -219,6 +223,7 @@ export default function CreatePost() {
                     return [id,{...(setting.tiktok?{tiktok:setting.tiktok}:{}),...(setting.caption?.trim()?{caption:setting.caption}:{}),...(date&&time?{scheduled_at:toUtcIso(date,time,form.timezone)}:{})}];
                 })),
                 media_ids: form.media.map((asset) => asset.id),
+                platform_media_ids: Object.fromEntries(Object.entries(form.platform_media).map(([platform, assets]) => [platform, assets.map(asset => asset.id)])),
                 account_ids: form.account_ids,
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
@@ -270,8 +275,8 @@ export default function CreatePost() {
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
                 description={t('Compose once for multiple platforms. Customize captions, review each channel and publish now or schedule.')}
-                actions={
-                    existing ? (
+                actions={<>
+                    {existing ? (
                         <>
                             <StatusBadge tone={POST_STATUS_TONE[existing.status]}>
                                 {POST_STATUS_LABEL[existing.status]}
@@ -292,8 +297,9 @@ export default function CreatePost() {
                             >
                                 <Trash size={14} className="mr-1.5" /> {t("Delete")} </Button>
                         </>
-                    ) : null
-                }
+                    ) : null}
+                    <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+                </>}
             />
 
             <div className="composer-shell"><div className="composer-columns grid gap-5">
@@ -343,6 +349,7 @@ export default function CreatePost() {
 
                     <section className="panel p-5">
                         <h2 className="mb-3 text-[15px]">{t("Destinations")}</h2>
+                        <fieldset disabled={uploading || saving}>
                         <AccountPicker
                             accounts={brandAccounts}
                             selectedIds={form.account_ids}
@@ -359,6 +366,7 @@ export default function CreatePost() {
                                 setForm({ ...form, account_ids: checked ? brandAccounts.map((a) => a.id) : [] })
                             }
                         />
+                        </fieldset>
                     </section>
 
                     <PlatformCaptions platforms={platforms} captions={form.platform_captions} mainCaption={form.caption} onChange={platform_captions=>setForm(current=>({...current,platform_captions}))} />
@@ -366,7 +374,8 @@ export default function CreatePost() {
                     <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
 
                     <section className="panel p-5">
-                        <h2 className="mb-3 text-[15px]">{t("Media")}</h2>
+                        <h2 className="mb-3 text-[15px]">{t("Shared media")}</h2>
+                        <fieldset disabled={uploading || saving}>
                         <MediaUploader
                             assets={form.media}
                             onChange={(media) => setForm(prev => media.every(image => !image.brand_id || image.brand_id === prev.brand_id) ? { ...prev, media } : prev)}
@@ -374,7 +383,9 @@ export default function CreatePost() {
                             demoMode={demoMode}
                             onBusyChange={setUploading}
                         />
+                        </fieldset>
                     </section>
+                    <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
 
                     <section className="panel p-5">
                         <h2 className="mb-4 text-[15px]">{t("Content strategy")}</h2>
@@ -402,6 +413,7 @@ export default function CreatePost() {
                         timezone={form.timezone}
                         pageSettings={form.destination_settings}
                         platformCaptions={form.platform_captions}
+                        platformMedia={form.platform_media}
                     />
 
                     <DestinationChecks checks={checks} post={form} />
@@ -423,9 +435,9 @@ export default function CreatePost() {
 
                     <div className="panel space-y-2 p-4">
                         <button type="button" className="btn-skew w-full" disabled={saving || uploading || demoMode} onClick={() => submit('publish')}>
-                            <PaperPlaneTilt size={15} weight="fill" /> {t("Publish now")} </button>
-                        <button type="button" className="btn-skew w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
-                            <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </button>
+                            <PaperPlaneTilt size={16} weight="duotone" /> {t("Publish now")} </button>
+                        <Button variant="outline" type="button" className="w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
+                            <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </Button>
                         <Button
                             type="button"
                             variant="outline"

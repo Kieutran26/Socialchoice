@@ -1,6 +1,6 @@
 # Socialchoice
 
-Standalone local content planning workspace. React/Vite frontend plus an owned Node/SQLite backend. The existing page layout, neutral palette, Mona Sans/Space Grotesk typography, Phosphor icons and skewed green buttons are retained. The supplied source had missing components and a broken entry file; Phase A restores them without replacing the existing page designs.
+Standalone local content planning workspace. React/Vite frontend plus an owned Node/SQLite backend. The existing page layout, neutral palette, Mona Sans/Space Grotesk typography, Phosphor icons and flat near-black primary buttons follow the button design contract. The supplied source had missing components and a broken entry file; Phase A restores them without replacing the existing page designs.
 
 UI source of truth: [Design system and AI implementation contract](docs/design-system.md). Read it before changing the interface; it documents current tokens, components, responsive behavior and the checklist for preventing visual drift.
 
@@ -156,8 +156,14 @@ Social Accounts → Add channel opens a platform grid with actual server readine
 
 ## Content navigation
 
-The sidebar groups Create Post, All Posts, Content Calendar, Content Strategy, Content Pillars, Content Angles and Media Library under a collapsible Content section. Opening a content route expands its group; selecting a route closes the mobile drawer. Overview, Social Accounts, Analytics and Settings remain outside the group.
+The sidebar groups Create Post, All Posts, Post templates, Content Calendar, Content Strategy, Content Pillars, Content Angles and Media Library under a collapsible Content section. Opening a content route expands its group; selecting a route closes the mobile drawer. Overview, Social Accounts, Analytics and Settings remain outside the group.
 
 ## Cross-platform composer
 
-Select up to30 connected accounts from Facebook, Instagram, Threads, TikTok and LinkedIn within one brand. Compose shared content, optionally override captions by platform or account, inspect Channel checks, then review every destination before Publish now or Schedule. Shared media must fit all selected channels. Draft/edit/duplicate and preview preserve the same caption precedence; details retain independent account results and cancellation. See [composer behavior and verification](docs/composer-preview.md). Verified locally with isolated tests and browser fixtures; no live cross-platform publication or deployment is claimed.
+Select up to30 connected accounts from Facebook, Instagram, Threads, TikTok and LinkedIn within one brand. Compose shared content, optionally override captions by platform or account, inspect Channel checks, then review every destination before Publish now or Schedule. Shared media is the default; Media by platform can use different ordered images/video per platform, or an explicit empty selection for text-only channels. Checks and confirmation show each account's effective media. Draft/edit/duplicate and preview preserve platform media choices and the same caption precedence; details retain independent account results and cancellation. See [composer behavior and verification](docs/composer-preview.md). Verified locally with isolated tests and browser fixtures; no live cross-platform publication or deployment is claimed.
+
+## Post templates
+
+In Create Post choose Save as template to capture current unsaved content for the selected brand. Templates retain the title, main/platform/account captions, selected accounts, ordered shared/platform media (including text-only overrides) and content strategy. They never retain publishing schedules, account-specific times, TikTok choices or execution history. Saving a template leaves the current post unchanged.
+
+Open Content → Post templates to search, rename, delete or use one. Every use creates an independent unscheduled draft in its original brand/demo workspace; review its accounts, media and new publishing time before publishing. Archived strategy is cleared with a warning; an archived brand cannot be used. Removing a template preserves existing drafts and media; referenced media remains protected while any template uses it. To revise content, create a draft from the template, edit it, save a new named template and remove the old one if no longer needed. See [composer behavior](docs/composer-preview.md). Verified locally; no deployment/live publication is claimed.

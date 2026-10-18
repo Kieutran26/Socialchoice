@@ -7,6 +7,7 @@ import { AuthProvider } from '@/lib/AuthContext';
 import Layout from '@/components/Layout';
 import Overview from '@/pages/Overview';
 import ContentCalendar from '@/pages/ContentCalendar';
+import PostTemplates from '@/pages/PostTemplates';
 import CreatePost from '@/pages/CreatePost';
 import AllPosts from '@/pages/AllPosts';
 import ContentStrategy from '@/pages/ContentStrategy';
@@ -35,6 +36,7 @@ export default function App() {
             <Route path="/" element={<Overview />} />
             <Route path="/calendar" element={<ContentCalendar />} />
             <Route path="/create" element={<CreatePost />} />
+            <Route path="/templates" element={<PostTemplates />} />
             <Route path="/posts" element={<AllPosts />} />
             <Route path="/strategy" element={<ContentStrategy />} />
             <Route path="/strategy/pillars" element={<ContentPillars />} />

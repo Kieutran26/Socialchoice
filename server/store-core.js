@@ -97,7 +97,7 @@ export function createStoreCore(db, transactionSync) {
         references(entity, id) {
             const field = links[entity];
             if (!field) return false;
-            return Object.keys(schemas).some((name) => store.all(name).some((r) => matches(r, { [field]: id }) || (entity === 'SocialAccount' && r.account_ids?.includes(id))));
+            return Object.keys(schemas).some((name) => store.all(name).some((r) => matches(r, { [field]: id }) || (entity === 'SocialAccount' && r.account_ids?.includes(id)) || (entity === 'MediaAsset' && Object.values(r.platform_media_ids || {}).some(ids => ids.includes(id)))));
         },
         write(entity, input, id, capability) {
             store.all(entity);

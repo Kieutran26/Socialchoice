@@ -1,3 +1,4 @@
+import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, PencilSimple, Archive, ArrowCounterClockwise, Trash, Database, GearSix, SignOut, Broadcast, Play } from '@phosphor-icons/react';
@@ -77,6 +78,7 @@ export default function Settings() {
     };
 
     const removeBrand = async () => {
+        await requireNoTemplateReferences(appClient.entities.PostTemplate, 'brand_id', deleteTarget, t);
         await appClient.entities.Brand.delete(deleteTarget.id);
         toast({ title: t("Brand deleted") });
         setDeleteTarget(null);
@@ -141,7 +143,7 @@ export default function Settings() {
                                     setFormOpen(true);
                                 }}
                             >
-                                <Plus size={15} weight="bold" /> {t("New brand")} </button>
+                                <Plus size={16} weight="duotone" /> {t("New brand")} </button>
                         </div>
 
                         {loading ? (

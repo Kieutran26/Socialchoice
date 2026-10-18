@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { appParams } from "@/lib/app-params";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Loader2 } from "lucide-react";
+import { ShieldCheck, SpinnerGap as Loader2 } from "@phosphor-icons/react";
 import AuthLayout from "@/components/AuthLayout";
 
 const OPERATION_VERBS = { read: "view", create: "create", update: "edit", delete: "delete" };
@@ -284,13 +284,13 @@ export default function OAuthConsent() {
                             ))}
                             {data.length > COLLAPSED_DATA_ROWS && (
                                 <li className="px-3 py-2">
-                                    <button
+                                    <Button variant="ghost"
                                         type="button"
-                                        className="text-sm font-medium text-primary hover:underline"
+                                        className="h-auto text-sm font-medium text-primary hover:underline"
                                         onClick={() => setShowAllData((shown) => !shown)}
                                     >
                                         {showAllData ? "Show less" : `Show all ${data.length}`}
-                                    </button>
+                                    </Button>
                                 </li>
                             )}
                         </ToolSection>
@@ -325,14 +325,14 @@ export default function OAuthConsent() {
                 >
                     Deny
                 </Button>
-                <Button
-                    className="flex-1 h-12 font-medium"
+                <button type="button"
+                    className="btn-skew flex-1"
                     disabled={submitting}
                     onClick={() => respond("approve")}
                 >
-                    {submitting ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                    {submitting ? <Loader2 size={16} weight="duotone" className="animate-spin" /> : null}
                     Approve
-                </Button>
+                </button>
             </div>
         </AuthLayout>
     );

@@ -19,6 +19,28 @@ export function validateRecord(entity, record, previous, schema, store, verified
             record[key] = new Date(value).toISOString();
         }
     }
+    if (entity === 'PostTemplate') {
+        if (Object.keys(record).some(key => record[key] === null)) fail('Template fields cannot be null');
+        record.name = record.name.trim();
+        if (record.name.length > 160) fail('Template name must contain between 1 and 160 characters');
+        if (store.get('Brand', record.brand_id).status === 'archived') fail('Choose an active brand', 409);
+        for (const key of ['media_ids', 'account_ids']) {
+            const ids = record[key] || [];
+            if (ids.length > (key === 'media_ids' ? 10 : 30) || ids.some(id => !id.trim()) || new Set(ids).size !== ids.length) fail('Invalid template references');
+        }
+        const references = [
+            ...[...(record.media_ids || []), ...Object.values(record.platform_media_ids || {}).filter(Array.isArray).flat()].map(id => ['MediaAsset', id]),
+            ...(record.account_ids || []).map(id => ['SocialAccount', id]),
+            ...(record.pillar_id ? [['ContentPillar', record.pillar_id]] : []),
+            ...(record.angle_id ? [['ContentAngle', record.angle_id]] : []),
+        ];
+        for (const [parentEntity, id] of references) {
+            const parent = store.get(parentEntity, id);
+            if (parent.brand_id !== record.brand_id || parent.is_demo !== record.is_demo) fail('Cross-brand or demo/live association is not allowed');
+        }
+        if (record.caption && record.caption.length > 63206) fail('Invalid template caption');
+        if (record.platform_captions && Object.keys(record.platform_captions).some(platform => !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(platform))) fail('Invalid platform captions');
+    }
     if (record.timezone) {
         try { new Intl.DateTimeFormat('en', { timeZone: record.timezone }); } catch { fail('Invalid timezone'); }
     }
@@ -39,13 +61,21 @@ export function validateRecord(entity, record, previous, schema, store, verified
         if (angle.status === 'archived' && record.angle_id !== previous?.angle_id) fail('Choose an active angle');
     }
     for (const id of record.account_ids || []) sameScope(store.get('SocialAccount', id));
-    if (entity === 'Post' && record.platform_captions && Object.values(record.platform_captions).some(caption => typeof caption !== 'string' || caption.length > 63206)) fail('Invalid platform captions');
-    if(entity==='Post' && record.destination_settings) {
+    if (['Post', 'PostTemplate'].includes(entity) && record.platform_captions && Object.values(record.platform_captions).some(caption => typeof caption !== 'string' || caption.length > 63206)) fail('Invalid platform captions');
+    if(['Post', 'PostTemplate'].includes(entity) && record.destination_settings) {
         for(const [id,settings] of Object.entries(record.destination_settings)) {
-            if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!['caption','scheduled_at','tiktok'].includes(key))) fail('Invalid per-Page settings');
+            if(!record.account_ids?.includes(id) || !settings || typeof settings!=='object' || Array.isArray(settings) || Object.keys(settings).some(key=>!(entity === 'PostTemplate' ? ['caption'] : ['caption','scheduled_at','tiktok']).includes(key))) fail('Invalid per-Page settings');
             if(settings.tiktok!==undefined && (store.get('SocialAccount',id).platform!=='tiktok'||typeof settings.tiktok!=='object'||!settings.tiktok||Array.isArray(settings.tiktok)||JSON.stringify(settings.tiktok).length>2048))fail('Invalid TikTok options');
             if(settings.caption!==undefined && (typeof settings.caption!=='string' || !settings.caption.trim() || settings.caption.length>63206)) fail('Facebook caption must contain between 1 and 63206 characters');
             if(settings.scheduled_at!==undefined && (typeof settings.scheduled_at!=='string' || !Number.isFinite(Date.parse(settings.scheduled_at)) || !/(Z|[+-]\d\d:\d\d)$/.test(settings.scheduled_at))) fail('Invalid per-Page publishing time');
+        }
+    }
+    if (['Post', 'PostTemplate'].includes(entity) && record.platform_media_ids !== undefined) {
+        const overrides = record.platform_media_ids;
+        if (!overrides || typeof overrides !== 'object' || Array.isArray(overrides)) fail('Invalid platform media');
+        for (const [platform, ids] of Object.entries(overrides)) {
+            if (!['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(platform) || !Array.isArray(ids) || ids.length > 10 || ids.some(id => typeof id !== 'string' || !id.trim()) || new Set(ids).size !== ids.length) fail('Invalid platform media');
+            for (const id of ids) sameScope(store.get('MediaAsset', id));
         }
     }
     for (const id of record.media_ids || []) sameScope(store.get('MediaAsset', id));

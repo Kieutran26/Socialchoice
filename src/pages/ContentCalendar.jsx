@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { CalendarDots, Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -118,7 +119,7 @@ export default function ContentCalendar() {
                 description={t('All scheduled and published content, shown in {timezone}. Click any item to open it, reschedule it or edit it.', { timezone })}
                 actions={
                     <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" />
+                        <Plus size={16} weight="duotone" />
                         {t('Create Post')}
                     </Link>
                 }
@@ -146,9 +147,9 @@ export default function ContentCalendar() {
                     title={t('Nothing scheduled in this range')}
                     description={t('Move to another period, clear the filters, or schedule a post to see it appear here.')}
                 >
-                    <Link to="/create" className="btn-skew">
+                    <Button asChild variant="outline"><Link to="/create">
                         <Plus size={15} weight="bold" /> {t('Create Post')}
-                    </Link>
+                    </Link></Button>
                 </EmptyState>
             ) : view === 'month' ? (
                 <MonthView

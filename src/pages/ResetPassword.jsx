@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { appClient } from '@/api/app-client';
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Lock, Loader2, AlertTriangle } from "lucide-react";
+import { Lock, SpinnerGap as Loader2, Warning as AlertTriangle } from "@phosphor-icons/react";
 import AuthLayout from "@/components/AuthLayout";
 
 export default function ResetPassword() {
@@ -98,16 +97,16 @@ export default function ResetPassword() {
                         />
                     </div>
                 </div>
-                <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+                <button type="submit" className="btn-skew w-full h-12 font-medium" disabled={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 weight="duotone" size={16} className="w-4 h-4 mr-2 animate-spin" />
                             Resetting...
                         </>
                     ) : (
                         "Reset password"
                     )}
-                </Button>
+                </button>
             </form>
         </AuthLayout>
     );

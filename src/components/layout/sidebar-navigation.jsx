@@ -1,11 +1,13 @@
+import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { CalendarDots, CaretDown, ChartBar, Compass, GearSix, Image, NotePencil, PlugsConnected, SquaresFour, Stack, Target } from '@phosphor-icons/react';
+import { CopySimple, CalendarDots, CaretDown, ChartBar, Compass, GearSix, Image, NotePencil, PlugsConnected, SquaresFour, Stack, Target } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 
 const contentLinks = [
     ['/create', 'Create Post', NotePencil],
     ['/posts', 'All Posts', Stack],
+    ['/templates', 'Post templates', CopySimple],
     ['/calendar', 'Content Calendar', CalendarDots],
     ['/strategy', 'Content Strategy', Target],
     ['/strategy/pillars', 'Content Pillars', Stack],
@@ -32,9 +34,9 @@ export default function SidebarNavigation({ onNavigate }) {
     return <nav aria-label={t('Main navigation')} className="min-h-0 flex-1 overflow-y-auto space-y-1">
         <NavigationLink to="/" label="Overview" icon={SquaresFour} onNavigate={onNavigate} />
         <div>
-            <button type="button" aria-expanded={expanded} aria-controls="content-navigation" onClick={() => setExpanded(value => !value)} className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-xs ${contentActive && !expanded ? 'bg-brand/15 font-medium text-brand-ink' : 'hover:bg-muted'}`}>
+            <Button variant="ghost" type="button" aria-expanded={expanded} aria-controls="content-navigation" onClick={() => setExpanded(value => !value)} className={`h-auto flex w-full justify-start items-center gap-3 rounded-lg px-3 py-2.5 text-xs ${contentActive && !expanded ? 'bg-brand/15 font-medium text-brand-ink' : 'hover:bg-muted'}`}>
                 <Stack size={18} className="shrink-0" /><span>{t('Content')}</span><CaretDown size={13} className={`ml-auto shrink-0 transition-transform ${expanded ? 'rotate-180' : ''}`} />
-            </button>
+            </Button>
             <div id="content-navigation" hidden={!expanded} className="ml-3 mt-1 space-y-1 border-l border-border pl-1">
                 {contentLinks.map(([to, label, Icon]) => <NavigationLink key={String(to)} to={to} label={label} icon={Icon} nested onNavigate={onNavigate} />)}
             </div>

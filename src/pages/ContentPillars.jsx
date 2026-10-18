@@ -1,3 +1,4 @@
+import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Stack, PencilSimple, Archive, ArrowCounterClockwise, Trash } from '@phosphor-icons/react';
@@ -66,6 +67,7 @@ export default function ContentPillars() {
     };
 
     const remove = async () => {
+        await requireNoTemplateReferences(appClient.entities.PostTemplate, 'pillar_id', deleteTarget, t);
         await appClient.entities.ContentPillar.delete(deleteTarget.id);
         toast({ title: t("Pillar deleted") });
         setDeleteTarget(null);
@@ -97,7 +99,7 @@ export default function ContentPillars() {
                             setFormOpen(true);
                         }}
                     >
-                        <Plus size={15} weight="bold" /> {t("New pillar")} </button>
+                        <Plus size={16} weight="duotone" /> {t("New pillar")} </button>
                 }
             />
 
@@ -112,8 +114,8 @@ export default function ContentPillars() {
                     title={t("No pillars yet")}
                     description={t("Start with three to five themes — for example Product Education, Customer Stories and Community Engagement — and set a target share for each.")}
                 >
-                    <button type="button" className="btn-skew" onClick={() => setFormOpen(true)}>
-                        <Plus size={15} weight="bold" /> {t("Create the first pillar")} </button>
+                    <Button variant="outline" type="button" className="" onClick={() => setFormOpen(true)}>
+                        <Plus size={15} weight="bold" /> {t("Create the first pillar")} </Button>
                 </EmptyState>
             ) : (
                 <div className="space-y-5">

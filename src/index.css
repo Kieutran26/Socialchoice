@@ -102,7 +102,7 @@
     }
 
     :focus-visible {
-        outline: 2px solid var(--brand-green-dark);
+        outline: 2px solid oklch(var(--ring));
         outline-offset: 2px;
     }
 
@@ -113,7 +113,7 @@
 
 @layer components {
 
-    /* Tactile skewed primary action */
+    /* Flat primary action; the legacy class name remains part of the UI contract. */
     .btn-skew {
         display: inline-flex;
         align-items: center;
@@ -122,37 +122,27 @@
         background: var(--brand-green);
         color: var(--brand-green-ink);
         border: 1px solid var(--brand-green-dark);
-        border-radius: 12px;
-        padding: 9px 18px;
+        border-radius: 10px;
+        padding: 9px 16px;
         font-family: var(--font-body);
         font-size: 13px;
         font-weight: 500;
         line-height: 1;
-        transform: skewX(-5deg);
-        box-shadow: 0 4px 0 var(--brand-green-dark);
-        transition: transform 100ms ease, box-shadow 100ms ease, background-color 120ms ease;
+        transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
         cursor: pointer;
         white-space: nowrap;
     }
-
-    .btn-skew:hover {
+    .btn-skew:hover:not(:disabled):not([aria-disabled="true"]) {
         background: var(--brand-green-hover);
+        border-color: var(--brand-green-dark);
     }
-
-    .btn-skew:active {
-        transform: skewX(-5deg) translateY(4px);
-        box-shadow: 0 0 0 var(--brand-green-dark);
+    .btn-skew:active:not(:disabled):not([aria-disabled="true"]) {
+        background: var(--brand-green-dark);
+        color: #ffffff;
     }
-
-    .btn-skew:disabled {
+    .btn-skew:disabled, .btn-skew[aria-disabled="true"] {
         opacity: 0.5;
         cursor: not-allowed;
-        box-shadow: 0 4px 0 var(--brand-green-dark);
-    }
-
-    .btn-skew:disabled:active {
-        transform: skewX(-5deg);
-        box-shadow: 0 4px 0 var(--brand-green-dark);
     }
 
     .panel {

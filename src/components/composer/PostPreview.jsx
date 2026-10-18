@@ -1,9 +1,10 @@
+import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { DotsThree, Globe, ThumbsUp, ChatCircle, ShareFat } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/lib/format';
-import { resolveCaption } from '@/lib/publishing-content';
+import { resolveCaption, resolveMedia } from '@/lib/publishing-content';
 import { PLATFORM_LABEL } from '@/lib/constants';
 import { toUtcIso } from '@/lib/tz';
 
@@ -25,23 +26,24 @@ function PhotoGrid({ media }) {
                 if (index === 0 && images.length === 3) span = portrait ? 'row-span-2' : 'col-span-2';
                 if (index === 0 && images.length === 4) span = portrait ? 'row-span-3' : 'col-span-3';
                 if (images.length === 5) span = index < 2 ? 'col-span-3' : 'col-span-2';
-                return <button type="button" key={image.id} className={`relative min-h-0 min-w-0 bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${span}`} onClick={() => setOpened(image)} aria-label={t('View image {number}', { number: index + 1 })}>
+                return <Button variant="ghost" type="button" key={image.id} className={`h-auto p-0 rounded-none relative min-h-0 min-w-0 bg-muted focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary ${span}`} onClick={() => setOpened(image)} aria-label={t('View image {number}', { number: index + 1 })}>
                     <img src={image.file_url} alt={image.name || image.filename || t('Post image')} className={images.length === 1 ? 'w-full max-h-[600px] object-contain' : `w-full h-full object-cover ${images.length === 2 ? portrait ? 'aspect-[3/4]' : 'aspect-video' : ''}`} />
                     {index === 4 && media.length > 5 && <span className="absolute inset-0 bg-foreground/60 text-background flex items-center justify-center text-3xl font-medium">+{media.length - 5}</span>}
-                </button>;
+                </Button>;
             })}
         </div>
         <Dialog open={!!opened} onOpenChange={open=>!open&&setOpened(null)}><DialogContent className="max-w-4xl"><DialogTitle>{opened?.name || t('Image preview')}</DialogTitle>{opened&&<img src={opened.file_url} alt={opened.name || opened.filename} className="max-h-[75vh] w-full object-contain" />}</DialogContent></Dialog>
     </>;
 }
 
-export default function PostPreview({ caption: mainCaption, media, accounts, scheduledAt, timezone, pageSettings = {}, platformCaptions = {} }) {
+export default function PostPreview({ caption: mainCaption, media: sharedMedia, accounts, scheduledAt, timezone, pageSettings = {}, platformCaptions = {}, platformMedia = {} }) {
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const [selectedPage,setSelectedPage]=useState('');
     const pages=accounts.filter(account=>['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform));
     const page = pages.find(account=>account.id===selectedPage) || pages[0];
     const caption=resolveCaption({caption:mainCaption,platform_captions:platformCaptions,destination_settings:pageSettings},page || {});
+    const media = resolveMedia({}, page || {}, sharedMedia, platformMedia);
     const localTime=pageSettings[page?.id]?.localTime;
     const [date,time]=localTime?.split('T') || [];
     const previewTime=localTime ? toUtcIso(date,time,timezone) : scheduledAt;
@@ -58,7 +60,7 @@ export default function PostPreview({ caption: mainCaption, media, accounts, sch
                     <div className="min-w-0 flex-1"><p className="text-sm font-semibold break-words">{pageName}</p><p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5"><span>{t('Preview')}</span><span>·</span>{page?.platform==='tiktok'?t('Only me (sandbox)'):<Globe size={13} aria-label={t('Public')} />}</p></div>
                     <DotsThree size={24} aria-hidden="true" />
                 </header>
-                {page?.platform!=='instagram' && <div className="px-4 pb-4"><p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{visibleCaption || t('Your caption will appear here.')}{longCaption && !expanded ? '…' : ''}</p>{longCaption && <button type="button" className="mt-1 min-h-11 text-sm font-semibold underline underline-offset-2" onClick={() => setExpanded(!expanded)}>{t(expanded ? 'See less' : 'See more')}</button>}</div>}
+                {page?.platform!=='instagram' && <div className="px-4 pb-4"><p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{visibleCaption || t('Your caption will appear here.')}{longCaption && !expanded ? '…' : ''}</p>{longCaption && <Button variant="ghost" type="button" className="h-auto p-0 mt-1 min-h-11 text-sm font-semibold underline underline-offset-2" onClick={() => setExpanded(!expanded)}>{t(expanded ? 'See less' : 'See more')}</Button>}</div>}
                 {media[0]?.file_type === 'video' ? <video src={media[0].file_url} controls preload="metadata" className="w-full max-h-[600px] bg-muted object-contain" /> : media.length > 0 && <PhotoGrid media={media} />}
                 {page?.platform==='instagram' && <p className="px-4 py-4 whitespace-pre-wrap break-words text-sm"><strong>{page.username || pageName}</strong> {caption || t('Your caption will appear here.')}</p>}
                 {(!page||page.platform==='facebook') && <footer className="grid grid-cols-3 border-t mx-4 py-3 text-muted-foreground" aria-label={t('Preview only')}>

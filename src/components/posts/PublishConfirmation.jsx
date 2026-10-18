@@ -1,3 +1,4 @@
+import MediaAttachments from './media-attachments';
 import { formatDateTime } from '@/lib/format';
 import { useState } from 'react';
 import { appClient } from '@/api/app-client';
@@ -28,7 +29,7 @@ export default function PublishConfirmation({ review, onClose, onResult }) {
             <p className="max-h-60 overflow-auto whitespace-pre-wrap break-words text-sm my-3">{item.caption}</p>
             {item.platform==='linkedin'&&<p className="text-sm">{t('Visibility: Public')}</p>}
             {item.platform==='tiktok'&&<p className="text-sm">TikTok · {item.tiktokCreator} · {t('Only me (sandbox)')} · {t('Comments')}: {item.tiktokOptions?.allowComment?t('Yes'):t('No')} · Duet: {item.tiktokOptions?.allowDuet?t('Yes'):t('No')} · Stitch: {item.tiktokOptions?.allowStitch?t('Yes'):t('No')} · {t('Disclose promotional content')}: {item.tiktokOptions?.commercial?t('Yes'):t('No')} · {t('Your own brand')}: {item.tiktokOptions?.ownBrand?t('Yes'):t('No')} · AI: {item.tiktokOptions?.aiGenerated?t('Yes'):t('No')} · {t('Music consent confirmed')}: {item.tiktokOptions?.musicConsent?t('Yes'):t('No')} · <a className="underline" href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noreferrer">Music Usage Confirmation</a></p>}
-            {!!item.media?.length && <div className={item.media[0]?.file_type === 'video' ? 'grid grid-cols-1 gap-2' : 'grid grid-cols-2 sm:grid-cols-3 gap-2'}>{item.media.map((asset,index)=><div key={asset.id}>{asset.file_type==='video'?<video src={asset.file_url} controls preload="metadata" className="max-h-64 w-full rounded-lg"/>:<img src={asset.file_url} alt={asset.name} className="h-28 w-full object-contain rounded-lg border"/>}<p className="label-xs truncate">{index+1}. {asset.name}</p></div>)}</div>}
+            <MediaAttachments media={item.media || []} />
         </section>)}</div>
         {error && <p role="alert" className="mt-3 text-sm text-dangerFg">{t(error)}</p>}
         <div className="mt-4 flex flex-wrap justify-end gap-3"><Button variant="outline" disabled={busy} onClick={onClose}>{t('Cancel')}</Button><button className="btn-skew" disabled={busy} onClick={confirm}>{t(busy ? 'Saving…' : review.scheduledFor ? 'Confirm automatic schedule' : 'Confirm and publish')}</button></div>

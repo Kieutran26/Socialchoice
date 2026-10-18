@@ -68,15 +68,15 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
             <select aria-label={t(lockPlatform ? 'Channel brand' : 'Brand for Facebook Pages')} value={brandId} onChange={e => setBrandId(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="">{t('Choose brand')}</option>{brands.filter(b => !b.is_demo && b.status === 'active').map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
-            <Button onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</Button>
-            {onAddManually && <button type="button" onClick={onAddManually} className="border rounded-lg px-3 py-2 text-xs">{t('Add a destination reference')}</button>}
+            {selection?.pending ? <Button variant="outline" type="button" onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</Button> : <button className="btn-skew" type="button" onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</button>}
+            {onAddManually && <Button variant="ghost" type="button" onClick={onAddManually} className="h-auto border rounded-lg px-3 py-2 text-xs">{t('Add a destination reference')}</Button>}
         </div>
         {selection?.pending && <div className="border-t mt-5 pt-4">
             <h3 className="text-sm font-medium">{t(selection.platform==='threads'?'Choose the Threads profile to connect':selection.platform === 'instagram' ? 'Choose Instagram accounts to connect' : 'Choose Pages to connect')}</h3>
             <p className="label-xs mt-1">{selection.profileName} · {brands.find(b => b.id === selection.brandId)?.name}</p>
             {!selection.pages.length && <p className="text-sm mt-3">{t(selection.platform === 'instagram' ? 'No linked Instagram professional accounts were returned. Link a Business or Creator account to your Facebook Page and grant Instagram permissions.' : 'Facebook returned no accessible Pages. Check Page access and granted permissions.')}</p>}
             <div className="space-y-2 mt-3">{selection.pages.map(page => <label key={page.id} className="flex items-center gap-3 text-sm"><input type="checkbox" checked={selected.includes(page.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids, page.id] : ids.filter(id => id !== page.id))} />{page.name} · {page.username ? '@' + page.username : page.id}{page.pageName ? ' · ' + page.pageName : ''}</label>)}</div>
-            <Button onClick={importPages} className="mt-4" disabled={busy || !selected.length || demoMode}>{t(selection.platform==='threads'?'Connect selected Threads profile':selection.platform === 'instagram' ? 'Connect selected Instagram accounts' : 'Connect selected Pages')}</Button>
+            <button type="button" onClick={importPages} className="btn-skew mt-4" disabled={busy || !selected.length || demoMode}>{t(selection.platform==='threads'?'Connect selected Threads profile':selection.platform === 'instagram' ? 'Connect selected Instagram accounts' : 'Connect selected Pages')}</button>
         </div>}
     </div></div></section>;
 }

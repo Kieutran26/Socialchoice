@@ -17,6 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Image } from '@/components/ui/image';
 import { useCallback, useEffect } from 'react';
 import MediaUploader from '@/components/composer/MediaUploader';
+import { referencedMediaIds } from '@/lib/publishing-content';
 import { formatBytes, formatDay } from '@/lib/format';
 
 export default function MediaLibrary() {
@@ -47,12 +48,20 @@ export default function MediaLibrary() {
     }, [load, search]);
 
     const remove = async () => {
-        const usage = await appClient.entities.Post.count({ media_ids: deleteTarget.id });
-        if (usage > 0) {
+        const references = { Post: 0, PostTemplate: 0 };
+        for (const entity of ['Post', 'PostTemplate']) {
+            let cursor;
+            do {
+                const page = await appClient.entities[entity].filter({ brand_id: deleteTarget.brand_id, is_demo: !!deleteTarget.is_demo }, { limit: 250, cursor, fields: ['media_ids', 'platform_media_ids'] });
+                references[entity] += page.items.filter(record => referencedMediaIds(record).includes(deleteTarget.id)).length;
+                cursor = page.has_more ? page.next_cursor : null;
+            } while (cursor);
+        }
+        if (references.Post || references.PostTemplate) {
             toast({
                 variant: 'destructive',
-                title: t("This file is still in use"),
-                description: t('{count} posts reference it. Detach it from those posts first.', {count: usage}),
+                title: t('This file is still in use'),
+                description: t('{posts} posts and {templates} templates reference it. Detach it first.', { posts: references.Post, templates: references.PostTemplate }),
             });
             setDeleteTarget(null);
             return;
@@ -119,13 +128,13 @@ export default function MediaLibrary() {
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {assets.map((asset) => (
                         <div key={asset.id} className="panel overflow-hidden">
-                            <button type="button" onClick={() => setPreview(asset)} className="block w-full">
+                            <Button variant="ghost" type="button" onClick={() => setPreview(asset)} className="h-auto block w-full p-0">
                                 {asset.file_type === 'video' ? (
                                     <video src={asset.file_url} className="h-[150px] w-full object-cover" muted />
                                 ) : (
                                     <Image src={asset.file_url} alt={asset.name} className="h-[150px] w-full" fittingType="fill" />
                                 )}
-                            </button>
+                            </Button>
                             <div className="px-3 py-2.5">
                                 <p className="truncate text-[12px] font-medium">{asset.name}</p>
                                 <p className="label-xs mt-0.5">

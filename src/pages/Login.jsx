@@ -4,9 +4,9 @@ import { appClient } from '@/api/app-client';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
+import { SignIn as LogIn, EnvelopeSimple as Mail, Lock, SpinnerGap as Loader2 } from "@phosphor-icons/react";
 import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
+import { GoogleLogo as GoogleIcon } from "@phosphor-icons/react";
 import { safeReturnTo } from "@/lib/authReturnTo";
 
 export default function Login() {
@@ -58,7 +58,7 @@ export default function Login() {
                 className="w-full h-12 text-sm font-medium mb-6"
                 onClick={handleGoogle}
             >
-                <GoogleIcon className="w-5 h-5 mr-2" />
+                <GoogleIcon size={16} weight="duotone" />
                 Continue with Google
             </Button>
 
@@ -116,16 +116,16 @@ export default function Login() {
                         />
                     </div>
                 </div>
-                <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+                <button type="submit" className="btn-skew w-full h-12 font-medium" disabled={loading}>
                     {loading ? (
                         <>
-                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            <Loader2 weight="duotone" size={16} className="w-4 h-4 mr-2 animate-spin" />
                             Logging in...
                         </>
                     ) : (
                         "Log in"
                     )}
-                </Button>
+                </button>
             </form>
         </AuthLayout>
     );

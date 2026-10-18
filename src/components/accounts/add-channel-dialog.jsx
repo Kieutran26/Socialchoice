@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { ArrowLeft, ArrowUpRight, FacebookLogo, InstagramLogo, LinkedinLogo, RedditLogo, ThreadsLogo, TiktokLogo, XLogo, YoutubeLogo } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
@@ -55,7 +56,7 @@ export default function AddChannelDialog({ open, onOpenChange, brands, defaultBr
     return <Dialog open={open} onOpenChange={changeOpen}>
         <DialogContent className="!w-[calc(100vw_-_2rem)] !max-w-[960px] p-5 sm:p-8" aria-describedby="add-channel-description">
             <DialogHeader>
-                {selected && <button type="button" disabled={busy} onClick={() => {setSelected('');clearReturn();}} className="mb-3 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"><ArrowLeft size={14} />{t('All platforms')}</button>}
+                {selected && <Button variant="ghost" type="button" disabled={busy} onClick={() => {setSelected('');clearReturn();}} className="h-auto p-0 mb-3 inline-flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground disabled:opacity-50"><ArrowLeft size={14} />{t('All platforms')}</Button>}
                 <DialogTitle className="text-xl sm:text-2xl font-heading">{selected ? t('Connect {platform}', { platform: channel?.label }) : t('Add channel')}</DialogTitle>
                 <DialogDescription id="add-channel-description" className="text-sm leading-relaxed text-muted-foreground max-w-[760px]">{t('Choose a platform. Sign in on its official website, then select the account to connect. Socialchoice never asks for your social account password.')}</DialogDescription>
             </DialogHeader>
@@ -67,18 +68,18 @@ export default function AddChannelDialog({ open, onOpenChange, brands, defaultBr
                         const status = service && health?.[service];
                         const available = status?.ready;
                         const state = !service ? 'Coming soon' : !status || status.loading ? 'Checking…' : status?.error ? 'Status unavailable' : available ? id === 'tiktok' ? 'Sandbox' : 'Available to connect' : 'Setup required';
-                        return <button key={id} type="button" disabled={!service || !status || status.loading} onClick={() => setSelected(id)} aria-label={t('Connect {platform}', { platform: label })} className={`group relative flex min-h-[185px] flex-col items-center justify-center rounded-xl border p-5 pt-12 text-center transition-colors focus-visible:outline-offset-2 ${!service ? 'bg-surface text-muted-foreground cursor-not-allowed' : 'bg-white hover:border-brand-dark hover:bg-successBg/30'}`}>
+                        return <Button variant="ghost" key={id} type="button" disabled={!service || !status || status.loading} onClick={() => setSelected(id)} aria-label={t('Connect {platform}', { platform: label })} className={`h-auto group relative flex min-h-[185px] flex-col items-center justify-center rounded-xl border p-5 pt-12 text-center transition-colors focus-visible:outline-offset-2 ${!service ? 'bg-surface text-muted-foreground cursor-not-allowed' : 'bg-white hover:border-brand-dark hover:bg-successBg/30'}`}>
                             <span className={`absolute right-3 top-3 rounded-md px-2 py-1 text-[10px] font-medium ${available ? 'bg-successBg text-successFg' : 'bg-muted text-muted-foreground'}`}>{t(state)}</span>
                             <span className="flex h-12 w-12 items-center justify-center rounded-xl border bg-white" style={{ color }}><Icon size={29} weight={id === 'instagram' || id === 'threads' || id === 'x' ? 'regular' : 'fill'} /></span>
                             <span className="mt-3 text-sm font-medium text-foreground">{label}</span>
                             <span className="mt-3 flex flex-wrap justify-center gap-1.5">{formats.map(format => <span key={format} className="rounded-md bg-muted px-2 py-1 text-[10px] text-muted-foreground">{t(format)}</span>)}</span>
                             {!!service && <ArrowUpRight size={15} className="absolute bottom-4 right-4 text-muted-foreground group-hover:text-successFg" />}
-                        </button>;
+                        </Button>;
                     })}
                 </div>
                 <div className="mt-5 flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-                    <button type="button" onClick={() => {clearReturn();onAddManually();}} className="text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">{t('Add a planning reference instead')}</button>
-                    {health && Object.values(health).some(value => value.error) && <button type="button" onClick={() => setReload(value => value + 1)} className="text-xs underline">{t('Retry connection status')}</button>}
+                    <Button variant="ghost" type="button" onClick={() => {clearReturn();onAddManually();}} className="h-auto p-0 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">{t('Add a planning reference instead')}</Button>
+                    {health && Object.values(health).some(value => value.error) && <Button variant="ghost" type="button" onClick={() => setReload(value => value + 1)} className="h-auto p-0 text-xs underline">{t('Retry connection status')}</Button>}
                 </div>
             </> : <div>
                 {selected === 'linkedin' ? <LinkedinConnectionCard {...props} /> : selected === 'tiktok' ? <TiktokConnectionCard {...props} /> : <MetaConnectionCard {...props} initialPlatform={selected} onPlatformResolved={setSelected} lockPlatform />}

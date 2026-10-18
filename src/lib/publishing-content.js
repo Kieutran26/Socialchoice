@@ -9,6 +9,20 @@ export function resolveCaption(post, account) {
             ? post.platform_captions[account.platform] : post.caption || '';
 }
 
+// An explicit empty platform list means text-only, not inheritance.
+export function resolveMediaIds(post, account) {
+    return Object.hasOwn(post.platform_media_ids || {}, account.platform)
+        ? post.platform_media_ids[account.platform] : post.media_ids || [];
+}
+
+export function referencedMediaIds(post) {
+    return [...new Set([...(post.media_ids || []), ...Object.values(post.platform_media_ids || {}).flat()])];
+}
+
+export function resolveMedia(post, account, sharedMedia = post.media || [], platformMedia = post.platform_media || {}) {
+    return Object.hasOwn(platformMedia, account.platform) ? platformMedia[account.platform] : sharedMedia;
+}
+
 export function captionLength(caption, platform) {
     return ['threads', 'linkedin'].includes(platform) ? Array.from(caption).length : caption.length;
 }

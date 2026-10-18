@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 
 export default function AdminSignIn({ onSignedIn }) {
@@ -23,7 +22,7 @@ export default function AdminSignIn({ onSignedIn }) {
             <label htmlFor="admin-password" className="block text-sm">{t('Socialchoice password')}</label>
             <Input id="admin-password" type="password" autoComplete="current-password" required maxLength={256} value={password} onChange={e => setPassword(e.target.value)} />
             {error && <p role="alert" className="text-sm text-red-700">{t(error)}</p>}
-            <Button type="submit" disabled={busy} className="w-full">{t(busy ? 'Signing in…' : 'Sign in')}</Button>
+            <button type="submit" disabled={busy} className="btn-skew w-full">{t(busy ? 'Signing in…' : 'Sign in')}</button>
         </form>
         <select aria-label={t('Language')} className="border rounded-lg p-2 text-sm" value={language} onChange={e => setLanguage(e.target.value)}><option value="en">English</option><option value="vi">Tiếng Việt</option></select>
     </div></main>;

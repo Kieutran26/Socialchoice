@@ -14,7 +14,7 @@ export default function TiktokConnectionCard({ brands, demoMode, onChanged, defa
         {!ready&&<p className="text-sm">{t('Configure TikTok credentials on the server before connecting.')}</p>}
         {error&&<p role="alert" className="text-dangerFg text-sm">{t(error)}</p>}
         <label className="block text-sm">{t('Brand')}<select className="border rounded-lg p-2 ml-3" aria-label={t('TikTok brand')} value={brandId} onChange={e=>setBrandId(e.target.value)} disabled={busy||demoMode}><option value="">{t('Choose brand')}</option>{brands.filter(b=>!b.is_demo&&b.status==='active').map(b=><option key={b.id} value={b.id}>{b.name}</option>)}</select></label>
-        <Button disabled={!ready||!brandId||busy||demoMode} onClick={connect}>{t('Connect / reconnect TikTok')}</Button>
-        {profile&&<div className="border-t pt-3 space-y-3"><label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={selected} onChange={e=>setSelected(e.target.checked)} disabled={busy||demoMode}/>{profile.profile.name} · @{profile.profile.username}</label><Button disabled={!selected||busy||demoMode} onClick={choose}>{t('Connect selected TikTok account')}</Button></div>}
+        {profile ? <Button variant="outline" type="button" disabled={!ready||!brandId||busy||demoMode} onClick={connect}>{t('Connect / reconnect TikTok')}</Button> : <button className="btn-skew" type="button" disabled={!ready||!brandId||busy||demoMode} onClick={connect}>{t('Connect / reconnect TikTok')}</button>}
+        {profile&&<div className="border-t pt-3 space-y-3"><label className="flex items-center gap-3 text-sm"><input type="checkbox" checked={selected} onChange={e=>setSelected(e.target.checked)} disabled={busy||demoMode}/>{profile.profile.name} · @{profile.profile.username}</label><button className="btn-skew" type="button" disabled={!selected||busy||demoMode} onClick={choose}>{t('Connect selected TikTok account')}</button></div>}
     </section>;
 }

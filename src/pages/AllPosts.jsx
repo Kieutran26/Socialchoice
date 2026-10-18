@@ -174,7 +174,7 @@ export default function AllPosts() {
                 description={t("Every draft, scheduled and published post with its pillar, angle, destinations and status.")}
                 actions={
                     <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" /> {t("Create Post")} </Link>
+                        <Plus size={16} weight="duotone" /> {t("Create Post")} </Link>
                 }
             />
 
@@ -221,8 +221,8 @@ export default function AllPosts() {
                     title={t("No posts match this view")}
                     description={t("Change the filters above, or start a new post to fill the calendar. Drafts, scheduled and published posts all live here.")}
                 >
-                    <Link to="/create" className="btn-skew">
-                        <Plus size={15} weight="bold" /> {t("Create Post")} </Link>
+                    <Button asChild variant="outline"><Link to="/create">
+                        <Plus size={15} weight="bold" /> {t("Create Post")} </Link></Button>
                 </EmptyState>
             ) : (
                 <>

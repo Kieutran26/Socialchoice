@@ -1,3 +1,4 @@
+import { requireNoTemplateReferences } from '@/lib/post-templates';
 import AddChannelDialog, { hasConnectionReturn } from '@/components/accounts/add-channel-dialog';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
@@ -59,6 +60,7 @@ export default function SocialAccounts() {
     };
 
     const remove = async () => {
+        await requireNoTemplateReferences(appClient.entities.PostTemplate, 'account_ids', deleteTarget, t);
         const jobs = await appClient.entities.PublishJob.count({ social_account_id: deleteTarget.id });
         if (jobs > 0) {
             toast({
@@ -88,7 +90,7 @@ export default function SocialAccounts() {
                 description={t('Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.')}
                 actions={
                     <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
-                        <Plus size={15} weight="bold" /> {t("Add channel")} </button>
+                        <Plus size={16} weight="duotone" /> {t("Add channel")} </button>
                 }
             />
 
@@ -101,8 +103,8 @@ export default function SocialAccounts() {
                         title={t("No destinations yet")}
                         description={t("Connect your social accounts and group them by brand. Accounts appear here after you approve the connection.")}
                     >
-                        <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
-                            <Plus size={15} weight="bold" /> {t("Add channel")} </button>
+                        <Button variant="outline" type="button" className="" onClick={() => setChannelOpen(true)}>
+                            <Plus size={15} weight="bold" /> {t("Add channel")} </Button>
                     </EmptyState>
                 ) : (
                     <>

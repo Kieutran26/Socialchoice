@@ -1,3 +1,4 @@
+import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, Compass, PencilSimple, Archive, ArrowCounterClockwise, Trash } from '@phosphor-icons/react';
@@ -64,6 +65,7 @@ export default function ContentAngles() {
     };
 
     const remove = async () => {
+        await requireNoTemplateReferences(appClient.entities.PostTemplate, 'angle_id', deleteTarget, t);
         await appClient.entities.ContentAngle.delete(deleteTarget.id);
         toast({ title: t("Angle deleted") });
         setDeleteTarget(null);
@@ -86,7 +88,7 @@ export default function ContentAngles() {
                             setFormOpen(true);
                         }}
                     >
-                        <Plus size={15} weight="bold" /> {t("New angle")} </button>
+                        <Plus size={16} weight="duotone" /> {t("New angle")} </button>
                 }
             />
 
@@ -125,8 +127,8 @@ export default function ContentAngles() {
                     title={t("No angles defined yet")}
                     description={t("Add angles to a pillar so writers know exactly how to approach the theme — How-to, Common Mistakes or Myth vs Fact are good starting points.")}
                 >
-                    <button type="button" className="btn-skew" onClick={() => setFormOpen(true)}>
-                        <Plus size={15} weight="bold" /> {t("Create an angle")} </button>
+                    <Button variant="outline" type="button" className="" onClick={() => setFormOpen(true)}>
+                        <Plus size={15} weight="bold" /> {t("Create an angle")} </Button>
                 </EmptyState>
             ) : (
                 <div className="space-y-5">

@@ -196,6 +196,9 @@
       },
       "destination_settings": {
         "type": "object"
+      },
+      "platform_media_ids": {
+        "type": "object"
       }
     },
     "required": [
@@ -478,6 +481,59 @@
       "name",
       "brand_id",
       "pillar_id"
+    ]
+  },
+  "PostTemplate": {
+    "name": "PostTemplate",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "title": {
+        "type": "string"
+      },
+      "brand_id": {
+        "type": "string"
+      },
+      "caption": {
+        "type": "string"
+      },
+      "platform_captions": {
+        "type": "object"
+      },
+      "media_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "platform_media_ids": {
+        "type": "object"
+      },
+      "pillar_id": {
+        "type": "string"
+      },
+      "angle_id": {
+        "type": "string"
+      },
+      "account_ids": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "destination_settings": {
+        "type": "object"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "brand_id"
     ]
   }
 }

@@ -55,7 +55,8 @@ export function createFacebookPublisher(store, config, options = {}) {
         if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
         if (!accountId && post.account_ids?.length !== 1) fail('Choose at least one publishing account', 409);
         if(accountId && !post.account_ids?.includes(accountId)) fail('Choose an account selected for this post',409);
-        const mediaIds = post.media_ids || [];
+        const account = store.get('SocialAccount', accountId || post.account_ids[0]);
+        const mediaIds = Object.hasOwn(post.platform_media_ids || {}, account.platform) ? post.platform_media_ids[account.platform] : post.media_ids || [];
         if (mediaIds.length > 10 || new Set(mediaIds).size !== mediaIds.length) fail('Choose up to 10 different images');
         const media = mediaIds.map(id => {
             const image = store.get('MediaAsset', id);
@@ -63,7 +64,6 @@ export function createFacebookPublisher(store, config, options = {}) {
             return image;
         });
         if(media.some(asset=>asset.file_type==='video')&&media.length!==1) fail('Choose one video or up to 10 images, not both');
-        const account = store.get('SocialAccount', accountId || post.account_ids[0]);
         if (account.is_demo || account.brand_id !== post.brand_id || !['facebook','instagram','threads','tiktok','linkedin'].includes(account.platform) || account.account_type !== (account.platform!=='facebook'?'profile':'page') || account.connection_status !== 'connected' || !account.credential_id || !(account.platform==='linkedin'?linkedinMemberId(account.external_id):(account.platform==='tiktok'?/^[\w.-]{1,256}$/:/^\d+$/).test(account.external_id))) fail(account.platform==='facebook'?'Connect a Facebook Page before publishing':'Connect the selected publishing accounts before publishing', 409);
         if(!(account.platform==='linkedin'?linkedinConfig.ready:account.platform==='tiktok'?tiktokConfig.ready:account.platform==='threads'?threadsConfig.ready:config.ready))fail('Configure the destination integration before publishing',409);
         const credential = account.platform==='tiktok'?tiktokTokens.peek(account):(account.platform==='linkedin'?linkedinVault:account.platform==='threads'?threadsVault:vault).read(account.credential_id);
@@ -185,7 +185,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 const now = new Date().toISOString();
                 const job = store.publishingWrite('PublishJob', { post_id: post.id, brand_id: post.brand_id, social_account_id: value.accountId, account_name: value.pageName, platform: value.platform||'facebook', status: 'processing', attempts: 1, max_attempts: 1, last_attempt_at: now, is_demo: false }, scheduled ? value.jobId : undefined);
                 if (JSON.stringify(checked.media) !== JSON.stringify(value.media || [])) fail('Post or Page changed. Review the post again.', 409);
-                const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: value.platform||'facebook', caption: value.caption, media_ids: post.media_ids || [], status: 'processing', is_demo: false });
+                const variant = store.publishingWrite('PostVariant', { post_id: post.id, social_account_id: value.accountId, platform: value.platform||'facebook', caption: value.caption, media_ids: (value.media || []).map(asset => asset.id), status: 'processing', is_demo: false });
                 const claimed = { ...value, status: 'processing', startedAt: Date.now(), jobId: job.id, variantId: variant.id };
                 store.saveAttempt(claimed);
                 if(value.multi) syncDeliveryState(store,post.id);

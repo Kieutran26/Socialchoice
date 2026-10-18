@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
@@ -12,7 +13,7 @@ export default function TiktokSettings({ account, value, onChange, onCreatorChan
     const checkbox=(key,label,disabled=false)=><label className="flex items-start gap-3 text-sm"><input type="checkbox" className="mt-1" checked={!!options[key]} disabled={busy||!creator||disabled} onChange={e=>change({[key]:e.target.checked})}/>{t(label)}</label>;
     return <fieldset className="space-y-3 border rounded-lg p-3"><legend>TikTok</legend>
         <p className="text-sm">{creator?`${creator.nickname} · @${creator.username} · ${t('Maximum video duration')}: ${creator.maxDuration}s`:t('Loading TikTok creator settings…')}</p>
-        <button type="button" disabled={busy} className="underline text-sm" onClick={()=>setRefresh(n=>n+1)}>{t('Refresh TikTok settings')}</button>
+        <Button variant="ghost" type="button" disabled={busy} className="h-auto p-0 underline text-sm" onClick={()=>setRefresh(n=>n+1)}>{t('Refresh TikTok settings')}</Button>
         {error&&<p role="alert" className="text-sm text-dangerFg">{t(error)}</p>}
         <label className="block text-sm">{t('TikTok visibility')}<select aria-label={t('TikTok visibility')} className="block border rounded-lg p-2 mt-2" disabled={!creator||busy} value={options.privacy} onChange={e=>change({privacy:e.target.value})}><option value="">{t('Choose visibility')}</option>{creator?.privacy.map(p=><option key={p} value={p}>{t('Only me (sandbox)')}</option>)}</select></label>
         {checkbox('allowComment','Allow comments',creator?.commentDisabled)}{checkbox('allowDuet','Allow Duet',creator?.duetDisabled)}{checkbox('allowStitch','Allow Stitch',creator?.stitchDisabled)}
