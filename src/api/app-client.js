@@ -19,6 +19,7 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    social: { cancel: () => request('social/cancel', []) },
     templates: { save: input => request('templates/save', [input]), createDraft: id => request('templates/createDraft', [id]) },
     metrics:{list:options=>request('metrics/list',[options]),refresh:options=>request('metrics/refresh',[options])},
     media: {

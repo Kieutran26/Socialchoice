@@ -7,6 +7,8 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import MetaConnectionCard from './MetaConnectionCard';
 import LinkedinConnectionCard from './LinkedinConnectionCard';
 import TiktokConnectionCard from './TiktokConnectionCard';
+import DesktopConnectionCard from './desktop-connection-card';
+import { isDesktop } from '@/api/desktop/runtime';
 
 const channels = [
     { id: 'facebook', label: 'Facebook Page', icon: FacebookLogo, color: '#1877f2', service: 'meta', formats: ['Text', 'Photos', 'Video'] },
@@ -26,12 +28,13 @@ export function connectionReturnPlatform() {
 
 export function hasConnectionReturn() {return ['meta','threads','linkedin','tiktok'].some(key=>new URLSearchParams(window.location.search).has(key));}
 
-export default function AddChannelDialog({ open, onOpenChange, brands, defaultBrandId, demoMode, onChanged, onAddManually }) {
+export default function AddChannelDialog({ open, onOpenChange, brands, defaultBrandId, demoMode, onChanged, onAddManually, initialPlatform = '' }) {
     const { t } = useTranslation();
     const [selected, setSelected] = useState(connectionReturnPlatform);
     const [health, setHealth] = useState(null);
     const [busy, setBusy] = useState(false);
     const [reload, setReload] = useState(0);
+    useEffect(() => { if (open && initialPlatform) setSelected(initialPlatform); }, [open, initialPlatform]);
     useEffect(() => {
         if (!open) return;
         let active = true;
@@ -66,7 +69,7 @@ export default function AddChannelDialog({ open, onOpenChange, brands, defaultBr
                 <div className="grid grid-cols-1 min-[420px]:grid-cols-2 md:grid-cols-3 gap-3">
                     {channels.map(({ id, label, icon: Icon, color, service, formats }) => {
                         const status = service && health?.[service];
-                        const available = status?.ready;
+                        const available = status?.platforms ? status.platforms[id] : status?.ready;
                         const state = !service ? 'Coming soon' : !status || status.loading ? 'Checking…' : status?.error ? 'Status unavailable' : available ? id === 'tiktok' ? 'Sandbox' : 'Available to connect' : 'Setup required';
                         return <Button variant="ghost" key={id} type="button" disabled={!service || !status || status.loading} onClick={() => setSelected(id)} aria-label={t('Connect {platform}', { platform: label })} className={`h-auto group relative flex min-h-[185px] flex-col items-center justify-center rounded-xl border p-5 pt-12 text-center transition-colors focus-visible:outline-offset-2 ${!service ? 'bg-surface text-muted-foreground cursor-not-allowed' : 'bg-white hover:border-brand-dark hover:bg-successBg/30'}`}>
                             <span className={`absolute right-3 top-3 rounded-md px-2 py-1 text-[10px] font-medium ${available ? 'bg-successBg text-successFg' : 'bg-muted text-muted-foreground'}`}>{t(state)}</span>
@@ -82,7 +85,7 @@ export default function AddChannelDialog({ open, onOpenChange, brands, defaultBr
                     {health && Object.values(health).some(value => value.error) && <Button variant="ghost" type="button" onClick={() => setReload(value => value + 1)} className="h-auto p-0 text-xs underline">{t('Retry connection status')}</Button>}
                 </div>
             </> : <div>
-                {selected === 'linkedin' ? <LinkedinConnectionCard {...props} /> : selected === 'tiktok' ? <TiktokConnectionCard {...props} /> : <MetaConnectionCard {...props} initialPlatform={selected} onPlatformResolved={setSelected} lockPlatform />}
+                {isDesktop() ? <DesktopConnectionCard {...props} platform={selected} /> : selected === 'linkedin' ? <LinkedinConnectionCard {...props} /> : selected === 'tiktok' ? <TiktokConnectionCard {...props} /> : <MetaConnectionCard {...props} initialPlatform={selected} onPlatformResolved={setSelected} lockPlatform />}
             </div>}
         </DialogContent>
     </Dialog>;

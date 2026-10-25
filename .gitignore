@@ -27,6 +27,8 @@ dist-desktop/
 src-tauri/target/
 src-tauri/gen/
 auth-broker/build-check/
+auth-broker/**/build-check/
+plans/reports/desktop-social-login-smoke/webview-profile/
 
 # Offline issuer secrets and customer license files
 issuer-private.pem

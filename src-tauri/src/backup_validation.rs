@@ -25,6 +25,8 @@ pub fn validate(manifest:&Value,media_root:&Path)->Result<(),String> {
             if record["filename"].as_str().is_none_or(|name|name.is_empty()||name.chars().count()>240) {return Err("Invalid media filename".into());}
             let allowed=["id","created_date","updated_date","brand_id","name","filename","file_url","storage_id","sha256","size_bytes","is_demo","file_type","mime_type","width","height","duration_seconds"];
             if record.as_object().ok_or("Invalid media")?.keys().any(|key|!allowed.contains(&key.as_str())) {return Err("Unsupported media fields".into());}
+        } else if entity=="SocialAccount" {
+            crate::social_accounts::validate_portable(record)?;
         } else {
             let mut fields=record.as_object().ok_or("Invalid record")?.clone();for key in ["id","created_date","updated_date"] {fields.remove(key);}
             let normalized=entities::prepare(entity,&Value::Object(fields),Some(record))?;

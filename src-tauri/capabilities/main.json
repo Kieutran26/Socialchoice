@@ -9,6 +9,7 @@
     "allow-workspace-request",
     "allow-workspace-files",
     "allow-workspace-ai",
-    "allow-workspace-license"
+    "allow-workspace-license",
+    "allow-workspace-social"
   ]
 }

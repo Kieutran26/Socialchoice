@@ -8,6 +8,7 @@ type Options = { sort?: string; limit?: number; cursor?: string; fields?: string
 // Native commands own persistence and validation; retain the existing pure query contract.
 export async function desktopRequest(path: string, args: unknown[] = [], invoke: Invoke = invokeNative): Promise<unknown> {
     try {
+        if (/^(meta|threads|linkedin|tiktok|social)\/(status|start|pages|profile|import|check|disconnect|cancel)$/.test(path)) return await invoke('workspace_social', { path, args });
         const match = /^entities\/([A-Za-z]+)\/([A-Za-z]+)$/.exec(path);
         if (!match) return await invoke('workspace_request', { path, args });
         const [, entity, operation] = match;

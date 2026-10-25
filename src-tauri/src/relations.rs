@@ -3,6 +3,10 @@ use serde_json::Value;
 
 impl Store {
     pub(super) fn references(&self, entity: &str, id: &str) -> Result<bool, String> {
+        if entity=="SocialAccount" {
+            let count:i64=self.db.query_row("SELECT COUNT(*) FROM records r,json_each(r.data,'$.account_ids') a WHERE r.entity IN ('Post','PostTemplate') AND a.value=?",[id],|row|row.get(0)).map_err(database_error)?;
+            return Ok(count>0);
+        }
         let key = match entity { "Brand" => "$.brand_id", "ContentPillar" => "$.pillar_id", "ContentAngle" => "$.angle_id", _ => return Ok(false) };
         let count: i64 = self.db.query_row("SELECT COUNT(*) FROM records WHERE entity != ? AND json_extract(data,?)=?", [entity,key,id], |row| row.get(0)).map_err(database_error)?;
         Ok(count > 0)

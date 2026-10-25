@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import { encode } from './tickets.mjs';
 import { grantSchema, handle } from './worker.mjs';
 
+const identity = { active: true, client_id: 'fixture-client', auth_type: '3L', scope: 'openid profile w_member_social', expires_at: Math.floor(Date.now()/1000)+3600 };
 const env = { PUBLIC_ORIGIN: 'https://login.example.com', BROKER_STATE_KEY: '16'.repeat(32), LINKEDIN_CLIENT_ID: 'fixture-client', LINKEDIN_CLIENT_SECRET: 'fixture-secret' };
 const verifier = 'v'.repeat(64);
 const challenge = encode(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier)));
@@ -43,6 +44,8 @@ test('stateless browser handoff redeems only with native proof at fixed provider
   const ticket = await handoff(); let calls = 0;
   const fetcher = async (url, options) => {
     calls++;
+    if (url.endsWith('/introspectToken')) return Response.json(identity);
+    if (url.endsWith('/userinfo')) return Response.json({ sub: 'profile-1', name: 'Fixture Profile' });
     assert.equal(url, 'https://www.linkedin.com/oauth/v2/accessToken');
     assert.equal(options.redirect, 'error');
     assert.equal(options.body.get('client_secret'), env.LINKEDIN_CLIENT_SECRET);
@@ -55,8 +58,8 @@ test('stateless browser handoff redeems only with native proof at fixed provider
   const result = await handle(redeem(ticket), env, fetcher);
   assert.equal(result.headers.get('Cache-Control'), 'no-store');
   assert.equal(result.headers.get('Access-Control-Allow-Origin'), null);
-  assert.equal((await result.json()).grant.access_token, 'fixture-native-token');
-  assert.equal(calls, 1);
+  assert.equal((await result.json()).verified.destinations[0].token, 'fixture-native-token');
+  assert.equal(calls, 3);
 });
 
 test('invalid callback and duplicate query never redirect, errors never echo credentials', async () => {
@@ -84,7 +87,9 @@ test('oversized provider data is rejected and readiness reveals no credentials',
 
 test('replayed handoff cannot turn a provider-consumed code into another grant', async () => {
   const ticket = await handoff(); let consumed = false;
-  const provider = async () => {
+  const provider = async url => {
+    if (url.endsWith("/introspectToken")) return Response.json(identity);
+    if (url.endsWith("/userinfo")) return Response.json({ sub: "profile-1", name: "Fixture Profile" });
     if (consumed) return Response.json({ error: 'invalid_grant' }, { status: 400 });
     consumed = true;
     return Response.json({ access_token: 'fixture-once', expires_in: 3600 });

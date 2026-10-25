@@ -4,9 +4,15 @@ param(
     [string]$Action,
     [switch]$SmokeBuild,
     [switch]$LicensedBuild,
-    [string]$IssuerPublicKeyFile
+    [string]$IssuerPublicKeyFile,
+    [string]$AuthBrokerOrigin
 )
 $ErrorActionPreference = 'Stop'
+if ($AuthBrokerOrigin) {
+    $taskBrokerUri = $null
+    if (-not [Uri]::TryCreate($AuthBrokerOrigin, [UriKind]::Absolute, [ref]$taskBrokerUri) -or $taskBrokerUri.Scheme -ne 'https' -or $taskBrokerUri.Authority -ne $taskBrokerUri.Host -or $taskBrokerUri.UserInfo -or $taskBrokerUri.Query -or $taskBrokerUri.Fragment -or $taskBrokerUri.AbsolutePath -ne '/' -or $AuthBrokerOrigin -ne ('https://' + $taskBrokerUri.Host)) { throw 'AuthBrokerOrigin must be the exact HTTPS origin, without a path or trailing slash.' }
+    $env:SOCIALCHOICE_AUTH_BROKER_ORIGIN = $AuthBrokerOrigin
+} else { Remove-Item Env:SOCIALCHOICE_AUTH_BROKER_ORIGIN -ErrorAction SilentlyContinue }
 if ($LicensedBuild -and ($Action -ne 'build' -or $SmokeBuild)) { throw 'LicensedBuild is only valid for a commercial build, separate from SmokeBuild.' }
 if ($LicensedBuild -and -not $IssuerPublicKeyFile) { throw 'A licensed build requires an explicit IssuerPublicKeyFile; inherited environment trust is insufficient.' }
 if ($IssuerPublicKeyFile) {

@@ -21,6 +21,14 @@ mod license_service;
 mod machine_identity;
 mod activation_request;
 mod templates;
+mod social_types;
+mod social_vault;
+mod social_loopback;
+mod social_http;
+mod social_accounts;
+mod social_service;
+#[cfg(test)]
+mod social_tests;
 #[cfg(test)]
 mod template_tests;
 #[cfg(test)]
@@ -71,10 +79,11 @@ fn main() {
             let workspace = store::Store::open(&directory.join("prototype.sqlite"))
                 .map_err(std::io::Error::other)?;
             app.manage(Workspace(Arc::new(Mutex::new(workspace))));
+            app.manage(social_service::State(Arc::new(social_service::Runtime::new())));
             app.manage(ai_service::State(Arc::new(ai_service::Runtime{root:directory,gate:Mutex::new(()),busy:std::sync::atomic::AtomicBool::new(false)})));
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![workspace_request,workspace_files,ai_service::workspace_ai,license_service::workspace_license])
+        .invoke_handler(tauri::generate_handler![workspace_request,workspace_files,ai_service::workspace_ai,license_service::workspace_license,social_service::workspace_social])
         .run(tauri::generate_context!())
         .expect("Unable to open Socialchoice Desktop Prototype");
 }

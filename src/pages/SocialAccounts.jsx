@@ -16,6 +16,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CONNECTION_LABEL, CONNECTION_TONE, PLATFORM_LABEL } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
+import { isDesktop } from '@/api/desktop/runtime';
 
 export default function SocialAccounts() {
     const { t } = useTranslation();
@@ -27,6 +28,7 @@ export default function SocialAccounts() {
     const [channelOpen,setChannelOpen]=useState(hasConnectionReturn);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [fixTarget, setFixTarget] = useState(null);
+    const [reconnect, setReconnect] = useState(null);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -141,7 +143,7 @@ export default function SocialAccounts() {
                                                 </div>
 
                                                 <div className="flex flex-wrap items-center gap-2">
-                                                    <Select value={account.brand_id} onValueChange={(value) => setBrand(account, value)}>
+                                                    <Select value={account.brand_id} disabled={isDesktop() && !!account.credential_id} onValueChange={(value) => setBrand(account, value)}>
                                                         <SelectTrigger className="h-8 w-[170px] rounded-lg text-[12px]">
                                                             <SelectValue placeholder={t("Assign brand")} />
                                                         </SelectTrigger>
@@ -161,6 +163,7 @@ export default function SocialAccounts() {
                                                                 size="sm"
                                                                 className="h-8 rounded-lg text-[12px]"
                                                                 onClick={() => {
+                                                                    if (isDesktop() && ['facebook','instagram','threads','linkedin','tiktok'].includes(account.platform)) { setReconnect({ platform: account.platform, brandId: account.brand_id }); setChannelOpen(true); return; }
                                                                     if (!account.credential_id) return setFixTarget(account);
                                                                     (account.platform==='linkedin'?appClient.linkedin.start(account.brand_id):account.platform==='tiktok'?appClient.tiktok.start(account.brand_id):account.platform==='threads'?appClient.threads.start(account.brand_id):appClient.meta.start(account.brand_id, account.platform)).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
                                                                 }}
@@ -201,7 +204,7 @@ export default function SocialAccounts() {
                 )}
             </div>
 
-            <AddChannelDialog open={channelOpen} onOpenChange={setChannelOpen} brands={brands} defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId} demoMode={demoMode} onChanged={load} onAddManually={() => {setChannelOpen(false);setAddOpen(true);}} />
+            <AddChannelDialog open={channelOpen} onOpenChange={value => {setChannelOpen(value);if(!value)setReconnect(null);}} initialPlatform={reconnect?.platform || ''} brands={brands} defaultBrandId={reconnect?.brandId || (selectedBrandId === 'all' ? '' : selectedBrandId)} demoMode={demoMode} onChanged={load} onAddManually={() => {setChannelOpen(false);setReconnect(null);setAddOpen(true);}} />
 
             <AddAccountDialog
                 open={addOpen}

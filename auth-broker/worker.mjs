@@ -1,3 +1,6 @@
+import { boundedJson } from './provider-http.mjs';
+import { verifyGrant } from './verify-grant.mjs';
+import { checkGrant } from './check-grant.mjs';
 import { authorizationContext, open, origin, seal, verifyProof } from './tickets.mjs';
 
 const securityHeaders = {
@@ -11,6 +14,7 @@ function json(value, status = 200) {
 function redirect(url) { return new Response(null, { status: 302, headers: { ...securityHeaders, Location: url.href } }); }
 
 export function providerConfig(env, provider) {
+  if (!['facebook', 'instagram', 'threads', 'linkedin', 'tiktok'].includes(provider)) return null;
   const meta = provider === 'facebook' || provider === 'instagram';
   const prefix = meta ? 'META' : provider.toUpperCase();
   const id = env[`${prefix}_CLIENT_ID`];
@@ -34,23 +38,6 @@ export function providerConfig(env, provider) {
   return { id, secret, callback, scopes, authorize, version: env.META_GRAPH_VERSION };
 }
 
-async function boundedJson(response, limit) {
-  if (!response.body) throw new Error('Missing body');
-  const reader = response.body.getReader();
-  const chunks = []; let size = 0;
-  try {
-    for (;;) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      size += value.length;
-      if (size > limit) throw new Error('Body too large');
-      chunks.push(value);
-    }
-  } finally { await reader.cancel().catch(() => {}); }
-  const bytes = new Uint8Array(size); let offset = 0;
-  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.length; }
-  return JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes));
-}
 
 async function tokenRequest(url, fields, fetcher) {
   const response = await fetcher(url, {
@@ -150,10 +137,15 @@ export async function handle(request, env, fetcher = fetch) {
       }
       return redirect(target);
     }
-    if (request.method === 'POST' && url.pathname === '/exchange') {
+    if (request.method === 'POST' && ['/exchange', '/check'].includes(url.pathname)) {
       // Only the native client redeems tickets. Browser scripts never receive token responses.
       if (request.headers.has('Origin') || request.headers.has('Sec-Fetch-Site') || request.headers.get('Content-Type') !== 'application/json' || url.search) return json({ error: 'Invalid exchange' }, 400);
       const body = await boundedJson(request, 24_000);
+      if (url.pathname === '/check') {
+        const config = providerConfig(env, body?.provider);
+        if (!config) return json({ error: 'Provider not configured' }, 409);
+        return json(await checkGrant(body.provider, config, body, fetcher));
+      }
       if (!body || Object.keys(body).sort().join(',') !== 'ticket,verifier') return json({ error: 'Invalid exchange' }, 400);
       const payload = await open(env.BROKER_STATE_KEY, publicOrigin, 'handoff', body.ticket);
       const context = authorizationContext(payload);
@@ -162,12 +154,16 @@ export async function handle(request, env, fetcher = fetch) {
       const config = providerConfig(env, context.provider);
       if (!config) return json({ error: 'Provider not configured' }, 409);
       const grant = grantSchema(context.provider, await exchange(context.provider, config, payload.code, fetcher));
-      return json({ protocol: 1, provider: context.provider, grant });
+      const verified = await verifyGrant(context.provider, config, grant, fetcher);
+      // Only native code receives this credential envelope. Renderer receives metadata after import.
+      const result = { protocol: 1, provider: context.provider, verified };
+      if (JSON.stringify(result).length > 2 * 1024 * 1024) throw new Error('Too many destinations');
+      return json(result);
     }
     return json({ error: 'Not found' }, 404);
-  } catch {
+  } catch (error) {
     // Never include provider errors, authorization codes, tickets or credentials in logs/responses.
-    return json({ error: 'Authorization could not be confirmed. Start a new login.' }, 400);
+    return error?.invalidGrant ? json({error:'connection_expired'},401) : json({ error: 'Authorization could not be confirmed. Start a new login.' }, 400);
   }
 }
 

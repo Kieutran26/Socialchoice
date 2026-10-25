@@ -56,6 +56,7 @@ impl Store {
         let parts=path.split('/').collect::<Vec<_>>();
         if parts.len()!=3 || parts[0]!="entities" { return Err("Feature unavailable in this desktop prototype".into()); }
         let (entity,operation)=(parts[1],parts[2]);
+        if entity=="SocialAccount" {return crate::social_accounts::mutate(self,operation,args);}
         if entity=="MediaAsset" && operation=="delete" {return self.delete_media(arg(args,0)?.as_str().ok_or("Invalid media ID")?);}
         if !entities::writable(entity) { return Err("Entity is read-only in desktop planning".into()); }
         match operation {

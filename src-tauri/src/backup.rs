@@ -5,7 +5,7 @@ use std::{collections::HashSet, fs::File, io::{Read, Write}, path::Path};
 use uuid::Uuid;
 use zip::{ZipArchive, ZipWriter, write::SimpleFileOptions};
 
-pub const ENTITIES:[&str;6]=["Brand","ContentPillar","ContentAngle","MediaAsset","Post","PostTemplate"];
+pub const ENTITIES:[&str;7]=["Brand","ContentPillar","ContentAngle","MediaAsset","Post","PostTemplate","SocialAccount"];
 const MAX_TOTAL:u64=2*1024*1024*1024;
 pub struct Prepared { pub token:String, pub directory:tempfile::TempDir, pub manifest:Value }
 
@@ -17,7 +17,9 @@ impl Store {
         for row in records {
             let (entity,data)=row.map_err(database_error)?;
             if !ENTITIES.contains(&entity.as_str()) { return Err("Workspace contains unsupported records; use a newer app".into()); }
-            rows.push(json!({"entity":entity,"data":serde_json::from_str::<Value>(&data).map_err(io_error)?}));
+            let mut value=serde_json::from_str::<Value>(&data).map_err(io_error)?;
+            if entity=="SocialAccount"{value=crate::social_accounts::portable(&value)?;}
+            rows.push(json!({"entity":entity,"data":value}));
         }
         if rows.len()>10000 { return Err("Backup supports up to 10000 records".into()); }
         let manifest=json!({"format":"socialchoice-workspace","version":1,"created_at":Utc::now().to_rfc3339(),"records":rows});

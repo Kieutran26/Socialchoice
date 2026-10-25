@@ -45,8 +45,15 @@ test('packaged desktop cannot use cloud HTTP, broad filesystem or shell permissi
     assert.equal(config.build.frontendDist, '../dist-desktop');
     assert.ok(!config.app.security.csp.includes('https:'));
     assert.ok(config.app.security.csp.includes('connect-src ipc: http://ipc.localhost;'));
-    assert.deepEqual(capability.permissions, ['allow-workspace-request', 'allow-workspace-files', 'allow-workspace-ai', 'allow-workspace-license']);
+    assert.deepEqual(capability.permissions, ['allow-workspace-request', 'allow-workspace-files', 'allow-workspace-ai', 'allow-workspace-license', 'allow-workspace-social']);
     assert.equal(capability.remote, undefined);
     assert.deepEqual(config.app.security.assetProtocol.scope, ['$APPDATA/media/*']);
     assert.ok(config.app.security.csp.includes('http://asset.localhost'));
+});
+
+test('desktop social operations use native isolated login commands without renderer HTTP', async () => {
+    for (const path of ['meta/start','meta/pages','linkedin/profile','threads/import','tiktok/check','social/cancel']) {
+        const args = path.endsWith('start') ? ['brand','instagram'] : ['account'];
+        assert.deepEqual(await desktopRequest(path,args,async (command,payload) => { assert.equal(command,'workspace_social');assert.deepEqual(payload,{path,args});return {native:true}; }),{native:true});
+    }
 });
