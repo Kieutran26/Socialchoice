@@ -1,3 +1,4 @@
+import LoadError from '@/components/common/load-error';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ export default function ContentAngles() {
     const { scope, brands, selectedBrandId, demoMode } = useWorkspace();
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [counts, setCounts] = useState({});
@@ -29,7 +31,8 @@ export default function ContentAngles() {
     const [deleteTarget, setDeleteTarget] = useState(null);
 
     const load = useCallback(async () => {
-        setLoading(true);
+        setLoading(true); setLoadError('');
+        try {
         const [pillarPage, anglePage, agg] = await Promise.all([
             appClient.entities.ContentPillar.filter(scope, { sort: 'name', limit: 300 }),
             appClient.entities.ContentAngle.filter(scope, { sort: 'name', limit: 500 }),
@@ -38,7 +41,8 @@ export default function ContentAngles() {
         setPillars(pillarPage.items);
         setAngles(anglePage.items);
         setCounts(Object.fromEntries(agg.rows.map((row) => [row.angle_id, row.count])));
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [scope]);
 
     useEffect(() => {
@@ -58,10 +62,12 @@ export default function ContentAngles() {
     };
 
     const toggleStatus = async (angle) => {
+        try {
         const status = angle.status === 'archived' ? 'active' : 'archived';
         await appClient.entities.ContentAngle.update(angle.id, { status });
         toast({ title: status === 'archived' ? t("Angle archived") : t("Angle restored") });
         load();
+        } catch (error) { toast({ variant: 'destructive', title: t('Unable to update strategy'), description: t(error.message) }); }
     };
 
     const remove = async () => {
@@ -73,6 +79,8 @@ export default function ContentAngles() {
     };
 
     const visible = pillarFilter === 'all' ? pillars : pillars.filter((pillar) => pillar.id === pillarFilter);
+
+    if (loadError) return <LoadError message={loadError} onRetry={load} />;
 
     return (
         <>

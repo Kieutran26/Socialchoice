@@ -1,3 +1,4 @@
+import { isDesktop } from '@/api/desktop/runtime';
 import FacebookPerformance from '@/components/analytics/FacebookPerformance';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -99,7 +100,7 @@ export default function Analytics() {
         );
     }
 
-    if(loadError)return <><PageHeader title={t('Analytics')}/><FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/><p role="alert" className="text-sm text-dangerFg">{t(loadError)}</p></>;
+    if(loadError)return <><PageHeader title={t('Analytics')}/>{!isDesktop() && <FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/>} <p role="alert" className="text-sm text-dangerFg">{t(loadError)}</p></>;
 
     const totalPosts = Object.values(data.postStatus).reduce((sum, value) => sum + value, 0);
     const totalJobs = Object.values(data.jobStatus).reduce((sum, value) => sum + value, 0);
@@ -119,8 +120,9 @@ export default function Analytics() {
                 description={t("What the workspace has produced, how each destination performed, and where content is concentrated.")}
             />
 
-            <FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/>
+            {!isDesktop() && <FacebookPerformance key={String(scope.is_demo)+':'+(scope.brand_id||'all')} scope={scope} timezone={timezone}/>} 
 
+            {isDesktop() && <p role="status" className="panel p-4 mb-5 text-sm">{t('These charts use local content records. Live social metrics require a connected integration.')}</p>}
             {totalPosts === 0 && totalJobs === 0 ? (
                 <EmptyState
                     icon={ChartBar}

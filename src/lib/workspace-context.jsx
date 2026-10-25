@@ -10,21 +10,28 @@ export function WorkspaceProvider({ children }) {
     const [demoMode, setDemoMode] = useState(false);
     const [loading, setLoading] = useState(true);
     const [seeding, setSeeding] = useState(false);
+    const [error, setError] = useState('');
 
     const loadBrands = useCallback(async (demo) => {
+        setError('');
+        try {
         const page = await appClient.entities.Brand.filter(
             { is_demo: demo, status: 'active' },
             { sort: 'name', limit: 100 },
         );
         setBrands(page.items);
         return page.items;
+        } catch (failure) {
+            setError(failure.message);
+            throw failure;
+        }
     }, []);
 
     useEffect(() => {
         let active = true;
         (async () => {
-            await loadBrands(false);
-            if (active) setLoading(false);
+            try { await loadBrands(false); } catch { /* The shell displays the stored error. */ }
+            finally { if (active) setLoading(false); }
         })();
         return () => {
             active = false;
@@ -40,13 +47,18 @@ export function WorkspaceProvider({ children }) {
             setDemoMode(demo);
             setSelectedBrandId('all');
             setLoading(true);
-            await loadBrands(demo);
-            setLoading(false);
+            try { await loadBrands(demo); }
+            finally { setLoading(false); }
         },
         [loadBrands],
     );
 
     const reload = useCallback(() => loadBrands(demoMode), [demoMode, loadBrands]);
+    const retry = async () => {
+        setLoading(true);
+        try { await loadBrands(demoMode); } catch { /* The shell displays the stored error. */ }
+        finally { setLoading(false); }
+    };
 
     const activeBrand = brands.find((b) => b.id === selectedBrandId) || null;
     const scope = useMemo(() => ({ is_demo: demoMode, ...(selectedBrandId === 'all' ? {} : { brand_id: selectedBrandId }) }), [demoMode, selectedBrandId]);
@@ -54,6 +66,8 @@ export function WorkspaceProvider({ children }) {
     const value = {
         brands,
         loading,
+        error,
+        retry,
         seeding,
         selectedBrandId,
         setSelectedBrandId,

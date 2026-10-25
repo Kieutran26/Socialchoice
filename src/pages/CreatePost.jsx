@@ -14,6 +14,7 @@ import {
     Info,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
@@ -33,6 +34,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
+import DesktopAiWriter from '@/components/composer/desktop-ai-writer';
+import { applyAiSuggestion } from '@/lib/ai-draft';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -58,6 +61,7 @@ const emptyForm = (brandId) => ({
 });
 
 export default function CreatePost() {
+    const desktop = isDesktop();
     const { t } = useTranslation();
     const { brands, demoMode, selectedBrandId } = useWorkspace();
     const { toast } = useToast();
@@ -78,20 +82,24 @@ export default function CreatePost() {
     const [form, setForm] = useState(emptyForm(selectedBrandId === 'all' ? '' : selectedBrandId));
     const [deleteOpen, setDeleteOpen] = useState(false);
     const [publishReview, setPublishReview] = useState(null);
+    const [loadError, setLoadError] = useState('');
+    const [sourceLoading, setSourceLoading] = useState(!!sourceId);
 
     useEffect(() => {
         let active = true;
         (async () => {
+            try {
             const [accountPage, pillarPage, anglePage] = await Promise.all([
                 appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 300 }),
-                appClient.entities.ContentPillar.filter({ is_demo: demoMode, status: 'active' }, { sort: 'name', limit: 300 }),
-                appClient.entities.ContentAngle.filter({ is_demo: demoMode, status: 'active' }, { sort: 'name', limit: 500 }),
+                appClient.entities.ContentPillar.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }),
+                appClient.entities.ContentAngle.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 500 }),
             ]);
             if (!active) return;
             setAccounts(accountPage.items);
             setPillars(pillarPage.items);
             setAngles(anglePage.items);
             setLoading(false);
+            } catch (error) { if (active) { setLoadError(error.message); setLoading(false); } }
         })();
         return () => {
             active = false;
@@ -119,8 +127,12 @@ export default function CreatePost() {
     }, [brands, selectedBrandId, form.brand_id, sourceId, applyBrand]);
 
     useEffect(() => {
-        if (!sourceId || loading) return;
+        if (loading) return;
+        if (!sourceId) { setExisting(null); setSourceLoading(false); setForm(emptyForm(selectedBrandId === 'all' ? '' : selectedBrandId)); return; }
+        let active = true;
+        setSourceLoading(true); setLoadError('');
         (async () => {
+            try {
             const post = await appClient.entities.Post.get(sourceId);
             const [media, jobs] = await Promise.all([
                 referencedMediaIds(post).length
@@ -129,6 +141,7 @@ export default function CreatePost() {
                 appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }),
             ]);
             const parts = toZonedParts(post.scheduled_at, post.timezone || DEFAULT_TIMEZONE);
+            if (!active) return;
             setExisting(editId ? post : null);
             setForm({
                 brand_id: post.brand_id,
@@ -141,20 +154,23 @@ export default function CreatePost() {
                     return [id,{tiktok:setting.tiktok,caption:setting.caption || '',localTime:setting.scheduled_at ? parts.date+'T'+parts.time : ''}];
                 })),
                 account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
-                pillar_id: post.pillar_id || '',
-                angle_id: post.angle_id || '',
+                pillar_id: duplicateId && !pillars.some(item => item.id === post.pillar_id && item.status === 'active') ? '' : post.pillar_id || '',
+                angle_id: duplicateId && (!pillars.some(item => item.id === post.pillar_id && item.status === 'active') || !angles.some(item => item.id === post.angle_id && item.status === 'active')) ? '' : post.angle_id || '',
                 date: parts.date,
                 time: parts.time,
                 timezone: post.timezone || DEFAULT_TIMEZONE,
                 status: duplicateId ? 'draft' : ['draft', 'scheduled'].includes(post.status) ? post.status : 'draft',
                 media: (post.media_ids || []).map(id => media.items.find(image => image.id === id)).filter(Boolean),
             });
+            } catch (error) { if (active) setLoadError(error.message); }
+            finally { if (active) setSourceLoading(false); }
         })();
-    }, [sourceId, loading, editId, duplicateId]);
+        return () => { active = false; };
+    }, [sourceId, loading, editId, duplicateId, pillars, angles]);
 
     const brandAccounts = useMemo(() => accounts.filter((a) => a.brand_id === form.brand_id), [accounts, form.brand_id]);
-    const brandPillars = useMemo(() => pillars.filter((p) => p.brand_id === form.brand_id), [pillars, form.brand_id]);
-    const brandAngles = useMemo(() => angles.filter((a) => a.brand_id === form.brand_id), [angles, form.brand_id]);
+    const brandPillars = useMemo(() => pillars.filter((p) => p.brand_id === form.brand_id && (p.status === 'active' || p.id === existing?.pillar_id)), [pillars, form.brand_id, existing]);
+    const brandAngles = useMemo(() => angles.filter((a) => a.brand_id === form.brand_id && (a.status === 'active' || a.id === existing?.angle_id)), [angles, form.brand_id, existing]);
     const selectedAccounts = useMemo(
         () => accounts.filter((a) => form.account_ids.includes(a.id)),
         [accounts, form.account_ids],
@@ -184,7 +200,16 @@ export default function CreatePost() {
     const validate = (action) => {
         if (!form.brand_id) return t("Choose the brand this post belongs to.");
         if (!form.title.trim()) return t("Add an internal title so the post is easy to find later.");
-        if (!form.caption.trim()) return t("The main caption cannot be empty.");
+        if (!form.caption.trim() && (!desktop || action !== 'draft' && !form.media.length)) return t(desktop ? 'Add a caption or media before scheduling' : "The main caption cannot be empty.");
+        if (desktop) {
+            if (action === 'publish') return t('Publishing is not included in this desktop prototype. No posts are sent.');
+            if (action === 'schedule') {
+                if (!scheduledAt) return t('Set the publishing date and time.');
+                const local = toZonedParts(scheduledAt, form.timezone);
+                if (local.date !== form.date || local.time !== form.time) return t('Choose a valid local time in this timezone.');
+            }
+            return null;
+        }
         if (action !== 'draft' && !form.account_ids.length) return t("Select at least one destination to publish to.");
         if (['publish','schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different publishing accounts');
         if (['publish','schedule'].includes(action) && !demoMode) {
@@ -228,14 +253,14 @@ export default function CreatePost() {
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
-                scheduled_at: action === 'publish' ? null : scheduledAt,
-                status: action === 'schedule' && demoMode ? 'scheduled' : 'draft',
+                scheduled_at: action === 'publish' || desktop && action === 'draft' ? null : scheduledAt,
+                status: action === 'schedule' && (demoMode || desktop) ? 'scheduled' : 'draft',
                 is_demo: demoMode,
             };
 
             const saved = await appClient.posts.save({ id: existing?.id, data: payload });
             setExisting(saved);
-            if (action === 'publish' || action === 'schedule' && !demoMode) {
+            if (!desktop && (action === 'publish' || action === 'schedule' && !demoMode)) {
                 setPublishReview(action === 'schedule' ? await appClient.publishing.prepareSchedule(saved.id,scheduledAt,form.timezone) : await appClient.publishing.prepare(saved.id));
                 return;
             }
@@ -252,13 +277,14 @@ export default function CreatePost() {
     };
 
     const remove = async () => {
-        if (existing.status !== 'draft') throw new Error(t("Only drafts can be deleted. Cancel calendar plans instead."));
+        if (existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')) throw new Error(t("Only drafts can be deleted. Cancel calendar plans instead."));
         await appClient.entities.Post.delete(existing.id);
         toast({ title: t("Post deleted") });
         navigate('/posts');
     };
 
-    if (loading) {
+    if (loadError) return <div role="alert" className="panel p-5"><p>{t(loadError)}</p><Button variant="outline" className="mt-3" onClick={() => window.location.reload()}>{t('Retry')}</Button></div>;
+    if (loading || sourceLoading) {
         return (
             <>
                 <PageHeader title={existing ? t("Edit post") : t("Create Post")} />
@@ -274,7 +300,7 @@ export default function CreatePost() {
         <>
             <PageHeader
                 title={existing ? t("Edit post") : t("Create Post")}
-                description={t('Compose once for multiple platforms. Customize captions, review each channel and publish now or schedule.')}
+                description={t(desktop ? 'Write drafts and save calendar plans on this computer. Nothing is published automatically.' : 'Compose once for multiple platforms. Customize captions, review each channel and publish now or schedule.')}
                 actions={<>
                     {existing ? (
                         <>
@@ -292,13 +318,13 @@ export default function CreatePost() {
                                 variant="ghost"
                                 size="sm"
                                 className="rounded-lg text-dangerFg hover:text-dangerFg"
-                                disabled={existing.status !== 'draft'}
+                                disabled={existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')}
                                 onClick={() => setDeleteOpen(true)}
                             >
                                 <Trash size={14} className="mr-1.5" /> {t("Delete")} </Button>
                         </>
                     ) : null}
-                    <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+                    {<SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />}
                 </>}
             />
 
@@ -309,9 +335,9 @@ export default function CreatePost() {
                         <div className="space-y-4">
                             <div className="grid gap-4">
                                 <div>
-                                    <Label className="label-xs mb-1.5 block">{t("Brand")}</Label>
+                                    <Label htmlFor="post-brand" className="label-xs mb-1.5 block">{t("Brand")}</Label>
                                     <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
-                                        <SelectTrigger className="rounded-lg">
+                                        <SelectTrigger id="post-brand" className="rounded-lg">
                                             <SelectValue placeholder={t("Select brand")} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -324,8 +350,9 @@ export default function CreatePost() {
                                     </Select>
                                 </div>
                                 <div>
-                                    <Label className="label-xs mb-1.5 block">{t("Post title (internal)")}</Label>
+                                    <Label htmlFor="post-title" className="label-xs mb-1.5 block">{t("Post title (internal)")}</Label>
                                     <Input
+                                        id="post-title"
                                         value={form.title}
                                         onChange={(event) => setForm({ ...form, title: event.target.value })}
                                         placeholder={t("Week 42 — product education")}
@@ -334,8 +361,9 @@ export default function CreatePost() {
                                 </div>
                             </div>
                             <div>
-                                <Label className="label-xs mb-1.5 block">{t("Main caption")}</Label>
+                                <Label htmlFor="post-caption" className="label-xs mb-1.5 block">{t("Main caption")}</Label>
                                 <Textarea
+                                    id="post-caption"
                                     rows={5}
                                     value={form.caption}
                                     onChange={(event) => setForm({ ...form, caption: event.target.value })}
@@ -347,6 +375,8 @@ export default function CreatePost() {
                         </div>
                     </section>
 
+                    {desktop && <DesktopAiWriter key={`${form.brand_id}:${sourceId||'new'}`} form={form} disabled={saving||uploading} onApply={(origin,text)=>setForm(current=>applyAiSuggestion(current,origin,text))} />}
+                    {!desktop && <>
                     <section className="panel p-5">
                         <h2 className="mb-3 text-[15px]">{t("Destinations")}</h2>
                         <fieldset disabled={uploading || saving}>
@@ -386,7 +416,9 @@ export default function CreatePost() {
                         </fieldset>
                     </section>
                     <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
+                    </>}
 
+                    {desktop && <section className="panel p-5"><h2 className="mb-3 text-[15px]">{t('Shared media')}</h2><fieldset disabled={uploading || saving}><MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} /></fieldset></section>}
                     <section className="panel p-5">
                         <h2 className="mb-4 text-[15px]">{t("Content strategy")}</h2>
                         <PillarAngleFields
@@ -406,6 +438,7 @@ export default function CreatePost() {
 
                 <div className="composer-preview min-w-0 space-y-4">
                     <PostPreview
+                        planning={desktop}
                         caption={form.caption}
                         media={form.media}
                         accounts={selectedAccounts}
@@ -421,7 +454,7 @@ export default function CreatePost() {
                     {warnings.length ? (
                         <div className="panel p-4">
                             <p className="mb-2 flex items-center gap-2 text-[12px] font-medium">
-                                <WarningCircle size={14} className="text-warnFg" /> {t("Before you publish")} </p>
+                                <WarningCircle size={14} className="text-warnFg" /> {t(desktop ? 'Planning checks' : 'Before you publish')} </p>
                             <ul className="space-y-2">
                                 {warnings.map((warning) => (
                                     <li key={warning} className="label-xs flex gap-2">
@@ -434,10 +467,10 @@ export default function CreatePost() {
                     ) : null}
 
                     <div className="panel space-y-2 p-4">
-                        <button type="button" className="btn-skew w-full" disabled={saving || uploading || demoMode} onClick={() => submit('publish')}>
-                            <PaperPlaneTilt size={16} weight="duotone" /> {t("Publish now")} </button>
-                        <Button variant="outline" type="button" className="w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
-                            <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </Button>
+                        {!desktop && <button type="button" className="btn-skew w-full" disabled={saving || uploading || demoMode} onClick={() => submit('publish')}>
+                            <PaperPlaneTilt size={16} weight="duotone" /> {t("Publish now")} </button>}
+                        {desktop ? <button type="button" className="btn-skew w-full" disabled={saving || uploading} onClick={() => submit('schedule')}><CalendarDots size={16} weight="duotone" />{t('Save calendar plan')}</button> : <Button variant="outline" type="button" className="w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
+                            <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </Button>}
                         <Button
                             type="button"
                             variant="outline"
@@ -447,7 +480,7 @@ export default function CreatePost() {
                         >
                             <FloppyDisk size={15} className="mr-1.5" /> {t("Save draft")} </Button>
                         <p className="label-xs flex gap-2 pt-1">
-                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(". Automatic publishing starts at the confirmed time, even when this browser is closed.")} </p>
+                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(desktop ? '. This is a local plan only. No automatic publishing.' : '. Automatic publishing starts at the confirmed time, even when this browser is closed.')} </p>
                     </div>
                 </div>
             </div></div>
@@ -461,7 +494,7 @@ export default function CreatePost() {
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
                 title={t("Delete this post?")}
-                description={t("The post and its queued destination jobs are removed. Published history stays in the activity log.")}
+                description={t(desktop ? 'This draft is removed from this computer.' : 'The post and its queued destination jobs are removed. Published history stays in the activity log.')}
                 confirmLabel={t("Delete post")}
                 destructive
                 onConfirm={remove}

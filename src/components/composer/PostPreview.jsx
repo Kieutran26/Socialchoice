@@ -36,7 +36,7 @@ function PhotoGrid({ media }) {
     </>;
 }
 
-export default function PostPreview({ caption: mainCaption, media: sharedMedia, accounts, scheduledAt, timezone, pageSettings = {}, platformCaptions = {}, platformMedia = {} }) {
+export default function PostPreview({ caption: mainCaption, media: sharedMedia, accounts, scheduledAt, timezone, pageSettings = {}, platformCaptions = {}, platformMedia = {}, planning = false }) {
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const [selectedPage,setSelectedPage]=useState('');
@@ -47,28 +47,28 @@ export default function PostPreview({ caption: mainCaption, media: sharedMedia, 
     const localTime=pageSettings[page?.id]?.localTime;
     const [date,time]=localTime?.split('T') || [];
     const previewTime=localTime ? toUtcIso(date,time,timezone) : scheduledAt;
-    const pageName = page?.name || t('Choose a publishing account');
+    const pageName = planning ? t('Local content plan') : page?.name || t('Choose a publishing account');
     const longCaption = caption.length > 350 || caption.split('\n').length > 6;
     const visibleCaption = longCaption && !expanded ? caption.slice(0, 350).split('\n').slice(0, 6).join('\n') : caption;
     return <section className="panel p-4 sm:p-5 min-w-0" aria-label={t('Content preview')}>
-        <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-base">{t('Content preview')}</h2><span className="label-xs">{page?.platform==='linkedin'?'LinkedIn':page?.platform==='tiktok'?'TikTok':page?.platform==='threads'?'Threads':page?.platform==='instagram'?'Instagram':'Facebook'}</span></div>
+        <div className="flex items-center justify-between gap-3 mb-4"><h2 className="text-base">{t('Content preview')}</h2><span className="label-xs">{planning ? t('Preview') : page?.platform==='linkedin'?'LinkedIn':page?.platform==='tiktok'?'TikTok':page?.platform==='threads'?'Threads':page?.platform==='instagram'?'Instagram':'Facebook'}</span></div>
         {pages.length>1 && <label className="block text-xs mb-4">{t('Preview account')}<select aria-label={t('Preview account')} className="w-full mt-2 border rounded-lg p-2 bg-background" value={page?.id || ''} onChange={event=>{setSelectedPage(event.target.value);setExpanded(false);}}>{pages.map(account=><option key={account.id} value={account.id}>{account.name} · {PLATFORM_LABEL[account.platform]}</option>)}</select></label>}
         <div className="rounded-xl border bg-muted p-3 sm:p-6">
-            <article className="mx-auto max-w-[680px] overflow-hidden rounded-lg border bg-background" aria-label={t(page?.platform==='linkedin'?'LinkedIn post preview':page?.platform==='tiktok'?'TikTok post preview':page?.platform==='threads'?'Threads post preview':page?.platform==='instagram'?'Instagram post preview':'Facebook post preview')}>
+            <article className="mx-auto max-w-[680px] overflow-hidden rounded-lg border bg-background" aria-label={t(planning ? 'Local content plan' : page?.platform==='linkedin'?'LinkedIn post preview':page?.platform==='tiktok'?'TikTok post preview':page?.platform==='threads'?'Threads post preview':page?.platform==='instagram'?'Instagram post preview':'Facebook post preview')}>
                 <header className="flex items-center gap-3 p-4">
                     <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-brand-neutral text-lg font-medium" aria-hidden="true">{pageName.slice(0, 1).toUpperCase()}</div>
-                    <div className="min-w-0 flex-1"><p className="text-sm font-semibold break-words">{pageName}</p><p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5"><span>{t('Preview')}</span><span>·</span>{page?.platform==='tiktok'?t('Only me (sandbox)'):<Globe size={13} aria-label={t('Public')} />}</p></div>
+                    <div className="min-w-0 flex-1"><p className="text-sm font-semibold break-words">{pageName}</p><p className="flex items-center gap-1.5 text-xs text-muted-foreground mt-0.5"><span>{t('Preview')}</span><span>·</span>{planning ? t('Local only') : page?.platform==='tiktok'?t('Only me (sandbox)'):<Globe size={13} aria-label={t('Public')} />}</p></div>
                     <DotsThree size={24} aria-hidden="true" />
                 </header>
                 {page?.platform!=='instagram' && <div className="px-4 pb-4"><p className="whitespace-pre-wrap break-words text-[15px] leading-relaxed">{visibleCaption || t('Your caption will appear here.')}{longCaption && !expanded ? '…' : ''}</p>{longCaption && <Button variant="ghost" type="button" className="h-auto p-0 mt-1 min-h-11 text-sm font-semibold underline underline-offset-2" onClick={() => setExpanded(!expanded)}>{t(expanded ? 'See less' : 'See more')}</Button>}</div>}
                 {media[0]?.file_type === 'video' ? <video src={media[0].file_url} controls preload="metadata" className="w-full max-h-[600px] bg-muted object-contain" /> : media.length > 0 && <PhotoGrid media={media} />}
                 {page?.platform==='instagram' && <p className="px-4 py-4 whitespace-pre-wrap break-words text-sm"><strong>{page.username || pageName}</strong> {caption || t('Your caption will appear here.')}</p>}
-                {(!page||page.platform==='facebook') && <footer className="grid grid-cols-3 border-t mx-4 py-3 text-muted-foreground" aria-label={t('Preview only')}>
+                {!planning && (!page||page.platform==='facebook') && <footer className="grid grid-cols-3 border-t mx-4 py-3 text-muted-foreground" aria-label={t('Preview only')}>
                     {[['Like', ThumbsUp], ['Comment', ChatCircle], ['Share this post', ShareFat]].map(([label, Icon]) => <span key={String(label)} className="flex justify-center items-center gap-1.5 text-xs sm:text-sm"><Icon size={18} />{t(String(label))}</span>)}
                 </footer>}
             </article>
         </div>
-        <p className="label-xs mt-3">{t(page?.platform==='linkedin'?'Preview approximates LinkedIn. Final layout can vary by device.':page?.platform==='tiktok'?'Preview approximates TikTok. Final layout can vary by device.':page?.platform==='threads'?'Preview approximates Threads. Final layout can vary by device.':page?.platform==='instagram'?'Preview approximates Instagram. Final cropping and layout can vary by device.':'Preview approximates Facebook. Final cropping and layout can vary by device.')}</p>
+        <p className="label-xs mt-3">{t(planning ? 'This is a local plan only. No automatic publishing.' : page?.platform==='linkedin'?'Preview approximates LinkedIn. Final layout can vary by device.':page?.platform==='tiktok'?'Preview approximates TikTok. Final layout can vary by device.':page?.platform==='threads'?'Preview approximates Threads. Final layout can vary by device.':page?.platform==='instagram'?'Preview approximates Instagram. Final cropping and layout can vary by device.':'Preview approximates Facebook. Final cropping and layout can vary by device.')}</p>
         {previewTime && <p className="label-xs mt-2">{formatDateTime(previewTime, timezone)} · {timezone}</p>}
     </section>;
 }

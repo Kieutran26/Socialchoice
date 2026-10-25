@@ -1,3 +1,4 @@
+import LoadError from '@/components/common/load-error';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { ChartBar } from '@phosphor-icons/react';
@@ -32,6 +33,7 @@ export default function ContentStrategy() {
     const { t } = useTranslation();
     const { scope } = useWorkspace();
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [filters, setFilters] = useState({
         range: 'all',
         platform: 'all',
@@ -45,7 +47,8 @@ export default function ContentStrategy() {
     const [rows, setRows] = useState({ pillar: [], angle: [], total: 0 });
 
     const load = useCallback(async () => {
-        setLoading(true);
+        setLoading(true); setLoadError('');
+        try {
         const query = buildQuery(scope, filters);
 
         const [pillarList, angleList] = await Promise.all([
@@ -132,7 +135,8 @@ export default function ContentStrategy() {
         }
 
         setRows({ pillar: pillarRows, angle: angleRows, total });
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [scope, filters, unit]);
 
     useEffect(() => {
@@ -146,6 +150,8 @@ export default function ContentStrategy() {
     const overrepresented = pillarStats.filter((p) => p.actual - p.target_percentage > 5);
     const underrepresented = pillarStats.filter((p) => p.target_percentage - p.actual > 5);
     const angleName = (id) => angles.find((a) => a.id === id)?.name || t("Unassigned angle");
+
+    if (loadError) return <LoadError message={loadError} onRetry={load} />;
 
     return (
         <>

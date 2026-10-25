@@ -1,5 +1,5 @@
 import { useTranslation } from '@/lib/i18n';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { FolderOpen, Trash, MagnifyingGlass } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -19,6 +19,8 @@ import { useCallback, useEffect } from 'react';
 import MediaUploader from '@/components/composer/MediaUploader';
 import { referencedMediaIds } from '@/lib/publishing-content';
 import { formatBytes, formatDay } from '@/lib/format';
+import LoadError from '@/components/common/load-error';
+import { isDesktop } from '@/api/desktop/runtime';
 
 export default function MediaLibrary() {
     const { t } = useTranslation();
@@ -31,20 +33,27 @@ export default function MediaLibrary() {
     const [type, setType] = useState('all');
     const [preview, setPreview] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
+    const [error,setError]=useState(''),[busy,setBusy]=useState(false);
+    const version=useRef(0);
+    useEffect(()=>{setUploadBrand(selectedBrandId==='all'?'':selectedBrandId);},[selectedBrandId]);
 
     const load = useCallback(async () => {
+        const request=++version.current;
         setLoading(true);
+        setError('');
+        try {
         const query = { ...scope };
         if (type !== 'all') query.file_type = type;
         if (search.trim()) query.name = { $regex: search.trim(), $options: 'i' };
         const page = await appClient.entities.MediaAsset.filter(query, { sort: '-created_date', limit: 100 });
-        setAssets(page.items);
-        setLoading(false);
+        if(request===version.current)setAssets(page.items);
+        } catch(error) {if(request===version.current)setError(error.message);}
+        finally {if(request===version.current)setLoading(false);}
     }, [scope, type, search]);
 
     useEffect(() => {
         const timer = setTimeout(load, search ? 300 : 0);
-        return () => clearTimeout(timer);
+        return () => {clearTimeout(timer);version.current++;};
     }, [load, search]);
 
     const remove = async () => {
@@ -76,9 +85,9 @@ export default function MediaLibrary() {
         <>
             <PageHeader
                 title={t("Media Library")}
-                description={t("Private images and MP4 videos stored in this workspace.")}
+                description={t(isDesktop() ? 'Images and MP4 videos copied into this computer’s workspace.' : 'Private images and MP4 videos stored in this workspace.')}
             />
-            <section className="panel p-4 mb-5"><Label className="label-xs block mb-2">{t('Brand for uploaded images')}</Label><select className="border rounded-lg p-2 mb-3 text-sm" aria-label={t('Brand for uploaded images')} value={uploadBrand} onChange={event => setUploadBrand(event.target.value)} disabled={demoMode}><option value="">{t('Choose brand')}</option>{brands.map(brand => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select><MediaUploader allowLibrary={false} assets={[]} onChange={() => load()} brandId={uploadBrand} demoMode={demoMode} /></section>
+            <section className="panel p-4 mb-5"><Label className="label-xs block mb-2">{t('Brand for uploaded images')}</Label><select className="border rounded-lg p-2 mb-3 text-sm" aria-label={t('Brand for uploaded images')} value={uploadBrand} onChange={event => setUploadBrand(event.target.value)} disabled={demoMode || busy}><option value="">{t('Choose brand')}</option>{brands.filter(brand=>brand.status!=="archived").map(brand => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select><MediaUploader allowLibrary={false} onBusyChange={setBusy} assets={[]} onChange={() => load()} brandId={uploadBrand} demoMode={demoMode} /></section>
 
             <div className="panel mb-5 p-4">
                 <div className="flex flex-wrap items-end gap-3">
@@ -111,7 +120,7 @@ export default function MediaLibrary() {
                 </div>
             </div>
 
-            {loading ? (
+            {error ? <LoadError message={error} onRetry={load} /> : loading ? (
                 <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-4">
                     {[0, 1, 2, 3].map((key) => (
                         <Skeleton key={key} className="h-[200px] rounded-2xl" />
@@ -121,7 +130,7 @@ export default function MediaLibrary() {
                 <EmptyState
                     icon={FolderOpen}
                     title={t("No media yet")}
-                    description={t("Choose a brand above and upload images. They remain private until you approve a Facebook post.")}
+                    description={t(isDesktop() ? 'Choose a brand above and import media from this computer.' : 'Choose a brand above and upload images. They remain private until you approve a Facebook post.')}
                 >
                 </EmptyState>
             ) : (
@@ -181,7 +190,7 @@ export default function MediaLibrary() {
                 open={!!deleteTarget}
                 onOpenChange={(value) => !value && setDeleteTarget(null)}
                 title={t("Delete this file?")}
-                description={t("It is removed from the library. Posts that reference it are checked before this happens.")}
+                description={t(isDesktop() ? 'This removes the library entry. Referenced files cannot be removed. Stored bytes are retained locally for recovery.' : 'It is removed from the library. Posts that reference it are checked before this happens.')}
                 confirmLabel={t("Delete file")}
                 destructive
                 onConfirm={remove}

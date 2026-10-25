@@ -3,6 +3,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Plus, PencilSimple, Archive, ArrowCounterClockwise, Trash, Database, GearSix, SignOut, Broadcast, Play } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
@@ -15,6 +16,9 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { clearDemoWorkspace, seedDemoWorkspace } from '@/lib/demo-seed';
 import { runPublishingEngine } from '@/lib/engine';
 import { formatDateTime } from '@/lib/format';
+import DesktopBackup from '@/components/desktop-backup';
+import DesktopAiSettings from '@/components/desktop-ai-settings';
+import DesktopLicense from '@/components/desktop-license';
 
 export default function Settings() {
     const { t, language, setLanguage } = useTranslation();
@@ -30,9 +34,12 @@ export default function Settings() {
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [clearOpen, setClearOpen] = useState(false);
     const [running, setRunning] = useState(false);
+    const [loadError, setLoadError] = useState('');
 
     const load = useCallback(async () => {
         setLoading(true);
+        setLoadError('');
+        try {
         const [postAgg, accountAgg, queuedCount, nextDue, connectedCount, me, brandPage, scheduling] = await Promise.all([
             appClient.entities.Post.aggregate({ query: { is_demo: demoMode }, groupBy: 'brand_id' }),
             appClient.entities.SocialAccount.aggregate({ query: { is_demo: demoMode }, groupBy: 'brand_id' }),
@@ -53,7 +60,8 @@ export default function Settings() {
         setEngine({ queued: demoMode ? queuedCount : scheduling.queued, nextDue: demoMode ? nextDue.items[0]?.scheduled_for || null : scheduling.nextDue, connected: connectedCount, available: !scheduling.unavailable && !demoMode });
         setUser(me);
         setBrands(brandPage.items);
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [demoMode]);
 
     useEffect(() => {
@@ -71,10 +79,14 @@ export default function Settings() {
     };
 
     const toggleBrand = async (brand) => {
+        try {
         await appClient.entities.Brand.update(brand.id, { status: brand.status === 'archived' ? 'active' : 'archived' });
         toast({ title: brand.status === 'archived' ? t("Brand restored") : t("Brand archived") });
         await reload();
         await load();
+        } catch (error) {
+            toast({ title: t('Unable to update brand'), description: t(error.message), variant: 'destructive' });
+        }
     };
 
     const removeBrand = async () => {
@@ -116,6 +128,8 @@ export default function Settings() {
         }
     };
 
+    if (loadError) return <div role="alert" className="panel p-5"><p className="mb-3">{t(loadError)}</p><button type="button" className="btn-skew" onClick={load}>{t('Retry')}</button></div>;
+
     return (
         <>
             <PageHeader
@@ -125,6 +139,9 @@ export default function Settings() {
 
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
                 <div className="space-y-5">
+                    {isDesktop() && <DesktopBackup />}
+                    {isDesktop() && <DesktopLicense />}
+                    {isDesktop() && <DesktopAiSettings />}
                     <section className="panel p-5">
                         <label htmlFor="interface-language" className="mb-2 block text-[13px] font-medium">{t('Language')}</label>
                         <select id="interface-language" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-primary" value={language} onChange={(event) => setLanguage(event.target.value)}>
@@ -217,7 +234,7 @@ export default function Settings() {
                         )}
                     </section>
 
-                    <section className="panel p-5">
+                    {!isDesktop() && <section className="panel p-5">
                         <div className="mb-3 flex items-center gap-2">
                             <Database size={16} />
                             <h2 className="text-[15px]">{t("Workspace data")}</h2>
@@ -235,7 +252,7 @@ export default function Settings() {
                                 onClick={() => setClearOpen(true)}
                             > {t("Remove sample data")} </Button>
                         </div>
-                    </section>
+                    </section>}
                 </div>
 
                 <div className="space-y-5">
@@ -269,7 +286,7 @@ export default function Settings() {
                             </div>
                         </dl>
 
-                        <p className="label-xs mt-4"> {t('Confirmed Facebook schedules start automatically, even with the browser closed. Old calendar plans require confirmation.')} </p>
+                        <p className="label-xs mt-4"> {t(isDesktop() ? 'Publishing is not included in this desktop prototype. No posts are sent.' : 'Confirmed Facebook schedules start automatically, even with the browser closed. Old calendar plans require confirmation.')} </p>
 
                         <Button
                             variant="outline"

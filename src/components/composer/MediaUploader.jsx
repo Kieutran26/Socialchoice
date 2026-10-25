@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { UploadSimple, ImageSquare, ArrowUp, ArrowDown, DotsSixVertical } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
+import { isDesktop } from '@/api/desktop/runtime';
 
 const ignoreBusy = (_busy) => {};
 
@@ -17,6 +18,22 @@ export default function MediaUploader({ assets, onChange, brandId, demoMode, onB
     const [library, setLibrary] = useState([]), [showLibrary, setShowLibrary] = useState(false);
     const [loadingLibrary, setLoadingLibrary] = useState(false);
     const [busy, setBusy] = useState(false), [progress, setProgress] = useState(0), [error, setError] = useState('');
+    async function importLocal() {
+        const version=libraryRequest.current;
+        setBusy(true);onBusyChange(true);setError('');
+        try {
+            const result=await appClient.media.importLocal(brandId);
+            if(version!==libraryRequest.current)return;
+            if(result.errors.length)setError(result.errors.join('\n'));
+            if(result.cancelled)return;
+            const added=[...assets,...result.items];
+            if(allowLibrary && (added.length>10 || added.some(asset=>asset.file_type==='video') && added.length!==1)) {
+                setError('Files were saved to the library. Choose one video or up to 10 images for this post.');return;
+            }
+            onChange(allowLibrary?added:[]);
+        } catch(error) {if(version===libraryRequest.current)setError(error.message);}
+        finally {if(version===libraryRequest.current){setBusy(false);onBusyChange(false);}}
+    }
     useEffect(() => {
         libraryRequest.current++;
         setShowLibrary(false); setLibrary([]); setBusy(false); setLoadingLibrary(false); onBusyChange(false);
@@ -71,8 +88,8 @@ export default function MediaUploader({ assets, onChange, brandId, demoMode, onB
     return <div ref={root}>
         <p className="label-xs mb-3">{t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 100 MB.')}</p>
         <input ref={input} aria-label={t('Upload media')} type="file" accept="image/jpeg,image/png,image/webp,video/mp4" multiple className="hidden" disabled={busy || !brandId || demoMode} onChange={upload} />
-        <div className="flex flex-wrap gap-3">{allowLibrary ? <Button variant="outline" type="button" disabled={busy || !brandId || demoMode} onClick={() => input.current.click()}><UploadSimple size={16} weight="duotone" />{t('Upload media')}</Button> : <button type="button" className="btn-skew" disabled={busy || !brandId || demoMode} onClick={() => input.current.click()}><UploadSimple size={16} weight="duotone" />{t('Upload media')}</button>}{allowLibrary && <Button variant="ghost" type="button" className="h-auto border rounded-lg px-3 text-xs" disabled={busy || !brandId || demoMode} onClick={chooseLibrary}><ImageSquare className="inline mr-1" size={15} />{t('Choose from library')}</Button>}</div>
-        {busy && <p role="status" className="label-xs mt-3">{t(loadingLibrary ? 'Loading…' : 'Uploading media')}{!loadingLibrary && <> · {progress}%</>}</p>}
+        <div className="flex flex-wrap gap-3">{allowLibrary ? <Button variant="outline" type="button" disabled={busy || !brandId || demoMode} onClick={() => isDesktop() ? importLocal() : input.current.click()}><UploadSimple size={16} weight="duotone" />{t(isDesktop() ? 'Import media' : 'Upload media')}</Button> : <button type="button" className="btn-skew" disabled={busy || !brandId || demoMode} onClick={() => isDesktop() ? importLocal() : input.current.click()}><UploadSimple size={16} weight="duotone" />{t(isDesktop() ? 'Import media' : 'Upload media')}</button>}{allowLibrary && <Button variant="ghost" type="button" className="h-auto border rounded-lg px-3 text-xs" disabled={busy || !brandId || demoMode} onClick={chooseLibrary}><ImageSquare className="inline mr-1" size={15} />{t('Choose from library')}</Button>}</div>
+        {busy && <p role="status" className="label-xs mt-3">{t(loadingLibrary ? 'Loading…' : isDesktop() ? 'Importing media…' : 'Uploading media')}{!loadingLibrary && !isDesktop() && <> · {progress}%</>}</p>}
         {error && <p role="alert" className="text-dangerFg text-sm mt-3">{t(error)}</p>}
         {showLibrary && <div className="grid grid-cols-3 gap-2 mt-3">{library.length ? library.map(image => <Button variant="ghost" type="button" key={image.id} disabled={assets.some(asset => asset.id === image.id) || assets.length >= 10 || busy || (image.file_type === 'video' ? assets.length > 0 : assets.some(asset => asset.file_type === 'video'))} className="h-auto block whitespace-normal border rounded-lg p-1" onClick={() => onChange([...assets, image])}>{image.file_type === 'video' ? <video src={image.file_url} className="h-20 w-full object-contain" preload="metadata" muted /> : <img src={image.file_url} alt={image.name} className="h-20 w-full object-contain" />}<span className="label-xs block truncate">{image.name}</span></Button>) : <p className="label-xs">{t('No stored media for this brand.')}</p>}</div>}
         {assets.length > 1 && <p className="label-xs mt-3">{t("Drag images to change their order.")}</p>}

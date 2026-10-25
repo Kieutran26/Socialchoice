@@ -5,6 +5,7 @@ import { useTranslation } from '@/lib/i18n';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '../ui/dialog';
 import { Button } from '../ui/button';
 import StatusBadge from '../common/StatusBadge';
@@ -58,7 +59,9 @@ export default function PostDetailSheet({ post, onClose, onChanged }) {
         setBusy(true);setError('');
         try {
             const time=toUtcIso(value.date,value.time,value.timezone);
-            if(post.is_demo){const {id,created_date,updated_date,...data}=post;void created_date;void updated_date;await appClient.posts.save({id,data:{...data,scheduled_at:time,timezone:value.timezone,status:'scheduled'}});await onChanged?.();onClose();}
+            if(post.is_demo || isDesktop()){const {id,created_date,updated_date,...data}=post;void created_date;void updated_date;
+                if(!time || toZonedParts(time,value.timezone).date!==value.date || toZonedParts(time,value.timezone).time!==value.time)throw new Error('Choose a valid local time in this timezone.');
+                await appClient.posts.save({id,data:{...data,scheduled_at:time,timezone:value.timezone,status:'scheduled'}});await onChanged?.();onClose();}
             else setReview(await appClient.publishing.prepareSchedule(post.id,time,value.timezone));
         }catch(e){setError(e.message);}finally{setBusy(false);}
     }
@@ -69,7 +72,7 @@ export default function PostDetailSheet({ post, onClose, onChanged }) {
         {!!images.length && <div className={images[0]?.file_type==='video'?'grid grid-cols-1 gap-2 mb-4':'grid grid-cols-3 gap-2 mb-4'}>{images.map(asset=>asset.file_type==='video'?<video key={asset.id} src={asset.file_url} controls preload="metadata" className="max-h-64 w-full rounded-lg"/>:<img key={asset.id} src={asset.file_url} alt={asset.name} className="h-28 w-full object-contain rounded-lg border"/>)}</div>}
         {Object.entries(platformImages).map(([platform, media]) => <section key={platform} className="mb-4 space-y-2"><h3 className="text-xs font-medium">{PLATFORM_LABEL[platform]} · {t('Custom media')}</h3><MediaAttachments media={media} /></section>)}
         <p className="label-xs">{formatDateTime(post.scheduled_at,post.timezone)}</p>
-        <div className="flex flex-wrap gap-3 my-5">{!locked && ['draft','scheduled'].includes(status) && <Link to={'/create?edit='+post.id} className="border rounded-lg px-3 py-2 text-xs" onClick={onClose}>{t('Edit post')}</Link>}<Link to={'/create?duplicate='+post.id} className="border rounded-lg px-3 py-2 text-xs" onClick={onClose}>{t('Duplicate as draft')}</Link></div>
+        <div className="flex flex-wrap gap-3 my-5">{!locked && (['draft','scheduled'].includes(status) || isDesktop() && status==='cancelled') && <Link to={'/create?edit='+post.id} className="border rounded-lg px-3 py-2 text-xs" onClick={onClose}>{t('Edit post')}</Link>}<Link to={'/create?duplicate='+post.id} className="border rounded-lg px-3 py-2 text-xs" onClick={onClose}>{t('Duplicate as draft')}</Link></div>
         {items.length>0 ? <section className="border-t pt-4 space-y-3"><h3>{t('Results by account')}</h3>{items.map(item=><div key={item.attemptId} className="rounded-lg border p-3 text-sm space-y-2">
             <p className="font-medium break-words">{item.pageName} · {PLATFORM_LABEL[item.platform || 'facebook']} · {item.pageId}</p><StatusBadge tone={POST_STATUS_TONE[item.status==='queued'?'scheduled':item.status]}>{t(item.status==='queued'?'Scheduled':POST_STATUS_LABEL[item.status] || item.status)}</StatusBadge>
             <p className="whitespace-pre-wrap break-words text-xs">{item.caption}</p>
@@ -82,7 +85,9 @@ export default function PostDetailSheet({ post, onClose, onChanged }) {
             {item.status==='queued' && <Button variant="outline" disabled={busy} onClick={()=>action(()=>item.multi?appClient.publishing.cancelPage(item.attemptId):appClient.publishing.cancelSchedule(post.id))}>{t('Cancel this account schedule')}</Button>}
             {item.status==='failed' && <Button variant="outline" disabled={busy} onClick={()=>action(async()=>setReview(await appClient.publishing.prepareRetry(post.id,item.accountId)))}>{t('Review retry for this account')}</Button>}
         </div>)}</section> : null}
-        {!locked && ['draft','scheduled','cancelled'].includes(status) && !jobs.some(job=>job.attempts>0) && <section className="border-t pt-4"><h3 className="mb-3">{t('Plan / reschedule')}</h3><ScheduleFields value={value} onChange={patch=>setValue({...value,...patch})}/><p className="label-xs my-3">{t('Review the accounts, content and time before enabling automatic publishing.')}</p><button className="btn-skew" type="button" disabled={busy} onClick={reschedule}>{t('Review automatic schedule')}</button></section>}
+        {!locked && ['draft','scheduled','cancelled'].includes(status) && !jobs.some(job=>job.attempts>0) && <section className="border-t pt-4"><h3 className="mb-3">{t('Plan / reschedule')}</h3><ScheduleFields value={value} onChange={patch=>setValue({...value,...patch})}/><p className="label-xs my-3">{t(isDesktop() ? 'This is a local plan only. No automatic publishing.' : 'Review the accounts, content and time before enabling automatic publishing.')}</p><button className="btn-skew" type="button" disabled={busy} onClick={reschedule}>{t(isDesktop() ? 'Save calendar plan' : 'Review automatic schedule')}</button>
+            {isDesktop() && status==='scheduled' && <Button variant="outline" className="ml-3" disabled={busy} onClick={()=>action(async()=>{await appClient.posts.cancelPlans([post.id]);onClose();})}>{t('Cancel calendar plan')}</Button>}
+        </section>}
         {queued && <section className="border-t mt-5 pt-4"><p className="label-xs mb-3">{t('Cancel queued accounts before editing. Started deliveries cannot be cancelled.')}</p><Button variant="outline" disabled={busy} onClick={()=>action(()=>appClient.publishing.cancelSchedule(post.id))}>{t('Cancel automatic schedule')}</Button></section>}
         <section className="border-t mt-5 pt-4"><h3>{t('Publishing history')}</h3>{jobs.length?jobs.map(job=><div className="border-b py-3 text-xs" key={job.id}><p>{job.account_name} · {JOB_STATUS_LABEL[job.status] || job.status}</p>{job.scheduled_for && <p className="label-xs mt-1">{formatDateTime(job.scheduled_for,post.timezone)}</p>}{variants.find(v=>v.social_account_id===job.social_account_id&&v.status===job.status)?.caption && <p className="whitespace-pre-wrap break-words mt-1">{variants.find(v=>v.social_account_id===job.social_account_id&&v.status===job.status).caption}</p>}{job.error_message && <p className="text-dangerFg mt-1">{t(job.error_message)}</p>}{job.published_url && <a href={job.published_url} target="_blank" rel="noreferrer" className="underline">{t('View published post')}</a>}</div>):<p className="label-xs mt-2">{t('No publishing attempts recorded.')}</p>}</section>
         {review && <PublishConfirmation review={review} onClose={()=>setReview(null)} onResult={async()=>{setReview(null);await refresh();}}/>}

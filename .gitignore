@@ -21,3 +21,14 @@ plans/reports/threads-meta-permissions-261015.jpg
 plans/reports/threads-meta-callback-261015.jpg
 
 plans/reports/linkedin-live-login-261015.png
+
+# Isolated desktop build artifacts
+dist-desktop/
+src-tauri/target/
+src-tauri/gen/
+auth-broker/build-check/
+
+# Offline issuer secrets and customer license files
+issuer-private.pem
+*.sclicense
+*.scactivation

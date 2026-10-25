@@ -2,7 +2,8 @@ import { Component } from 'react';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClientInstance } from '@/lib/query-client';
-import { BrowserRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Route, Routes, Navigate } from 'react-router-dom';
+import { isDesktop } from '@/api/desktop/runtime';
 import { AuthProvider } from '@/lib/AuthContext';
 import Layout from '@/components/Layout';
 import Overview from '@/pages/Overview';
@@ -31,8 +32,9 @@ class ErrorBoundary extends Component {
     }
 }
 export default function App() {
+    const Router = isDesktop() ? HashRouter : BrowserRouter;
     return <LanguageProvider><ErrorBoundary><AuthProvider><QueryClientProvider client={queryClientInstance}>
-        <BrowserRouter><Routes><Route element={<Layout />}>
+        <Router><Routes><Route element={<Layout />}>
             <Route path="/" element={<Overview />} />
             <Route path="/calendar" element={<ContentCalendar />} />
             <Route path="/create" element={<CreatePost />} />
@@ -46,6 +48,6 @@ export default function App() {
             <Route path="/accounts" element={<SocialAccounts />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="*" element={<Navigate to="/" replace />} />
-        </Route></Routes></BrowserRouter><Toaster />
+        </Route></Routes></Router><Toaster />
     </QueryClientProvider></AuthProvider></ErrorBoundary></LanguageProvider>;
 }

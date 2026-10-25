@@ -1,7 +1,7 @@
 {
   "name": "socialchoice",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.7.0",
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -p \"[{name}]\" -n \"api,web\" -c \"cyan,magenta\" \"pnpm run dev:api\" \"pnpm run dev:client\"",
@@ -18,9 +18,23 @@
     "setup:meta": "powershell -NoProfile -File server/setup-meta.ps1",
     "setup:threads": "powershell -NoProfile -File server/setup-threads.ps1",
     "setup:threads:cloudflare": "node server/setup-threads-cloudflare.js",
-    "setup:cloudflare": "node server/setup-cloudflare.js"
+    "setup:cloudflare": "node server/setup-cloudflare.js",
+    "desktop:web": "vite --config vite.desktop.config.js",
+    "build:desktop": "vite build --config vite.desktop.config.js",
+    "typecheck:desktop": "tsc -p tsconfig.desktop.json",
+    "test:desktop": "node --test server/desktop-bridge.test.js",
+    "test:auth-broker": "node --test auth-broker/*.test.mjs",
+    "desktop:dev": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action dev",
+    "desktop:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action build",
+    "desktop:test:native": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action test",
+    "desktop:smoke:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action build -SmokeBuild",
+    "desktop:build:licensed": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action build -LicensedBuild",
+    "test:license": "node --test scripts/license-issuer.test.mjs scripts/license-owner.test.mjs",
+    "license:owner": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/socialchoice-license-owner.ps1"
   },
   "dependencies": {
+    "@fontsource-variable/mona-sans": "^5.3.0",
+    "@fontsource/space-grotesk": "^5.3.0",
     "@hello-pangea/dnd": "^17.0.0",
     "@hookform/resolvers": "^4.1.2",
     "@phosphor-icons/react": "^2.1.10",
@@ -88,6 +102,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.19.0",
+    "@tauri-apps/cli": "^2.0.0",
     "@types/node": "^22.13.5",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",

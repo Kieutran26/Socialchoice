@@ -6,6 +6,6 @@
  * @typedef {FormProps & {defaults: EntityRecord, fields: FormField[], title: string, description?: string}} EntityFormProps
  * @typedef {FormProps & {brands: EntityRecord[], defaultBrandId?: string, title?: string, description?: string, submitLabel?: string}} BrandScopedFormProps
  * @typedef {{filters: Record<string, string>, setFilters: (filters: any) => void, pillars?: EntityRecord[], angles?: EntityRecord[], accounts?: EntityRecord[]}} FilterProps
- * @typedef {{posts: EntityRecord[], brands?: EntityRecord[], pillars?: EntityRecord[], angles?: EntityRecord[], accounts?: EntityRecord[], timezone?: string, selected?: string[], onSelect?: (ids: string[]) => void, onOpen: (post: EntityRecord) => void}} PostTableProps
+ * @typedef {{posts: EntityRecord[], brands?: EntityRecord[], pillars?: EntityRecord[], angles?: EntityRecord[], accounts?: EntityRecord[], timezone?: string, displayTimezone?: string, selected?: string[], onSelect?: (ids: string[]) => void, onOpen: (post: EntityRecord) => void}} PostTableProps
  */
 export {};

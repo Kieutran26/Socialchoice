@@ -1,5 +1,8 @@
 import { uploadVideo } from './video-upload.js';
+import { isDesktop, invokeNative } from './desktop/runtime';
+import { desktopRequest } from './desktop/request';
 async function request(path, args) {
+    if (isDesktop()) return desktopRequest(path, args);
     const response = await fetch(`/api/${path}`, {
         method: args ? 'POST' : 'GET',
         headers: { 'Content-Type': 'application/json', 'X-Socialchoice-Client': 'local-ui' },
@@ -19,8 +22,14 @@ export const appClient = {
     templates: { save: input => request('templates/save', [input]), createDraft: id => request('templates/createDraft', [id]) },
     metrics:{list:options=>request('metrics/list',[options]),refresh:options=>request('metrics/refresh',[options])},
     media: {
-        uploadVideo,
+        importLocal: async brandId => {
+            const result = await invokeNative('workspace_files', { action: 'import', input: { brand_id: brandId } });
+            const page = await request('entities/MediaAsset/filter', [{ id: { $in: result.items.map(item => item.id) } }, { limit: 10 }]);
+            return { ...result, items: page.items };
+        },
+        uploadVideo: (...args) => isDesktop() ? Promise.reject(new Error('Feature unavailable in this desktop prototype')) : uploadVideo(...args),
         upload: (file, brandId, onProgress = (_value) => {}) => new Promise((resolve, reject) => {
+            if (isDesktop()) { reject(new Error('Feature unavailable in this desktop prototype')); return; }
             const xhr = new XMLHttpRequest();
             xhr.open('POST', '/api/media/upload');
             xhr.setRequestHeader('Content-Type', file.type);
@@ -66,7 +75,7 @@ export const appClient = {
         start:brandId=>request('threads/start',[brandId]),importProfile:id=>request('threads/import',[id]),
         check:id=>request('threads/check',[id]),disconnect:id=>request('threads/disconnect',[id]),
     },
-    posts: { save: (plan) => request('posts/save', [plan]) },
+    posts: { save: (plan) => request('posts/save', [plan]), cancelPlans: ids => request('posts/cancel', [ids]) },
     integrations: { Core: {
         /** @returns {Promise<{file_url: string}>} */
         UploadPublicFile: async (..._args) => { throw new Error('Media upload requires a storage backend; not configured in Phase A.'); },

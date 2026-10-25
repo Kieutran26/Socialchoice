@@ -1,8 +1,20 @@
 # Socialchoice
 
+## Desktop login broker (implementation in progress)
+
+`auth-broker/worker.mjs` is a separate stateless OAuth broker for the Windows desktop migration. It has no storage bindings and does not handle customer content/media. Browser authorization uses encrypted expiring state and handoff tickets; the native client redeems a handoff with its SHA256 proof. Tokens are returned only in the HTTPS exchange response. Tickets contain provider authorization codes, never access/refresh tokens; provider code consumption prevents successful repeated exchange. No service-side session or replay database is introduced.
+
+Configure `PUBLIC_ORIGIN` as the exact HTTPS broker origin and `BROKER_STATE_KEY` as a private 32-byte hex encryption key. Provider variables use `META`, `THREADS`, `LINKEDIN`, or `TIKTOK` prefixes with `_CLIENT_ID` / `_CLIENT_SECRET`; Meta additionally needs `META_GRAPH_VERSION`. Register `/callback/facebook`, `/callback/instagram`, `/callback/threads`, `/callback/linkedin`, or `/callback/tiktok` under that origin in the corresponding provider app. Provision secrets privately; never put them in frontend variables or the desktop installer. `auth-broker/wrangler.jsonc` disables Worker logs, traces and Logpush and defines no data storage. Infrastructure-level request handling remains subject to the hosting provider.
+
+Run `pnpm run test:auth-broker` for isolated contract tests. Current implementation exchanges initial authorization codes; long-lived grants/refresh, native identity and scope verification, desktop connection UI and deployment remain unfinished. A successful broker response alone must never mark an account Connected. The owner selected customer-configured media storage for platforms requiring public media URLs; developer-hosted media storage is outside this design. The web-runtime integration sections below describe the existing web application, not completed desktop network capabilities.
+
 Standalone local content planning workspace. React/Vite frontend plus an owned Node/SQLite backend. The existing page layout, neutral palette, Mona Sans/Space Grotesk typography, Phosphor icons and flat near-black primary buttons follow the button design contract. The supplied source had missing components and a broken entry file; Phase A restores them without replacing the existing page designs.
 
 UI source of truth: [Design system and AI implementation contract](docs/design-system.md). Read it before changing the interface; it documents current tokens, components, responsive behavior and the checklist for preventing visual drift.
+
+## Windows desktop prototype
+
+The `desktop/tauri-prototype` branch adds a Tauri 2 + native SQLite application. Version0.7 supports brands, pillars/angles, content strategy, draft create/edit/duplicate/delete and local calendar plans with month/week/list, drag, reschedule and cancellation. Calendar plans need no connected account and never publish automatically. Desktop data never uses the existing web database or cloud API; v0.1 prototype brands are retained. Local JPEG/PNG/still WebP and MP4/H.264 media can be imported, previewed and attached to drafts. Settings exports portable workspace backups and validates/recovers before transactional restore. Optional BYOK writing supports OpenAI/Gemini with Windows-protected keys and preview-before-apply suggestions. Offline license activation binds every commercial license to one computer when an issuer key is configured; additional computers need separate licenses. Customers can export activation requests; a local Windows owner menu handles explicit policy, issuance/reissue and commercial builds. The default prototype remains unrestricted. Edition limits/prices and real publishing remain later work. See [desktop setup, verification and rollback](docs/desktop-prototype.md). Existing web commands below remain available.
 
 ## Run locally
 

@@ -1,9 +1,11 @@
+import LoadError from '@/components/common/load-error';
 import BulkScheduleDialog from '@/components/posts/BulkScheduleDialog';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { NotePencil, Plus, Trash, Prohibit, ArrowDown } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
@@ -26,6 +28,7 @@ export default function AllPosts() {
     const openPostId = searchParams.get('post');
 
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [loadingMore, setLoadingMore] = useState(false);
     const [posts, setPosts] = useState([]);
     const [cursor, setCursor] = useState(null);
@@ -62,7 +65,7 @@ export default function AllPosts() {
             setPillars(pillarPage.items);
             setAngles(anglePage.items);
             setAccounts(accountPage.items);
-        })();
+        })().catch(error => setLoadError(error.message));
     }, [scope.is_demo]);
 
     const platformAccountIds = useMemo(
@@ -88,13 +91,15 @@ export default function AllPosts() {
     }, [scope, filters, platformAccountIds]);
 
     const load = useCallback(async () => {
-        setLoading(true);
+        setLoading(true); setLoadError('');
+        try {
         const page = await appClient.entities.Post.filter(buildQuery(), { sort: '-scheduled_at', limit: PAGE_SIZE });
         setPosts(page.items);
         setCursor(page.next_cursor);
         setHasMore(!!page.has_more);
         setSelected([]);
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [buildQuery]);
 
     useEffect(() => {
@@ -115,6 +120,7 @@ export default function AllPosts() {
 
     const loadMore = async () => {
         setLoadingMore(true);
+        try {
         const page = await appClient.entities.Post.filter(buildQuery(), {
             sort: '-scheduled_at',
             limit: PAGE_SIZE,
@@ -123,7 +129,8 @@ export default function AllPosts() {
         setPosts((prev) => [...prev, ...page.items]);
         setCursor(page.next_cursor);
         setHasMore(!!page.has_more);
-        setLoadingMore(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoadingMore(false); }
     };
 
     const closeDetail = () => {
@@ -152,7 +159,8 @@ export default function AllPosts() {
                 toast({ variant: 'destructive', title: t("Only scheduled posts can be cancelled") });
                 return;
             }
-            for (const post of targets) {
+            if (isDesktop()) await appClient.posts.cancelPlans(targets.map(post => post.id));
+            else for (const post of targets) {
                 let automatic = false;
                 try { automatic = (await appClient.publishing.status(post.id)).status === 'queued'; } catch (error) { if (error.status !== 404) throw error; }
                 if (automatic) await appClient.publishing.cancelSchedule(post.id);
@@ -167,11 +175,13 @@ export default function AllPosts() {
         load();
     };
 
+    if (loadError) return <LoadError message={loadError} onRetry={() => window.location.reload()} />;
+
     return (
         <>
             <PageHeader
                 title={t("All Posts")}
-                description={t("Every draft, scheduled and published post with its pillar, angle, destinations and status.")}
+                description={t(isDesktop() ? 'Drafts and local calendar plans with their strategy and status.' : 'Every draft, scheduled and published post with its pillar, angle, destinations and status.')}
                 actions={
                     <Link to="/create" className="btn-skew">
                         <Plus size={16} weight="duotone" /> {t("Create Post")} </Link>
@@ -189,7 +199,7 @@ export default function AllPosts() {
             {selected.length ? (
                 <div className="panel mb-4 flex flex-wrap items-center gap-2 px-4 py-3">
                     <span className="text-[12px]">{selected.length} {t("selected")}</span>
-                    <Button variant="outline" size="sm" disabled={scope.is_demo || selected.length>50 || eligible(['draft']).length!==selected.length} title={t("Select between 1 and 50 different live drafts")} onClick={()=>setScheduleOpen(true)}>{t("Schedule selected drafts")}</Button>
+                    {!isDesktop() && <Button variant="outline" size="sm" disabled={scope.is_demo || selected.length>50 || eligible(['draft']).length!==selected.length} title={t("Select between 1 and 50 different live drafts")} onClick={()=>setScheduleOpen(true)}>{t("Schedule selected drafts")}</Button>}
                     <Button
                         variant="outline"
                         size="sm"
@@ -219,7 +229,7 @@ export default function AllPosts() {
                 <EmptyState
                     icon={NotePencil}
                     title={t("No posts match this view")}
-                    description={t("Change the filters above, or start a new post to fill the calendar. Drafts, scheduled and published posts all live here.")}
+                    description={t(isDesktop() ? 'Change the filters or start a draft. Calendar plans are saved locally without automatic publishing.' : 'Change the filters above, or start a new post to fill the calendar. Drafts, scheduled and published posts all live here.')}
                 >
                     <Button asChild variant="outline"><Link to="/create">
                         <Plus size={15} weight="bold" /> {t("Create Post")} </Link></Button>
@@ -266,7 +276,7 @@ export default function AllPosts() {
                 description={
                     bulkAction === 'delete'
                         ? t("Selected drafts are removed permanently. Posts already scheduled or published are left untouched.")
-                        : t("Queued destination jobs are cancelled and the posts move to Cancelled. Published history is preserved.")
+                        : t(isDesktop() ? 'Selected calendar plans are cancelled. Drafts and other posts are preserved.' : 'Queued destination jobs are cancelled and the posts move to Cancelled. Published history is preserved.')
                 }
                 confirmLabel={bulkAction === 'delete' ? t("Delete drafts") : t("Cancel posts")}
                 destructive={bulkAction === 'delete'}

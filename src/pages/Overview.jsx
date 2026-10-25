@@ -10,6 +10,7 @@ import {
     SquaresFour,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import PageHeader from '@/components/common/PageHeader';
 import StatCard from '@/components/common/StatCard';
@@ -24,9 +25,12 @@ export default function Overview() {
     const { scope, brands, switchMode, seeding } = useWorkspace();
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
+    const [loadError, setLoadError] = useState('');
 
     const load = useCallback(async () => {
         setLoading(true);
+        setLoadError('');
+        try {
         const [statusAgg, pillarAgg, angleAgg, accounts, upcoming, logs, pillars, angles] = await Promise.all([
             appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
             appClient.entities.Post.aggregate({ query: scope, groupBy: 'pillar_id' }),
@@ -58,12 +62,15 @@ export default function Overview() {
             pillarMap: Object.fromEntries(pillars.items.map((p) => [p.id, p])),
             angleMap: Object.fromEntries(angles.items.map((a) => [a.id, a])),
         });
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [scope]);
 
     useEffect(() => {
         load();
     }, [load]);
+
+    if (loadError) return <div role="alert" className="panel p-5"><p className="mb-3">{t(loadError)}</p><button type="button" className="btn-skew" onClick={load}>{t('Retry')}</button></div>;
 
     const connected = data?.accounts.filter((a) => a.connection_status === 'connected').length || 0;
     const demoAccounts = data?.accounts.filter((a) => a.connection_status === 'demo').length || 0;
@@ -88,7 +95,7 @@ export default function Overview() {
                     title={t("Your workspace is empty")}
                     description={t("Create a brand in Settings to start writing drafts and planning your calendar. The optional sample workspace is simulation only and never touches Meta.")}
                 >
-                    <button type="button" className="btn-skew" onClick={() => switchMode(true)} disabled={seeding}>
+                    <button type="button" className="btn-skew" onClick={() => switchMode(true)} disabled={seeding || isDesktop()}>
                         <SquaresFour size={16} weight="duotone" />
                         {seeding ? t("Preparing sample data…") : t("Load sample workspace")}
                     </button>

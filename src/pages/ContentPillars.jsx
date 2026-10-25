@@ -1,3 +1,4 @@
+import LoadError from '@/components/common/load-error';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
@@ -20,6 +21,7 @@ export default function ContentPillars() {
     const { scope, brands, selectedBrandId, demoMode } = useWorkspace();
     const { toast } = useToast();
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState('');
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [counts, setCounts] = useState({});
@@ -29,7 +31,8 @@ export default function ContentPillars() {
     const [deleteTarget, setDeleteTarget] = useState(null);
 
     const load = useCallback(async () => {
-        setLoading(true);
+        setLoading(true); setLoadError('');
+        try {
         const [pillarPage, anglePage, agg, totalCount] = await Promise.all([
             appClient.entities.ContentPillar.filter(scope, { sort: 'name', limit: 300 }),
             appClient.entities.ContentAngle.filter(scope, { limit: 500, fields: ['id', 'pillar_id'] }),
@@ -40,7 +43,8 @@ export default function ContentPillars() {
         setAngles(anglePage.items);
         setCounts(Object.fromEntries(agg.rows.map((row) => [row.pillar_id, row.count])));
         setTotal(totalCount);
-        setLoading(false);
+        } catch (error) { setLoadError(error.message); }
+        finally { setLoading(false); }
     }, [scope]);
 
     useEffect(() => {
@@ -60,10 +64,12 @@ export default function ContentPillars() {
     };
 
     const toggleStatus = async (pillar) => {
+        try {
         const status = pillar.status === 'archived' ? 'active' : 'archived';
         await appClient.entities.ContentPillar.update(pillar.id, { status });
         toast({ title: status === 'archived' ? t("Pillar archived") : t("Pillar restored") });
         load();
+        } catch (error) { toast({ variant: 'destructive', title: t('Unable to update strategy'), description: t(error.message) }); }
     };
 
     const remove = async () => {
@@ -84,6 +90,8 @@ export default function ContentPillars() {
     const targetTotal = pillars
         .filter((pillar) => pillar.status === 'active')
         .reduce((sum, pillar) => sum + (pillar.target_percentage || 0), 0);
+
+    if (loadError) return <LoadError message={loadError} onRetry={load} />;
 
     return (
         <>
