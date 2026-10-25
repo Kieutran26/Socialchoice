@@ -19,6 +19,7 @@ import { formatDateTime } from '@/lib/format';
 import DesktopBackup from '@/components/desktop-backup';
 import DesktopAiSettings from '@/components/desktop-ai-settings';
 import DesktopLicense from '@/components/desktop-license';
+import CustomerLicense from '@/components/customer-license';
 
 export default function Settings() {
     const { t, language, setLanguage } = useTranslation();
@@ -141,6 +142,7 @@ export default function Settings() {
                 <div className="space-y-5">
                     {isDesktop() && <DesktopBackup />}
                     {isDesktop() && <DesktopLicense />}
+                    {!isDesktop() && <CustomerLicense />}
                     {isDesktop() && <DesktopAiSettings />}
                     <section className="panel p-5">
                         <label htmlFor="interface-language" className="mb-2 block text-[13px] font-medium">{t('Language')}</label>
@@ -309,9 +311,11 @@ export default function Settings() {
                         <Button
                             variant="outline"
                             className="mt-4 rounded-lg"
-                            disabled title={t("Local-only workspace has no hosted sign-in session")}
+                            disabled={!['admin-session', 'web-customer'].includes(user?.mode)}
+                            title={['admin-session', 'web-customer'].includes(user?.mode) ? undefined : t("Local-only workspace has no hosted sign-in session")}
+                            onClick={() => appClient.auth.logout().catch(error => toast({ title: t(error.message), variant: 'destructive' }))}
                         >
-                            <SignOut size={14} className="mr-1.5" /> {t("Local workspace")} </Button>
+                            <SignOut size={14} className="mr-1.5" /> {t(['admin-session', 'web-customer'].includes(user?.mode) ? 'Sign out' : 'Local workspace')} </Button>
                     </section>
                 </div>
             </div>

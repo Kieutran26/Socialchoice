@@ -34,3 +34,4 @@ plans/reports/desktop-social-login-smoke/webview-profile/
 issuer-private.pem
 *.sclicense
 *.scactivation
+*.scweblicense

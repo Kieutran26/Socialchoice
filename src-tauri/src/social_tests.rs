@@ -60,6 +60,23 @@ fn invalid_expired_and_underprivileged_credentials_and_unsafe_broker_origins_fai
 }
 
 #[test]
+fn meta_no_scheduled_expiry_requires_verified_page_proof_tasks_and_permissions(){
+    for provider in ["facebook","instagram"] {
+        let mut d=destination();d.page_id="555".into();d.appsecret_proof="a".repeat(64);d.tasks=vec!["CREATE_CONTENT".into()];d.scopes=crate::social_types::required(provider).iter().map(|s|s.to_string()).collect();d.expires_at=0;
+        assert!(d.validate(provider).is_ok());
+        let dir=tempfile::tempdir().unwrap();let path=dir.path().join("test.sqlite");let mut store=Store::open(&path).unwrap();let brand=store.request("entities/Brand/create",&[json!({"name":"Brand"})]).unwrap();
+        social_accounts::import(&mut store,provider,brand["id"].as_str().unwrap(),&Some("v26.0".into()),&[&d]).unwrap();
+        assert_eq!(store.records("SocialAccount").unwrap()[0]["connection_status"],"connected");drop(store);
+        let store=Store::open(&path).unwrap();let mut account=store.records("SocialAccount").unwrap().remove(0);assert_eq!(account["connection_status"],"connected");assert_eq!(account["expires_at"],0);
+        for expiry in [-1,chrono::Utc::now().timestamp_millis()-1000] {account["expires_at"]=json!(expiry);store.db.execute("UPDATE records SET data=? WHERE entity='SocialAccount'",[account.to_string()]).unwrap();assert_eq!(store.records("SocialAccount").unwrap()[0]["connection_status"],"expired");}
+        account["platform"]=json!("linkedin");account["expires_at"]=json!(0);store.db.execute("UPDATE records SET data=? WHERE entity='SocialAccount'",[account.to_string()]).unwrap();assert_eq!(store.records("SocialAccount").unwrap()[0]["connection_status"],"expired");
+        d.expires_at=-1;assert!(d.validate(provider).is_err());d.expires_at=chrono::Utc::now().timestamp_millis()-1000;assert!(d.validate(provider).is_err());
+        d.expires_at=0;d.tasks.clear();assert!(d.validate(provider).is_err());d.tasks=vec!["CREATE_CONTENT".into()];d.scopes.clear();assert!(d.validate(provider).is_err());
+    }
+    for provider in ["linkedin","threads","tiktok"] {let mut d=destination();d.expires_at=0;assert!(d.validate(provider).is_err());}
+}
+
+#[test]
 fn unsupported_login_platforms_remain_editable_planning_references_without_fake_connections(){
     let dir=tempfile::tempdir().unwrap();let mut store=Store::open(&dir.path().join("test.sqlite")).unwrap();let brand=store.request("entities/Brand/create",&[json!({"name":"Brand"})]).unwrap();
     for platform in ["youtube","x","reddit"]{

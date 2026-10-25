@@ -15,7 +15,9 @@ function scopes(provider, value) {
   if (!Array.isArray(value) || value.length > 100 || value.some(scope => typeof scope !== 'string' || scope.length > 128) || !required[provider].every(scope => value.includes(scope))) throw Object.assign(new Error('Missing permissions'), {invalidGrant:true});
   return value;
 }
-function expiry(value, now) {
+function expiry(value, now, allowNever = false) {
+  // Meta uses zero for valid tokens without a scheduled expiry; validity is checked separately.
+  if (allowNever && value === 0) return 0;
   if (Number.isSafeInteger(value) && value * 1000 <= now) throw Object.assign(new Error('Grant expired'), {invalidGrant:true});
   if (!Number.isSafeInteger(value) || value * 1000 <= now || value * 1000 > now + 366 * 86400_000) throw new Error('Invalid expiry');
   return value * 1000;
@@ -57,13 +59,14 @@ export async function verifyGrant(provider, config, grant, fetcher = fetch, now 
   const details = await request(`${base}debug_token?${new URLSearchParams({ input_token: grant.access_token })}`, `${config.id}|${config.secret}`);
   const data = details.data;
   if (!data || data.is_valid !== true || String(data.app_id) !== config.id || !id(data.user_id)) throw new Error('Invalid grant identity');
-  const granted = scopes(provider, data.scopes), expiresAt = expiry(data.expires_at, now);
+  const granted = scopes(provider, data.scopes), expiresAt = expiry(data.expires_at, now, true);
   const userProof = await proof(config.secret, grant.access_token);
   const profile = await request(`${base}me?${new URLSearchParams({ fields: 'id,name', appsecret_proof: userProof })}`, grant.access_token);
   if (profile.id !== data.user_id) throw new Error('Invalid profile');
   const destinations = []; let after;
   for (let page = 0; page < 4; page++) {
-    const list = await request(`${base}me/accounts?${new URLSearchParams({ fields: 'id,name,access_token,tasks,instagram_business_account{id,username}', limit: '100', appsecret_proof: userProof, ...(after ? { after } : {}) })}`, grant.access_token);
+    const fields = provider === 'instagram' ? 'id,name,access_token,tasks,instagram_business_account{id,username}' : 'id,name,access_token,tasks';
+    const list = await request(`${base}me/accounts?${new URLSearchParams({ fields, limit: '100', appsecret_proof: userProof, ...(after ? { after } : {}) })}`, grant.access_token);
     if (!Array.isArray(list.data) || list.data.length > 100) throw new Error('Invalid Page list');
     for (const item of list.data) {
       if (!id(item.id) || !Array.isArray(item.tasks) || item.tasks.some(task => typeof task !== 'string') || typeof item.access_token !== 'string' || !item.access_token || item.access_token.length > 16384) throw new Error('Invalid Page');

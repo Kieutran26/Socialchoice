@@ -140,9 +140,27 @@ The owner ZIP is a tool bundle, not a customer app or a preconfigured production
 
 ## Social account sign-in
 
-Social Accounts is enabled on desktop for Facebook Pages, linked Instagram professional accounts, Threads, personal LinkedIn and TikTok sandbox. A separate stateless login Worker must be deployed and configured by the software owner; no default hosted origin is assumed. Existing web integration configuration is independent.
+Social Accounts is enabled on desktop for Facebook Pages, linked Instagram professional accounts, Threads, personal LinkedIn and TikTok sandbox. The separate stateless Worker is deployed at `https://socialchoice-login.nguyenngockieutran.workers.dev` as of2026-10-25. Existing web integration configuration is independent. Meta desktop callbacks are saved; real Facebook code exchange/identity verification passes, but the current grant yields zero eligible Pages and native account import remains unverified. Other provider grants remain unverified. See the [rollout report](../plans/reports/login-rollout-261025-1445-socialchoice-report.md).
 
-Build using `powershell -NoProfile -File scripts/desktop.ps1 -Action build -AuthBrokerOrigin https://YOUR-LOGIN-HOST`. Use the same address as the broker PUBLIC_ORIGIN and registered provider callbacks in README. This public origin is compiled into native code; the renderer cannot override credential endpoints. Missing setup displays Setup required. Keep App Secrets and BROKER_STATE_KEY in the broker secret store, never in the desktop bundle or VITE variables. Configure production secrets privately; no passwords or App Secrets in chat.
+Build using `powershell -NoProfile -File scripts/desktop.ps1 -Action build -AuthBrokerOrigin https://socialchoice-login.nguyenngockieutran.workers.dev`. Use the same address as the broker PUBLIC_ORIGIN. This public origin is compiled into native code; the renderer cannot override credential endpoints. Missing setup displays Setup required. Keep App Secrets and BROKER_STATE_KEY in the broker secret store, never in the desktop bundle or VITE variables. Configure secrets privately; no passwords or App Secrets in chat.
+
+Meta may report `expires_at: 0` for a valid token with no scheduled expiry. Only Facebook/Instagram preserve this as `expiresAt: 0` in the broker envelope and native account metadata; import/read/reopen retain the connected state while app identity, scopes, Page tasks/proof and current-access checks remain mandatory. Zero is rejected for other providers. Revoked or past-expiry grants fail; no artificial future expiry is assigned.
+
+For an owner-mediated live grant check, use `node scripts/desktop-login-live-check.mjs https://socialchoice-login.nguyenngockieutran.workers.dev facebook` and open the printed start URL in the browser. This probe accepts only this approved origin, keeps credentials in memory, reports a destination count without names/tokens, and closes after completion or ten minutes. It does not import accounts or publish. Confirm permissions and select Pages deliberately. A successful grant with zero destinations still needs Page access validation. Exchange failure responses may include only fixed `stage`/`reason` enums for diagnosis; no raw provider error is returned.
+
+Append these exact HTTPS callbacks in each existing provider App; preserve its web callbacks:
+
+| Provider | Callback path under the login origin |
+|---|---|
+| Facebook | `/callback/facebook` |
+| Instagram (same Meta App) | `/callback/instagram` |
+| Threads | `/callback/threads` |
+| LinkedIn | `/callback/linkedin` |
+| TikTok | `/callback/tiktok` |
+
+Cloudflare configuration is owned by `auth-broker/wrangler.jsonc`. The Worker has only public variable and private secret-text bindings, no customer storage, Logpush or tail consumer. Its ticket key is separate from web storage encryption and desktop license keys. On redeploy preserve the existing BROKER_STATE_KEY and provider secrets; rotate deliberately only when required. Never populate secret values in `vars`. The existing socialchoice-api Worker is not part of this rollout.
+
+Check the deployed public boundary using `node scripts/desktop-login-rollout-check.mjs https://socialchoice-login.nguyenngockieutran.workers.dev`. It follows no provider authorization redirect and exchanges no real code. For an isolated packaged readiness check, build with `-SmokeBuild -AuthBrokerOrigin` and run `node scripts/desktop-social-smoke.mjs --configured-service`; the script checks the smoke identifier before creating any data and never initiates real OAuth. Rebuild the normal identifier with the same origin afterward.
 
 Sign-in opens the default browser with bounded encrypted state, a PKCE challenge and a random loopback port. The native listener validates host/path/state and a single result, exchanges the ticket through HTTPS, and shows verified account choices. Cancel sign-in closes the pending flow; denial, timeout, wrong state or uncertain exchange never creates an account. Choose accounts explicitly to import; account identity, granted publishing scopes and expiry come from provider evidence. Instagram requires a linked Business/Creator account. TikTok stays private sandbox.
 
@@ -150,4 +168,4 @@ One current-user DPAPI credential file is created per selected account. SQLite c
 
 Workspace backup includes disconnected account references only: no tokens, proofs, credential identifiers or permission grants. Restore never activates an account; reconnect on the destination machine. Existing encrypted orphan files may remain after a workspace restore but have no active account reference. Native networking releases the SQLite mutex; the WebView retains its restrictive CSP with no broad HTTP/shell/filesystem permission.
 
-Validation uses isolated provider fixtures and temporary native DPAPI/SQLite workspaces. No production deployment, real grant or publication is implied by passing tests.
+Validation includes isolated provider fixtures, temporary native DPAPI/SQLite workspaces and the deployed broker boundary. Provider-console settings, app review and real grant/account-import remain separate checks; passing readiness does not prove them. Native publication is not implied.

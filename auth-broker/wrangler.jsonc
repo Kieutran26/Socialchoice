@@ -8,8 +8,21 @@
   "logpush": false,
   "observability": {
     "enabled": false,
-    "logs": { "enabled": false, "invocation_logs": false },
-    "traces": { "enabled": false }
+    "logs": {
+      "enabled": false,
+      "invocation_logs": false
+    },
+    "traces": {
+      "enabled": false
+    }
   },
-  "vars": {}
+  "vars": {
+    "PUBLIC_ORIGIN": "https://socialchoice-login.nguyenngockieutran.workers.dev",
+    "META_CLIENT_ID": "1115808334255427",
+    "META_GRAPH_VERSION": "v26.0",
+    "THREADS_CLIENT_ID": "1880622033307199",
+    "LINKEDIN_CLIENT_ID": "86aryvxxw7a5q8",
+    "TIKTOK_CLIENT_ID": "sbawkkgz9zelva8doz"
+  },
+  "account_id": "2e2290be67e66440324d34997c4acf8b"
 }

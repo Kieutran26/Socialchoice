@@ -25,9 +25,10 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req,res);
             if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req,res);
             if (req.method==='GET'&&req.url?.startsWith('/api/tiktok/callback?')&&tiktok)return await tiktok.callback(req,res);
+            // Signed GET/HEAD capabilities authorize only their exact delivery media, independently of browser origin.
+            if (instagramMedia.serve(req,res)) return;
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
-            if (instagramMedia.serve(req,res)) return;
             if (!req.url.startsWith('/api/')) {
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);
@@ -74,7 +75,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, await service.execute(operation, req, res, input.args));
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
-            if (req.url === '/api/session' && req.method === 'GET') return send(200, { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
+            if (req.url === '/api/session' && req.method === 'GET') return send(200, auth.identity ? auth.identity(req) : { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
             if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: !metaSettings.ready, queued: store.queuedAttempts().length, nextDue: store.queuedAttempts().length ? new Date(Math.min(...store.queuedAttempts().map(attempt=>attempt.scheduledFor))).toISOString() : null, message: metaSettings.ready ? 'Confirmed Facebook schedules run automatically. Uncertain deliveries are not resent.' : 'Configure Meta before publishing' });
             const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status|prepareSchedule|schedule|cancelSchedule|prepareBatch|confirmBatch|batchStatus|prepareRetry|cancelPage)$/);
             if (req.url?.startsWith('/api/collaboration/')) fail('Facebook collaboration is unavailable', 410);

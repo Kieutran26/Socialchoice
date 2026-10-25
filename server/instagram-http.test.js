@@ -31,6 +31,9 @@ test('signed Instagram media streams anonymously through Web adapter with HEAD a
         const full = await call(url);
         assert.equal(full.status,200); assert.equal(full.headers.get('content-type'),'image/png');
         assert.deepEqual(Buffer.from(await full.arrayBuffer()),png);
+        const crossOrigin = await call(url,{headers:{Origin:'https://platform.example','Sec-Fetch-Site':'cross-site'}});
+        assert.equal(crossOrigin.status,200);
+        assert.deepEqual(Buffer.from(await crossOrigin.arrayBuffer()),png);
         const head = await call(url,{method:'HEAD'});
         assert.equal(head.status,200); assert.equal(head.headers.get('content-length'),String(png.length)); assert.equal((await head.arrayBuffer()).byteLength,0);
         const ranged = await call(url,{headers:{Range:'bytes=3-9'}});
@@ -41,6 +44,7 @@ test('signed Instagram media streams anonymously through Web adapter with HEAD a
         assert.equal((await call(url,{headers:{Range:'bytes=9999-'}})).status,416);
         const forged = new URL(url); forged.searchParams.set('signature','0'.repeat(64));
         assert.equal((await call(forged)).status,403);
+        assert.equal((await call(forged,{headers:{Origin:'https://platform.example','Sec-Fetch-Site':'cross-site'}})).status,403);
         const expired = new URL(url); expired.searchParams.set('expires','1');
         assert.equal((await call(expired)).status,403);
         assert.equal((await call(`${origin}/api/media/files/${asset.storage_id}`)).status,401);

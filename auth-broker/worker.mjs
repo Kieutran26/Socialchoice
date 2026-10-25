@@ -41,7 +41,7 @@ export function providerConfig(env, provider) {
 
 async function tokenRequest(url, fields, fetcher) {
   const response = await fetcher(url, {
-    method: 'POST', redirect: 'error', signal: AbortSignal.timeout(20_000),
+    method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(20_000),
     headers: { 'Content-Type': 'application/x-www-form-urlencoded', Accept: 'application/json' },
     body: new URLSearchParams(fields),
   });
@@ -106,6 +106,7 @@ async function exchange(provider, config, code, fetcher) {
 }
 
 export async function handle(request, env, fetcher = fetch) {
+  let failureStage;
   try {
     const publicOrigin = origin(env.PUBLIC_ORIGIN);
     const url = new URL(request.url);
@@ -153,7 +154,11 @@ export async function handle(request, env, fetcher = fetch) {
       if (typeof payload.code !== 'string' || !payload.code || payload.code.length > 8192) return json({ error: 'Invalid exchange' }, 400);
       const config = providerConfig(env, context.provider);
       if (!config) return json({ error: 'Provider not configured' }, 409);
-      const grant = grantSchema(context.provider, await exchange(context.provider, config, payload.code, fetcher));
+      failureStage = 'code_exchange';
+      const exchanged = await exchange(context.provider, config, payload.code, fetcher);
+      failureStage = 'grant_validation';
+      const grant = grantSchema(context.provider, exchanged);
+      failureStage = 'identity_verification';
       const verified = await verifyGrant(context.provider, config, grant, fetcher);
       // Only native code receives this credential envelope. Renderer receives metadata after import.
       const result = { protocol: 1, provider: context.provider, verified };
@@ -163,7 +168,8 @@ export async function handle(request, env, fetcher = fetch) {
     return json({ error: 'Not found' }, 404);
   } catch (error) {
     // Never include provider errors, authorization codes, tickets or credentials in logs/responses.
-    return error?.invalidGrant ? json({error:'connection_expired'},401) : json({ error: 'Authorization could not be confirmed. Start a new login.' }, 400);
+    const detail = failureStage ? { stage: failureStage, ...(error?.message === 'Missing permissions' ? { reason: 'required_permissions_missing' } : error?.message === 'Grant expired' ? { reason: 'grant_expired' } : {}) } : {};
+    return error?.invalidGrant ? json({error:'connection_expired', ...detail},401) : json({ error: 'Authorization could not be confirmed. Start a new login.', ...detail }, 400);
   }
 }
 

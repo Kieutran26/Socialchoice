@@ -1,6 +1,6 @@
 # Online deployment
 
-Accepted route: Vercel keeps the existing UI at https://socialchoice.vercel.app. Cloudflare Worker `socialchoice-api` forwards API requests to a SQLite-backed Durable Object for this single-admin workspace. Node/SQLite local mode and the cloud adapter share validation, authentication and planning logic. No paid service is required or provisioned.
+Accepted route: Vercel keeps the existing UI at https://socialchoice.vercel.app. Cloudflare Worker `socialchoice-api` retains the original owner workspace. The customer licensing implementation adds separate customer SQLite Durable Objects and an account directory; see [web licensing](web-licensing.md) before enabling customer registration. Node local mode remains owner-only. No paid service was provisioned.
 
 ## Free plan
 
@@ -8,7 +8,9 @@ Account Workers plan verified in the dashboard on 2026-10-12: Free, $0, Current 
 
 ## Configuration and release
 
-`wrangler.jsonc` owns the nonsecret account, Worker name, SQLite migration, app origin and HTTPS Meta callback. The Worker uses one object for one admin; it is not a multi-tenant service. Frontend remains unchanged.
+`wrangler.jsonc` owns the nonsecret account, Worker name, SQLite migrations, app origin and HTTPS Meta callback. Preserve the original WORKSPACE binding and `single-admin-workspace` identity. Customer mode additionally requires CUSTOMER_DIRECTORY, CUSTOMER_WORKSPACES and the appended `customer-workspaces` migration. It remains disabled without the web issuer public key. The new customer interface must be deployed alongside its backend before registration is opened.
+
+Customer rollout2026-10-25: compatible Worker version `2a0713fe-90ae-444b-ab7a-6268b372949e` deployed first with customer activation disabled; Vercel `dpl_6r3dz17FGFxhPg3VfAMBix1PFSLm` then deployed from static-only `.test-tools/web-license-release`. Public issuer key provisioned through Cloudflare API, producing active Worker `55b9b884-0946-4740-880b-23a545cf0eae`. Original WORKSPACE namespace and all existing secret names retained. Exact deployed artifact hashes and HTTPS security boundaries pass. No actual customer account, sale or real publication was created. Read [operating and rollback details](web-licensing.md#deployed-state--25-october-2026) before further release; older Worker versions predating the new classes are not directly rollback-compatible.
 
 Required private Worker secrets: `SOCIALCHOICE_ADMIN_PASSWORD_HASH` and a stable, random 32-byte hex `SOCIALCHOICE_STORAGE_KEY`. The latter encrypts persistent sessions, login throttle and pending OAuth state. Keep it in a private backup; changing it invalidates access to that state. Meta additionally needs `META_APP_SECRET`, `META_TOKEN_ENCRYPTION_KEY`, `META_GRAPH_VERSION` and optional `META_LOGIN_CONFIG_ID`. Never put secrets into VITE variables, Git, logs or chat. An unconfigured Worker returns 503 and refuses workspace access.
 
@@ -23,7 +25,7 @@ Cloud starts empty. Local `data/socialchoice.sqlite` is untouched; no content or
 
 Do not delete a Durable Object namespace, rename its identity or change its encryption keys to fix code. Roll back Worker source while retaining storage; restore the previous Vercel deployment/config independently. A code rollback does not roll back data. Durable Object SQLite supports provider point-in-time recovery; retain independent private backups before any requested data migration. No cloud export/import feature is claimed here.
 
-Status: Cloudflare Free backend and Vercel API cutover verified online. Public Meta callback saved and validated. Owner sign-in and real Meta OAuth/Page discovery were verified. A real publication is still pending permission and an approved text post.
+Initial rollout recorded Cloudflare/Vercel cutover, owner sign-in and Meta integration checks. Latest Meta verification on2026-10-25 confirms callback/token exchange and identity verification, but the current grant returned no eligible Pages; eligible Page access/selection remains unresolved. Earlier checks do not establish commercial approval or current Page availability. A real publication still requires permission and an approved post.
 
 Private CLI route after explicit scope approval: set `XDG_CONFIG_HOME=D:/Socialchoice/.wrangler/config` for Wrangler commands, authenticate with approved scopes, deploy `wrangler.jsonc`, then run `pnpm run setup:cloudflare`. That helper sends local admin hash and stable storage key through stdin, prints no values, optionally supplies existing private Meta settings, and never overwrites the saved key. Its `.env.cloudflare` and OAuth configuration directory are ignored by Git. Protect local backups and revoke Wrangler access when no longer needed. No CLI authentication or secret upload is claimed until verified.
 

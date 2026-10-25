@@ -7,6 +7,7 @@ import assert from 'node:assert/strict';
 const exec = promisify(execFile);
 const exe = resolve('src-tauri/target/release/socialchoice-desktop.exe');
 const output = resolve('plans/reports/desktop-social-login-smoke');
+const configuredService = process.argv.includes('--configured-service');
 const delay = ms => new Promise(done => setTimeout(done, ms));
 const requests = new Map();
 let processHandle, socket, sequence = 0, brandId, accountId;
@@ -55,22 +56,29 @@ try {
     await until("!!window.__TAURI__ && document.readyState==='complete'");
     const health = await invoke('meta/status', [], true);
     assert.equal(health.applicationId, 'com.socialchoice.desktop.smoke', 'Refuse to mutate a real application workspace');
-    assert.equal(health.ready, false, 'This setup-state smoke must not call a live configured service');
+    assert.equal(health.ready, configuredService, 'Build must match the requested setup/readiness smoke mode');
     const brand = await invoke('entities/Brand/create', [{ name: `Login smoke ${Date.now()}` }]); brandId = brand.id;
     await evaluate("localStorage.setItem('socialchoice.language','en');location.hash='/accounts';location.reload()");
     await until("document.body.innerText.includes('Add channel') && !document.body.innerText.includes('Opening workspace')");
     await click('Add channel');
-    await until("document.querySelector('[role=dialog]')?.innerText.includes('Setup required')");
+    await until(`document.querySelector('[role=dialog]')?.innerText.includes('${configuredService ? 'Available to connect' : 'Setup required'}')`);
     const choices = await evaluate("[...document.querySelectorAll('[role=dialog] button[aria-label]')].map(button=>({label:button.getAttribute('aria-label'),disabled:button.disabled}))");
     assert.ok(choices.some(choice => choice.label === 'Connect YouTube' && choice.disabled));
     await until("!!document.querySelector('button[aria-label=\"Connect LinkedIn\"]') && !document.querySelector('button[aria-label=\"Connect LinkedIn\"]').disabled");
     await evaluate("document.querySelector('button[aria-label=\"Connect LinkedIn\"]').click()");
-    await until("document.querySelector('[role=dialog]')?.innerText.includes('The desktop login service is not ready')");
-    assert.equal(await evaluate("[...document.querySelectorAll('[role=dialog] button')].find(button=>button.textContent==='Connect / reconnect').disabled"), true);
+    await until("!![...document.querySelectorAll('[role=dialog] button')].find(button=>button.textContent==='Connect / reconnect')");
+    if (configuredService) {
+        await until("!document.querySelector('[role=dialog]')?.innerText.includes('Checking…')");
+        await evaluate(`(()=>{const select=document.querySelector('[role=dialog] select');select.value=${JSON.stringify(brandId)};select.dispatchEvent(new Event('change',{bubbles:true}));})()`);
+        await until("![...document.querySelectorAll('[role=dialog] button')].find(button=>button.textContent==='Connect / reconnect').disabled");
+    } else {
+        await until("document.querySelector('[role=dialog]')?.innerText.includes('The desktop login service is not ready')");
+        assert.equal(await evaluate("[...document.querySelectorAll('[role=dialog] button')].find(button=>button.textContent==='Connect / reconnect').disabled"), true);
+    }
     await rpc('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
-    await screenshot('desktop-login-1440.png');
+    await screenshot(configuredService ? 'desktop-login-service-ready-1440.png' : 'desktop-login-1440.png');
     await rpc('Emulation.setDeviceMetricsOverride', { width: 390, height: 844, deviceScaleFactor: 1, mobile: false });
-    await screenshot('desktop-login-390.png');
+    await screenshot(configuredService ? 'desktop-login-service-ready-390.png' : 'desktop-login-390.png');
     assert.ok(await evaluate('document.documentElement.scrollWidth<=innerWidth+1'), 'Small viewport must not overflow horizontally');
     await rpc('Emulation.clearDeviceMetricsOverride');
     await evaluate("document.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}))");
@@ -81,7 +89,7 @@ try {
     await evaluate("(()=>{const row=[...document.querySelectorAll('section .divide-y > div')].find(row=>row.innerText.includes('YouTube planning smoke'));const button=[...row.querySelectorAll('button')].find(button=>button.textContent.trim()==='Fix connection');button.click();})()");
     await until("document.querySelector('[role=dialog]')?.innerText.includes('Reconnect this destination')");
     assert.ok(!(await evaluate("document.querySelector('[role=dialog]').innerText")).includes('Sign in in your default browser'));
-    console.log('PASS: packaged Social Accounts route, native setup state, disabled live login, narrow/wide layout, unsupported-platform planning reference, no fake OAuth connection.');
+    console.log(`PASS: packaged Social Accounts route, native ${configuredService ? 'deployed service readiness and enabled login' : 'setup state and disabled login'}, narrow/wide layout, unsupported-platform planning reference. No real OAuth grant was attempted.`);
 } finally {
     if (socket?.readyState === WebSocket.OPEN) {
         if (accountId) await invoke('entities/SocialAccount/delete', [accountId]).catch(error => console.error(`Cleanup account: ${error.message}`));

@@ -30,7 +30,9 @@
     "desktop:smoke:build": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action build -SmokeBuild",
     "desktop:build:licensed": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/desktop.ps1 -Action build -LicensedBuild",
     "test:license": "node --test scripts/license-issuer.test.mjs scripts/license-owner.test.mjs",
-    "license:owner": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/socialchoice-license-owner.ps1"
+    "test:license:web": "node --test scripts/web-license-owner.test.mjs server/web-license.test.js server/customer-gateway.test.js server/customer-runtime.test.js",
+    "license:owner": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/socialchoice-license-owner.ps1",
+    "license:web:owner": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/web-license-owner.ps1"
   },
   "dependencies": {
     "@fontsource-variable/mona-sans": "^5.3.0",

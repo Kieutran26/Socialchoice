@@ -24,7 +24,9 @@ export function createInstagramMediaAccess(store,config,threadsConfig={},tiktokC
     return {
         url(attempt,asset) {
             const expires=Date.now()+INSTAGRAM_MEDIA_TTL;
-            return `${origin(attempt.platform)}/api/instagram-media/${attempt.id}/${asset.id}?expires=${expires}&signature=${sign(attempt,asset,expires)}`;
+            const prefix = (attempt.platform === 'tiktok' ? tiktokConfig : attempt.platform === 'threads' ? threadsConfig : config).mediaPathPrefix || '';
+            if (prefix && !/^\/api\/workspaces\/[a-f0-9-]{36}$/.test(prefix)) fail('Invalid media workspace path', 409);
+            return `${origin(attempt.platform)}${prefix}/api/instagram-media/${attempt.id}/${asset.id}?expires=${expires}&signature=${sign(attempt,asset,expires)}`;
         },
         serve(req,res) {
             const url=new URL(req.url,'https://local.invalid');

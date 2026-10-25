@@ -30,7 +30,8 @@ impl Store {
         rows.map(|row| {
             let mut value:Value=serde_json::from_str(&row.map_err(database_error)?).map_err(|_|"Workspace contains an unreadable record")?;
             if entity=="MediaAsset" {value["file_url"]=json!(self.media_path(&value)?.to_string_lossy());}
-            if entity=="SocialAccount" && value["connection_status"]=="connected" && value["expires_at"].as_i64().is_none_or(|expiry|expiry<=chrono::Utc::now().timestamp_millis()) {value["connection_status"]=json!("expired");}
+            let meta_no_scheduled_expiry=entity=="SocialAccount"&&["facebook","instagram"].iter().any(|p|value["platform"]==*p)&&value["expires_at"].as_i64()==Some(0);
+            if entity=="SocialAccount" && value["connection_status"]=="connected" && !meta_no_scheduled_expiry && value["expires_at"].as_i64().is_none_or(|expiry|expiry<=chrono::Utc::now().timestamp_millis()) {value["connection_status"]=json!("expired");}
             Ok(value)
         }).collect()
     }

@@ -1,6 +1,10 @@
 # Socialchoice
 
-## Desktop login broker (implementation in progress)
+## Current product direction
+
+The owner selected a hosted web app with managed customer storage on2026-10-25, retaining one-time license sales. One license belongs to one account and supports multiple devices. The deployed Cloudflare implementation adds signed SCW1 web licenses, customer authentication and separate customer workspaces while retaining the original owner workspace. Starter/Professional/Business currently identify editions with the same features; pricing and differentiated limits remain undecided. The owner-controlled Windows issuer and public-key verification are configured, and the matching UI is deployed at https://socialchoice.vercel.app. Actual HTTPS boundary checks pass; first licensed customer enrollment remains unverified in production. See [web licensing and operating instructions](docs/web-licensing.md). Desktop sources and data remain available; desktop SC2 licenses are separate.
+
+## Desktop login broker
 
 `auth-broker/worker.mjs` is a separate stateless OAuth broker for the Windows desktop migration. It has no storage bindings and does not handle customer content/media. Browser authorization uses encrypted expiring state and handoff tickets; the native client redeems a handoff with its SHA256 proof. Tokens are returned only in the HTTPS exchange response. Tickets contain provider authorization codes, never access/refresh tokens; provider code consumption prevents successful repeated exchange. No service-side session or replay database is introduced.
 
@@ -8,7 +12,9 @@ Configure `PUBLIC_ORIGIN` as the exact HTTPS broker origin and `BROKER_STATE_KEY
 
 Run `pnpm run test:auth-broker` for isolated contract tests. Desktop Social Accounts now opens the default browser, validates a single pending loopback/state/PKCE handoff, verifies provider app identity/scopes/profile and offers explicit destination selection. Only selected accounts are imported; credentials are protected with Windows DPAPI, excluded from renderer reads and portable backups. Reconnect, current-access check and local disconnect use the native connection service. Restored account references are disconnected and require sign-in. Tokens expire according to provider evidence; automatic token refresh is not included in this login change.
 
-The service must be deployed and each provider app configured before real login. Build with `pnpm run desktop:build -- -AuthBrokerOrigin https://YOUR-LOGIN-HOST` (or pass that parameter directly to `scripts/desktop.ps1`). The address is public, exact HTTPS origin without trailing slash; App Secrets remain broker secrets. Without this explicit build parameter, Social Accounts displays Setup required. No production deployment or live OAuth success is claimed. See [desktop configuration](docs/desktop-prototype.md#social-account-sign-in).
+The separate login service was deployed on2026-10-25 at `https://socialchoice-login.nguyenngockieutran.workers.dev`; `/status` and deployed boundary checks pass. Private provider secrets were provisioned from existing local setup without changing the web backend. Meta desktop callbacks are saved and real Facebook code exchange/identity verification passes; the current grant returns zero eligible Pages, so Page access and native import remain unresolved. Other providers' real grants remain unverified. Readiness alone proves neither App approval nor a real grant. See the [rollout evidence](plans/reports/login-rollout-261025-1445-socialchoice-report.md).
+
+Build with `pnpm run desktop:build -- -AuthBrokerOrigin https://socialchoice-login.nguyenngockieutran.workers.dev` (or pass that parameter directly to `scripts/desktop.ps1`). The address is public, exact HTTPS origin without trailing slash; App Secrets remain broker secrets. Without this explicit build parameter, Social Accounts displays Setup required. See [desktop configuration and callback routes](docs/desktop-prototype.md#social-account-sign-in).
 
 The owner selected customer-configured media storage for platforms requiring public media URLs; developer-hosted media storage is outside this design. Actual native publication remains separate work. The web-runtime integration sections below describe the existing web application, not completed desktop publishing capabilities.
 

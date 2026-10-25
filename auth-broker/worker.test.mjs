@@ -47,7 +47,7 @@ test('stateless browser handoff redeems only with native proof at fixed provider
     if (url.endsWith('/introspectToken')) return Response.json(identity);
     if (url.endsWith('/userinfo')) return Response.json({ sub: 'profile-1', name: 'Fixture Profile' });
     assert.equal(url, 'https://www.linkedin.com/oauth/v2/accessToken');
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.equal(options.body.get('client_secret'), env.LINKEDIN_CLIENT_SECRET);
     assert.equal(options.body.get('code'), 'fixture-private-code');
     assert.equal(options.body.get('redirect_uri'), `${env.PUBLIC_ORIGIN}/callback/linkedin`);
@@ -74,7 +74,35 @@ test('invalid callback and duplicate query never redirect, errors never echo cre
   const ticket = await handoff();
   const failed = await handle(redeem(ticket), env, async () => { throw new Error('fixture-secret fixture-native-token'); });
   assert.equal(failed.status, 400);
-  assert.ok(!(await failed.text()).includes('fixture-'));
+  const failure = await failed.json();
+  assert.equal(failure.stage, 'code_exchange');
+  assert.ok(!JSON.stringify(failure).includes('fixture-'));
+});
+
+test('redirected token or identity requests are rejected without following credentials', async () => {
+  for (const redirectAt of ['code', 'identity']) {
+    const ticket = await handoff(); let calls = 0;
+    const result = await handle(redeem(ticket), env, async (url, options) => {
+      calls++;
+      assert.equal(options.redirect, 'manual');
+      assert.ok(!url.startsWith('https://attacker.example'));
+      if (redirectAt === 'identity' && calls === 1) return Response.json({ access_token: 'fixture-private-token', expires_in: 3600 });
+      return new Response(null, { status: 302, headers: { Location: 'https://attacker.example/private' } });
+    });
+    assert.equal(result.status, 400);
+    assert.equal(calls, redirectAt === 'code' ? 1 : 2);
+    const body = await result.json();
+    assert.equal(body.stage, redirectAt === 'code' ? 'code_exchange' : 'identity_verification');
+    assert.ok(!JSON.stringify(body).includes('fixture-'));
+    assert.ok(!JSON.stringify(body).includes('attacker.example'));
+  }
+});
+
+test('missing permissions expose only a fixed safe reason and never accept the grant', async () => {
+  const ticket = await handoff();
+  const result = await handle(redeem(ticket), env, async url => url.endsWith('/introspectToken') ? Response.json({ ...identity, scope: 'openid profile' }) : Response.json({ access_token: 'fixture-private-token', expires_in: 3600 }));
+  assert.equal(result.status, 401);
+  assert.deepEqual(await result.json(), { error: 'connection_expired', stage: 'identity_verification', reason: 'required_permissions_missing' });
 });
 
 test('oversized provider data is rejected and readiness reveals no credentials', async () => {

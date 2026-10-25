@@ -3,15 +3,25 @@ import assert from 'node:assert/strict';
 import { createHmac } from 'node:crypto';
 import { verifyGrant } from './verify-grant.mjs';
 import { checkGrant } from './check-grant.mjs';
+import { providerJson } from './provider-http.mjs';
 
 const now = 1800000000000;
 const config = { id: '12345', secret: 'fixture-secret', version: 'v24.0' };
 const expires = now / 1000 + 3600;
 const scopes = ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement', 'instagram_basic', 'instagram_content_publish'];
+
+test('upstream WAF or unknown authorization errors do not claim a credential is invalid', async () => {
+  for (const status of [401, 403]) {
+    for (const body of ['<html>Service unavailable</html>', JSON.stringify({ error: { code: 'unknown' } })]) {
+      await assert.rejects(providerJson('https://graph.facebook.com/v26.0/me', 'fixture', undefined, async () => new Response(body, { status })), error => error.invalidGrant !== true);
+    }
+    await assert.rejects(providerJson('https://graph.facebook.com/v26.0/me', 'fixture', undefined, async () => Response.json({ error: { code: 190 } }, { status })), { invalidGrant: true });
+  }
+});
 function fixture(provider, changes = {}) {
   return async (input, options) => {
     const url = new URL(input);
-    assert.equal(options.redirect, 'error');
+    assert.equal(options.redirect, 'manual');
     assert.ok(['graph.facebook.com','graph.threads.net','www.linkedin.com','api.linkedin.com','open.tiktokapis.com'].includes(url.hostname));
     const route = url.pathname.split('/').at(-1);
     if (route === 'debug_token') return Response.json({ data: { is_valid: true, app_id: config.id, user_id: '123', scopes: provider === 'threads' ? ['threads_basic','threads_content_publish'] : scopes, expires_at: expires, ...changes } });
@@ -35,6 +45,32 @@ test('Facebook and Instagram discovery verifies identity, scopes, tasks, linked 
     for (const changes of [{ app_id: 'other' }, { user_id: 'other' }, { scopes: [] }, { is_valid: false }, { expires_at: now/1000 }]) await assert.rejects(verifyGrant(provider, config, { access_token: 'fixture' }, fixture(provider,changes), now));
   }
   await assert.rejects(verifyGrant('facebook',config,{access_token:'fixture'},fixture('facebook',{paging:{next:'https://evil.example',cursors:{}}}),now));
+});
+
+test('Facebook discovery works with Page permissions without requesting Instagram linkage', async () => {
+  const pageScopes = ['pages_show_list', 'pages_manage_posts', 'pages_read_engagement'];
+  let discovered = false;
+  const fetcher = async (input, options) => {
+    const url = new URL(input);
+    if (url.pathname.endsWith('/accounts')) {
+      discovered = true;
+      // Meta can reject an Instagram-only field when the grant has only Page permissions.
+      if (url.searchParams.get('fields').includes('instagram_business_account')) return Response.json({ error: { code: 100 } }, { status: 400 });
+    }
+    return fixture('facebook', { scopes: pageScopes })(input, options);
+  };
+  const result = await verifyGrant('facebook', config, { access_token: 'fixture' }, fetcher, now);
+  assert.equal(discovered, true);
+  assert.equal(result.destinations[0].id, '555');
+  assert.deepEqual(result.destinations[0].scopes, pageScopes);
+});
+
+test('Meta no-scheduled-expiry tokens retain zero while revoked and past-expiry tokens fail', async () => {
+  for (const provider of ['facebook', 'instagram']) {
+    const value = await verifyGrant(provider, config, { access_token: 'fixture' }, fixture(provider, { expires_at: 0 }), now);
+    assert.equal(value.destinations[0].expiresAt, 0);
+    for (const changes of [{ expires_at: now / 1000 - 1 }, { expires_at: -1 }, { expires_at: undefined }, { expires_at: 0, is_valid: false }]) await assert.rejects(verifyGrant(provider, config, { access_token: 'fixture' }, fixture(provider, changes), now));
+  }
 });
 
 test('Threads and LinkedIn require matching active app, profile identity, permissions and expiry', async () => {
