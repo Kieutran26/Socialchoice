@@ -24,6 +24,14 @@ Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The
 - Disconnect deletes the local credential and keeps the destination/history. It does not revoke all permissions for the Facebook profile, which could affect other connected Pages. To remove the app's authorization at Meta, use Facebook's app/business integration settings; then check/reconnect affected Pages locally. Deletion requires disconnect first and continues to preserve publishing history.
 - Publish Now requires a live draft, 1–30 different connected Facebook Pages within the same live brand, supported private media or text, pages_manage_posts in both verified account and encrypted credential metadata, and CREATE_CONTENT or PROFILE_PLUS_CREATE_CONTENT in the Page tasks. Automatic delivery requires explicit reviewed scheduling; reaction/comment/share retrieval is implemented; see [analytics](facebook-analytics.md). Reach/view metrics remain unavailable.
 
+## Empty Page enumeration fallback — 26 October 2026
+
+If Facebook completes `me/accounts` with an empty list, the backend checks the existing USER token through Meta `debug_token`. Only numeric Page IDs from the provider's `pages_show_list` granular grant are candidates (maximum 100). Each direct Page token must independently match the same App, user and Page and pass validity/expiry checks. This does not add scopes or require a manually entered Page ID.
+
+Direct Page objects do not expose `tasks`; the backend never invents them. Publishing preflight accepts either existing content-creation tasks or an encrypted, exact-token-bound proof with target-specific `pages_manage_posts` and `pages_read_engagement` grants on both USER and PAGE tokens. Existing scope checks and confirmation requirements remain. Public selection responses omit tokens and private grant proof. Normal nonempty enumeration and Instagram discovery are unchanged.
+
+Production verification: same authorized Kiều Trân profile reconnected, Deszy appeared, was explicitly selected/imported into Test, and remained connected after the read-only Facebook access check. No post was sent. The Meta app remains unpublished; this is not general public access approval. See [completion report](../plans/reports/bugfix-261026-1510-facebook-empty-pages-report.md).
+
 ## Evidence and limitations
 
 Owner app created through Meta dashboard: Socialchoice, App ID `1115808334255427`, Pages management use case, unpublished. On 2026-10-12, saving the HTTP `127.0.0.1:3001` callback did not persist: the callback list was empty after reload and Meta's URI validator reported invalid. HTTPS enforcement was locked on. For this app, use a working HTTPS app origin before proceeding; the loopback example above is not verified usable. Browser evidence is recorded in plans/reports/meta-app-configuration-261012-1752-socialchoice-report.md. No live OAuth/Page import yet.

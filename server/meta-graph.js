@@ -1,6 +1,7 @@
 import { createHmac } from 'node:crypto';
 import { fail } from './validation.js';
 import { createMetricsGraph } from './facebook-metrics-graph.js';
+import { discoverGrantedPages } from './meta-page-discovery.js';
 
 export function createMetaGraph(config) {
     async function request(path, params = {}, token, method = 'GET', file, host = 'graph.facebook.com', timeout = 20000) {
@@ -96,6 +97,7 @@ export function createMetaGraph(config) {
                 if (!Array.isArray(result.data) || result.data.some(p => !p || typeof p.id !== 'string' || !/^\d+$/.test(p.id) || typeof p.name !== 'string' || (p.access_token !== undefined && typeof p.access_token !== 'string') || (p.tasks !== undefined && (!Array.isArray(p.tasks) || p.tasks.some(task => typeof task !== 'string'))))) fail('Meta returned an unexpected response', 502);
                 pages.push(...result.data.filter(p => typeof p.access_token === 'string' && p.access_token));
                 if (!result.paging?.next) {
+                    if (!pages.length && platform === 'facebook') pages.push(...await discoverGrantedPages(request, config, token, profile, 'id,name,access_token'));
                     if (platform !== 'instagram') return { profile, scopes, pages };
                     const accounts = [];
                     for (const page of pages) {

@@ -95,7 +95,7 @@ export function createMetaConnection(store, auth, config = metaConfig(), { state
                     const existing = store.all('SocialAccount').find(a => !a.is_demo && a.platform === (result.platform || 'facebook') && a.external_id === id && a.brand_id === result.brandId);
                     // A new identity prevents stale access checks from modifying a reconnected token.
                     const credentialId = randomUUID();
-                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes, tasks: page.tasks || [], ...(result.platform === 'instagram' ? { pageId: page.pageId, platform: 'instagram' } : {}) });
+                    vault.save(credentialId, { token: page.access_token, profileId: result.profile.id, scopes: result.scopes, tasks: page.tasks || [], ...(page.pageGrant ? { pageGrant: page.pageGrant } : {}), ...(result.platform === 'instagram' ? { pageId: page.pageId, platform: 'instagram' } : {}) });
                     const account = store.verifiedAccount({ name: page.name, external_id: id, brand_id: result.brandId, platform: result.platform || 'facebook', account_type: result.platform === 'instagram' ? 'profile' : 'page', ...(result.platform === 'instagram' ? { username: page.username } : {}), is_demo: false, credential_id: credentialId, scopes: result.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
                     if (existing?.credential_id && !store.all('SocialAccount').some(a => a.credential_id === existing.credential_id)) vault.remove(existing.credential_id);
                     return account;

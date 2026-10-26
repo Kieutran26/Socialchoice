@@ -21,7 +21,9 @@ export async function handleLicenseAuthority(request, env, directory) {
         const supplied = request.headers.get('x-license-signature') || '', expected = signature(body, env.SOCIALCHOICE_STORAGE_KEY);
         if (!/^[a-f0-9]{64}$/.test(supplied) || !timingSafeEqual(Buffer.from(supplied, 'hex'), Buffer.from(expected, 'hex'))) fail('License authority denied', 403);
         const value = JSON.parse(body);
-        if (!Number.isSafeInteger(value.until) || value.until < Date.now() || value.until > Date.now() + 30000) fail('License authority denied', 403);
+        // Permit a small difference between actor I/O clocks without extending the signed expiry.
+        const now = Date.now();
+        if (!Number.isSafeInteger(value.until) || value.until <= now || value.until > now + 30000 + 5000) fail('License authority denied', 403);
         if (value.operation === 'status') return Response.json(directory.licenseStatus(value.input), { headers: { 'Cache-Control': 'no-store' } });
         if (value.operation === 'customers') return Response.json(directory.licenseCustomers(value.input), { headers: { 'Cache-Control': 'no-store' } });
         if (value.operation === 'revoke') return Response.json(directory.revokeLicense(value.input), { headers: { 'Cache-Control': 'no-store' } });

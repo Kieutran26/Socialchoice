@@ -3,6 +3,8 @@ import { accountId, verifyWebLicense } from './web-license.js';
 import { fail } from './validation.js';
 
 export const CONTEXT_HEADER = 'x-socialchoice-workspace-context';
+// Separate Workers can observe slightly different I/O clocks. This only bounds future timestamps; expired contexts still fail.
+const clockSkewMs = 5000;
 export function signCustomerContext(identity, key, bootstrap = false) {
     const payload = Buffer.from(JSON.stringify({ ...identity, bootstrap, until: Date.now() + 30000 })).toString('base64url');
     return payload + '.' + createHmac('sha256', Buffer.from(key, 'hex')).update('customer-context-v1\n' + payload).digest('hex');
@@ -14,7 +16,8 @@ export function readCustomerContext(value, key) {
         const expected = createHmac('sha256', Buffer.from(key, 'hex')).update('customer-context-v1\n' + payload).digest('hex');
         if (extra || !/^[a-f0-9]{64}$/.test(signature || '') || !timingSafeEqual(Buffer.from(signature, 'hex'), Buffer.from(expected, 'hex'))) throw new Error();
         const context = JSON.parse(Buffer.from(payload, 'base64url').toString());
-        if (!accountId(context.id) || !/^[a-f0-9]{64}$/.test(context.session) || !Number.isSafeInteger(context.expires) || context.expires <= Date.now() || context.expires > Date.now() + 8 * 3600000 || !Number.isSafeInteger(context.until) || context.until <= Date.now() || context.until > Date.now() + 30000 || typeof context.bootstrap !== 'boolean') throw new Error();
+        const now = Date.now();
+        if (!accountId(context.id) || !/^[a-f0-9]{64}$/.test(context.session) || !Number.isSafeInteger(context.expires) || context.expires <= now || context.expires > now + 8 * 3600000 + clockSkewMs || !Number.isSafeInteger(context.until) || context.until <= now || context.until > now + 30000 + clockSkewMs || typeof context.bootstrap !== 'boolean') throw new Error();
         return context;
     } catch { fail('Sign in required', 401); }
 }

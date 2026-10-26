@@ -10,6 +10,8 @@ The Cloudflare Worker keeps the existing `WORKSPACE` actor named `single-admin-w
 
 Customer cookies are HttpOnly, Secure, SameSite=Lax, with an eight-hour absolute lifetime. Multiple device sessions coexist. Sign-out revokes that device; recovery rotates the password and recovery code and revokes all previous central sessions. Requests already in flight may complete. Recovery codes are shown once after activation/recovery; there is no email password-reset delivery. Losing both password and recovery code has no implemented self-service recovery route. Account operations return their recovery code before workspace initialization; a failed initialization is retried on the next request.
 
+Internal customer-context and license-authority messages retain their30second signed expiry. Future timestamp upper bounds permit up to5seconds of clock difference between actors; expiry itself has no grace. This prevents valid messages being rejected when the receiver observes an older I/O clock. HMAC, stored session matching,8hour absolute customer expiry and revocation checks remain enforced. Cloudflare documents [I/O-based timers](https://developers.cloudflare.com/workers/runtime-apis/performance/). See [session timing fix](../plans/reports/bugfix-261026-1442-customer-session-clock-report.md).
+
 OAuth uses the existing shared provider App, customer session and OAuth nonce/state. Public media paths include the workspace UUID and require the existing expiring, asset-bound signed capability. Private media stays authenticated. Managed media storage supersedes the earlier desktop-only customer-storage decision for this web runtime. The local Node server remains owner-only; use the actual isolated Workers tests for customer development.
 
 ## Owner issuance

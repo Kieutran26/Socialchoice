@@ -21,6 +21,7 @@ import { createMultiPageDelivery } from './facebook-multi-page.js';
 import { contentRevision, syncDeliveryState } from './publishing-state.js';
 import { resolveCaption } from '../src/lib/publishing-content.js';
 import { licensedGraph } from './licensed-graph.js';
+import { hasVerifiedPagePublishGrant } from './meta-page-discovery.js';
 
 const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
 
@@ -69,7 +70,7 @@ export function createFacebookPublisher(store, config, options = {}) {
         if(!(account.platform==='linkedin'?linkedinConfig.ready:account.platform==='tiktok'?tiktokConfig.ready:account.platform==='threads'?threadsConfig.ready:config.ready))fail('Configure the destination integration before publishing',409);
         const credential = account.platform==='tiktok'?tiktokTokens.peek(account):(account.platform==='linkedin'?linkedinVault:account.platform==='threads'?threadsVault:vault).read(account.credential_id);
         if (account.platform==='facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
-        if (!['threads','tiktok','linkedin'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task))) fail('Reconnect a Page with permission to create content', 409);
+        if (!['threads','tiktok','linkedin'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task)) && !hasVerifiedPagePublishGrant(credential, account, config)) fail('Reconnect a Page with permission to create content', 409);
         if (typeof credential.token !== 'string' || !credential.token) fail(account.platform==='facebook'?'Reconnect Facebook before publishing':'Reconnect the selected account before publishing', 409);
         const caption = resolveCaption(post, account);
         if(account.platform==='linkedin') {
