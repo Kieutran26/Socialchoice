@@ -50,5 +50,6 @@ export function createCustomerWorkspaceAuth(privateMap, env) {
         identity(req) { const value = requireRequest(req), claims = licensed(value); return { id: value.id, full_name: claims.licensed_to, email: value.email, role: 'customer', mode: 'web-customer', license: { license_id: claims.license_id, edition: claims.edition, perpetual: true, multiple_devices: true } }; },
         logout(req) { sessions.delete(requireRequest(req).session); },
         licenseActive() { try { const value = account.get('identity'); return !!value && licensed(value).email === value.email; } catch { return false; } },
+        licenseId() { try { return licensed(account.get('identity')).license_id; } catch { return null; } },
     };
 }

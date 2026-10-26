@@ -8,6 +8,7 @@ import { generateKeyPairSync, randomBytes } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { hashPassword } from './admin-auth.js';
 import { issueWebLicense } from '../scripts/web-license-owner.mjs';
+import { verifyWebLicense } from './web-license.js';
 
 const require = createRequire(import.meta.url);
 const { Miniflare, convertV4MiniflareOptions } = createRequire(require.resolve('wrangler/package.json'))('miniflare');
@@ -21,7 +22,7 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
     const licenseA = issue('a@example.com'), licenseB = issue('b@example.com');
     const options = convertV4MiniflareOptions({ modules: true, scriptPath: 'worker-dist/customer/cloudflare-worker.js', compatibilityDate: '2026-10-06', compatibilityFlags: ['nodejs_compat'],
         durableObjects: { WORKSPACE: { className: 'SocialchoiceWorkspace', useSQLite: true }, CUSTOMER_DIRECTORY: { className: 'SocialchoiceCustomerDirectory', useSQLite: true }, CUSTOMER_WORKSPACES: { className: 'SocialchoiceCustomerWorkspace', useSQLite: true } },
-        bindings: { SOCIALCHOICE_PUBLIC_ORIGIN: origin, SOCIALCHOICE_BACKEND_ORIGIN: origin, SOCIALCHOICE_ADMIN_PASSWORD_HASH: hashPassword(password), SOCIALCHOICE_STORAGE_KEY: randomBytes(32).toString('hex'), SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY: licenseA.publicKeyHex, META_APP_ID: '12345', META_APP_SECRET: 'fixture-secret', META_GRAPH_VERSION: 'v26.0', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex'), META_REDIRECT_URI: origin + '/api/meta/callback' },
+        bindings: { SOCIALCHOICE_PUBLIC_ORIGIN: origin, SOCIALCHOICE_BACKEND_ORIGIN: origin, SOCIALCHOICE_ADMIN_PASSWORD_HASH: hashPassword(password), SOCIALCHOICE_STORAGE_KEY: randomBytes(32).toString('hex'), SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY: licenseA.publicKeyHex, SOCIALCHOICE_WEB_LICENSE_PRIVATE_KEY: Buffer.from(issuer.privateKey.export({ format: 'pem', type: 'pkcs8' })).toString('base64'), META_APP_ID: '12345', META_APP_SECRET: 'fixture-secret', META_GRAPH_VERSION: 'v26.0', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex'), META_REDIRECT_URI: origin + '/api/meta/callback' },
     });
     options.resourcePersistencePath = directory;
     let runtime = new Miniflare(options);
@@ -32,8 +33,32 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await (await request('/api/customer/config')).json()).ready, true);
         assert.equal((await request('/api/session')).status, 401);
         const owner = await request('/api/auth/login', [password]); assert.equal(owner.status, 200); const ownerCookie = cookieFrom(owner);
+        assert.equal((await request('/api/admin/licenses/status')).status, 401);
+        assert.equal((await (await request('/api/admin/licenses/status', undefined, ownerCookie)).json()).ready, true);
+        assert.equal((await (await request('/api/session', undefined, ownerCookie)).json()).storage, 'hosted');
+        const issuance = { requestId: crypto.randomUUID(), email: 'issued@example.com', licensedTo: 'Issued fixture', edition: 'business', purchaseConfirmed: true };
+        const issuedResponse = await request('/api/admin/licenses/issue', [issuance], ownerCookie);
+        assert.equal(issuedResponse.status, 200, await issuedResponse.clone().text()); const issued = await issuedResponse.json();
+        assert.equal(verifyWebLicense(issued.token, licenseA.publicKeyHex).email, issuance.email);
+        assert.deepEqual(await (await request('/api/admin/licenses/issue', [issuance], ownerCookie)).json(), issued);
+        assert.equal((await request('/api/admin/licenses/issue', [{ ...issuance, requestId: crypto.randomUUID() }], ownerCookie)).status, 409);
+        assert.equal((await request('/api/admin/licenses/issue', [{ ...issuance, edition: 'starter' }], ownerCookie)).status, 409);
+        const pendingHistory = await (await request('/api/admin/licenses/list', undefined, ownerCookie)).json();
+        assert.equal(pendingHistory.items[0].activated, false); assert.equal(pendingHistory.items[0].activated_at, null);
+        const crossOriginIssue = await runtime.dispatchFetch(origin + '/api/admin/licenses/issue', { method: 'POST', headers: { cookie: ownerCookie, origin: 'https://attacker.example', 'x-socialchoice-client': 'local-ui', 'content-type': 'application/json' }, body: JSON.stringify({ args: [issuance] }) }); assert.equal(crossOriginIssue.status, 403);
         const ownerBrand = await (await request('/api/entities/Brand/create', [{ name: 'Existing owner brand' }], ownerCookie)).json();
         const a = await register('a@example.com', licenseA.token), b = await register('b@example.com', licenseB.token);
+        const issuedCustomer = await register('issued@example.com', issued.token);
+        const issuedSecondLogin = await request('/api/customer/login', [{ email: issuance.email, password }]); assert.equal(issuedSecondLogin.status, 200); const issuedSecondCookie = cookieFrom(issuedSecondLogin);
+        const activatedHistory = await (await request('/api/admin/licenses/list', undefined, ownerCookie)).json();
+        assert.equal(activatedHistory.items[0].activated, true); assert.ok(activatedHistory.items[0].activated_at); assert.ok(activatedHistory.items[0].last_login_at);
+        assert.deepEqual(Object.keys(activatedHistory.items[0]).filter(key => ['password', 'recovery', 'session', 'token'].includes(key)), []);
+        const issuedBrandResponse = await request('/api/entities/Brand/create', [{ name: 'Revocation preserves this record' }], issuedCustomer.cookie); assert.equal(issuedBrandResponse.status, 200);
+        for (const customer of [a, b]) {
+            for (const operation of ['status', 'list']) assert.equal((await request('/api/admin/licenses/' + operation, undefined, customer.cookie)).status, 403);
+            assert.equal((await request('/api/admin/licenses/issue', [issuance], customer.cookie)).status, 403);
+            assert.equal((await request('/api/admin/licenses/download', [issuance.requestId], customer.cookie)).status, 403);
+        }
         assert.match(a.cookie, /^socialchoice_customer=/);
         const aSession = await (await request('/api/session', undefined, a.cookie)).json();
         assert.equal(aSession.email, 'a@example.com'); assert.equal(aSession.license.multiple_devices, true); assert.equal(aSession.role, 'customer');
@@ -58,6 +83,9 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await request('/api/session', undefined, a.cookie)).status, 200);
         await request('/api/auth/logout', [], secondCookie); assert.equal((await request('/api/session', undefined, secondCookie)).status, 401); assert.equal((await request('/api/session', undefined, a.cookie)).status, 200);
         await runtime.dispose(); runtime = new Miniflare(options);
+        assert.deepEqual(await (await request('/api/admin/licenses/download', [issuance.requestId], ownerCookie)).json(), issued);
+        const issueHistory = await (await request('/api/admin/licenses/list', undefined, ownerCookie)).json(); assert.equal(issueHistory.items.length, 1); assert.equal(issueHistory.items[0].token, undefined);
+        assert.deepEqual(issueHistory, activatedHistory);
         assert.equal((await (await request('/api/entities/Brand/list', [], a.cookie)).json()).items[0].id, brand.id);
         assert.equal((await (await request('/api/entities/Brand/list', [], ownerCookie)).json()).items[0].id, ownerBrand.id);
         assert.equal((await (await request('/api/entities/Brand/list', [], b.cookie)).json()).items.length, 0);
@@ -69,5 +97,19 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         const publicMedia = '/api/workspaces/' + aSession.id + '/api/instagram-media/00000000-0000-0000-0000-000000000001/00000000-0000-0000-0000-000000000002?expires=0&signature=' + '0'.repeat(64);
         assert.equal((await request(publicMedia)).status, 403);
         assert.equal((await request('/api/workspaces/' + aSession.id + '/api/session', undefined, b.cookie)).status, 404);
+        assert.equal((await request('/internal/license-authority', [{ operation: 'revoke', input: issued.token }])).status, 404);
+        assert.equal((await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }])).status, 401);
+        assert.equal((await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }], b.cookie)).status, 403);
+        const revoked = await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }], ownerCookie);
+        assert.equal(revoked.status, 200, await revoked.clone().text()); const revokedRecord = await revoked.json(); assert.equal(revokedRecord.status, 'revoked');
+        for (const cookie of [issuedCustomer.cookie, issuedSecondCookie]) assert.equal((await request('/api/session', undefined, cookie)).status, 401);
+        assert.equal((await request('/api/customer/recover', [{ email: issuance.email, password, recoveryCode: issuedCustomer.recoveryCode }])).status, 403);
+        assert.equal((await request('/api/customer/login', [{ email: issuance.email, password }])).status, 403);
+        assert.equal((await request('/api/admin/licenses/download', [issuance.requestId], ownerCookie)).status, 403);
+        assert.deepEqual(await (await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }], ownerCookie)).json(), revokedRecord);
+        await runtime.dispose(); runtime = new Miniflare(options);
+        assert.equal((await (await request('/api/admin/licenses/list', undefined, ownerCookie)).json()).items[0].status, 'revoked');
+        assert.equal((await request('/api/customer/login', [{ email: issuance.email, password }])).status, 403);
+        assert.equal((await request('/api/session', undefined, b.cookie)).status, 200);
     } finally { await runtime.dispose(); rmSync(directory, { recursive: true, force: true }); }
 });

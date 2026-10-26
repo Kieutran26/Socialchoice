@@ -25,6 +25,7 @@ export class SocialchoiceCustomerWorkspace extends DurableObject {
             await this.start(identity?.id || savedId);
             if (identity) this.runtime.auth.accept(value);
             if (!this.runtime.auth.licenseActive()) return Response.json({ message: 'A valid Socialchoice web license is required' }, { status: 403 });
+            await this.runtime.authorize();
             await this.runtime.publisher.resumePhotos();
             return handleWebRequest(request, this.runtime.handler);
         } catch (error) { return Response.json({ message: error.status ? error.message : 'Customer workspace unavailable' }, { status: error.status || 503, headers: { 'Cache-Control': 'no-store' } }); }
@@ -32,6 +33,8 @@ export class SocialchoiceCustomerWorkspace extends DurableObject {
     async alarm() {
         const id = await this.ctx.storage.get('customer-id'); if (!id) return;
         await this.start(id);
-        if (this.runtime.auth.licenseActive()) await this.runtime.publisher.runPhotos();
+        try { await this.runtime.authorize(); }
+        catch (error) { if (error.status === 403) { await this.ctx.storage.deleteAlarm(); return; } throw error; }
+        await this.runtime.publisher.runPhotos();
     }
 }

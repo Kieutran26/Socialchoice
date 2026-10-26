@@ -19,6 +19,13 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    licenses: {
+        status: () => request('admin/licenses/status'),
+        list: () => request('admin/licenses/list'),
+        issue: input => request('admin/licenses/issue', [input]),
+        download: id => request('admin/licenses/download', [id]),
+        revoke: input => request('admin/licenses/revoke', [input]),
+    },
     customers: {
         config: () => request('customer/config'),
         login: input => request('customer/login', [input]),

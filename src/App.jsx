@@ -18,6 +18,7 @@ import Analytics from '@/pages/Analytics';
 import MediaLibrary from '@/pages/MediaLibrary';
 import SocialAccounts from '@/pages/SocialAccounts';
 import Settings from '@/pages/Settings';
+import AdminLicenses from '@/pages/AdminLicenses';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 function AppError({ error }) {
     const { t } = useTranslation();
@@ -47,6 +48,7 @@ export default function App() {
             <Route path="/media" element={<MediaLibrary />} />
             <Route path="/accounts" element={<SocialAccounts />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/admin/licenses" element={<AdminLicenses />} />
             <Route path="*" element={<Navigate to="/" replace />} />
         </Route></Routes></Router><Toaster />
     </QueryClientProvider></AuthProvider></ErrorBoundary></LanguageProvider>;

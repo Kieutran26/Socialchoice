@@ -1,5 +1,6 @@
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
+import { LICENSE_CHECK_DENIED } from './licensed-graph.js';
 
 // The refresh claim is encrypted and durable: a lost rotating response requires reconnect.
 export function createTiktokTokens(store, config, graph) {
@@ -17,7 +18,16 @@ export function createTiktokTokens(store, config, graph) {
             if (!value.refreshToken || !Number.isFinite(value.refreshExpiresAt) || value.refreshExpiresAt <= Date.now()) fail('TikTok authorization expired. Reconnect TikTok.', 409);
             vault.save(account.credential_id, { ...value, refreshing: true });
             const promise = (async () => {
-                const next = await graph.refresh(value.refreshToken);
+                let next;
+                try { next = await graph.refresh(value.refreshToken); }
+                catch (error) {
+                    // An entitlement denial happens before any refresh request; it is not a lost rotating response.
+                    if (error[LICENSE_CHECK_DENIED] && store.readCredential(account.credential_id)) {
+                        const current = vault.read(account.credential_id);
+                        if (current?.refreshing && current.refreshToken === value.refreshToken && current.token === value.token) vault.save(account.credential_id, value);
+                    }
+                    throw error;
+                }
                 const current = store.get('SocialAccount', account.id);
                 if (current.credential_id !== account.credential_id || !store.readCredential(account.credential_id) || next.profileId !== account.external_id) fail('TikTok connection changed. Reconnect TikTok.', 409);
                 validate(current, next); vault.save(account.credential_id, next); return next;

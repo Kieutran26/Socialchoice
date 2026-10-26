@@ -20,6 +20,7 @@ import { createVideoDelivery } from './facebook-video-delivery.js';
 import { createMultiPageDelivery } from './facebook-multi-page.js';
 import { contentRevision, syncDeliveryState } from './publishing-state.js';
 import { resolveCaption } from '../src/lib/publishing-content.js';
+import { licensedGraph } from './licensed-graph.js';
 
 const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
 
@@ -32,18 +33,18 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 
 // Claim the immutable approval in a synchronous transaction before any network I/O.
 export function createFacebookPublisher(store, config, options = {}) {
-    const graph = config.ready ? createMetaGraph(config) : null;
+    const graph = licensedGraph(config.ready ? createMetaGraph(config) : null, options.authorize);
     const linkedinConfig=options.linkedinConfig||{};
     const linkedinVault=linkedinConfig.ready?createMetaVault(store,linkedinConfig.key):null;
-    const linkedinGraph=options.linkedinGraph||(linkedinConfig.ready?createLinkedinGraph(linkedinConfig):null);
+    const linkedinGraph=licensedGraph(options.linkedinGraph||(linkedinConfig.ready?createLinkedinGraph(linkedinConfig):null),options.authorize);
     const threadsConfig=options.threadsConfig||{};
     const tiktokConfig=options.tiktokConfig||{}, creators=options.tiktokCreators||new Map();
-    const tiktokGraph=options.tiktokGraph||(tiktokConfig.ready?createTiktokGraph(tiktokConfig):null);
+    const tiktokGraph=licensedGraph(options.tiktokGraph||(tiktokConfig.ready?createTiktokGraph(tiktokConfig):null),options.authorize);
     const tiktokTokens=options.tiktokTokens||createTiktokTokens(store,tiktokConfig,tiktokGraph);
     const vault = config.ready || threadsConfig.ready ? createMetaVault(store, config.key||threadsConfig.key) : null;
     const threadsVault=threadsConfig.ready?createMetaVault(store,threadsConfig.key):null;
-    const threadsGraph=threadsConfig.ready?createThreadsGraph(threadsConfig):null;
-    const instagramGraph=config.ready?createInstagramGraph(config):null;
+    const threadsGraph=licensedGraph(threadsConfig.ready?createThreadsGraph(threadsConfig):null,options.authorize);
+    const instagramGraph=licensedGraph(config.ready?createInstagramGraph(config):null,options.authorize);
     const instagramMedia=createInstagramMediaAccess(store,config,threadsConfig,tiktokConfig);
     const summary = attempt => ({ attemptId: attempt.id, postId: attempt.postId, accountId:attempt.accountId, platform:attempt.platform||'facebook', multi:!!attempt.multi, immediate:!!attempt.immediate, pageName: attempt.pageName, pageId: attempt.pageId, caption: attempt.caption, tiktokOptions:attempt.tiktokOptions, tiktokCreator:attempt.tiktokCreator, status: attempt.status, scheduledFor: attempt.scheduledFor, timezone: attempt.timezone, expiresAt: attempt.expiresAt, media: (attempt.media || []).map(image => ({ id: image.id, name: image.name, file_url: image.file_url, file_type:image.file_type })), uploadedPhotos: attempt.photoIds?.length || 0,videoStage:attempt.videoStage,uploadedVideoBytes:attempt.videoStart||0, ...(attempt.url ? { publishedUrl: attempt.url, externalPostId: attempt.externalId } : {}), ...(attempt.platform==='tiktok'&&attempt.externalId?{providerPublishId:attempt.externalId}:{}), ...(attempt.message ? { message: attempt.message } : {}) });
 

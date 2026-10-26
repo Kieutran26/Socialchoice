@@ -23,6 +23,9 @@ const config = await (await get('/api/customer/config', 200)).json();
 assert.equal(config.ready, expectedReady);
 assert.equal((await (await get('/api/health', 200)).json()).backend, 'sqlite');
 await get('/api/session', 401, { headers: { 'x-socialchoice-client': 'local-ui' } });
+for (const operation of ['status', 'list']) await get('/api/admin/licenses/' + operation, 401, { headers: { 'x-socialchoice-client': 'local-ui' } });
+await get('/api/admin/licenses/issue', 401, { method: 'POST', headers: { 'x-socialchoice-client': 'local-ui', 'content-type': 'application/json' }, body: JSON.stringify({ args: [{}] }) });
+await get('/api/admin/licenses/revoke', 401, { method: 'POST', headers: { 'x-socialchoice-client': 'local-ui', 'content-type': 'application/json' }, body: JSON.stringify({ args: [{}] }) });
 await get('/api/entities/Brand/list', 401, { method: 'POST', headers: { 'x-socialchoice-client': 'local-ui', 'content-type': 'application/json' }, body: JSON.stringify({ args: [] }) });
 if (expectedReady) {
     assert.equal(config.multipleDevices, true); assert.equal(config.purchase, 'one-time');

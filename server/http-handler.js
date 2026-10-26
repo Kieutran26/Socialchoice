@@ -7,7 +7,8 @@ import { saveTemplate, createTemplateDraft } from './post-templates.js';
 import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic }) {
+import { adminLicenseRequest } from './admin-license-http.js';
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false }) {
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
     const instagramMedia=createInstagramMediaAccess(store,metaSettings,threadsSettings,tiktokSettings);
@@ -52,6 +53,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, { ok: true });
             }
             auth.require(req);
+            if (await adminLicenseRequest(req, auth, licenseAdmin, send)) return;
             if(await videoUploadRequest(req,store,send)) return;
             if (req.url === '/api/media/upload' && req.method === 'POST') {
                 const chunks = []; let length = 0;
@@ -75,7 +77,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, await service.execute(operation, req, res, input.args));
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
-            if (req.url === '/api/session' && req.method === 'GET') return send(200, auth.identity ? auth.identity(req) : { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only' });
+            if (req.url === '/api/session' && req.method === 'GET') return send(200, auth.identity ? auth.identity(req) : { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only', storage: hosted ? 'hosted' : 'local' });
             if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: !metaSettings.ready, queued: store.queuedAttempts().length, nextDue: store.queuedAttempts().length ? new Date(Math.min(...store.queuedAttempts().map(attempt=>attempt.scheduledFor))).toISOString() : null, message: metaSettings.ready ? 'Confirmed Facebook schedules run automatically. Uncertain deliveries are not resent.' : 'Configure Meta before publishing' });
             const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status|prepareSchedule|schedule|cancelSchedule|prepareBatch|confirmBatch|batchStatus|prepareRetry|cancelPage)$/);
             if (req.url?.startsWith('/api/collaboration/')) fail('Facebook collaboration is unavailable', 410);

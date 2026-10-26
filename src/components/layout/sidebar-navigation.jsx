@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { CopySimple, CalendarDots, CaretDown, ChartBar, Compass, GearSix, Image, NotePencil, PlugsConnected, SquaresFour, Stack, Target } from '@phosphor-icons/react';
+import { CopySimple, CalendarDots, CaretDown, ChartBar, Compass, GearSix, Image, Key, NotePencil, PlugsConnected, SquaresFour, Stack, Target } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
+import { useAuth } from '@/lib/AuthContext';
 
 const contentLinks = [
     ['/create', 'Create Post', NotePencil],
@@ -27,6 +28,7 @@ function NavigationLink({ to, label, icon: Icon, nested = false, onNavigate }) {
 
 export default function SidebarNavigation({ onNavigate }) {
     const { t } = useTranslation();
+    const { user } = useAuth();
     const { pathname } = useLocation();
     const contentActive = contentLinks.some(([to]) => pathname === to || pathname.startsWith(`${to}/`));
     const [expanded, setExpanded] = useState(true);
@@ -42,5 +44,6 @@ export default function SidebarNavigation({ onNavigate }) {
             </div>
         </div>
         {otherLinks.map(([to, label, Icon]) => <NavigationLink key={String(to)} to={to} label={label} icon={Icon} onNavigate={onNavigate} />)}
+        {user?.role === 'admin' && user?.mode === 'admin-session' && <NavigationLink to="/admin/licenses" label="License management" icon={Key} onNavigate={onNavigate} />}
     </nav>;
 }
