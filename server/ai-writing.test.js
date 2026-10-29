@@ -141,3 +141,48 @@ test('non-JSON and oversized refusal bodies remain safe', async t => {
   await assert.rejects(ai('test'),e=>e.status===502 && e.message.includes('access is denied') && !e.message.includes(settings.key));
  }
 });
+
+test('Gemini HTTP tests and generation retain binding, relay and provider diagnostics without secrets or retry', async t => {
+ const {createRegionalAiFetch}=await import('./ai-regional-fetch.js');
+ const store=createStore(':memory:');
+ const brand=store.execute('Brand','create',[{name:'Diagnostic brand'}]);
+ let mode='provider', calls=0;
+ const namespace={jurisdiction(){
+  if(mode==='binding')throw Error(settings.key);
+  return {idFromName(){return 'id';},get(){return {async fetch(){calls++;
+   if(mode==='relay')throw Error(settings.key);
+   return Response.json({error:{message:'API key not valid',private:settings.key}},{status:400,headers:{'x-socialchoice-ai-response':'provider'}});
+  }};}};
+ }};
+ const handler=createHttpHandler({store,auth:{require(){}},metaSettings:{},aiKey:key,aiFetch:createRegionalAiFetch(namespace),allowedHosts:new Set(['127.0.0.1'])});
+ const server=createServer(handler);
+ await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
+ t.after(()=>new Promise(resolve=>{server.close(()=>{store.close();resolve();});server.closeAllConnections();}));
+ const request=(operation,input={})=>fetch(`http://127.0.0.1:${server.address().port}/api/ai/${operation}`,{method:'POST',headers:{'Content-Type':'application/json','X-Socialchoice-Client':'local-ui'},body:JSON.stringify(input)});
+ assert.equal((await request('save',{...settings,provider:'gemini'})).status,200);
+ for (const operation of ['test','generate'])for (const [stage,status,code] of [['binding',503,'AI_BINDING_UNAVAILABLE'],['relay',502,'AI_RELAY_UNREACHABLE'],['provider',502,'AI_PROVIDER_REJECTED']]) {
+  mode=stage;const before=calls;
+  const response=await request(operation,{brand_id:brand.id,title:'',caption:'',brief:'Test',action:'draft',language:'en',confirmed:true});
+  assert.equal(response.status,status);
+  assert.equal(response.headers.get('cache-control'),'no-store');
+  const data=await response.json();
+  assert.equal(data.stage,stage);assert.equal(data.code,code);
+  assert.equal(data.providerStatus,stage==='provider'?400:undefined);
+  assert.ok(!JSON.stringify(data).includes(settings.key));
+  assert.equal(calls-before,stage==='binding'?0:1);
+ }
+});
+
+test('provider-shaped exceptions cannot inject a status and leak private details', async t => {
+ const {ai}=fixture(t,async()=>{throw Object.assign(Error(settings.key),{status:403});});
+ await ai('save',settings);
+ await assert.rejects(ai('test'),{status:502,stage:'provider',code:'AI_PROVIDER_UNREACHABLE',message:'Could not connect to the AI provider. Please try again later.'});
+});
+
+test('valid JSON with an invalid provider shape is reported as a response error', async t => {
+ for (const data of [null, [], 'private response']) {
+  const {ai}=fixture(t,async()=>Response.json(data));
+  await ai('save',settings);
+  await assert.rejects(ai('test'),{status:502,stage:'provider',code:'AI_PROVIDER_INVALID_RESPONSE',providerStatus:200});
+ }
+});

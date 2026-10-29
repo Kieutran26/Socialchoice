@@ -1,5 +1,6 @@
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
+import { AiError, aiError } from './ai-errors.js';
 
 
 async function readProviderJson(response) {
@@ -11,10 +12,13 @@ async function readProviderJson(response) {
         const { value, done } = await reader.read();
         if (done) break;
         bytes += value.byteLength;
-        if (bytes > 262144) { await reader.cancel(); fail('AI provider returned an invalid response.', 502); }
+        if (bytes > 262144) { await reader.cancel(); throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', response.status); }
         content += decoder.decode(value, { stream: true });
     }
-    return JSON.parse(content + decoder.decode());
+    const data = JSON.parse(content + decoder.decode());
+    if (!data || typeof data !== 'object' || Array.isArray(data))
+        throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', response.status);
+    return data;
 }
 
 async function rejectProvider(response) {
@@ -42,7 +46,7 @@ async function rejectProvider(response) {
     else if (response.status === 400 || response.status === 422)
         message = 'AI provider rejected the request parameters. Check model compatibility and API account requirements.';
     else message = 'AI provider rejected the request. Check your key and model.';
-    fail(message, 502);
+    throw aiError(message, 502, 'AI_PROVIDER_REJECTED', 'provider', response.status);
 }
 
 const tasks = { draft: 'Write a social caption from the brief.', rewrite: 'Rewrite the caption following the instructions.', shorten: 'Shorten the caption, preserving meaning.', ideas: 'Suggest five concrete content ideas.', tone: 'Change the tone following the instructions.', cta: 'Improve the caption and add a relevant call to action.', adapt: 'Adapt the caption for the specified platform.' };
@@ -87,6 +91,7 @@ export function createAiWriting(store, key, fetcher = fetch) {
         }
         if (busy) fail('An AI request is already running. Try again shortly.', 429);
         busy = true;
+        let providerStatus;
         try {
             const openai = config.provider === 'openai';
             const response = await fetcher(openai ? 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
@@ -94,16 +99,17 @@ export function createAiWriting(store, key, fetcher = fetch) {
                 headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}` } : { 'x-goog-api-key': config.key }) },
                 body: JSON.stringify(openai ? { model: config.model, store: false, messages: [{ role: 'user', content: prompt }], max_completion_tokens: operation === 'test' ? 32 : 2048 } : { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: operation === 'test' ? 32 : 2048 } }),
             });
-            if (response.status >= 300 && response.status < 400) fail('AI provider redirect was blocked.', 502);
+            providerStatus = response.status;
+            if (response.status >= 300 && response.status < 400) throw aiError('AI provider redirect was blocked.', 502, 'AI_PROVIDER_REDIRECT', 'provider', providerStatus);
             if (!response.ok) await rejectProvider(response);
             const data = await readProviderJson(response);
             const text = openai ? data.choices?.[0]?.message?.content : data.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('');
-            if (typeof text !== 'string' || !text.trim() || text.length > 20000 || (openai ? data.choices?.[0]?.finish_reason !== 'stop' : data.candidates?.[0]?.finishReason !== 'STOP')) fail('AI returned no complete suggestion. Try a shorter request.', 502);
+            if (typeof text !== 'string' || !text.trim() || text.length > 20000 || (openai ? data.choices?.[0]?.finish_reason !== 'stop' : data.candidates?.[0]?.finishReason !== 'STOP')) throw aiError('AI returned no complete suggestion. Try a shorter request.', 502, 'AI_PROVIDER_INCOMPLETE', 'provider', providerStatus);
             return { text, provider: config.provider, model: config.model };
-        } catch (error) { if (error.status) throw error;
-            if (['TimeoutError', 'AbortError'].includes(error.name)) fail('AI provider timed out. Check your provider before trying again.', 504);
-            if (error instanceof SyntaxError) fail('AI provider returned an invalid response.', 502);
-            fail('Could not connect to the AI provider. Please try again later.', 502); }
+        } catch (error) { if (error instanceof AiError) throw error;
+            if (['TimeoutError', 'AbortError'].includes(error.name)) throw aiError('AI provider timed out. Check your provider before trying again.', 504, 'AI_PROVIDER_TIMEOUT', 'provider', providerStatus);
+            if (error instanceof SyntaxError) throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', providerStatus);
+            throw aiError('Could not connect to the AI provider. Please try again later.', 502, 'AI_PROVIDER_UNREACHABLE', 'provider', providerStatus); }
         finally { busy = false; }
     };
 }

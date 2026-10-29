@@ -1,3 +1,5 @@
+import { aiError, relayError } from './ai-errors.js';
+
 // Gemini runs through a private US-jurisdiction actor; workspace storage stays in place.
 export function isGeminiEndpoint(value) {
     try {
@@ -7,12 +9,28 @@ export function isGeminiEndpoint(value) {
     } catch { return false; }
 }
 export function createRegionalAiFetch(namespace, directFetch = fetch) {
-    return (url, options) => {
+    return async (url, options) => {
         if (!isGeminiEndpoint(url)) return directFetch(url, options);
-        if (!namespace) throw new Error('Regional AI binding is unavailable');
-        const us = namespace.jurisdiction('us');
-        const actor = us.get(us.idFromName('gemini-us-v1'));
-        return actor.fetch(new Request(url, options));
+        let actor;
+        try {
+            const us = namespace.jurisdiction('us');
+            actor = us.get(us.idFromName('gemini-us-v1'));
+        } catch {
+            throw aiError('Regional AI binding is unavailable. Contact the server administrator.', 503, 'AI_BINDING_UNAVAILABLE', 'binding');
+        }
+        let response;
+        try { response = await actor.fetch(new Request(url, options)); }
+        catch (error) { throw relayError(['TimeoutError', 'AbortError'].includes(error.name)); }
+        const failure = response.headers.get('x-socialchoice-ai-failure');
+        if (failure === 'AI_RELAY_TIMEOUT' || failure === 'AI_RELAY_UNREACHABLE') {
+            await response.body?.cancel();
+            throw relayError(failure === 'AI_RELAY_TIMEOUT');
+        }
+        if (response.headers.get('x-socialchoice-ai-response') !== 'provider') {
+            await response.body?.cancel();
+            throw relayError(response.status === 504);
+        }
+        return response;
     };
 }
 
@@ -35,8 +53,18 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
     const body = new Uint8Array(size); let offset = 0;
     for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
     // Credentials exist only for this call. Never persist, log, or forward client cookies.
-    return fetcher(request.url, {
+    try { const response = await fetcher(request.url, {
         method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(45000),
         headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body,
     });
+        // Distinguish a real Google reply from an actor/platform-generated HTTP error.
+        const headers = new Headers(response.headers);
+        headers.delete('x-socialchoice-ai-failure');
+        headers.set('x-socialchoice-ai-response', 'provider');
+        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+    } catch (error) {
+        const safe = relayError(['TimeoutError', 'AbortError'].includes(error.name));
+        return Response.json({ message: safe.message }, { status: safe.status,
+            headers: { 'Cache-Control': 'no-store', 'x-socialchoice-ai-failure': safe.code } });
+    }
 }

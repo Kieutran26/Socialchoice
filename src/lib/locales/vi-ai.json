@@ -36,5 +36,10 @@
   "AI model was not found or is unavailable to this API account. Copy an available model ID from your provider console.": "Không tìm thấy model AI hoặc tài khoản API không được dùng model này. Sao chép mã model khả dụng từ trang quản lý API.",
   "AI API access is denied. Check key restrictions, API enablement and model permissions in your provider console.": "Quyền truy cập API AI bị từ chối. Kiểm tra giới hạn key, trạng thái bật API và quyền dùng model trong trang quản lý API.",
   "AI provider is temporarily unavailable. Try again later.": "Nhà cung cấp AI tạm thời không khả dụng. Vui lòng thử lại sau.",
-  "AI provider rejected the request parameters. Check model compatibility and API account requirements.": "Nhà cung cấp AI từ chối tham số yêu cầu. Cần kiểm tra khả năng tương thích của model và yêu cầu của tài khoản API."
+  "AI provider rejected the request parameters. Check model compatibility and API account requirements.": "Nhà cung cấp AI từ chối tham số yêu cầu. Cần kiểm tra khả năng tương thích của model và yêu cầu của tài khoản API.",
+  "Regional AI binding is unavailable. Contact the server administrator.": "Tuyến AI theo khu vực chưa sẵn sàng. Vui lòng liên hệ quản trị máy chủ.",
+  "Could not connect through the AI relay. Please try again later.": "Không thể kết nối qua tuyến chuyển tiếp AI. Vui lòng thử lại sau.",
+  "AI relay timed out. Check your provider before trying again.": "Tuyến chuyển tiếp AI hết thời gian chờ. Kiểm tra nhà cung cấp trước khi thử lại.",
+  "AI gateway timed out. Check your provider before trying again.": "Cổng AI hết thời gian chờ. Kiểm tra nhà cung cấp trước khi thử lại.",
+  "AI gateway returned an invalid response. Please try again later.": "Cổng AI trả về phản hồi không hợp lệ. Vui lòng thử lại sau."
 }

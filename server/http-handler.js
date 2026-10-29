@@ -124,7 +124,9 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));
         } catch (error) {
-            send(error.status || 500, { message: error.status ? error.message : 'Internal server error' });
+            const aiDiagnostic = req.url.startsWith('/api/ai/') && ['binding', 'relay', 'provider'].includes(error.stage)
+                ? { code: error.code, stage: error.stage, ...(Number.isInteger(error.providerStatus) ? { providerStatus: error.providerStatus } : {}) } : {};
+            send(error.status || 500, { message: error.status ? error.message : 'Internal server error', ...aiDiagnostic });
         }
     };
 }
