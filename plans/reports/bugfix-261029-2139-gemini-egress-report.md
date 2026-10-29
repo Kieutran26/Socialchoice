@@ -1,6 +1,6 @@
 # Gemini AI_EGRESS diagnostic repair
 
-Status: implemented and independently reviewed; [draft PR #1](https://github.com/Kieutran26/Socialchoice/pull/1) created. Original authenticated timeout unresolved.
+Status: diagnostic backend deployed and independently reviewed; [draft PR #1](https://github.com/Kieutran26/Socialchoice/pull/1) created. Original authenticated timeout unresolved.
 
 ## Evidence
 
@@ -27,7 +27,7 @@ Status: implemented and independently reviewed; [draft PR #1](https://github.com
 
 ## Deployment and rollback
 
-Repair is not deployed. Existing deployment only was verified. Merge/release through existing workflow while preserving WORKSPACE/CUSTOMER_DIRECTORY/CUSTOMER_WORKSPACES/AI_EGRESS bindings and all existing migrations and secrets. No migration needed. Roll back source/frontend independently while retaining those bindings; diagnostics disappear with rollback.
+Owner explicitly approved backend deployment on2026-10-29 after the initial automatic approval rejection. Reviewed backend deployed as9f3892fe-00c5-4745-a21e-6f85cea4e20e with --keep-vars; existing bindings and migrations retained. Frontend repair is not deployed. Merge/release through existing workflow while preserving WORKSPACE/CUSTOMER_DIRECTORY/CUSTOMER_WORKSPACES/AI_EGRESS bindings and all existing migrations and secrets. No migration needed. Roll back source/frontend independently while retaining those bindings; diagnostics disappear with rollback.
 
 ## Unresolved questions
 
@@ -38,4 +38,6 @@ Repair is not deployed. Existing deployment only was verified. Merge/release thr
 
 Google model documentation confirms gemini-3.8-flash is a stable model. Its default thinking level is medium; low is documented for latency-sensitive writing. This is a possible latency factor, not proof of the reported timeout or5xx, so no speculative thinking/timeout change was made. Sources: https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash and https://ai.google.dev/gemini-api/docs/whats-new-gemini-3.8.
 
-Automatic approval review rejected a production backend deployment attempt because the original scope did not explicitly authorize deployment. No deployment executed. Requested explicit owner approval; do not bypass the rejection.
+Automatic approval review rejected a production backend deployment attempt because the original scope did not explicitly authorize deployment. No deployment executed. Owner subsequently supplied explicit approval; the authorized deployment succeeded.
+
+Authenticated production check after deployment: saved Gemini model confirmed as gemini-3.8-flash; one UI connection test returned the localized provider-temporarily-unavailable message. In the deployed code, genuine Google responses are explicitly marked by the egress actor and unmarked platform responses are rejected as relay errors. This establishes a Google HTTP5xx for that request, but the current frontend does not display the exact providerStatus. Frontend and backend health200 / anonymous AI401 with no-store verified after rollout. Owner approved one temporary gemini-2.5-flash comparison. Its UI test returned the model-not-found/unavailable-to-account message (provider404 classification). Original gemini-3.8-flash was restored and successful save verified in the browser. No successful provider generation is claimed.
