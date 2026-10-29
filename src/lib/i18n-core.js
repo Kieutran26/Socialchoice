@@ -1,3 +1,4 @@
+import ai from './locales/vi-ai.json' with { type: 'json' };
 import channels from './locales/vi-channels.json' with { type: 'json' };
 import crossPlatform from './locales/vi-cross-platform.json' with { type: 'json' };
 import linkedin from './locales/vi-linkedin.json' with { type: 'json' };
@@ -11,7 +12,7 @@ import desktop from './locales/vi-desktop.json' with { type: 'json' };
 import webLicense from './locales/vi-web-license.json' with { type: 'json' };
 
 export const LANGUAGE_STORAGE_KEY = 'socialchoice.language';
-export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin, ...channels, ...crossPlatform, ...desktop, ...webLicense };
+export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin, ...channels, ...crossPlatform, ...desktop, ...webLicense, ...ai };
 export const normalizeLanguage = (value) => value === 'en' ? 'en' : 'vi';
 const listeners = new Set();
 function storedLanguage() {

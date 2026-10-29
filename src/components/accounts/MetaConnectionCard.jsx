@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { WarningCircle } from '@phosphor-icons/react';
+import { ArrowClockwise, WarningCircle } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { appClient } from '@/api/app-client';
 import { Button } from '@/components/ui/button';
@@ -72,10 +72,16 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
             {onAddManually && <Button variant="ghost" type="button" onClick={onAddManually} className="h-auto border rounded-lg px-3 py-2 text-xs">{t('Add a destination reference')}</Button>}
         </div>
         {selection?.pending && <div className="border-t mt-5 pt-4">
-            <h3 className="text-sm font-medium">{t(selection.platform==='threads'?'Choose the Threads profile to connect':selection.platform === 'instagram' ? 'Choose Instagram accounts to connect' : 'Choose Pages to connect')}</h3>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <h3 className="text-sm font-medium">{t(selection.platform==='threads'?'Choose the Threads profile to connect':selection.platform === 'instagram' ? 'Choose Instagram accounts to connect' : 'Choose Pages to connect')}</h3>
+                {selection.platform === 'facebook' && platform === 'facebook' && <Button variant="outline" type="button" onClick={connect} disabled={busy || !status?.ready || !brandId || demoMode}>
+                    <ArrowClockwise size={16} aria-hidden="true" />{t(busy ? 'Opening Facebook…' : 'Reload Page list')}
+                </Button>}
+            </div>
             <p className="label-xs mt-1">{selection.profileName} · {brands.find(b => b.id === selection.brandId)?.name}</p>
+            {selection.platform === 'facebook' && platform === 'facebook' && <p className="label-xs mt-2">{t('Reload opens Facebook to fetch an updated Page list. To include newly created Pages, choose Edit settings on Facebook and allow those Pages. Connected channels stay unchanged until you select and connect Pages.')}</p>}
             {!selection.pages.length && <p className="text-sm mt-3">{t(selection.platform === 'instagram' ? 'No linked Instagram professional accounts were returned. Link a Business or Creator account to your Facebook Page and grant Instagram permissions.' : 'Facebook returned no accessible Pages. Check Page access and granted permissions.')}</p>}
-            <div className="space-y-2 mt-3">{selection.pages.map(page => <label key={page.id} className="flex items-center gap-3 text-sm"><input type="checkbox" checked={selected.includes(page.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids, page.id] : ids.filter(id => id !== page.id))} />{page.name} · {page.username ? '@' + page.username : page.id}{page.pageName ? ' · ' + page.pageName : ''}</label>)}</div>
+            <div className="space-y-2 mt-3">{selection.pages.map(page => <label key={page.id} className="flex items-center gap-3 text-sm"><input type="checkbox" disabled={busy || demoMode} checked={selected.includes(page.id)} onChange={e => setSelected(ids => e.target.checked ? [...ids, page.id] : ids.filter(id => id !== page.id))} />{page.name} · {page.username ? '@' + page.username : page.id}{page.pageName ? ' · ' + page.pageName : ''}</label>)}</div>
             <button type="button" onClick={importPages} className="btn-skew mt-4" disabled={busy || !selected.length || demoMode}>{t(selection.platform==='threads'?'Connect selected Threads profile':selection.platform === 'instagram' ? 'Connect selected Instagram accounts' : 'Connect selected Pages')}</button>
         </div>}
     </div></div></section>;

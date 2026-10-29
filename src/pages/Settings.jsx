@@ -143,7 +143,7 @@ export default function Settings() {
                     {isDesktop() && <DesktopBackup />}
                     {isDesktop() && <DesktopLicense />}
                     {!isDesktop() && <CustomerLicense />}
-                    {isDesktop() && <DesktopAiSettings />}
+                    <DesktopAiSettings />
                     <section className="panel p-5">
                         <label htmlFor="interface-language" className="mb-2 block text-[13px] font-medium">{t('Language')}</label>
                         <select id="interface-language" className="h-10 w-full rounded-lg border border-border bg-background px-3 text-[13px] focus:outline-none focus:ring-2 focus:ring-primary" value={language} onChange={(event) => setLanguage(event.target.value)}>

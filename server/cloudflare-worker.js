@@ -16,3 +16,5 @@ export default {
         return workspace.fetch(request);
     },
 };
+
+export { SocialchoiceAiEgress } from './cloudflare-ai-egress.js';

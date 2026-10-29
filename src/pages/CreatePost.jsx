@@ -35,7 +35,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import DesktopAiWriter from '@/components/composer/desktop-ai-writer';
-import { applyAiSuggestion } from '@/lib/ai-draft';
+import { applyAiSuggestion, applyAiPlatformSuggestion } from '@/lib/ai-draft';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 
@@ -375,7 +375,7 @@ export default function CreatePost() {
                         </div>
                     </section>
 
-                    {desktop && <DesktopAiWriter key={`${form.brand_id}:${sourceId||'new'}`} form={form} disabled={saving||uploading} onApply={(origin,text)=>setForm(current=>applyAiSuggestion(current,origin,text))} />}
+                    {<DesktopAiWriter key={`${form.brand_id}:${sourceId||'new'}`} form={form} disabled={saving||uploading} onApply={(origin,text)=>setForm(current=>applyAiSuggestion(current,origin,text))} onApplyPlatform={(origin,platform,previous,text)=>setForm(current=>applyAiPlatformSuggestion(current,origin,platform,previous,text))} />}
                     {!desktop && <>
                     <section className="panel p-5">
                         <h2 className="mb-3 text-[15px]">{t("Destinations")}</h2>

@@ -26,6 +26,8 @@ Keep browser hosts consistent: do not alternate `localhost` and `127.0.0.1`. The
 
 ## Empty Page enumeration fallback — 26 October 2026
 
+In the pending Facebook Page selection, **Reload Page list** starts a fresh official Facebook authorization and discovery using the selected brand. It does not reread the cached selection. To include Pages outside the current grant, use Facebook's **Edit settings** and explicitly allow those Pages before continuing. Reload itself neither disconnects existing channels nor imports new ones; review the returned list and connect selected Pages. A cancelled flow keeps connected channels intact; start/reload again to obtain a fresh pending selection. No long-lived USER token is stored for this feature.
+
 If Facebook completes `me/accounts` with an empty list, the backend checks the existing USER token through Meta `debug_token`. Only numeric Page IDs from the provider's `pages_show_list` granular grant are candidates (maximum 100). Each direct Page token must independently match the same App, user and Page and pass validity/expiry checks. This does not add scopes or require a manually entered Page ID.
 
 Direct Page objects do not expose `tasks`; the backend never invents them. Publishing preflight accepts either existing content-creation tasks or an encrypted, exact-token-bound proof with target-specific `pages_manage_posts` and `pages_read_engagement` grants on both USER and PAGE tokens. Existing scope checks and confirmation requirements remain. Public selection responses omit tokens and private grant proof. Normal nonempty enumeration and Instagram discovery are unchanged.

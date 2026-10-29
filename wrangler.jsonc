@@ -4,18 +4,50 @@
   "main": "server/cloudflare-worker.js",
   "account_id": "2e2290be67e66440324d34997c4acf8b",
   "compatibility_date": "2026-10-06",
-  "compatibility_flags": ["nodejs_compat"],
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
   "workers_dev": true,
   "durable_objects": {
     "bindings": [
-      { "name": "WORKSPACE", "class_name": "SocialchoiceWorkspace" },
-      { "name": "CUSTOMER_DIRECTORY", "class_name": "SocialchoiceCustomerDirectory" },
-      { "name": "CUSTOMER_WORKSPACES", "class_name": "SocialchoiceCustomerWorkspace" }
+      {
+        "name": "WORKSPACE",
+        "class_name": "SocialchoiceWorkspace"
+      },
+      {
+        "name": "CUSTOMER_DIRECTORY",
+        "class_name": "SocialchoiceCustomerDirectory"
+      },
+      {
+        "name": "CUSTOMER_WORKSPACES",
+        "class_name": "SocialchoiceCustomerWorkspace"
+      },
+      {
+        "name": "AI_EGRESS",
+        "class_name": "SocialchoiceAiEgress"
+      }
     ]
   },
   "migrations": [
-    { "tag": "workspace-storage", "new_sqlite_classes": ["SocialchoiceWorkspace"] },
-    { "tag": "customer-workspaces", "new_sqlite_classes": ["SocialchoiceCustomerDirectory", "SocialchoiceCustomerWorkspace"] }
+    {
+      "tag": "workspace-storage",
+      "new_sqlite_classes": [
+        "SocialchoiceWorkspace"
+      ]
+    },
+    {
+      "tag": "customer-workspaces",
+      "new_sqlite_classes": [
+        "SocialchoiceCustomerDirectory",
+        "SocialchoiceCustomerWorkspace"
+      ]
+    },
+    {
+      "tag": "ai-us-egress",
+      "new_sqlite_classes": [
+        "SocialchoiceAiEgress"
+      ]
+    }
   ],
   "vars": {
     "SOCIALCHOICE_PUBLIC_ORIGIN": "https://socialchoice.vercel.app",
@@ -26,5 +58,7 @@
     "THREADS_REDIRECT_URI": "https://socialchoice.vercel.app/api/threads/callback",
     "META_REDIRECT_URI": "https://socialchoice.vercel.app/api/meta/callback"
   },
-  "observability": { "enabled": false }
+  "observability": {
+    "enabled": false
+  }
 }

@@ -1,3 +1,4 @@
+import { createAiWriting } from './ai-writing.js';
 import { createPublishingNotifications } from './publishing-notifications.js';
 import { createFacebookMetrics } from './facebook-metrics.js';
 import { createInstagramMediaAccess } from './instagram-media-access.js';
@@ -8,7 +9,8 @@ import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false }) {
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch }) {
+    const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
     const instagramMedia=createInstagramMediaAccess(store,metaSettings,threadsSettings,tiktokSettings);
@@ -53,6 +55,14 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, { ok: true });
             }
             auth.require(req);
+            if (req.url.startsWith('/api/ai/')) {
+                if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
+                let body = '';
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 100000) fail('Request too large', 413); }
+                let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
+                if (!input || typeof input !== 'object' || Array.isArray(input)) fail('AI input required');
+                return send(200, await ai(req.url.slice('/api/ai/'.length), input));
+            }
             if (await adminLicenseRequest(req, auth, licenseAdmin, send)) return;
             if(await videoUploadRequest(req,store,send)) return;
             if (req.url === '/api/media/upload' && req.method === 'POST') {

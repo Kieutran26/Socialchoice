@@ -7,3 +7,8 @@ export function applyAiSuggestion(current,origin,text) {
     if(!sameAiDraft(current,origin) || typeof text!=='string' || !text.trim() || text.length>63206)return current;
     return {...current,caption:text};
 }
+
+export function applyAiPlatformSuggestion(current, origin, platform, previousCaption, text) {
+    if (!sameAiDraft(current, origin) || (current.platform_captions?.[platform] || '') !== previousCaption || typeof text !== 'string' || !text.trim() || text.length > 20000) return current;
+    return { ...current, platform_captions: { ...current.platform_captions, [platform]: text } };
+}

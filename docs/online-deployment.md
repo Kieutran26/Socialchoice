@@ -8,6 +8,8 @@ Account Workers plan verified in the dashboard on 2026-10-12: Free, $0, Current 
 
 ## Configuration and release
 
+Page-list reload UI, 2026-10-26: Vercel `dpl_4sbqRz72F9od7oNUHLAW7LD5gdqC` released through static-only `.test-tools/page-reload-release`; existing API proxy preserved. Exact deployed UI/policy hashes, health and anonymous-access boundaries verified. Worker unchanged. Previous frontend `dpl_BsigqNfoXMiGH4yzvBv9mNaDgs6o` is rollback reference. See [feature verification](../plans/reports/feature-261026-2005-facebook-page-reload-report.md).
+
 Facebook empty-list repair, 2026-10-26: Worker `0b8aa416-3da2-426f-8bba-3f080bb55e55` deployed with existing variables, bindings, namespaces and encryption keys preserved. Frontend unchanged. Includes the customer-session clock repair. Previous compatible Worker is `6c766241-20ba-45e3-88ae-7770ea0c6fc0`; rolling back removes the new discovery fallback, so reconnect affected Pages again after restoring newer code. No database migration. Deszy discovery, explicit reimport and read-only access check verified live; no publication performed. See [Facebook connection guide](facebook-connection-setup.md#empty-page-enumeration-fallback--26-october-2026).
 
 `wrangler.jsonc` owns the nonsecret account, Worker name, SQLite migrations, app origin and HTTPS Meta callback. Preserve the original WORKSPACE binding and `single-admin-workspace` identity. Customer mode additionally requires CUSTOMER_DIRECTORY, CUSTOMER_WORKSPACES and the appended `customer-workspaces` migration. It remains disabled without the web issuer public key. The new customer interface must be deployed alongside its backend before registration is opened.
