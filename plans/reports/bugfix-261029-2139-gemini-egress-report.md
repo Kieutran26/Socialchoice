@@ -31,5 +31,11 @@ Repair is not deployed. Existing deployment only was verified. Merge/release thr
 
 ## Unresolved questions
 
-- Which Model ID is configured, and does authenticated failure originate in actor transport or provider inference? Need the real-key test's sanitized stage/code after release or authenticated timing evidence; never ask for keys/cookies.
+- Owner screenshot confirms the saved model ID is gemini-3.8-flash. The latest displayed error maps to an upstream HTTP5xx; the older deployment cannot distinguish a Google reply from an actor/platform-generated response. Authenticated stage/providerStatus evidence is still needed. The Codex browser is reachable but shows the login screen; owner sign-in requested, never credentials in chat.
 - Successful Gemini generation with the owner's API account remains unverified. Do not represent diagnostic repair as proof the original timeout is resolved.
+
+## Follow-up evidence
+
+Google model documentation confirms gemini-3.8-flash is a stable model. Its default thinking level is medium; low is documented for latency-sensitive writing. This is a possible latency factor, not proof of the reported timeout or5xx, so no speculative thinking/timeout change was made. Sources: https://ai.google.dev/gemini-api/docs/models/gemini-3.8-flash and https://ai.google.dev/gemini-api/docs/whats-new-gemini-3.8.
+
+Automatic approval review rejected a production backend deployment attempt because the original scope did not explicitly authorize deployment. No deployment executed. Requested explicit owner approval; do not bypass the rejection.
