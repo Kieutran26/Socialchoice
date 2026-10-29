@@ -1,6 +1,6 @@
 # Gemini AI_EGRESS diagnostic repair
 
-Status: implemented and independently reviewed; PR preparation. Original authenticated timeout unresolved.
+Status: implemented and independently reviewed; [draft PR #1](https://github.com/Kieutran26/Socialchoice/pull/1) created. Original authenticated timeout unresolved.
 
 ## Evidence
 
