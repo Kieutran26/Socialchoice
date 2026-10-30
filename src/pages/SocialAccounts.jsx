@@ -1,12 +1,36 @@
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import AddChannelDialog, { hasConnectionReturn } from '@/components/accounts/add-channel-dialog';
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useState } from 'react';
-import { PlugsConnected, Plus, Trash, Plugs, WarningCircle } from '@phosphor-icons/react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+    FacebookLogo,
+    InstagramLogo,
+    LinkedinLogo,
+    RedditLogo,
+    ThreadsLogo,
+    TiktokLogo,
+    XLogo,
+    YoutubeLogo,
+    Plus,
+    Trash,
+    Plugs,
+    PlugsConnected,
+    WarningCircle,
+    CheckCircle,
+    ShieldCheck,
+    ArrowsClockwise,
+    Users,
+    IdentificationBadge,
+    Globe,
+    ShareNetwork,
+    MagnifyingGlass,
+    X,
+} from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
+import StatCard from '@/components/common/StatCard';
 import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
@@ -18,6 +42,82 @@ import { CONNECTION_LABEL, CONNECTION_TONE, PLATFORM_LABEL } from '@/lib/constan
 import { formatNumber } from '@/lib/format';
 import { isDesktop } from '@/api/desktop/runtime';
 
+const PLATFORM_CONFIG = {
+    facebook: {
+        label: 'Facebook',
+        icon: FacebookLogo,
+        weight: 'fill',
+        border: 'border-[#1877f2]/20',
+        bg: 'bg-[#1877f2]/10',
+        text: 'text-[#1877f2]',
+    },
+    instagram: {
+        label: 'Instagram',
+        icon: InstagramLogo,
+        weight: 'regular',
+        border: 'border-[#e4405f]/25',
+        bg: 'bg-[#e4405f]/10',
+        text: 'text-[#e4405f]',
+    },
+    threads: {
+        label: 'Threads',
+        icon: ThreadsLogo,
+        weight: 'regular',
+        border: 'border-foreground/20',
+        bg: 'bg-foreground/5',
+        text: 'text-foreground',
+    },
+    tiktok: {
+        label: 'TikTok',
+        icon: TiktokLogo,
+        weight: 'fill',
+        border: 'border-foreground/20',
+        bg: 'bg-foreground/5',
+        text: 'text-foreground',
+    },
+    linkedin: {
+        label: 'LinkedIn',
+        icon: LinkedinLogo,
+        weight: 'fill',
+        border: 'border-[#0a66c2]/25',
+        bg: 'bg-[#0a66c2]/10',
+        text: 'text-[#0a66c2]',
+    },
+    youtube: {
+        label: 'YouTube',
+        icon: YoutubeLogo,
+        weight: 'fill',
+        border: 'border-[#ff0033]/25',
+        bg: 'bg-[#ff0033]/10',
+        text: 'text-[#ff0033]',
+    },
+    x: {
+        label: 'X',
+        icon: XLogo,
+        weight: 'regular',
+        border: 'border-foreground/20',
+        bg: 'bg-foreground/5',
+        text: 'text-foreground',
+    },
+    reddit: {
+        label: 'Reddit',
+        icon: RedditLogo,
+        weight: 'fill',
+        border: 'border-[#ff4500]/25',
+        bg: 'bg-[#ff4500]/10',
+        text: 'text-[#ff4500]',
+    },
+};
+
+const DEFAULT_PLATFORM_CONFIG = {
+    label: 'Social',
+    icon: PlugsConnected,
+    weight: 'duotone',
+    border: 'border-border',
+    bg: 'bg-muted',
+    text: 'text-muted-foreground',
+};
+
 export default function SocialAccounts() {
     const { t } = useTranslation();
     const { scope, brands, selectedBrandId, demoMode } = useWorkspace();
@@ -25,10 +125,13 @@ export default function SocialAccounts() {
     const [loading, setLoading] = useState(true);
     const [accounts, setAccounts] = useState([]);
     const [addOpen, setAddOpen] = useState(false);
-    const [channelOpen,setChannelOpen]=useState(hasConnectionReturn);
+    const [channelOpen, setChannelOpen] = useState(hasConnectionReturn);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [fixTarget, setFixTarget] = useState(null);
     const [reconnect, setReconnect] = useState(null);
+    const [checkingId, setCheckingId] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [platformFilter, setPlatformFilter] = useState('all');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -55,9 +158,22 @@ export default function SocialAccounts() {
     };
 
     const disconnect = async (account) => {
-        if (account.credential_id) await (account.platform==='linkedin'?appClient.linkedin:account.platform==='tiktok'?appClient.tiktok:account.platform==='threads'?appClient.threads:appClient.meta).disconnect(account.id);
-        else await appClient.entities.SocialAccount.update(account.id, { connection_status: 'disconnected' });
-        toast({ title: t("{value1} disconnected", {value1: account.name}), description: t("No new jobs will start for this account. An already started request may still complete.") });
+        if (account.credential_id) {
+            await (account.platform === 'linkedin'
+                ? appClient.linkedin
+                : account.platform === 'tiktok'
+                    ? appClient.tiktok
+                    : account.platform === 'threads'
+                        ? appClient.threads
+                        : appClient.meta
+            ).disconnect(account.id);
+        } else {
+            await appClient.entities.SocialAccount.update(account.id, { connection_status: 'disconnected' });
+        }
+        toast({
+            title: t("{value1} disconnected", { value1: account.name }),
+            description: t("No new jobs will start for this account. An already started request may still complete."),
+        });
         load();
     };
 
@@ -79,11 +195,47 @@ export default function SocialAccounts() {
         load();
     };
 
-    const byBrand = brands.map((brand) => ({
-        brand,
-        items: accounts.filter((account) => account.brand_id === brand.id),
-    }));
-    const ungrouped = accounts.filter((account) => !brands.some((brand) => brand.id === account.brand_id));
+    const connectedCount = useMemo(() => {
+        return accounts.filter((a) => a.connection_status === 'connected').length;
+    }, [accounts]);
+
+    const activeBrandsCount = useMemo(() => {
+        return new Set(accounts.map((a) => a.brand_id).filter(Boolean)).size;
+    }, [accounts]);
+
+    const uniquePlatforms = useMemo(() => {
+        return Array.from(new Set(accounts.map((a) => a.platform)));
+    }, [accounts]);
+
+    const filteredAccounts = useMemo(() => {
+        return accounts.filter((account) => {
+            if (platformFilter !== 'all' && account.platform !== platformFilter) return false;
+            if (!searchQuery.trim()) return true;
+            const q = searchQuery.trim().toLowerCase();
+            return (
+                account.name?.toLowerCase().includes(q) ||
+                account.username?.toLowerCase().includes(q) ||
+                account.external_id?.toLowerCase().includes(q)
+            );
+        });
+    }, [accounts, platformFilter, searchQuery]);
+
+    const byBrand = useMemo(() => {
+        return brands.map((brand) => ({
+            brand,
+            items: filteredAccounts.filter((account) => account.brand_id === brand.id),
+        }));
+    }, [brands, filteredAccounts]);
+
+    const ungrouped = useMemo(() => {
+        return filteredAccounts.filter(
+            (account) => !brands.some((brand) => brand.id === account.brand_id)
+        );
+    }, [brands, filteredAccounts]);
+
+    const displayedGroups = useMemo(() => {
+        return [...byBrand, { brand: null, items: ungrouped }].filter((group) => group.items.length > 0);
+    }, [byBrand, ungrouped]);
 
     return (
         <>
@@ -92,164 +244,458 @@ export default function SocialAccounts() {
                 description={t('Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.')}
                 actions={
                     <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
-                        <Plus size={16} weight="duotone" /> {t("Add channel")} </button>
+                        <Plus size={16} weight="duotone" /> {t("Add channel")}
+                    </button >
                 }
             />
 
-            <div className="space-y-5">
-                {loading ? (
-                    <Skeleton className="h-[320px] rounded-2xl" />
-                ) : !accounts.length ? (
-                    <EmptyState
-                        icon={PlugsConnected}
-                        title={t("No destinations yet")}
-                        description={t("Connect your social accounts and group them by brand. Accounts appear here after you approve the connection.")}
+        <div className="space-y-6">
+            {/* Metric Summary Bar */}
+            {!loading && accounts.length > 0 && (
+                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <StatCard
+                        label={t("Total destinations")}
+                        value={accounts.length}
+                        hint={t("Across all brands")}
+                        icon={ShareNetwork}
+                    />
+                    <StatCard
+                        label={t("Connected")}
+                        value={connectedCount}
+                        hint={t("{value1} active destinations", { value1: connectedCount })}
+                        icon={CheckCircle}
+                    />
+                    <StatCard
+                        label={t("Brands")}
+                        value={activeBrandsCount}
+                        hint={t("Assigned brands")}
+                        icon={IdentificationBadge}
+                    />
+                    <StatCard
+                        label={t("Platforms active")}
+                        value={uniquePlatforms.length}
+                        hint={t("Unique social networks")}
+                        icon={Globe}
+                    />
+                </div>
+            )}
+
+            {/* Filter and Search Bar when accounts exist */}
+            {!loading && accounts.length > 2 && (
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                    <div className="relative flex-1 max-w-sm">
+                        <MagnifyingGlass size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                        <input
+                            type="text"
+                            placeholder={t("Search destinations…")}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="h-9 w-full rounded-lg border border-border bg-card pl-9 pr-8 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+                        />
+                        {searchQuery && (
+                            <button
+                                type="button"
+                                onClick={() => setSearchQuery('')}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                            >
+                                <X size={13} />
+                            </button>
+                        )}
+                    </div>
+
+                    {uniquePlatforms.length > 1 && (
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            <button
+                                type="button"
+                                onClick={() => setPlatformFilter('all')}
+                                className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${platformFilter === 'all'
+                                        ? 'bg-brand/15 text-brand-ink font-semibold'
+                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                    }`}
+                            >
+                                {t("All platforms")}
+                            </button>
+                            {uniquePlatforms.map((platform) => {
+                                const cfg = PLATFORM_CONFIG[platform] || DEFAULT_PLATFORM_CONFIG;
+                                const Icon = cfg.icon;
+                                const isSelected = platformFilter === platform;
+                                return (
+                                    <button
+                                        key={platform}
+                                        type="button"
+                                        onClick={() => setPlatformFilter(isSelected ? 'all' : platform)}
+                                        className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${isSelected
+                                                ? 'bg-brand/15 text-brand-ink font-semibold'
+                                                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                                            }`}
+                                    >
+                                        <Icon size={14} weight={cfg.weight} className={cfg.text} />
+                                        <span>{PLATFORM_LABEL[platform] || platform}</span>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {loading ? (
+                    <div className="space-y-4">
+                        <Skeleton className="h-[120px] rounded-2xl" />
+                        <Skeleton className="h-[220px] rounded-2xl" />
+                    </div>
+            ) : !accounts.length ? (
+                <EmptyState
+                    icon={PlugsConnected}
+                    title={t("No destinations yet")}
+                    description={t("Connect your social accounts and group them by brand. Accounts appear here after you approve the connection.")}
+                >
+                    <Button variant="outline" type="button" onClick={() => setChannelOpen(true)}>
+                        <Plus size={15} weight="bold" /> {t("Add channel")}
+                    </Button>
+                </EmptyState>
+            ) : displayedGroups.length === 0 ? (
+                <div className="panel p-8 text-center">
+                    <p className="text-sm font-medium text-foreground">{t("No destinations match filter")}</p>
+                    <p className="label-xs mt-1 text-muted-foreground">
+                        {t("Try clearing the search or filter to see all destinations.")}
+                    </p>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-4 text-xs"
+                        onClick={() => {
+                            setSearchQuery('');
+                            setPlatformFilter('all');
+                        }}
                     >
-                        <Button variant="outline" type="button" className="" onClick={() => setChannelOpen(true)}>
-                            <Plus size={15} weight="bold" /> {t("Add channel")} </Button>
-                    </EmptyState>
-                ) : (
-                    <>
-                        {[...byBrand, { brand: null, items: ungrouped }]
-                            .filter((group) => group.items.length)
-                            .map((group) => (
-                                <section key={group.brand?.id || 'ungrouped'} className="panel p-5">
-                                    <div className="mb-3 flex items-center gap-2">
-                                        <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: group.brand?.color || '#EAEAEA' }} />
-                                        <h2 className="text-[15px]">{group.brand?.name || t("No brand assigned")}</h2>
-                                        <span className="label-xs">
-                                            · {group.items.length} {t("destination")}{group.items.length === 1 ? '' : t("s")}
-                                        </span>
-                                    </div>
-                                    <div className="divide-y divide-border">
-                                        {group.items.map((account) => (
-                                            <div key={account.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                                                <div className="min-w-[200px] flex-1">
-                                                    <div className="flex flex-wrap items-center gap-2">
-                                                        <p className="text-[13px] font-medium">{account.name}</p>
-                                                        <StatusBadge tone={CONNECTION_TONE[account.connection_status]}>
-                                                            {CONNECTION_LABEL[account.connection_status]}
-                                                        </StatusBadge>
-                                                        {account.connection_status === 'connected' ? null : (
-                                                            <span className="label-xs">
-                                                                <WarningCircle size={12} className="mr-1 inline" /> {t("not delivering")} </span>
-                                                        )}
+                        {t("Clear filters")}
+                    </Button>
+                </div>
+            ) : (
+                            <div className="space-y-5">
+                                {displayedGroups.map((group) => {
+                                    const allConnected = group.items.every(
+                                        (item) => item.connection_status === 'connected'
+                                    );
+                                    return (
+                                        <section key={group.brand?.id || 'ungrouped'} className="panel p-5">
+                                                {/* Brand Panel Header */}
+                                                <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <span
+                                                            className="h-3 w-3 rounded-full shrink-0 ring-2 ring-background"
+                                                            style={{ backgroundColor: group.brand?.color || '#9ca3af' }}
+                                                        />
+                                                        <h2 className="font-heading text-[15px] font-medium text-foreground">
+                                                            {group.brand?.name || t("No brand assigned")}
+                                                        </h2>
+                                                        <span className="label-xs rounded-full bg-muted px-2 py-0.5 text-muted-foreground font-medium">
+                                                            {group.items.length} {t("destination")}{group.items.length === 1 ? '' : t("s")}
+                                                        </span>
                                                     </div>
-                                                    <p className="label-xs mt-1">
-                                                        {PLATFORM_LABEL[account.platform] || account.platform} · {account.username || t('no handle')}
-                                                        {account.followers ? t(" · {value1} followers", {value1: formatNumber(account.followers)}) : ''}
-                                                        {account.external_id ? ` · ID ${account.external_id}` : ''}
-                                                    </p>
-                                                </div>
 
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <Select value={account.brand_id} disabled={isDesktop() && !!account.credential_id} onValueChange={(value) => setBrand(account, value)}>
-                                                        <SelectTrigger className="h-8 w-[170px] rounded-lg text-[12px]">
-                                                            <SelectValue placeholder={t("Assign brand")} />
-                                                        </SelectTrigger>
-                                                        <SelectContent>
-                                                            {brands.map((brand) => (
-                                                                <SelectItem key={brand.id} value={brand.id}>
-                                                                    {brand.name}
-                                                                </SelectItem>
-                                                            ))}
-                                                        </SelectContent>
-                                                    </Select>
-
-                                                    {account.connection_status !== 'demo' ? (
-                                                        <>
-                                                            <Button
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="h-8 rounded-lg text-[12px]"
-                                                                onClick={() => {
-                                                                    if (isDesktop() && ['facebook','instagram','threads','linkedin','tiktok'].includes(account.platform)) { setReconnect({ platform: account.platform, brandId: account.brand_id }); setChannelOpen(true); return; }
-                                                                    if (!account.credential_id) return setFixTarget(account);
-                                                                    (account.platform==='linkedin'?appClient.linkedin.start(account.brand_id):account.platform==='tiktok'?appClient.tiktok.start(account.brand_id):account.platform==='threads'?appClient.threads.start(account.brand_id):appClient.meta.start(account.brand_id, account.platform)).then(result => window.location.assign(result.url)).catch(e => toast({ variant: 'destructive', title: t(e.message) }));
-                                                                }}
-                                                            > {t("Fix connection")} </Button>
-                                                            {account.credential_id && <Button variant="outline" size="sm" onClick={async () => {
-                                                                try { await (account.platform==='linkedin'?appClient.linkedin:account.platform==='tiktok'?appClient.tiktok:account.platform==='threads'?appClient.threads:appClient.meta).check(account.id); toast({ title: t(account.platform==='linkedin'?'LinkedIn access verified':account.platform==='tiktok'?'TikTok access verified':account.platform==='threads'?'Threads access verified':account.platform === 'instagram' ? 'Instagram access verified' : 'Facebook Page access verified') }); }
-                                                                catch (e) { toast({ variant: 'destructive', title: t(e.message) }); }
-                                                                finally { load(); }
-                                                            }}>{t(account.platform==='linkedin'?'Check LinkedIn access':account.platform==='tiktok'?'Check TikTok access':account.platform==='threads'?'Check Threads access':account.platform === 'instagram' ? 'Check Instagram access' : 'Check Facebook access')}</Button>}
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="h-8 rounded-lg text-[12px]"
-                                                                disabled={account.connection_status === 'disconnected'}
-                                                                onClick={() => disconnect(account)}
-                                                            >
-                                                                <Plugs size={13} className="mr-1.5" /> {t("Disconnect")} </Button>
-                                                        </>
-                                                    ) : (
-                                                        <span className="label-xs">{t("Sample destination")}</span>
+                                                    {allConnected && group.items.length > 0 && (
+                                                        <span className="inline-flex items-center gap-1.5 label-xs text-successFg font-medium">
+                                                            <CheckCircle size={13} weight="fill" />
+                                                            {t("All connected")}
+                                                        </span>
                                                     )}
-
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        className="h-8 rounded-lg text-[12px] text-dangerFg hover:text-dangerFg"
-                                                        onClick={() => setDeleteTarget(account)}
-                                                    >
-                                                        <Trash size={13} />
-                                                    </Button>
                                                 </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </section>
-                            ))}
-                    </>
+
+                                                                    {/* Accounts List */}
+                                                                    <div className="divide-y divide-border/60">
+                                                                        {group.items.map((account) => {
+                                                                            const config = PLATFORM_CONFIG[account.platform] || DEFAULT_PLATFORM_CONFIG;
+                                                                            const PlatformIcon = config.icon;
+
+                                                                            return (
+                                                <div
+                                                    key={account.id}
+                                                    className="group flex flex-wrap items-center justify-between gap-4 py-3.5 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2"
+                                                >
+                                                    {/* Account Identity and Details */}
+                                                    <div className="flex items-center gap-3.5 min-w-[240px] flex-1">
+                                                        <div
+                                                            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${config.border} ${config.bg} transition-transform group-hover:scale-[1.03]`}
+                                                        >
+                                                            <PlatformIcon size={24} weight={config.weight} className={config.text} />
+                                                            {account.connection_status === 'connected' ? (
+                                                                <span
+                                                                    className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card bg-successFg"
+                                                                    title={t("Connected")}
+                                                                />
+                                                            ) : account.connection_status === 'expired' || account.connection_status === 'configuration_required' ? (
+                                                                <span
+                                                                    className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card bg-warnFg"
+                                                                    title={CONNECTION_LABEL[account.connection_status]}
+                                                                />
+                                                            ) : null}
+                                                        </div>
+
+                                                        <div className="min-w-0 flex-1">
+                                                            <div className="flex flex-wrap items-center gap-2">
+                                                                <p className="font-heading text-[14px] font-medium text-foreground tracking-tight">
+                                                                    {account.name}
+                                                                </p>
+                                                                <StatusBadge tone={CONNECTION_TONE[account.connection_status]}>
+                                                                    {CONNECTION_LABEL[account.connection_status]}
+                                                                </StatusBadge>
+                                                                {account.connection_status !== 'connected' && (
+                                                                    <span className="inline-flex items-center gap-1 rounded-md bg-warnBg px-1.5 py-0.5 text-[11px] font-medium text-warnFg">
+                                                                        <WarningCircle size={12} weight="bold" />
+                                                                        {t("not delivering")}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+
+                                                            <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+                                                                <span className="font-medium text-foreground/75">
+                                                                    {PLATFORM_LABEL[account.platform] || account.platform}
+                                                                </span>
+                                                                {account.username ? (
+                                                                    <>
+                                                                        <span className="text-muted-foreground/40">·</span>
+                                                                        <span className="font-mono text-muted-foreground">@{account.username}</span>
+                                                                    </>
+                                                                ) : null}
+                                                                {account.followers ? (
+                                                                    <>
+                                                                        <span className="text-muted-foreground/40">·</span>
+                                                                        <span className="inline-flex items-center gap-1">
+                                                                            <Users size={12} weight="bold" />
+                                                                            {formatNumber(account.followers)} {t("followers")}
+                                                                        </span>
+                                                                    </>
+                                                                ) : null}
+                                                                {account.external_id ? (
+                                                                    <>
+                                                                        <span className="text-muted-foreground/40">·</span>
+                                                                        <span className="rounded bg-muted/60 px-1.5 py-0.2 font-mono text-[10.5px] text-muted-foreground border border-border/50">
+                                                                            ID {account.external_id}
+                                                                        </span>
+                                                                    </>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Actions Group */}
+                                                    <div className="flex flex-wrap items-center gap-2">
+                                                        <Select
+                                                            value={account.brand_id}
+                                                            disabled={isDesktop() && !!account.credential_id}
+                                                            onValueChange={(value) => setBrand(account, value)}
+                                                        >
+                                                            <SelectTrigger className="h-8 w-[145px] rounded-lg text-[12px] bg-background border-border shadow-2xs font-medium">
+                                                                <SelectValue placeholder={t("Assign brand")} />
+                                                            </SelectTrigger>
+                                                            <SelectContent>
+                                                                {brands.map((brand) => (
+                                                                    <SelectItem key={brand.id} value={brand.id}>
+                                                                        <div className="flex items-center gap-2">
+                                                                            <span
+                                                                                className="h-2 w-2 rounded-full shrink-0"
+                                                                                style={{ backgroundColor: brand.color }}
+                                                                            />
+                                                                            <span className="truncate">{brand.name}</span>
+                                                                        </div>
+                                                                    </SelectItem>
+                                                                ))}
+                                                            </SelectContent>
+                                                        </Select>
+
+                                                        {account.connection_status !== 'demo' ? (
+                                                            <>
+                                                                {account.credential_id && (
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        disabled={checkingId === account.id}
+                                                                        className="h-8 rounded-lg text-[12px] gap-1.5 font-medium hover:border-brand-dark"
+                                                                        onClick={async () => {
+                                                                            setCheckingId(account.id);
+                                                                            try {
+                                                                                await (account.platform === 'linkedin'
+                                                                                    ? appClient.linkedin
+                                                                                    : account.platform === 'tiktok'
+                                                                                    ? appClient.tiktok
+                                                                                    : account.platform === 'threads'
+                                                                                    ? appClient.threads
+                                                                                    : appClient.meta
+                                                                                ).check(account.id);
+                                                                                toast({
+                                                                                    title: t(
+                                                                                        account.platform === 'linkedin'
+                                                                                            ? 'LinkedIn access verified'
+                                                                                            : account.platform === 'tiktok'
+                                                                                            ? 'TikTok access verified'
+                                                                                            : account.platform === 'threads'
+                                                                                            ? 'Threads access verified'
+                                                                                            : account.platform === 'instagram'
+                                                                                            ? 'Instagram access verified'
+                                                                                            : 'Facebook Page access verified'
+                                                                                    ),
+                                                                                });
+                                                                            } catch (e) {
+                                                                                toast({ variant: 'destructive', title: t(e.message) });
+                                                                            } finally {
+                                                                                setCheckingId(null);
+                                                                                load();
+                                                                            }
+                                                                        }}
+                                                                    >
+                                                                        {checkingId === account.id ? (
+                                                                            <ArrowsClockwise size={13} className="animate-spin text-muted-foreground" />
+                                                                        ) : (
+                                                                            <ShieldCheck size={14} className="text-muted-foreground" />
+                                                                        )}
+                                                                        <span>
+                                                                            {t(
+                                                                                account.platform === 'linkedin'
+                                                                                    ? 'Check LinkedIn access'
+                                                                                    : account.platform === 'tiktok'
+                                                                                    ? 'Check TikTok access'
+                                                                                    : account.platform === 'threads'
+                                                                                    ? 'Check Threads access'
+                                                                                    : account.platform === 'instagram'
+                                                                                    ? 'Check Instagram access'
+                                                                                    : 'Check Facebook access'
+                                                                            )}
+                                                                        </span>
+                                                                    </Button>
+                                                                )}
+
+                                                                <Button
+                                                                    variant={account.connection_status === 'connected' ? 'ghost' : 'outline'}
+                                                                    size="sm"
+                                                                    className={`h-8 rounded-lg text-[12px] gap-1.5 ${
+                                                                        account.connection_status === 'connected'
+                                                                            ? 'text-muted-foreground hover:text-foreground'
+                                                                            : 'border-warnFg/30 text-warnFg hover:bg-warnBg/50 font-medium'
+                                                                    }`}
+                                                                    onClick={() => {
+                                                                        if (isDesktop() && ['facebook', 'instagram', 'threads', 'linkedin', 'tiktok'].includes(account.platform)) {
+                                                                            setReconnect({ platform: account.platform, brandId: account.brand_id });
+                                                                            setChannelOpen(true);
+                                                                            return;
+                                                                        }
+                                                                        if (!account.credential_id) return setFixTarget(account);
+                                                                        (account.platform === 'linkedin'
+                                                                            ? appClient.linkedin.start(account.brand_id)
+                                                                            : account.platform === 'tiktok'
+                                                                            ? appClient.tiktok.start(account.brand_id)
+                                                                            : account.platform === 'threads'
+                                                                            ? appClient.threads.start(account.brand_id)
+                                                                            : appClient.meta.start(account.brand_id, account.platform)
+                                                                        )
+                                                                            .then((result) => window.location.assign(result.url))
+                                                                            .catch((e) => toast({ variant: 'destructive', title: t(e.message) }));
+                                                                    }}
+                                                                >
+                                                                    <ArrowsClockwise size={13} />
+                                                                    <span>{t("Fix connection")}</span>
+                                                                </Button>
+
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="sm"
+                                                                    className="h-8 rounded-lg text-[12px] text-muted-foreground hover:text-foreground gap-1.5"
+                                                                    disabled={account.connection_status === 'disconnected'}
+                                                                    onClick={() => disconnect(account)}
+                                                                >
+                                                                    <Plugs size={13} />
+                                                                    <span>{t("Disconnect")}</span>
+                                                                </Button>
+                                                            </>
+                                                        ) : (
+                                                            <span className="label-xs">{t("Sample destination")}</span>
+                                                        )}
+
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            className="h-8 w-8 p-0 rounded-lg text-muted-foreground hover:text-dangerFg hover:bg-dangerBg/50 transition-colors"
+                                                            title={t("Remove destination")}
+                                                            aria-label={t("Remove destination")}
+                                                            onClick={() => setDeleteTarget(account)}
+                                                        >
+                                                            <Trash size={14} />
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                                                    );
+                                        })}
+                                                                </div>
+                                                            </section>
+                                                    );
+                        })}
+                                                </div>
                 )}
-            </div>
+                                            </div>
 
-            <AddChannelDialog open={channelOpen} onOpenChange={value => {setChannelOpen(value);if(!value)setReconnect(null);}} initialPlatform={reconnect?.platform || ''} brands={brands} defaultBrandId={reconnect?.brandId || (selectedBrandId === 'all' ? '' : selectedBrandId)} demoMode={demoMode} onChanged={load} onAddManually={() => {setChannelOpen(false);setReconnect(null);setAddOpen(true);}} />
+                                            <AddChannelDialog
+                                                open={channelOpen}
+                                                onOpenChange={(value) => {
+                                                    setChannelOpen(value);
+                                                    if (!value) setReconnect(null);
+                                                }}
+                                                initialPlatform={reconnect?.platform || ''}
+                                                brands={brands}
+                                                defaultBrandId={reconnect?.brandId || (selectedBrandId === 'all' ? '' : selectedBrandId)}
+                                                demoMode={demoMode}
+                                                onChanged={load}
+                                                onAddManually={() => {
+                                                    setChannelOpen(false);
+                                                    setReconnect(null);
+                                                    setAddOpen(true);
+                                                }}
+                                            />
 
-            <AddAccountDialog
-                open={addOpen}
-                onOpenChange={setAddOpen}
-                brands={brands}
-                defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId}
-                onSubmit={add}
-            />
+                                            <AddAccountDialog
+                                                open={addOpen}
+                                                onOpenChange={setAddOpen}
+                                                brands={brands}
+                                                defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId}
+                                                onSubmit={add}
+                                            />
 
-            <AddAccountDialog
-                open={!!fixTarget}
-                onOpenChange={(value) => !value && setFixTarget(null)}
-                brands={brands}
-                defaultBrandId={fixTarget?.brand_id}
-                initial={fixTarget}
-                title={t("Reconnect this destination")}
-                description={t("Confirm the Page details and mark it for reconnection. No fake reconnect happens: it stays in configuration required until the Meta connection is enabled for this workspace.")}
-                submitLabel={t('Mark for reconnection')}
-                onSubmit={async (values) => {
-                    await appClient.entities.SocialAccount.update(fixTarget.id, {
-                        connection_status: 'configuration_required',
-                        name: values.name,
-                        username: values.username,
-                        external_id: values.external_id,
-                        brand_id: values.brand_id,
-                        followers: values.followers,
-                    });
-                    toast({
-                        title: t("Destination marked for reconnection"),
-                        description: t("It stays in configuration required until the Meta connection is enabled for this workspace."),
-                    });
-                    setFixTarget(null);
-                    load();
-                }}
-            />
+                                            <AddAccountDialog
+                                                open={!!fixTarget}
+                                                onOpenChange={(value) => !value && setFixTarget(null)}
+                                                brands={brands}
+                                                defaultBrandId={fixTarget?.brand_id}
+                                                initial={fixTarget}
+                                                title={t("Reconnect this destination")}
+                                                description={t("Confirm the Page details and mark it for reconnection. No fake reconnect happens: it stays in configuration required until the Meta connection is enabled for this workspace.")}
+                                                submitLabel={t('Mark for reconnection')}
+                                                onSubmit={async (values) => {
+                                                    await appClient.entities.SocialAccount.update(fixTarget.id, {
+                                                        connection_status: 'configuration_required',
+                                                        name: values.name,
+                                                        username: values.username,
+                                                        external_id: values.external_id,
+                                                        brand_id: values.brand_id,
+                                                        followers: values.followers,
+                                                    });
+                                                    toast({
+                                                        title: t("Destination marked for reconnection"),
+                                                        description: t("It stays in configuration required until the Meta connection is enabled for this workspace."),
+                                                    });
+                                                    setFixTarget(null);
+                                                    load();
+                                                }}
+                                            />
 
-            <ConfirmDialog
-                open={!!deleteTarget}
-                onOpenChange={(value) => !value && setDeleteTarget(null)}
-                title={t("Remove {value1}?", {value1: deleteTarget?.name})}
-                description={t("Only destinations without publishing history can be removed. Otherwise disconnect instead.")}
-                confirmLabel={t("Remove destination")}
-                destructive
-                onConfirm={remove}
-            />
-        </>
-    );
-}
+                                            <ConfirmDialog
+                                                open={!!deleteTarget}
+                                                onOpenChange={(value) => !value && setDeleteTarget(null)}
+                                                title={t("Remove {value1}?", { value1: deleteTarget?.name })}
+                                                description={t("Only destinations without publishing history can be removed. Otherwise disconnect instead.")}
+                                                confirmLabel={t("Remove destination")}
+                                                destructive
+                                                onConfirm={remove}
+                                            />
+                                        </>
+                                    );
+                                }

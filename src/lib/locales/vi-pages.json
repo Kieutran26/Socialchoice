@@ -294,5 +294,17 @@
   "no handle": "chưa có tên người dùng",
   "Next 60 days from {date}": "60 ngày tiếp theo từ {date}",
   "All scheduled and published content, shown in {timezone}. Click any item to open it, reschedule it or edit it.": "Tất cả nội dung đã lên lịch và đã đăng, hiển thị theo múi giờ {timezone}. Nhấn vào một mục để xem, đổi lịch hoặc sửa.",
-  "{count} items in view": "{count} mục đang hiển thị"
+  "Total destinations": "Tổng đích đăng",
+  "Connected": "Đã kết nối",
+  "Brands": "Thương hiệu",
+  "Platforms active": "Nền tảng hoạt động",
+  "Across all brands": "Trên toàn bộ thương hiệu",
+  "{value1} active destinations": "{value1} đích đăng đang hoạt động",
+  "Assigned brands": "Thương hiệu đang dùng",
+  "Unique social networks": "Kênh mạng xã hội khác nhau",
+  "All connected": "Tất cả đã kết nối",
+  "Search destinations…": "Tìm theo tên, @username hoặc ID…",
+  "All platforms": "Tất cả nền tảng",
+  "No destinations match filter": "Không tìm thấy đích đăng phù hợp",
+  "Try clearing the search or filter to see all destinations.": "Thử xóa từ khóa tìm kiếm hoặc bộ lọc để xem tất cả."
 }
