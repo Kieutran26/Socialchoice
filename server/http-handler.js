@@ -1,4 +1,5 @@
 import { createAiWriting } from './ai-writing.js';
+import { aiFailureDiagnostic } from './ai-errors.js';
 import { createPublishingNotifications } from './publishing-notifications.js';
 import { createFacebookMetrics } from './facebook-metrics.js';
 import { createInstagramMediaAccess } from './instagram-media-access.js';
@@ -9,7 +10,7 @@ import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch }) {
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink }) {
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
@@ -124,8 +125,10 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));
         } catch (error) {
-            const aiDiagnostic = req.url.startsWith('/api/ai/') && ['binding', 'relay', 'provider'].includes(error.stage)
-                ? { code: error.code, stage: error.stage, ...(Number.isInteger(error.providerStatus) ? { providerStatus: error.providerStatus } : {}) } : {};
+            const aiDiagnostic = req.url.startsWith('/api/ai/') ? aiFailureDiagnostic(error) : {};
+            if (aiDiagnostic.code) {
+                try { aiDiagnosticSink?.(aiDiagnostic); } catch { /* Diagnostics must never mask the request result. */ }
+            }
             send(error.status || 500, { message: error.status ? error.message : 'Internal server error', ...aiDiagnostic });
         }
     };

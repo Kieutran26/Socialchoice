@@ -59,3 +59,48 @@ test('unmarked actor HTTP errors are relay failures, not provider rejections', a
  const response=await forwardGeminiRequest(new Request(url,options),async()=>Response.json({error:{}},{status:503}));
  assert.equal(response.status,503);assert.equal(response.headers.get('x-socialchoice-ai-response'),'provider');
 });
+
+test('relay provider work stops when the incoming request deadline aborts', {timeout:1000}, async () => {
+ const controller=new AbortController();
+ const pending=forwardGeminiRequest(new Request(url,{...options,signal:controller.signal}),async(_url,init)=>{
+  assert.equal(init.signal.aborted,false);
+  return new Promise((_resolve,reject)=>{
+   init.signal.addEventListener('abort',()=>reject(init.signal.reason),{once:true});
+   setTimeout(()=>controller.abort(new DOMException('private deadline','TimeoutError')),15);
+  });
+ });
+ const response=await pending;
+ assert.equal(response.status,504);
+ assert.equal(response.headers.get('x-socialchoice-ai-failure'),'AI_RELAY_TIMEOUT');
+ assert.ok(!(await response.text()).includes('private'));
+});
+
+test('relay enforces the shared absolute deadline even without platform abort propagation', {timeout:1000}, async () => {
+ let calls=0;
+ const response=await forwardGeminiRequest(new Request(url,{...options,headers:{...options.headers,'x-socialchoice-ai-deadline':String(Date.now()+80)}}),async(_url,init)=>{
+  calls++;
+  return new Promise((_resolve,reject)=>init.signal.addEventListener('abort',()=>reject(init.signal.reason),{once:true}));
+ });
+ assert.equal(response.status,504);assert.ok(calls<=1);
+});
+
+test('regional calls with the same signal preserve one private deadline and never forward it to Google', async () => {
+ const deadlines=[];
+ const signal=AbortSignal.timeout(45000);
+ const namespace={jurisdiction(){return {idFromName(){return 'id';},get(){return {fetch:async request=>{
+  deadlines.push(request.headers.get('x-socialchoice-ai-deadline'));
+  return forwardGeminiRequest(request,async(_url,init)=>{
+   assert.equal(init.headers['x-socialchoice-ai-deadline'],undefined);
+   return new Response('OK');
+  });
+ }};}};}};
+ const request=createRegionalAiFetch(namespace);
+ await request(url,{...options,signal});await request(url,{...options,signal});
+ assert.match(deadlines[0],/^\d+$/);assert.equal(deadlines[0],deadlines[1]);
+ let calls=0;
+ for(const value of [String(Date.now()-1000),'invalid']){
+  const response=await forwardGeminiRequest(new Request(url,{...options,headers:{...options.headers,'x-socialchoice-ai-deadline':value}}),async()=>{calls++;return new Response('Unexpected');});
+  assert.equal(response.status,value==='invalid'?400:504);
+ }
+ assert.equal(calls,0);
+});

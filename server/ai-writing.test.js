@@ -147,14 +147,15 @@ test('Gemini HTTP tests and generation retain binding, relay and provider diagno
  const store=createStore(':memory:');
  const brand=store.execute('Brand','create',[{name:'Diagnostic brand'}]);
  let mode='provider', calls=0;
+ const diagnostics=[];
  const namespace={jurisdiction(){
   if(mode==='binding')throw Error(settings.key);
   return {idFromName(){return 'id';},get(){return {async fetch(){calls++;
    if(mode==='relay')throw Error(settings.key);
-   return Response.json({error:{message:'API key not valid',private:settings.key}},{status:400,headers:{'x-socialchoice-ai-response':'provider'}});
+   return Response.json({error:{message:'API key not valid',status:'INVALID_ARGUMENT',private:settings.key}},{status:400,headers:{'x-socialchoice-ai-response':'provider'}});
   }};}};
  }};
- const handler=createHttpHandler({store,auth:{require(){}},metaSettings:{},aiKey:key,aiFetch:createRegionalAiFetch(namespace),allowedHosts:new Set(['127.0.0.1'])});
+ const handler=createHttpHandler({store,auth:{require(){}},metaSettings:{},aiKey:key,aiFetch:createRegionalAiFetch(namespace),allowedHosts:new Set(['127.0.0.1']),aiDiagnosticSink(event){diagnostics.push(event);throw Error('private diagnostic failure');}});
  const server=createServer(handler);
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
  t.after(()=>new Promise(resolve=>{server.close(()=>{store.close();resolve();});server.closeAllConnections();}));
@@ -171,6 +172,9 @@ test('Gemini HTTP tests and generation retain binding, relay and provider diagno
   assert.ok(!JSON.stringify(data).includes(settings.key));
   assert.equal(calls-before,stage==='binding'?0:1);
  }
+ assert.equal(diagnostics.length,6);
+ assert.ok(!JSON.stringify(diagnostics).includes(settings.key));
+ assert.deepEqual(diagnostics[2],{stage:'provider',code:'AI_PROVIDER_REJECTED',providerStatus:400,providerReason:'INVALID_ARGUMENT'});
 });
 
 test('provider-shaped exceptions cannot inject a status and leak private details', async t => {
@@ -185,4 +189,42 @@ test('valid JSON with an invalid provider shape is reported as a response error'
   await ai('save',settings);
   await assert.rejects(ai('test'),{status:502,stage:'provider',code:'AI_PROVIDER_INVALID_RESPONSE',providerStatus:200});
  }
+});
+
+test('provider status reasons are allowlisted and raw messages never become diagnostics', async t => {
+ for (const [reason,expected] of [['UNAVAILABLE','UNAVAILABLE'],['INTERNAL','INTERNAL'],[settings.key,undefined]]) {
+  const {ai}=fixture(t,async()=>Response.json({error:{status:reason,message:settings.key}},{status:503}));
+  await ai('save',{...settings,provider:'gemini'});
+  await assert.rejects(ai('test'),error=>error.providerStatus===503 && error.providerReason===expected && !error.message.includes(settings.key));
+ }
+});
+
+test('Gemini retries one explicit UNAVAILABLE rejection using the same request and deadline', async t => {
+ const calls=[];
+ const {ai}=fixture(t,async(url,options)=>{calls.push({url,options});
+  return calls.length===1?Response.json({error:{status:'UNAVAILABLE'}},{status:503}):Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'Recovered'}]}}]});
+ });
+ await ai('save',{...settings,provider:'gemini'});
+ assert.equal((await ai('test')).text,'Recovered');
+ assert.equal(calls.length,2);assert.equal(calls[0].url,calls[1].url);
+ assert.equal(calls[0].options.signal,calls[1].options.signal);
+ assert.equal(calls[0].options.body,calls[1].options.body);
+});
+
+test('Gemini 3.8 Flash uses supported low thinking and leaves room for thought tokens', async t => {
+ for(const model of ['gemini-3.8-flash','gemini-2.5-flash','test-model'])for(const operation of ['test','generate']){
+  const {ai,input}=fixture(t,async(_url,options)=>{
+   const config=JSON.parse(options.body).generationConfig;
+   assert.deepEqual(config,model==='gemini-3.8-flash'?{maxOutputTokens:2048,thinkingConfig:{thinkingLevel:'low'}}:{maxOutputTokens:operation==='test'?32:2048});
+   return Response.json({candidates:[{finishReason:'STOP',content:{parts:[{text:'Complete'}]}}]});
+  });
+  await ai('save',{...settings,provider:'gemini',model});
+  assert.equal((await ai(operation,input)).text,'Complete');
+ }
+});
+
+test('Gemini 429 quota wording that mentions billing does not imply payment is required', async t => {
+ const {ai}=fixture(t,async()=>Response.json({error:{code:429,status:'RESOURCE_EXHAUSTED',message:'You exceeded your current quota, please check your plan and billing details.'}},{status:429}));
+ await ai('save',{...settings,provider:'gemini',model:'gemini-3.8-flash'});
+ await assert.rejects(ai('test'),{message:'AI provider quota or rate limit reached.',providerStatus:429,providerReason:'RESOURCE_EXHAUSTED'});
 });

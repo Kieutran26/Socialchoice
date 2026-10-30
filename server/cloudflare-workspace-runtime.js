@@ -46,6 +46,6 @@ export function createCloudWorkspaceRuntime(ctx, env, customerId) {
     const publisher = createFacebookPublisher(store, metaSettings, { linkedinConfig: linkedinSettings, threadsConfig: threadsSettings, tiktokConfig: tiktokSettings, tiktokTokens, tiktokCreators, tiktokGraph, authorize, wake: async time => { const alarm = await ctx.storage.getAlarm(); if (!alarm || time < alarm) await ctx.storage.setAlarm(time); } });
     const allowedHosts = new Set([new URL(publicOrigin).hostname, new URL(backendOrigin).hostname]);
     const licenseAdmin = customerId ? undefined : createAdminWebLicenses(store, privateMap('issued-web-licenses'), env, authority);
-    const handler = createHttpHandler({ store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, allowedHosts, licenseAdmin, hosted: true, aiKey: env.SOCIALCHOICE_STORAGE_KEY, aiFetch: createRegionalAiFetch(env.AI_EGRESS) });
+    const handler = createHttpHandler({ store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, allowedHosts, licenseAdmin, hosted: true, aiKey: env.SOCIALCHOICE_STORAGE_KEY, aiFetch: createRegionalAiFetch(env.AI_EGRESS), aiDiagnosticSink: event => console.warn('AI_FAILURE', JSON.stringify(event)) });
     return { store, auth, publisher, handler, authorize };
 }

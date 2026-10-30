@@ -1,6 +1,7 @@
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
-import { AiError, aiError } from './ai-errors.js';
+import { AiError, aiError, safeProviderReason } from './ai-errors.js';
+import { fetchAiProvider } from './ai-provider-fetch.js';
 
 
 async function readProviderJson(response) {
@@ -22,8 +23,8 @@ async function readProviderJson(response) {
 }
 
 async function rejectProvider(response) {
-    let data;
-    try { data = await readProviderJson(response); } catch { data = {}; }
+    let data, invalidErrorResponse = false;
+    try { data = await readProviderJson(response); } catch { data = {}; invalidErrorResponse = true; }
     // Classify private provider details; never return raw messages, keys or prompts.
     const detail = JSON.stringify(data?.error || {}).slice(0, 262144);
     let message;
@@ -33,10 +34,12 @@ async function rejectProvider(response) {
         message = 'AI API key was blocked by the provider. Create a new key in your provider console.';
     else if (/location.*not supported|unsupported.*location|region.*not supported/i.test(detail))
         message = 'AI provider does not support the server region. Use a supported provider or deployment region.';
-    else if (/insufficient_quota|billing|credit|paid plan/i.test(detail) || response.status === 402)
+    else if (data?.error?.code === 'insufficient_quota' || response.status === 402)
         message = 'AI API billing or credits are required. Check billing in your provider console.';
     else if (response.status === 429)
         message = 'AI provider quota or rate limit reached.';
+    else if (/billing|credit|paid plan/i.test(detail))
+        message = 'AI API billing or credits are required. Check billing in your provider console.';
     else if (/model_not_found/i.test(detail) || response.status === 404)
         message = 'AI model was not found or is unavailable to this API account. Copy an available model ID from your provider console.';
     else if (response.status === 403)
@@ -46,7 +49,9 @@ async function rejectProvider(response) {
     else if (response.status === 400 || response.status === 422)
         message = 'AI provider rejected the request parameters. Check model compatibility and API account requirements.';
     else message = 'AI provider rejected the request. Check your key and model.';
-    throw aiError(message, 502, 'AI_PROVIDER_REJECTED', 'provider', response.status);
+    const error = aiError(message, 502, 'AI_PROVIDER_REJECTED', 'provider', response.status);
+    error.providerReason = invalidErrorResponse ? 'INVALID_ERROR_RESPONSE' : safeProviderReason(data?.error?.status);
+    throw error;
 }
 
 const tasks = { draft: 'Write a social caption from the brief.', rewrite: 'Rewrite the caption following the instructions.', shorten: 'Shorten the caption, preserving meaning.', ideas: 'Suggest five concrete content ideas.', tone: 'Change the tone following the instructions.', cta: 'Improve the caption and add a relevant call to action.', adapt: 'Adapt the caption for the specified platform.' };
@@ -94,11 +99,15 @@ export function createAiWriting(store, key, fetcher = fetch) {
         let providerStatus;
         try {
             const openai = config.provider === 'openai';
-            const response = await fetcher(openai ? 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
+            const lowThinking = config.model === 'gemini-3.8-flash';
+            // Gemini's output limit includes thought tokens; 32 can exhaust the test before an answer.
+            const generationConfig = { maxOutputTokens: operation === 'test' && !lowThinking ? 32 : 2048,
+                ...(lowThinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) };
+            const response = await fetchAiProvider(fetcher, openai ? 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
                 method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(45000),
                 headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}` } : { 'x-goog-api-key': config.key }) },
-                body: JSON.stringify(openai ? { model: config.model, store: false, messages: [{ role: 'user', content: prompt }], max_completion_tokens: operation === 'test' ? 32 : 2048 } : { contents: [{ parts: [{ text: prompt }] }], generationConfig: { maxOutputTokens: operation === 'test' ? 32 : 2048 } }),
-            });
+                body: JSON.stringify(openai ? { model: config.model, store: false, messages: [{ role: 'user', content: prompt }], max_completion_tokens: operation === 'test' ? 32 : 2048 } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
+            }, rejectProvider);
             providerStatus = response.status;
             if (response.status >= 300 && response.status < 400) throw aiError('AI provider redirect was blocked.', 502, 'AI_PROVIDER_REDIRECT', 'provider', providerStatus);
             if (!response.ok) await rejectProvider(response);
