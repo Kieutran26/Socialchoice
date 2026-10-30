@@ -169,6 +169,35 @@
     .scroll-slim {
         scrollbar-width: thin;
     }
+
+    /* PostChoice Brand overrides */
+    .bg-brand {
+        background-color: var(--brand-yellow) !important;
+    }
+    .bg-brand\/5 {
+        background-color: rgba(255, 214, 49, 0.08) !important;
+    }
+    .bg-brand\/10 {
+        background-color: rgba(255, 214, 49, 0.15) !important;
+    }
+    .bg-brand\/15 {
+        background-color: rgba(255, 214, 49, 0.22) !important;
+    }
+    .bg-brand\/20 {
+        background-color: rgba(255, 214, 49, 0.28) !important;
+    }
+    .text-brand-ink {
+        color: var(--brand-yellow-ink) !important;
+    }
+    .text-brand {
+        color: #8c7000 !important;
+    }
+    .border-brand {
+        border-color: var(--brand-yellow) !important;
+    }
+    .border-brand\/40 {
+        border-color: rgba(255, 214, 49, 0.45) !important;
+    }
 }
 
 /* Use the available composer width, including when the app sidebar is open. */
