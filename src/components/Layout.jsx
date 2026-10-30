@@ -1,13 +1,12 @@
 import { isDesktop } from '@/api/desktop/runtime';
 import DesktopPrototype from './desktop-prototype';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger } from '@/components/ui/select';
 import SidebarNavigation from './layout/sidebar-navigation';
 import PublishingNotifications from './layout/PublishingNotifications';
 import { useTranslation } from '@/lib/i18n';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { List, X, SquaresFour } from '@phosphor-icons/react';
+import { List, X, SquaresFour, CaretDown, Check } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
@@ -17,8 +16,22 @@ function Shell() {
     const { mode, user } = useAuth();
     const { brands, selectedBrandId, setSelectedBrandId, timezone, demoMode, loading, error, retry } = useWorkspace();
     const [open, setOpen] = useState(false);
+    const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
+    const brandDropdownRef = useRef(null);
 
     const selectedBrand = brands.find((b) => b.id === selectedBrandId);
+
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (brandDropdownRef.current && !brandDropdownRef.current.contains(event.target)) {
+                setOpenBrandDropdown(false);
+            }
+        }
+        if (openBrandDropdown) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [openBrandDropdown]);
 
     return (
         <div className="min-h-screen bg-white">
@@ -51,58 +64,114 @@ function Shell() {
                     </Button>
                 </div>
 
-                <div className="mb-6">
+                {/* Workspace / Brand Selector */}
+                <div className="relative mb-6" ref={brandDropdownRef}>
                     <p className="label-xs mb-2 font-medium tracking-wider text-muted-foreground">
                         {t("WORKSPACE")}
                     </p>
-                    <Select value={selectedBrandId || 'all'} onValueChange={setSelectedBrandId}>
-                        <SelectTrigger
-                            aria-label={t("Select brand")}
-                            className="h-10 w-full rounded-xl border border-border bg-card px-3 text-[13px] font-medium text-foreground shadow-2xs hover:border-border/80 focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                    <button
+                        type="button"
+                        aria-label={t("Select brand")}
+                        aria-haspopup="listbox"
+                        aria-expanded={openBrandDropdown}
+                        onClick={() => setOpenBrandDropdown((prev) => !prev)}
+                        className={`flex h-10 w-full items-center justify-between gap-1.5 rounded-xl border bg-card px-2.5 text-[12px] font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
+                            openBrandDropdown ? 'border-brand-dark ring-2 ring-primary/20' : 'border-border'
+                        }`}
+                    >
+                        <div className="flex items-center gap-2 min-w-0">
+                            {selectedBrand ? (
+                                <>
+                                    <span
+                                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold text-white shadow-2xs"
+                                        style={{ backgroundColor: selectedBrand.color || '#9ca3af' }}
+                                    >
+                                        {selectedBrand.name.charAt(0).toUpperCase()}
+                                    </span>
+                                    <span className="truncate">{selectedBrand.name}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
+                                        <SquaresFour size={12} weight="duotone" />
+                                    </span>
+                                    <span className="truncate">{t("All brands")}</span>
+                                </>
+                            )}
+                        </div>
+                        <CaretDown
+                            size={13}
+                            className={`shrink-0 text-muted-foreground transition-transform duration-200 ${
+                                openBrandDropdown ? 'rotate-180 text-foreground' : ''
+                            }`}
+                        />
+                    </button>
+
+                    {openBrandDropdown && (
+                        <div
+                            role="listbox"
+                            className="absolute left-0 top-full z-50 mt-1.5 w-full min-w-[210px] rounded-xl border border-border/80 bg-white p-1.5 shadow-lg animate-in fade-in-0 zoom-in-95 duration-100"
                         >
-                            <div className="flex items-center gap-2 truncate">
-                                {selectedBrand ? (
-                                    <>
-                                        <span
-                                            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold text-white shadow-2xs"
-                                            style={{ backgroundColor: selectedBrand.color || '#9ca3af' }}
-                                        >
-                                            {selectedBrand.name.charAt(0).toUpperCase()}
-                                        </span>
-                                        <span className="truncate">{selectedBrand.name}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                                            <SquaresFour size={12} weight="duotone" />
-                                        </span>
-                                        <span className="truncate">{t("All brands")}</span>
-                                    </>
-                                )}
-                            </div>
-                        </SelectTrigger>
-                        <SelectContent className="w-[var(--radix-select-trigger-width)] rounded-xl border border-border/80 bg-white p-1.5 shadow-lg">
-                            <SelectItem value="all">
+                            <button
+                                type="button"
+                                role="option"
+                                aria-selected={selectedBrandId === 'all'}
+                                onClick={() => {
+                                    setSelectedBrandId('all');
+                                    setOpenBrandDropdown(false);
+                                }}
+                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${
+                                    selectedBrandId === 'all'
+                                        ? 'bg-brand/15 text-brand-ink font-semibold'
+                                        : 'text-foreground hover:bg-muted/60'
+                                }`}
+                            >
                                 <div className="flex items-center gap-2">
                                     <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
                                         <SquaresFour size={11} weight="duotone" />
                                     </span>
                                     <span>{t("All brands")}</span>
                                 </div>
-                            </SelectItem>
-                            {brands.map((b) => (
-                                <SelectItem key={b.id} value={b.id}>
-                                    <div className="flex items-center gap-2">
-                                        <span
-                                            className="h-2.5 w-2.5 rounded-full shrink-0"
-                                            style={{ backgroundColor: b.color || '#9ca3af' }}
-                                        />
-                                        <span className="truncate">{b.name}</span>
-                                    </div>
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
+                                {selectedBrandId === 'all' && (
+                                    <Check size={13} weight="bold" className="text-brand-ink" />
+                                )}
+                            </button>
+
+                            {brands.length > 0 && <div className="my-1 border-t border-border/60" />}
+
+                            {brands.map((b) => {
+                                const isSelected = selectedBrandId === b.id;
+                                return (
+                                    <button
+                                        key={b.id}
+                                        type="button"
+                                        role="option"
+                                        aria-selected={isSelected}
+                                        onClick={() => {
+                                            setSelectedBrandId(b.id);
+                                            setOpenBrandDropdown(false);
+                                        }}
+                                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${
+                                            isSelected
+                                                ? 'bg-brand/15 text-brand-ink font-semibold'
+                                                : 'text-foreground hover:bg-muted/60'
+                                        }`}
+                                    >
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span
+                                                className="h-2.5 w-2.5 rounded-full shrink-0"
+                                                style={{ backgroundColor: b.color || '#9ca3af' }}
+                                            />
+                                            <span className="truncate">{b.name}</span>
+                                        </div>
+                                        {isSelected && (
+                                            <Check size={13} weight="bold" className="text-brand-ink shrink-0 ml-2" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {['admin-session', 'web-customer'].includes(mode) && (
