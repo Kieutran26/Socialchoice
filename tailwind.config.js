@@ -58,9 +58,9 @@ export default {
                 input: 'oklch(var(--input) / <alpha-value>)',
                 ring: 'oklch(var(--ring) / <alpha-value>)',
                 brand: {
-                    DEFAULT: '#79d94b',
-                    dark: '#568f38',
-                    ink: '#203d17',
+                    DEFAULT: '#ffd631',
+                    dark: '#d8b216',
+                    ink: '#2b2100',
                     neutral: '#eaeaea'
                 },
                 chart: {

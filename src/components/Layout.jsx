@@ -49,8 +49,8 @@ function Shell() {
                 }`}
             >
                 <div className="flex items-center justify-between mb-8">
-                    <NavLink to="/" className="font-heading text-xl">
-                        socialchoice<span className="text-brand">.</span>
+                    <NavLink to="/" className="flex items-center">
+                        <img src="/postchoice-logo.png" alt="PostChoice" className="h-8 w-auto max-h-8 max-w-[170px] object-contain" />
                     </NavLink>
                     <Button
                         size="icon"

@@ -19,10 +19,10 @@ Tài liệu này ghi lại hệ thống đang dùng. Các quy tắc cho UI mới
 ## 2. Visual identity / những thứ phải giữ
 
 - Premium minimalist SaaS: phẳng, gọn, nền trắng, trung tính, border mảnh, khoảng trắng có chủ đích.
-- Green dùng cho action chính (.btn-skew, primary buttons), selection và nhận diện; không phủ xanh dashboard hoặc mọi card.
+- Brand color: Yellow (`#ffd631`) dùng cho action chính (.btn-skew, primary buttons), selection và nhận diện; không phủ vàng dashboard hoặc mọi card.
 - Typography: Mona Sans cho heading; Space Grotesk cho nội dung.
 - Icon: `@phosphor-icons/react`. Không thêm Lucide, Font Awesome, emoji hoặc icon library khác vào UI.
-- Nút chính `.btn-skew`: nền xanh thương hiệu (`--brand-green` #79d94b), chữ xanh đậm (`--brand-green-ink` #203d17), viền `--brand-green-dark`, phẳng, radius 10px; không nghiêng, không bóng.
+- Nút chính `.btn-skew`: nền vàng thương hiệu (`--brand-yellow` / `--brand-green` #ffd631), chữ đậm (`--brand-yellow-ink` #2b2100), viền `--brand-yellow-dark` #d8b216, phẳng, radius 10px; không nghiêng, không bóng.
 - MUST NOT thêm gradient, glassmorphism, glow, decorative blobs, đổ bóng mềm hàng loạt, nền tím/xanh dương hoặc phong cách landing-page vào workspace.
 - MUST NOT thay bằng Inter/Poppins/Plus Jakarta Sans chỉ vì template hoặc package có sẵn. Font được tải trong HTML không tự động trở thành font được phép dùng.
 - Giữ light interface. `darkMode: ['class']` trong Tailwind không có nghĩa app đã có dark theme hoàn chỉnh; không tự thêm dark mode.
@@ -52,10 +52,10 @@ MUST dùng class semantic (`bg-card`, `text-foreground`, `border-border`) hoặc
 
 | CSS variable | Giá trị | Cách dùng |
 |---|---|---|
-| `--brand-green` | `#79d94b` | Identity/selection/primary action; Tailwind `brand` |
-| `--brand-green-hover` | `#86e357` | Brand button hover tint |
-| `--brand-green-dark` | `#568f38` | Border/active identity; `brand-dark` |
-| `--brand-green-ink` | `#203d17` | Chữ button và selection; `brand-ink` |
+| `--brand-yellow` / `--brand-green` | `#ffd631` | Identity/selection/primary action; Tailwind `brand` |
+| `--brand-yellow-hover` / `--brand-green-hover` | `#ffe059` | Brand button hover tint |
+| `--brand-yellow-dark` / `--brand-green-dark` | `#d8b216` | Border/active identity; `brand-dark` |
+| `--brand-yellow-ink` / `--brand-green-ink` | `#2b2100` | Chữ button và selection; `brand-ink` |
 | `--brand-gray` | `#eaeaea` | Neutral identity; `brand-neutral` |
 
 ### Semantic tokens — giá trị bên trong `oklch(...)`

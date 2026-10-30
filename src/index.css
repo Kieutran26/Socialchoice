@@ -23,8 +23,8 @@
         --surface: 0.985 0 0;
 
         /* brand action */
-        --primary: 0.7457 0.1639 137.671;
-        --primary-foreground: 0.3281 0.0721 137.671;
+        --primary: 0.8860 0.1705 93.726;
+        --primary-foreground: 0.2523 0.0516 92.146;
         --secondary: 0.97 0 0;
         --secondary-foreground: 0.269 0 0;
         --muted: 0.97 0 0;
@@ -35,7 +35,7 @@
         --destructive-foreground: 1 0 0;
         --border: 0.922 0 0;
         --input: 0.922 0 0;
-        --ring: 0.7457 0.1639 137.671;
+        --ring: 0.8860 0.1705 93.726;
 
         /* status tints (shared by badges, job rows, alerts) */
         --success-bg: 0.955 0.05 140;
@@ -48,7 +48,7 @@
         --info-fg: 0.45 0.06 250;
 
         /* data visualization */
-        --chart-1: 0.7457 0.1639 137.671;
+        --chart-1: 0.8860 0.1705 93.726;
         --chart-2: 0.62 0.09 90;
         --chart-3: 0.55 0.06 250;
         --chart-4: 0.66 0.05 200;
@@ -57,20 +57,24 @@
         /* sidebar */
         --sidebar-background: 0.985 0 0;
         --sidebar-foreground: 0.269 0 0;
-        --sidebar-primary: 0.7457 0.1639 137.671;
-        --sidebar-primary-foreground: 0.3281 0.0721 137.671;
+        --sidebar-primary: 0.8860 0.1705 93.726;
+        --sidebar-primary-foreground: 0.2523 0.0516 92.146;
         --sidebar-accent: 0.955 0 0;
         --sidebar-accent-foreground: 0.269 0 0;
         --sidebar-border: 0.922 0 0;
-        --sidebar-ring: 0.7457 0.1639 137.671;
+        --sidebar-ring: 0.8860 0.1705 93.726;
 
         --radius: 6px;
 
         /* identity */
-        --brand-green: #79d94b;
-        --brand-green-hover: #86e357;
-        --brand-green-dark: #568f38;
-        --brand-green-ink: #203d17;
+        --brand-yellow: #ffd631;
+        --brand-yellow-hover: #ffe059;
+        --brand-yellow-dark: #d8b216;
+        --brand-yellow-ink: #2b2100;
+        --brand-green: #ffd631;
+        --brand-green-hover: #ffe059;
+        --brand-green-dark: #d8b216;
+        --brand-green-ink: #2b2100;
         --brand-gray: #eaeaea;
 
         --font-heading: 'Mona Sans', 'Neue Haas Grotesk Display Pro', ui-sans-serif, system-ui, sans-serif;
@@ -107,7 +111,7 @@
     }
 
     ::selection {
-        background: #d8f5c6;
+        background: #fff0a6;
     }
 }
 
