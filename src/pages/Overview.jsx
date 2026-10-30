@@ -8,6 +8,7 @@ import {
     WarningCircle,
     PaperPlaneTilt,
     SquaresFour,
+    Plus,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -31,46 +32,58 @@ export default function Overview() {
         setLoading(true);
         setLoadError('');
         try {
-        const [statusAgg, pillarAgg, angleAgg, accounts, upcoming, logs, pillars, angles] = await Promise.all([
-            appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
-            appClient.entities.Post.aggregate({ query: scope, groupBy: 'pillar_id' }),
-            appClient.entities.Post.aggregate({ query: scope, groupBy: 'angle_id' }),
-            appClient.entities.SocialAccount.filter(scope, { limit: 200 }),
-            appClient.entities.Post.filter(
-                { ...scope, status: { $in: ['scheduled', 'processing'] } },
-                { sort: 'scheduled_at', limit: 6 },
-            ),
-            appClient.entities.PublishingLog.filter(scope, { sort: '-occurred_at', limit: 8 }),
-            appClient.entities.ContentPillar.filter(scope, { limit: 300 }),
-            appClient.entities.ContentAngle.filter(scope, { limit: 500 }),
-        ]);
+            const [statusAgg, pillarAgg, angleAgg, accounts, upcoming, logs, pillars, angles] = await Promise.all([
+                appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
+                appClient.entities.Post.aggregate({ query: scope, groupBy: 'pillar_id' }),
+                appClient.entities.Post.aggregate({ query: scope, groupBy: 'angle_id' }),
+                appClient.entities.SocialAccount.filter(scope, { limit: 200 }),
+                appClient.entities.Post.filter(
+                    { ...scope, status: { $in: ['scheduled', 'processing'] } },
+                    { sort: 'scheduled_at', limit: 6 }
+                ),
+                appClient.entities.PublishingLog.filter(scope, { sort: '-occurred_at', limit: 8 }),
+                appClient.entities.ContentPillar.filter(scope, { limit: 300 }),
+                appClient.entities.ContentAngle.filter(scope, { limit: 500 }),
+            ]);
 
-        const byStatus = {};
-        statusAgg.rows.forEach((row) => {
-            byStatus[row.status] = row.count;
-        });
-        const total = Object.values(byStatus).reduce((sum, value) => sum + value, 0);
+            const byStatus = {};
+            statusAgg.rows.forEach((row) => {
+                byStatus[row.status] = row.count;
+            });
+            const total = Object.values(byStatus).reduce((sum, value) => sum + value, 0);
 
-        setData({
-            byStatus,
-            total,
-            accounts: accounts.items,
-            upcoming: upcoming.items,
-            logs: logs.items,
-            pillarRows: pillarAgg.rows,
-            angleRows: angleAgg.rows,
-            pillarMap: Object.fromEntries(pillars.items.map((p) => [p.id, p])),
-            angleMap: Object.fromEntries(angles.items.map((a) => [a.id, a])),
-        });
-        } catch (error) { setLoadError(error.message); }
-        finally { setLoading(false); }
+            setData({
+                byStatus,
+                total,
+                accounts: accounts.items,
+                upcoming: upcoming.items,
+                logs: logs.items,
+                pillarRows: pillarAgg.rows,
+                angleRows: angleAgg.rows,
+                pillarMap: Object.fromEntries(pillars.items.map((p) => [p.id, p])),
+                angleMap: Object.fromEntries(angles.items.map((a) => [a.id, a])),
+            });
+        } catch (error) {
+            setLoadError(error.message);
+        } finally {
+            setLoading(false);
+        }
     }, [scope]);
 
     useEffect(() => {
         load();
     }, [load]);
 
-    if (loadError) return <div role="alert" className="panel p-5"><p className="mb-3">{t(loadError)}</p><button type="button" className="btn-skew" onClick={load}>{t('Retry')}</button></div>;
+    if (loadError) {
+        return (
+            <div role="alert" className="panel p-5">
+                <p className="mb-3">{t(loadError)}</p>
+                <button type="button" className="btn-skew" onClick={load}>
+                    {t('Retry')}
+                </button>
+            </div>
+        );
+    }
 
     const connected = data?.accounts.filter((a) => a.connection_status === 'connected').length || 0;
     const demoAccounts = data?.accounts.filter((a) => a.connection_status === 'demo').length || 0;
@@ -81,6 +94,11 @@ export default function Overview() {
             <PageHeader
                 title={t("Overview")}
                 description={t("Saved content, calendar plans and content distribution in this workspace.")}
+                actions={
+                    <Link to="/create" className="btn-skew">
+                        <Plus size={16} weight="duotone" /> {t("New post")}
+                    </Link>
+                }
             />
 
             {loading ? (
@@ -99,43 +117,58 @@ export default function Overview() {
                         <SquaresFour size={16} weight="duotone" />
                         {seeding ? t("Preparing sample data…") : t("Load sample workspace")}
                     </button>
-                    <Link to="/accounts" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Manage destination references")} </Link>
-                    <Link to="/create" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface"> {t("Create your first post")} </Link>
+                    <Link to="/accounts" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface">
+                        {t("Manage destination references")}
+                    </Link>
+                    <Link to="/create" className="inline-flex items-center justify-center rounded-lg border border-border px-4 py-2 text-[13px] hover:bg-surface">
+                        {t("Create your first post")}
+                    </Link>
                 </EmptyState>
             ) : (
-                <div className="space-y-5">
+                <div className="space-y-6">
+                    {/* StatCards KPI Grid */}
                     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard
                             label={t("Connected accounts")}
                             value={connected}
-                            hint={demoAccounts ? t("{value1} demo pages in this view", {value1: demoAccounts}) : t("Facebook Pages with a live connection")}
+                            hint={demoAccounts ? t("{value1} demo pages in this view", { value1: demoAccounts }) : t("Facebook Pages with a live connection")}
                             icon={PlugsConnected}
+                            iconBg="bg-brand/20 border-brand/40"
+                            iconColor="text-brand-ink"
                         />
                         <StatCard
                             label={t("Scheduled posts")}
                             value={data.byStatus.scheduled || 0}
-                            hint={t("{value1} currently processing", {value1: data.byStatus.processing || 0})}
+                            hint={t("{value1} currently processing", { value1: data.byStatus.processing || 0 })}
                             icon={CalendarDots}
+                            iconBg="bg-blue-50 border-blue-200"
+                            iconColor="text-blue-600"
                         />
                         <StatCard
                             label={t("Published posts")}
                             value={data.byStatus.published || 0}
                             hint={t("Confirmed by the destination platform")}
                             icon={CheckCircle}
+                            iconBg="bg-emerald-50 border-emerald-200"
+                            iconColor="text-emerald-600"
                         />
                         <StatCard
                             label={t("Failed posts")}
                             value={data.byStatus.failed || 0}
-                            hint={t("{value1} partially published", {value1: data.byStatus.partially_published || 0})}
+                            hint={t("{value1} partially published", { value1: data.byStatus.partially_published || 0 })}
                             icon={WarningCircle}
+                            iconBg="bg-rose-50 border-rose-200"
+                            iconColor="text-rose-600"
                         />
                     </div>
 
+                    {/* Schedule & Activity Grid */}
                     <div className="grid gap-5 xl:grid-cols-2">
                         <UpcomingSchedule posts={data.upcoming} brands={brands} />
                         <RecentActivity logs={data.logs} />
                     </div>
 
+                    {/* Content Distribution */}
                     <DistributionPanel
                         pillarRows={data.pillarRows}
                         angleRows={data.angleRows}
@@ -144,14 +177,26 @@ export default function Overview() {
                         total={data.total}
                     />
 
+                    {/* Drafts Banner Callout */}
                     {data.byStatus.draft ? (
-                        <div className="panel flex flex-wrap items-center justify-between gap-3 p-4">
-                            <div>
-                                <p className="text-[13px] font-medium">{data.byStatus.draft} {t("drafts waiting")}</p>
-                                <p className="label-xs mt-1">{t("Finish them off or schedule them for the coming weeks.")}</p>
+                        <div className="panel flex flex-wrap items-center justify-between gap-4 p-5 border-brand/40 bg-brand/5 shadow-2xs">
+                            <div className="flex items-center gap-3.5">
+                                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-brand/20 text-brand-ink border border-brand/40 shadow-2xs">
+                                    <PaperPlaneTilt size={22} weight="duotone" />
+                                </div>
+                                <div>
+                                    <p className="font-heading text-sm font-semibold text-foreground">
+                                        {data.byStatus.draft} {t("drafts waiting")}
+                                    </p>
+                                    <p className="label-xs mt-0.5 text-muted-foreground">
+                                        {t("Finish them off or schedule them for the coming weeks.")}
+                                    </p>
+                                </div>
                             </div>
                             <Link to="/posts?status=draft" className="btn-skew">
-                                <PaperPlaneTilt size={16} weight="duotone" /> {t("Review drafts")} </Link>
+                                <PaperPlaneTilt size={15} weight="bold" />
+                                {t("Review drafts")}
+                            </Link>
                         </div>
                     ) : null}
                 </div>
