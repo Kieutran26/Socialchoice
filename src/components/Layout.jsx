@@ -48,9 +48,13 @@ function Shell() {
                     open ? '' : '-translate-x-full'
                 }`}
             >
-                <div className="flex items-center justify-between mb-8">
-                    <NavLink to="/" className="flex items-center">
-                        <img src="/postchoice-logo.png" alt="PostChoice" className="h-8 w-auto max-h-8 max-w-[170px] object-contain" />
+                <div className="flex items-center justify-between mb-7">
+                    <NavLink to="/" className="flex items-center -ml-1.5">
+                        <img
+                            src="/postchoice-logo.png"
+                            alt="PostChoice"
+                            className="h-12 w-auto max-w-[195px] object-contain object-left"
+                        />
                     </NavLink>
                     <Button
                         size="icon"
