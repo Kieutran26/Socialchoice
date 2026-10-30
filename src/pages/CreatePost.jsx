@@ -12,6 +12,11 @@ import {
     Copy,
     WarningCircle,
     Info,
+    NotePencil,
+    ShareNetwork,
+    Images,
+    Target,
+    CalendarBlank,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -331,13 +336,20 @@ export default function CreatePost() {
             <div className="composer-shell"><div className="composer-columns grid gap-5">
                 <div className="min-w-0 space-y-5">
                     <section className="panel p-5">
-                        <h2 className="mb-4 text-[15px]">{t("Basics")}</h2>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground/5 text-foreground border border-border">
+                                    <NotePencil size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t("Basics")}</h2>
+                            </div>
+                        </div>
                         <div className="space-y-4">
-                            <div className="grid gap-4">
+                            <div className="grid gap-4 sm:grid-cols-2">
                                 <div>
                                     <Label htmlFor="post-brand" className="label-xs mb-1.5 block">{t("Brand")}</Label>
                                     <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
-                                        <SelectTrigger id="post-brand" className="rounded-lg">
+                                        <SelectTrigger id="post-brand" className="rounded-xl">
                                             <SelectValue placeholder={t("Select brand")} />
                                         </SelectTrigger>
                                         <SelectContent>
@@ -356,21 +368,25 @@ export default function CreatePost() {
                                         value={form.title}
                                         onChange={(event) => setForm({ ...form, title: event.target.value })}
                                         placeholder={t("Week 42 — product education")}
-                                        className="rounded-lg"
+                                        className="rounded-xl"
                                     />
                                 </div>
                             </div>
                             <div>
-                                <Label htmlFor="post-caption" className="label-xs mb-1.5 block">{t("Main caption")}</Label>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <Label htmlFor="post-caption" className="label-xs block">{t("Main caption")}</Label>
+                                    <span className="label-xs text-muted-foreground font-mono">
+                                        {form.caption.length} {t("characters")}
+                                    </span>
+                                </div>
                                 <Textarea
                                     id="post-caption"
                                     rows={5}
                                     value={form.caption}
                                     onChange={(event) => setForm({ ...form, caption: event.target.value })}
                                     placeholder={t("What should every destination say by default?")}
-                                    className="rounded-lg"
+                                    className="rounded-xl resize-none text-sm leading-relaxed"
                                 />
-                                <p className="label-xs mt-1">{form.caption.length} {t("characters")}</p>
                             </div>
                         </div>
                     </section>
@@ -378,7 +394,14 @@ export default function CreatePost() {
                     {<DesktopAiWriter key={`${form.brand_id}:${sourceId||'new'}`} form={form} disabled={saving||uploading} onApply={(origin,text)=>setForm(current=>applyAiSuggestion(current,origin,text))} onApplyPlatform={(origin,platform,previous,text)=>setForm(current=>applyAiPlatformSuggestion(current,origin,platform,previous,text))} />}
                     {!desktop && <>
                     <section className="panel p-5">
-                        <h2 className="mb-3 text-[15px]">{t("Destinations")}</h2>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20">
+                                    <ShareNetwork size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t("Destinations")}</h2>
+                            </div>
+                        </div>
                         <fieldset disabled={uploading || saving}>
                         <AccountPicker
                             accounts={brandAccounts}
@@ -404,7 +427,14 @@ export default function CreatePost() {
                     <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
 
                     <section className="panel p-5">
-                        <h2 className="mb-3 text-[15px]">{t("Shared media")}</h2>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                    <Images size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t("Shared media")}</h2>
+                            </div>
+                        </div>
                         <fieldset disabled={uploading || saving}>
                         <MediaUploader
                             assets={form.media}
@@ -418,9 +448,23 @@ export default function CreatePost() {
                     <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
                     </>}
 
-                    {desktop && <section className="panel p-5"><h2 className="mb-3 text-[15px]">{t('Shared media')}</h2><fieldset disabled={uploading || saving}><MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} /></fieldset></section>}
+                    {desktop && <section className="panel p-5"><div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
+                                    <Images size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t('Shared media')}</h2>
+                            </div>
+                        </div><fieldset disabled={uploading || saving}><MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} /></fieldset></section>}
                     <section className="panel p-5">
-                        <h2 className="mb-4 text-[15px]">{t("Content strategy")}</h2>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 border border-purple-500/20">
+                                    <Target size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t("Content strategy")}</h2>
+                            </div>
+                        </div>
                         <PillarAngleFields
                             pillars={brandPillars}
                             angles={brandAngles}
@@ -430,7 +474,14 @@ export default function CreatePost() {
                     </section>
 
                     <section className="panel p-5">
-                        <h2 className="mb-4 text-[15px]">{t("Schedule")}</h2>
+                        <div className="flex items-center justify-between gap-3 mb-4">
+                            <div className="flex items-center gap-2">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 border border-sky-500/20">
+                                    <CalendarBlank size={18} weight="bold" />
+                                </div>
+                                <h2 className="text-[15px] font-semibold text-foreground">{t("Schedule")}</h2>
+                            </div>
+                        </div>
                         <ScheduleFields value={form} onChange={(patch) => setForm({ ...form, ...patch })} />
                     </section>
 
@@ -452,35 +503,75 @@ export default function CreatePost() {
                     <DestinationChecks checks={checks} post={form} />
 
                     {warnings.length ? (
-                        <div className="panel p-4">
-                            <p className="mb-2 flex items-center gap-2 text-[12px] font-medium">
-                                <WarningCircle size={14} className="text-warnFg" /> {t(desktop ? 'Planning checks' : 'Before you publish')} </p>
-                            <ul className="space-y-2">
+                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-4 space-y-2">
+                            <p className="flex items-center gap-2 text-[13px] font-semibold text-amber-900">
+                                <WarningCircle size={16} weight="fill" className="text-amber-600" />
+                                {t(desktop ? 'Planning checks' : 'Before you publish')}
+                            </p>
+                            <ul className="space-y-1.5 pt-1">
                                 {warnings.map((warning) => (
-                                    <li key={warning} className="label-xs flex gap-2">
-                                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-warnFg" />
-                                        {warning}
+                                    <li key={warning} className="text-xs text-amber-800 flex items-start gap-2">
+                                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
+                                        <span>{warning}</span>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     ) : null}
 
-                    <div className="panel space-y-2 p-4">
-                        {!desktop && <button type="button" className="btn-skew w-full" disabled={saving || uploading || demoMode} onClick={() => submit('publish')}>
-                            <PaperPlaneTilt size={16} weight="duotone" /> {t("Publish now")} </button>}
-                        {desktop ? <button type="button" className="btn-skew w-full" disabled={saving || uploading} onClick={() => submit('schedule')}><CalendarDots size={16} weight="duotone" />{t('Save calendar plan')}</button> : <Button variant="outline" type="button" className="w-full" disabled={saving || uploading} onClick={() => submit('schedule')}>
-                            <CalendarDots size={15} weight="fill" /> {t("Schedule post")} </Button>}
+                    <div className="panel space-y-2.5 p-4 sm:p-5">
+                        {!desktop && (
+                            <button
+                                type="button"
+                                className="btn-skew w-full flex items-center justify-center gap-2"
+                                disabled={saving || uploading || demoMode}
+                                onClick={() => submit('publish')}
+                            >
+                                <PaperPlaneTilt size={16} weight="duotone" />
+                                <span>{t("Publish now")}</span>
+                            </button>
+                        )}
+                        {desktop ? (
+                            <button
+                                type="button"
+                                className="btn-skew w-full flex items-center justify-center gap-2"
+                                disabled={saving || uploading}
+                                onClick={() => submit('schedule')}
+                            >
+                                <CalendarDots size={16} weight="duotone" />
+                                <span>{t('Save calendar plan')}</span>
+                            </button>
+                        ) : (
+                            <Button
+                                variant="outline"
+                                type="button"
+                                className="w-full rounded-xl h-10 font-medium"
+                                disabled={saving || uploading}
+                                onClick={() => submit('schedule')}
+                            >
+                                <CalendarDots size={16} weight="fill" className="mr-2" />
+                                <span>{t("Schedule post")}</span>
+                            </Button>
+                        )}
                         <Button
                             type="button"
-                            variant="outline"
-                            className="w-full rounded-lg"
+                            variant="ghost"
+                            className="w-full rounded-xl h-10 border border-border/80 text-foreground hover:bg-muted font-medium"
                             disabled={saving || uploading}
                             onClick={() => submit('draft')}
                         >
-                            <FloppyDisk size={15} className="mr-1.5" /> {t("Save draft")} </Button>
-                        <p className="label-xs flex gap-2 pt-1">
-                            <Info size={13} className="mt-0.5 shrink-0" /> {t("Calendar plans use timezone")} {form.timezone}{t(desktop ? '. This is a local plan only. No automatic publishing.' : '. Automatic publishing starts at the confirmed time, even when this browser is closed.')} </p>
+                            <FloppyDisk size={16} className="mr-2" />
+                            <span>{t("Save draft")}</span>
+                        </Button>
+                        <div className="rounded-lg bg-muted/40 p-2.5 mt-2">
+                            <p className="label-xs flex items-start gap-2 text-muted-foreground leading-relaxed">
+                                <Info size={14} className="mt-0.5 shrink-0 text-foreground/60" />
+                                <span>
+                                    {t("Calendar plans use timezone")} <strong className="text-foreground">{form.timezone}</strong>
+                                    {t(desktop ? '. This is a local plan only. No automatic publishing.' : '. Automatic publishing starts at the confirmed time, even when this browser is closed.')}
+                                </span>
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div></div>
