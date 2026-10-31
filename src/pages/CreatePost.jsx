@@ -905,27 +905,30 @@ export default function CreatePost() {
                             </button>
                         )}
 
-                        <Button
-                            type="button"
-                            variant="outline"
-                            className="w-full h-10 rounded-xl border border-border bg-white text-foreground hover:bg-muted/50 text-xs font-semibold gap-2 justify-center transition-all cursor-pointer"
-                            disabled={saving || uploading}
-                            onClick={() => submit('schedule')}
-                        >
-                            <CalendarBlank size={16} weight="bold" />
-                            <span>{t(desktop ? 'Save calendar plan' : 'Schedule post')}</span>
-                        </Button>
+                        {/* Secondary Actions: Schedule & Save Draft side-by-side on 1 row */}
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-10 rounded-xl border border-border bg-white text-foreground hover:bg-muted/50 text-xs font-semibold gap-1.5 justify-center transition-all cursor-pointer px-2"
+                                disabled={saving || uploading}
+                                onClick={() => submit('schedule')}
+                            >
+                                <CalendarBlank size={15} weight="bold" className="shrink-0" />
+                                <span className="truncate">{t(desktop ? 'Save calendar plan' : 'Schedule post')}</span>
+                            </Button>
 
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            className="w-full h-9 rounded-xl text-xs font-medium text-muted-foreground hover:text-foreground gap-1.5 justify-center transition-all cursor-pointer"
-                            disabled={saving || uploading}
-                            onClick={() => submit('draft')}
-                        >
-                            <FloppyDisk size={15} />
-                            <span>{t('Save draft')}</span>
-                        </Button>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-10 rounded-xl border border-border bg-muted/30 text-foreground hover:bg-muted/60 text-xs font-medium gap-1.5 justify-center transition-all cursor-pointer px-2"
+                                disabled={saving || uploading}
+                                onClick={() => submit('draft')}
+                            >
+                                <FloppyDisk size={15} className="shrink-0" />
+                                <span className="truncate">{t('Save draft')}</span>
+                            </Button>
+                        </div>
 
                         <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t border-border/50 text-center">
                             {t('Timezone {timezone} · drafts are saved locally in this browser', {
