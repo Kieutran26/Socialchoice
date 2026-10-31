@@ -5,7 +5,6 @@ import {
     WarningCircle,
     CircleNotch,
     Prohibit,
-    Dot,
 } from '@phosphor-icons/react';
 import { POST_STATUS_LABEL } from '@/lib/constants';
 

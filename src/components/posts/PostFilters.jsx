@@ -1,6 +1,6 @@
 import { isDesktop } from '@/api/desktop/runtime';
 import { useTranslation } from '@/lib/i18n';
-import { POST_STATUS_LABEL, PLATFORMS } from '@/lib/constants';
+import { PLATFORMS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
 import {
     MagnifyingGlass,
@@ -8,7 +8,6 @@ import {
     ArrowCounterClockwise,
     ListBullets,
     SquaresFour,
-    Funnel,
 } from '@phosphor-icons/react';
 
 export default function PostFilters({

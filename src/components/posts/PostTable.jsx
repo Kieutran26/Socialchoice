@@ -1,6 +1,5 @@
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
-import { POST_STATUS_LABEL } from '@/lib/constants';
 import { formatDateTime } from '@/lib/format';
 import PlatformBadge from '../common/PlatformBadge';
 import StatusBadge from '../common/StatusBadge';

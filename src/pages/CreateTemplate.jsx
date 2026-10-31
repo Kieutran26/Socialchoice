@@ -3,17 +3,13 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft,
     FloppyDisk,
-    CopySimple,
     NotePencil,
     Images,
     ShareNetwork,
     Target,
-    Trash,
-    WarningCircle,
     Info,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
-import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';

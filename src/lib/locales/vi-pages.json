@@ -28,12 +28,9 @@
   "Failed / Cancelled": "Thất bại / Đã hủy",
   "Filter by platform": "Lọc theo nền tảng",
   "Filter by destination": "Lọc theo đích đăng",
-  "Filter by pillar": "Lọc theo trụ cột",
   "Filter by angle": "Lọc theo góc khai thác",
   "All angles": "Tất cả góc khai thác",
-  "All pillars": "Tất cả trụ cột",
   "All destinations": "Tất cả đích đăng",
-  "All platforms": "Tất cả nền tảng",
   "Only drafts can be deleted in bulk": "Chỉ có thể xóa hàng loạt bài nháp",
   "Only scheduled posts can be cancelled": "Chỉ có thể hủy bài đã lên lịch",
   "All Posts": "Tất cả bài viết",
@@ -340,7 +337,6 @@
   "Search destinations…": "Tìm theo tên, @username hoặc ID…",
   "No destinations match filter": "Không tìm thấy đích đăng phù hợp",
   "Try clearing the search or filter to see all destinations.": "Thử xóa từ khóa tìm kiếm hoặc bộ lọc để xem tất cả.",
-  "Grid view": "Dạng ô",
   "List view": "Dạng danh sách",
   "Clear filters": "Xóa bộ lọc"
 }

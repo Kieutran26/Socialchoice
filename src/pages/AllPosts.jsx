@@ -190,7 +190,7 @@ export default function AllPosts() {
         appClient.entities.Post.get(openPostId)
             .then(setOpenPost)
             .catch(() => setOpenPost(null));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [openPostId]);
 
     const loadMore = async () => {
