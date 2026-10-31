@@ -1,13 +1,36 @@
 import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
-import { UploadSimple, ImageSquare, ArrowUp, ArrowDown, DotsSixVertical } from '@phosphor-icons/react';
+import {
+    UploadSimple,
+    ImageSquare,
+    ArrowUp,
+    ArrowDown,
+    DotsSixVertical,
+    Check,
+    CircleNotch,
+    VideoCamera,
+} from '@phosphor-icons/react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
 import { isDesktop } from '@/api/desktop/runtime';
 
 const ignoreBusy = (_busy) => {};
 
-export default function MediaUploader({ assets, onChange, brandId, demoMode, onBusyChange = ignoreBusy, allowLibrary = true }) {
+export default function MediaUploader({
+    assets,
+    onChange,
+    brandId,
+    demoMode,
+    onBusyChange = ignoreBusy,
+    allowLibrary = true,
+}) {
     const { t } = useTranslation();
     const input = useRef(null);
     const root = useRef(null);
@@ -15,91 +38,477 @@ export default function MediaUploader({ assets, onChange, brandId, demoMode, onB
     const dragging = useRef(null);
     const [draggedId, setDraggedId] = useState(null);
     const [targetId, setTargetId] = useState(null);
-    const [library, setLibrary] = useState([]), [showLibrary, setShowLibrary] = useState(false);
+    const [library, setLibrary] = useState([]);
+    const [showLibrary, setShowLibrary] = useState(false);
     const [loadingLibrary, setLoadingLibrary] = useState(false);
-    const [busy, setBusy] = useState(false), [progress, setProgress] = useState(0), [error, setError] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [progress, setProgress] = useState(0);
+    const [error, setError] = useState('');
+
     async function importLocal() {
-        const version=libraryRequest.current;
-        setBusy(true);onBusyChange(true);setError('');
+        const version = libraryRequest.current;
+        setBusy(true);
+        onBusyChange(true);
+        setError('');
         try {
-            const result=await appClient.media.importLocal(brandId);
-            if(version!==libraryRequest.current)return;
-            if(result.errors.length)setError(result.errors.join('\n'));
-            if(result.cancelled)return;
-            const added=[...assets,...result.items];
-            if(allowLibrary && (added.length>10 || added.some(asset=>asset.file_type==='video') && added.length!==1)) {
-                setError('Files were saved to the library. Choose one video or up to 10 images for this post.');return;
+            const result = await appClient.media.importLocal(brandId);
+            if (version !== libraryRequest.current) return;
+            if (result.errors.length) setError(result.errors.join('\n'));
+            if (result.cancelled) return;
+            const added = [...assets, ...result.items];
+            if (
+                allowLibrary &&
+                (added.length > 10 ||
+                    (added.some((asset) => asset.file_type === 'video') && added.length !== 1))
+            ) {
+                setError(
+                    'Files were saved to the library. Choose one video or up to 10 images for this post.'
+                );
+                return;
             }
-            onChange(allowLibrary?added:[]);
-        } catch(error) {if(version===libraryRequest.current)setError(error.message);}
-        finally {if(version===libraryRequest.current){setBusy(false);onBusyChange(false);}}
+            onChange(allowLibrary ? added : []);
+        } catch (err) {
+            if (version === libraryRequest.current) setError(err.message);
+        } finally {
+            if (version === libraryRequest.current) {
+                setBusy(false);
+                onBusyChange(false);
+            }
+        }
     }
+
     useEffect(() => {
         libraryRequest.current++;
-        setShowLibrary(false); setLibrary([]); setBusy(false); setLoadingLibrary(false); onBusyChange(false);
-        return () => { libraryRequest.current++; };
+        setShowLibrary(false);
+        setLibrary([]);
+        setBusy(false);
+        setLoadingLibrary(false);
+        onBusyChange(false);
+        return () => {
+            libraryRequest.current++;
+        };
     }, [brandId, onBusyChange]);
+
     async function upload(event) {
         const files = Array.from(event.target.files || []);
         event.target.value = '';
         if (!brandId || demoMode || !files.length) return;
-        if (assets.length + files.length > 10) { setError('Choose up to 10 different images'); return; }
-        setBusy(true); onBusyChange(true); setError('');
+        if (assets.length + files.length > 10) {
+            setError('Choose up to 10 different images');
+            return;
+        }
+        setBusy(true);
+        onBusyChange(true);
+        setError('');
         const added = [...assets];
-        const video = files.some(file => file.type === 'video/mp4' || /\.mp4$/i.test(file.name));
-        if ((video && (files.length !== 1 || assets.length)) || (!video && assets.some(asset => asset.file_type === 'video'))) { setError('Choose one video or up to 10 images, not both'); setBusy(false); onBusyChange(false); return; }
+        const video = files.some((file) => file.type === 'video/mp4' || /\.mp4$/i.test(file.name));
+        if (
+            (video && (files.length !== 1 || assets.length)) ||
+            (!video && assets.some((asset) => asset.file_type === 'video'))
+        ) {
+            setError('Choose one video or up to 10 images, not both');
+            setBusy(false);
+            onBusyChange(false);
+            return;
+        }
         try {
             for (const file of files) {
                 if (file.type === 'video/mp4' || /\.mp4$/i.test(file.name)) {
-                    if (file.size > 100*1000*1000) throw new Error('Choose an MP4 video up to 100 MB');
-                    setProgress(0); added.push(await appClient.media.uploadVideo(file,brandId,setProgress)); onChange([...added]); continue;
+                    if (file.size > 100 * 1000 * 1000)
+                        throw new Error('Choose an MP4 video up to 100 MB');
+                    setProgress(0);
+                    added.push(await appClient.media.uploadVideo(file, brandId, setProgress));
+                    onChange([...added]);
+                    continue;
                 }
-                if (!['image/jpeg','image/png','image/webp'].includes(file.type) || file.size > 3 * 1024 * 1024) throw new Error('Choose JPEG, PNG or WebP images up to 3 MiB each');
-                const bitmap = await createImageBitmap(file).catch(() => { throw new Error('Choose a valid image'); });
-                const pixels = bitmap.width * bitmap.height; bitmap.close();
-                if (pixels > 40000000) throw new Error('Choose a valid JPEG, PNG or still WebP image under 40 megapixels');
+                if (
+                    !['image/jpeg', 'image/png', 'image/webp'].includes(file.type) ||
+                    file.size > 3 * 1024 * 1024
+                )
+                    throw new Error('Choose JPEG, PNG or WebP images up to 3 MiB each');
+                const bitmap = await createImageBitmap(file).catch(() => {
+                    throw new Error('Choose a valid image');
+                });
+                const pixels = bitmap.width * bitmap.height;
+                bitmap.close();
+                if (pixels > 40000000)
+                    throw new Error(
+                        'Choose a valid JPEG, PNG or still WebP image under 40 megapixels'
+                    );
                 setProgress(0);
                 added.push(await appClient.media.upload(file, brandId, setProgress));
                 onChange([...added]);
             }
-        } catch (e) { setError(e.message); }
-        finally { setBusy(false); onBusyChange(false); }
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+            onBusyChange(false);
+        }
     }
+
     async function chooseLibrary() {
-        if (showLibrary) { setShowLibrary(false); return; }
+        setShowLibrary(true);
         const request = ++libraryRequest.current;
-        setError(''); setBusy(true); setLoadingLibrary(true); onBusyChange(true);
+        setError('');
+        setBusy(true);
+        setLoadingLibrary(true);
+        onBusyChange(true);
         try {
-            const page = await appClient.entities.MediaAsset.filter({ brand_id: brandId, is_demo: false }, { sort: '-created_date', limit: 100 });
+            const page = await appClient.entities.MediaAsset.filter(
+                { brand_id: brandId, is_demo: false },
+                { sort: '-created_date', limit: 100 }
+            );
             if (request !== libraryRequest.current) return;
-            setLibrary(page.items.filter(image => image.storage_id && image.brand_id === brandId)); setShowLibrary(true);
-        } catch (e) { if (request === libraryRequest.current) setError(e.message); }
-        finally { if (request === libraryRequest.current) { setBusy(false); setLoadingLibrary(false); onBusyChange(false); } }
+            setLibrary(page.items.filter((image) => image.storage_id && image.brand_id === brandId));
+        } catch (e) {
+            if (request === libraryRequest.current) setError(e.message);
+        } finally {
+            if (request === libraryRequest.current) {
+                setBusy(false);
+                setLoadingLibrary(false);
+                onBusyChange(false);
+            }
+        }
     }
+
     function reorder(sourceId, destinationId) {
         if (busy || !sourceId || sourceId === destinationId) return;
-        const from = assets.findIndex(asset => asset.id === sourceId), to = assets.findIndex(asset => asset.id === destinationId);
+        const from = assets.findIndex((asset) => asset.id === sourceId);
+        const to = assets.findIndex((asset) => asset.id === destinationId);
         if (from < 0 || to < 0) return;
-        const next = [...assets]; const [asset] = next.splice(from, 1); next.splice(to, 0, asset); onChange(next);
+        const next = [...assets];
+        const [asset] = next.splice(from, 1);
+        next.splice(to, 0, asset);
+        onChange(next);
     }
-    function finishDrag() { dragging.current = null; setDraggedId(null); setTargetId(null); }
-    function pointerTarget(event) { const target = document.elementFromPoint(event.clientX, event.clientY)?.closest('[data-sortable-media]'); return target && root.current?.contains(target) ? target.getAttribute('data-sortable-media') : null; }
-    function move(index, offset) { const next = [...assets]; [next[index], next[index+offset]] = [next[index+offset], next[index]]; onChange(next); }
-    return <div ref={root}>
-        <p className="label-xs mb-3">{t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 100 MB.')}</p>
-        <input ref={input} aria-label={t('Upload media')} type="file" accept="image/jpeg,image/png,image/webp,video/mp4" multiple className="hidden" disabled={busy || !brandId || demoMode} onChange={upload} />
-        <div className="flex flex-wrap gap-3">{allowLibrary ? <Button variant="outline" type="button" disabled={busy || !brandId || demoMode} onClick={() => isDesktop() ? importLocal() : input.current.click()}><UploadSimple size={16} weight="duotone" />{t(isDesktop() ? 'Import media' : 'Upload media')}</Button> : <button type="button" className="btn-skew" disabled={busy || !brandId || demoMode} onClick={() => isDesktop() ? importLocal() : input.current.click()}><UploadSimple size={16} weight="duotone" />{t(isDesktop() ? 'Import media' : 'Upload media')}</button>}{allowLibrary && <Button variant="ghost" type="button" className="h-auto border rounded-lg px-3 text-xs" disabled={busy || !brandId || demoMode} onClick={chooseLibrary}><ImageSquare className="inline mr-1" size={15} />{t('Choose from library')}</Button>}</div>
-        {busy && <p role="status" className="label-xs mt-3">{t(loadingLibrary ? 'Loading…' : isDesktop() ? 'Importing media…' : 'Uploading media')}{!loadingLibrary && !isDesktop() && <> · {progress}%</>}</p>}
-        {error && <p role="alert" className="text-dangerFg text-sm mt-3">{t(error)}</p>}
-        {showLibrary && <div className="grid grid-cols-3 gap-2 mt-3">{library.length ? library.map(image => <Button variant="ghost" type="button" key={image.id} disabled={assets.some(asset => asset.id === image.id) || assets.length >= 10 || busy || (image.file_type === 'video' ? assets.length > 0 : assets.some(asset => asset.file_type === 'video'))} className="h-auto block whitespace-normal border rounded-lg p-1" onClick={() => onChange([...assets, image])}>{image.file_type === 'video' ? <video src={image.file_url} className="h-20 w-full object-contain" preload="metadata" muted /> : <img src={image.file_url} alt={image.name} className="h-20 w-full object-contain" />}<span className="label-xs block truncate">{image.name}</span></Button>) : <p className="label-xs">{t('No stored media for this brand.')}</p>}</div>}
-        {assets.length > 1 && <p className="label-xs mt-3">{t("Drag images to change their order.")}</p>}
-        <div className="grid gap-3 sm:grid-cols-2 mt-3">{assets.map((asset,index) => <div key={asset.id} data-sortable-media={asset.id} draggable={!busy && asset.file_type !== 'video' && assets.length > 1}
-            onDragStart={event => { dragging.current = asset.id; setDraggedId(asset.id); event.dataTransfer.effectAllowed = 'move'; event.dataTransfer.setData('text/plain', asset.id); }}
-            onDragOver={event => { if (!busy && dragging.current) { event.preventDefault(); event.dataTransfer.dropEffect = 'move'; setTargetId(asset.id); } }}
-            onDrop={event => { event.preventDefault(); reorder(dragging.current, asset.id); finishDrag(); }} onDragEnd={finishDrag}
-            className={'border rounded-lg p-2 ' + (draggedId === asset.id ? 'opacity-50 ' : '') + (targetId === asset.id && draggedId !== asset.id ? 'ring-2 ring-ring ' : '') + (assets.length > 1 && asset.file_type !== 'video' ? 'cursor-grab active:cursor-grabbing' : '')}>{asset.file_type === 'video' ? <video src={asset.file_url} controls className="max-h-64 w-full" preload="metadata" /> : <img draggable={false} src={asset.file_url} alt={asset.name} className="h-28 w-full object-contain" />}<p className="label-xs truncate mt-1">{index+1}. {asset.name}</p><div className="flex flex-wrap items-center gap-2 mt-2">{assets.length > 1 && asset.file_type !== 'video' && <Button size="icon" variant="ghost" type="button" disabled={busy} aria-label={t('Drag image to reorder')} title={t('Drag image to reorder')} className="h-auto touch-none min-h-11 min-w-11 flex items-center justify-center cursor-grab active:cursor-grabbing rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            onPointerDown={event => { if (busy || event.button !== 0) return; event.preventDefault(); dragging.current = asset.id; setDraggedId(asset.id); event.currentTarget.setPointerCapture(event.pointerId); }}
-            onPointerMove={event => { if (dragging.current) setTargetId(pointerTarget(event)); }}
-            onPointerUp={event => { reorder(dragging.current, pointerTarget(event)); finishDrag(); }} onPointerCancel={finishDrag} onLostPointerCapture={finishDrag} onDragStart={event => event.preventDefault()}><DotsSixVertical size={18} /></Button>}<Button size="icon" variant="ghost" type="button" aria-label={t('Move image earlier')} disabled={busy || index === 0} onClick={() => move(index,-1)}><ArrowUp size={14} /></Button><Button size="icon" variant="ghost" type="button" aria-label={t('Move image later')} disabled={busy || index === assets.length-1} onClick={() => move(index,1)}><ArrowDown size={14} /></Button><Button variant="ghost" type="button" disabled={busy} onClick={() => onChange(assets.filter(image => image.id !== asset.id))} className="h-auto p-0 text-dangerFg text-xs ml-auto whitespace-nowrap">{t('Remove')}</Button></div></div>)}</div>
-    </div>;
+
+    function finishDrag() {
+        dragging.current = null;
+        setDraggedId(null);
+        setTargetId(null);
+    }
+
+    function pointerTarget(event) {
+        const target = document
+            .elementFromPoint(event.clientX, event.clientY)
+            ?.closest('[data-sortable-media]');
+        return target && root.current?.contains(target)
+            ? target.getAttribute('data-sortable-media')
+            : null;
+    }
+
+    function move(index, offset) {
+        const next = [...assets];
+        [next[index], next[index + offset]] = [next[index + offset], next[index]];
+        onChange(next);
+    }
+
+    return (
+        <div ref={root} className="space-y-3">
+            <p className="label-xs text-muted-foreground">
+                {t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 100 MB.')}
+            </p>
+            <input
+                ref={input}
+                aria-label={t('Upload media')}
+                type="file"
+                accept="image/jpeg,image/png,image/webp,video/mp4"
+                multiple
+                className="hidden"
+                disabled={busy || !brandId || demoMode}
+                onChange={upload}
+            />
+
+            <div className="flex flex-wrap gap-2.5">
+                <Button
+                    variant="outline"
+                    type="button"
+                    className="rounded-xl font-medium"
+                    disabled={busy || !brandId || demoMode}
+                    onClick={() => (isDesktop() ? importLocal() : input.current.click())}
+                >
+                    <UploadSimple size={16} weight="duotone" className="mr-1.5" />
+                    {t(isDesktop() ? 'Import media' : 'Upload media')}
+                </Button>
+
+                {allowLibrary && (
+                    <Button
+                        variant="outline"
+                        type="button"
+                        className="rounded-xl font-medium"
+                        disabled={busy || !brandId || demoMode}
+                        onClick={chooseLibrary}
+                    >
+                        <ImageSquare className="mr-1.5" size={16} />
+                        {t('Choose from library')}
+                    </Button>
+                )}
+            </div>
+
+            {busy && !showLibrary && (
+                <p role="status" className="label-xs flex items-center gap-2">
+                    <CircleNotch size={14} className="animate-spin" />
+                    <span>
+                        {t(loadingLibrary ? 'Loading…' : isDesktop() ? 'Importing media…' : 'Uploading media')}
+                        {!loadingLibrary && !isDesktop() && <> · {progress}%</>}
+                    </span>
+                </p>
+            )}
+
+            {error && !showLibrary && (
+                <p role="alert" className="text-dangerFg text-xs">
+                    {t(error)}
+                </p>
+            )}
+
+            {/* Attached media list */}
+            {assets.length > 0 && (
+                <div className="pt-2">
+                    {assets.length > 1 && (
+                        <p className="label-xs mb-2 text-muted-foreground">
+                            {t('Drag images to change their order.')}
+                        </p>
+                    )}
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        {assets.map((asset, index) => (
+                            <div
+                                key={asset.id}
+                                data-sortable-media={asset.id}
+                                draggable={!busy && asset.file_type !== 'video' && assets.length > 1}
+                                onDragStart={(event) => {
+                                    dragging.current = asset.id;
+                                    setDraggedId(asset.id);
+                                    event.dataTransfer.effectAllowed = 'move';
+                                    event.dataTransfer.setData('text/plain', asset.id);
+                                }}
+                                onDragOver={(event) => {
+                                    if (!busy && dragging.current) {
+                                        event.preventDefault();
+                                        event.dataTransfer.dropEffect = 'move';
+                                        setTargetId(asset.id);
+                                    }
+                                }}
+                                onDrop={(event) => {
+                                    event.preventDefault();
+                                    reorder(dragging.current, asset.id);
+                                    finishDrag();
+                                }}
+                                onDragEnd={finishDrag}
+                                className={
+                                    'border border-border rounded-xl p-2.5 bg-card transition-all ' +
+                                    (draggedId === asset.id ? 'opacity-50 ' : '') +
+                                    (targetId === asset.id && draggedId !== asset.id
+                                        ? 'ring-2 ring-primary '
+                                        : '') +
+                                    (assets.length > 1 && asset.file_type !== 'video'
+                                        ? 'cursor-grab active:cursor-grabbing'
+                                        : '')
+                                }
+                            >
+                                {asset.file_type === 'video' ? (
+                                    <video
+                                        src={asset.file_url}
+                                        controls
+                                        className="max-h-56 w-full rounded-lg bg-muted object-contain"
+                                        preload="metadata"
+                                    />
+                                ) : (
+                                    <img
+                                        draggable={false}
+                                        src={asset.file_url}
+                                        alt={asset.name}
+                                        className="h-28 w-full rounded-lg bg-muted object-contain"
+                                    />
+                                )}
+                                <p className="text-xs font-medium text-foreground truncate mt-2">
+                                    {index + 1}. {asset.name}
+                                </p>
+                                <div className="flex flex-wrap items-center gap-1.5 mt-2 pt-2 border-t border-border/50">
+                                    {assets.length > 1 && asset.file_type !== 'video' && (
+                                        <Button
+                                            size="icon"
+                                            variant="ghost"
+                                            type="button"
+                                            disabled={busy}
+                                            aria-label={t('Drag image to reorder')}
+                                            title={t('Drag image to reorder')}
+                                            className="h-7 w-7 text-muted-foreground hover:text-foreground touch-none cursor-grab active:cursor-grabbing rounded-md"
+                                            onPointerDown={(event) => {
+                                                if (busy || event.button !== 0) return;
+                                                event.preventDefault();
+                                                dragging.current = asset.id;
+                                                setDraggedId(asset.id);
+                                                event.currentTarget.setPointerCapture(event.pointerId);
+                                            }}
+                                            onPointerMove={(event) => {
+                                                if (dragging.current) setTargetId(pointerTarget(event));
+                                            }}
+                                            onPointerUp={(event) => {
+                                                reorder(dragging.current, pointerTarget(event));
+                                                finishDrag();
+                                            }}
+                                            onPointerCancel={finishDrag}
+                                            onLostPointerCapture={finishDrag}
+                                            onDragStart={(event) => event.preventDefault()}
+                                        >
+                                            <DotsSixVertical size={16} />
+                                        </Button>
+                                    )}
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        type="button"
+                                        aria-label={t('Move image earlier')}
+                                        disabled={busy || index === 0}
+                                        onClick={() => move(index, -1)}
+                                        className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-md"
+                                    >
+                                        <ArrowUp size={13} />
+                                    </Button>
+                                    <Button
+                                        size="icon"
+                                        variant="ghost"
+                                        type="button"
+                                        aria-label={t('Move image later')}
+                                        disabled={busy || index === assets.length - 1}
+                                        onClick={() => move(index, 1)}
+                                        className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-md"
+                                    >
+                                        <ArrowDown size={13} />
+                                    </Button>
+                                    <Button
+                                        variant="ghost"
+                                        type="button"
+                                        disabled={busy}
+                                        onClick={() =>
+                                            onChange(assets.filter((image) => image.id !== asset.id))
+                                        }
+                                        className="h-7 px-2 text-dangerFg text-xs ml-auto hover:bg-red-50 hover:text-red-700 rounded-md"
+                                    >
+                                        {t('Remove')}
+                                    </Button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Popup Dialog chọn từ thư viện */}
+            <Dialog open={showLibrary} onOpenChange={setShowLibrary}>
+                <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6">
+                    <DialogHeader>
+                        <DialogTitle className="text-base font-semibold flex items-center gap-2">
+                            <ImageSquare size={20} className="text-foreground" />
+                            {t('Choose from library')}
+                        </DialogTitle>
+                        <DialogDescription className="text-xs text-muted-foreground">
+                            {t('Select stored media for this brand to add to your post.')}
+                        </DialogDescription>
+                    </DialogHeader>
+
+                    <div className="flex-1 overflow-y-auto min-h-[240px] max-h-[55vh] pr-1">
+                        {loadingLibrary ? (
+                            <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground">
+                                <CircleNotch size={24} className="animate-spin text-foreground" />
+                                <span className="text-xs">{t('Loading…')}</span>
+                            </div>
+                        ) : !library.length ? (
+                            <div className="flex flex-col items-center justify-center h-48 text-center border border-dashed border-border rounded-xl p-6">
+                                <ImageSquare size={36} className="text-muted-foreground/40 mb-2" />
+                                <p className="text-sm font-medium text-foreground">
+                                    {t('No stored media for this brand.')}
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                                {library.map((image) => {
+                                    const isSelected = assets.some((asset) => asset.id === image.id);
+                                    const isVideo = image.file_type === 'video';
+                                    const hasVideo = assets.some((asset) => asset.file_type === 'video');
+                                    const isDisabled =
+                                        !isSelected &&
+                                        (assets.length >= 10 ||
+                                            busy ||
+                                            (isVideo ? assets.length > 0 : hasVideo));
+
+                                    return (
+                                        <div
+                                            key={image.id}
+                                            onClick={() => {
+                                                if (isDisabled) return;
+                                                if (isSelected) {
+                                                    onChange(assets.filter((a) => a.id !== image.id));
+                                                } else {
+                                                    onChange([...assets, image]);
+                                                }
+                                            }}
+                                            className={`group relative rounded-xl border p-2 cursor-pointer transition-all select-none flex flex-col ${
+                                                isSelected
+                                                    ? 'border-foreground bg-muted/40 ring-1 ring-foreground/20 shadow-xs'
+                                                    : isDisabled
+                                                    ? 'opacity-40 cursor-not-allowed border-border bg-muted/20'
+                                                    : 'border-border hover:border-border-hover hover:bg-card/70 bg-card'
+                                            }`}
+                                        >
+                                            <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
+                                                {isVideo ? (
+                                                    <>
+                                                        <video
+                                                            src={image.file_url}
+                                                            className="h-full w-full object-cover"
+                                                            preload="metadata"
+                                                            muted
+                                                        />
+                                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                                                            <div className="h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center">
+                                                                <VideoCamera size={13} weight="fill" />
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <img
+                                                        src={image.file_url}
+                                                        alt={image.name}
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                )}
+
+                                                {isSelected && (
+                                                    <div className="absolute top-1.5 right-1.5 h-5 w-5 rounded-md bg-foreground text-background flex items-center justify-center shadow-xs">
+                                                        <Check size={12} weight="bold" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="text-xs font-semibold text-foreground truncate mt-2 px-0.5">
+                                                {image.name}
+                                            </p>
+                                            <span className="label-xs text-muted-foreground px-0.5">
+                                                {isVideo ? 'Video MP4' : 'Image'}
+                                            </span>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="flex items-center justify-between pt-4 border-t border-border mt-3">
+                        <span className="text-xs text-muted-foreground font-medium">
+                            {assets.length} / 10 {t('selected')}
+                        </span>
+                        <Button
+                            type="button"
+                            variant="default"
+                            className="rounded-xl px-4"
+                            onClick={() => setShowLibrary(false)}
+                        >
+                            {t('Done')}
+                        </Button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }
