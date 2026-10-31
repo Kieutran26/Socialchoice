@@ -1,3 +1,4 @@
+import { OPENROUTER_CHAT_URL, validAiModel, listOpenRouterModels } from './openrouter.js';
 import { createMetaVault } from './meta-vault.js';
 import { fail } from './validation.js';
 import { AiError, aiError, safeProviderReason } from './ai-errors.js';
@@ -59,6 +60,7 @@ export function createAiWriting(store, key, fetcher = fetch) {
     const vault = /^[a-f0-9]{64}$/i.test(key || '') ? createMetaVault(store, key) : null;
     const id = 'ai:writing';
     let busy = false;
+    let modelCache = null;
     const read = () => {
         try { return store.readCredential(id) ? vault.read(id) : { provider: 'openai', model: '', key: '' }; }
         catch { fail('AI settings could not be decrypted. Remove the key, then save it again.', 409); }
@@ -66,11 +68,15 @@ export function createAiWriting(store, key, fetcher = fetch) {
     const status = value => ({ configured: !!value.key, provider: value.provider, model: value.model });
     return async (operation, input = {}) => {
         if (!vault) fail('AI encryption is not configured on the server.', 409);
+        if (operation === 'models') {
+            if (modelCache && modelCache.expires > Date.now()) return modelCache.value;
+            const value=await listOpenRouterModels(fetcher);modelCache={value,expires:Date.now()+300000};return value;
+        }
         if (operation === 'status') return status(read());
         if (operation === 'clear') { vault.remove(id); return status(read()); }
         if (operation === 'save') {
             const old = read();
-            if (!['openai', 'gemini'].includes(input.provider) || typeof input.model !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}$/.test(input.model)) fail('Choose a provider and a valid model ID.');
+            if (!['openai', 'gemini', 'openrouter'].includes(input.provider) || !validAiModel(input.provider, input.model)) fail('Choose a provider and a valid model ID.');
             const secret = input.key || (old.provider === input.provider ? old.key : '');
             if (typeof secret !== 'string' || !secret.trim() || secret.length > 512 || /\s/.test(secret)) fail('Enter a valid API key.');
             const value = { provider: input.provider, model: input.model, key: secret };
@@ -98,15 +104,15 @@ export function createAiWriting(store, key, fetcher = fetch) {
         busy = true;
         let providerStatus;
         try {
-            const openai = config.provider === 'openai';
+            const router = config.provider === 'openrouter', openai = config.provider !== 'gemini';
             const lowThinking = config.model === 'gemini-3.8-flash';
             // Gemini's output limit includes thought tokens; 32 can exhaust the test before an answer.
             const generationConfig = { maxOutputTokens: operation === 'test' && !lowThinking ? 32 : 2048,
                 ...(lowThinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) };
-            const response = await fetchAiProvider(fetcher, openai ? 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
+            const response = await fetchAiProvider(fetcher, openai ? router ? OPENROUTER_CHAT_URL : 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
                 method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(45000),
                 headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}` } : { 'x-goog-api-key': config.key }) },
-                body: JSON.stringify(openai ? { model: config.model, store: false, messages: [{ role: 'user', content: prompt }], max_completion_tokens: operation === 'test' ? 32 : 2048 } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
+                body: JSON.stringify(openai ? { model: config.model, ...(router ? { provider: { allow_fallbacks: false } } : { store: false }), messages: [{ role: 'user', content: prompt }], ...(router ? { max_tokens: operation === 'test' ? 256 : 2048 } : { max_completion_tokens: operation === 'test' ? 32 : 2048 }) } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
             }, rejectProvider);
             providerStatus = response.status;
             if (response.status >= 300 && response.status < 400) throw aiError('AI provider redirect was blocked.', 502, 'AI_PROVIDER_REDIRECT', 'provider', providerStatus);
