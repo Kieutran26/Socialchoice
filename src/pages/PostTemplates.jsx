@@ -494,11 +494,11 @@ export default function PostTemplates() {
                         return (
                             <article
                                 key={template.id}
-                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card shadow-2xs hover:shadow-md hover:border-border/80 transition-all p-4.5"
+                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card shadow-2xs hover:shadow-md hover:border-border/80 transition-all p-5 overflow-hidden"
                             >
                                 <div>
                                     {/* 1. Card Header: Format badge + Brand Pill */}
-                                    <div className="flex items-center justify-between gap-2 pb-2.5 border-b border-border/50">
+                                    <div className="flex items-center justify-between gap-2 pb-3 border-b border-border/50 mb-3">
                                         {format === 'video' ? (
                                             <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-purple-700 bg-purple-50 rounded-md px-2 py-0.5 border border-purple-200">
                                                 <VideoCamera size={13} weight="fill" />
@@ -528,7 +528,7 @@ export default function PostTemplates() {
                                     </div>
 
                                     {/* 2. Title & Subtitle */}
-                                    <div className="mt-3 mb-2">
+                                    <div className="mb-2.5">
                                         <h2 className="font-heading font-semibold text-base text-foreground break-words line-clamp-1 group-hover:text-primary transition-colors">
                                             {template.name}
                                         </h2>
@@ -613,7 +613,7 @@ export default function PostTemplates() {
                                 </div>
 
                                 {/* 6. Action Footer */}
-                                <div className="flex items-center gap-2 pt-3 border-t border-border/50 mt-2">
+                                <div className="flex items-center gap-2 pt-3 border-t border-border/50 mt-3">
                                     <button
                                         type="button"
                                         disabled={busy}
@@ -621,7 +621,7 @@ export default function PostTemplates() {
                                         className="btn-skew h-8 px-3 text-xs font-semibold gap-1.5 cursor-pointer flex-1 justify-center"
                                         title={t('Create post from this template')}
                                     >
-                                        <NotePencil size={14} weight="bold" />
+                                        <CopySimple size={14} weight="bold" />
                                         <span>{t('Use template')}</span>
                                     </button>
 
@@ -629,7 +629,7 @@ export default function PostTemplates() {
                                         asChild
                                         variant="outline"
                                         size="sm"
-                                        className="h-8 px-2.5 rounded-lg text-xs gap-1"
+                                        className="h-8 px-3 rounded-lg text-xs gap-1.5"
                                         disabled={busy}
                                     >
                                         <Link to={`/templates/create?edit=${template.id}`}>
@@ -640,8 +640,8 @@ export default function PostTemplates() {
 
                                     <Button
                                         variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground"
+                                        size="sm"
+                                        className="h-8 px-2 text-xs rounded-lg text-muted-foreground hover:text-foreground"
                                         disabled={busy}
                                         title={t('Rename')}
                                         onClick={() => {
@@ -650,13 +650,13 @@ export default function PostTemplates() {
                                             setError('');
                                         }}
                                     >
-                                        <NotePencil size={14} />
+                                        {t('Rename')}
                                     </Button>
 
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-dangerFg hover:bg-dangerBg/20"
+                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-dangerFg hover:bg-dangerBg/20 shrink-0"
                                         disabled={busy}
                                         title={t('Delete')}
                                         onClick={() => setRemove(template)}
