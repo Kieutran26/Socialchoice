@@ -423,9 +423,9 @@ export default function CreatePost() {
                     <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
                         <div className="flex items-start justify-between gap-3">
                             <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">01</span>
-                                    <h2 className="text-sm font-semibold text-foreground">{t('Destinations')}</h2>
+                                <div className="flex items-center gap-2.5">
+                                    <span className="text-base sm:text-lg font-bold text-muted-foreground/80 tracking-tight">01</span>
+                                    <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{t('Destinations')}</h2>
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-0.5">
                                     {t('Choose which platforms you want your post to appear on.')}
@@ -495,9 +495,9 @@ export default function CreatePost() {
                     {/* CARD 02: Thông tin cơ bản (Basic Info & Caption) */}
                     <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
                         <div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">02</span>
-                                <h2 className="text-sm font-semibold text-foreground">{t('Basic information')}</h2>
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-base sm:text-lg font-bold text-muted-foreground/80 tracking-tight">02</span>
+                                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{t('Basic information')}</h2>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 {t('This content will be used for all selected platforms.')}
@@ -658,9 +658,9 @@ export default function CreatePost() {
                     {/* CARD 03: Media chung (Attachments & Dropzone) */}
                     <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
                         <div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">03</span>
-                                <h2 className="text-sm font-semibold text-foreground">{t('General media')}</h2>
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-base sm:text-lg font-bold text-muted-foreground/80 tracking-tight">03</span>
+                                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{t('General media')}</h2>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 {t('Photos or video attached to the post.')}
@@ -708,9 +708,9 @@ export default function CreatePost() {
                     {/* CARD 04: Chiến lược & lịch đăng (Strategy & Schedule) */}
                     <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
                         <div>
-                            <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">04</span>
-                                <h2 className="text-sm font-semibold text-foreground">{t('Strategy & scheduling')}</h2>
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-base sm:text-lg font-bold text-muted-foreground/80 tracking-tight">04</span>
+                                <h2 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{t('Strategy & scheduling')}</h2>
                             </div>
                             <p className="text-xs text-muted-foreground mt-0.5">
                                 {t('Assign post to the right pillar, then choose publishing time.')}
