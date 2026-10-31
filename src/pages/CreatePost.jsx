@@ -10,7 +10,6 @@ import {
     Trash,
     Copy,
     WarningCircle,
-    Info,
     CalendarBlank,
     Sparkle,
 } from '@phosphor-icons/react';
@@ -870,34 +869,27 @@ export default function CreatePost() {
                             platformCaptions={form.platform_captions}
                             platformMedia={form.platform_media}
                         />
-
-                        <DestinationChecks checks={checks} post={form} />
-
-                        {warnings.length ? (
-                            <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5 mt-2">
-                                <p className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-900">
-                                    <WarningCircle size={15} weight="fill" className="text-amber-600 shrink-0" />
-                                    {t(desktop ? 'Planning checks' : 'Before you publish')}
-                                </p>
-                                <ul className="space-y-1 pt-0.5">
-                                    {warnings.map((warning) => (
-                                        <li key={warning} className="text-[11px] text-amber-800 flex items-start gap-1.5 leading-relaxed">
-                                            <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
-                                            <span>{warning}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        ) : null}
                     </div>
 
-                    {/* Strategy Tip Box */}
-                    <div className="rounded-2xl border border-amber-200/80 bg-amber-50/60 p-3.5 text-xs text-amber-900 flex items-start gap-2.5">
-                        <Info size={16} className="text-amber-700 mt-0.5 shrink-0" />
-                        <p className="leading-relaxed text-[11px]">
-                            {t('Before publishing: choose a pillar and angle so your post matches strategy.')}
-                        </p>
-                    </div>
+                    {/* Pre-Publish Checklist (Replaces channel check issues table with checklist) */}
+                    <DestinationChecks checks={checks} post={form} />
+
+                    {warnings.length ? (
+                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
+                            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-900">
+                                <WarningCircle size={15} weight="fill" className="text-amber-600 shrink-0" />
+                                <span>{t(desktop ? 'Planning checks' : 'Before you publish')}</span>
+                            </p>
+                            <ul className="space-y-1 pt-0.5">
+                                {warnings.map((warning) => (
+                                    <li key={warning} className="text-[11px] text-amber-800 flex items-start gap-1.5 leading-relaxed">
+                                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
+                                        <span>{warning}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    ) : null}
 
                     {/* Action Buttons Box */}
                     <div className="panel p-4 sm:p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">

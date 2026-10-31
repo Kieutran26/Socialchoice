@@ -1,103 +1,110 @@
 import { useTranslation } from '@/lib/i18n';
-import { PLATFORM_LABEL } from '@/lib/constants';
-import { CAPTION_LIMITS, captionLength, resolveCaption, resolveMedia } from '@/lib/publishing-content';
-import { CheckCircle, WarningCircle, ShieldCheck } from '@phosphor-icons/react';
+import { CheckCircle, Circle, WarningCircle } from '@phosphor-icons/react';
 
-export default function DestinationChecks({ checks, post }) {
+/**
+ * @param {{
+ *   checks?: Array<{ account: any, issues: string[] }>,
+ *   post?: {
+ *     account_ids?: string[],
+ *     caption?: string,
+ *     pillar_id?: string,
+ *     angle_id?: string,
+ *     [key: string]: any,
+ *   }
+ * }} props
+ */
+export default function DestinationChecks({ checks = [], post = {} }) {
     const { t } = useTranslation();
-    if (!checks.length) return null;
 
-    const hasAnyIssues = checks.some((c) => c.issues.length > 0);
+    const hasDestinations = Boolean(post.account_ids && post.account_ids.length > 0);
+    const hasCaption = Boolean(post.caption && post.caption.trim().length > 0);
+    const hasStrategy = Boolean(post.pillar_id && post.angle_id);
+
+    const items = [
+        {
+            key: 'destination',
+            label: t('Select at least one destination'),
+            completed: hasDestinations,
+        },
+        {
+            key: 'caption',
+            label: t('Write main content'),
+            completed: hasCaption,
+        },
+        {
+            key: 'strategy',
+            label: t('Choose pillar and angle'),
+            completed: hasStrategy,
+        },
+    ];
+
+    const completedCount = items.filter((item) => item.completed).length;
+    const progressPercent = Math.round((completedCount / items.length) * 100);
+
+    // Collect genuine critical issues when caption is present
+    const criticalIssues = hasCaption
+        ? checks
+              .flatMap((c) => c.issues)
+              .filter((issue) => !issue.toLowerCase().includes('must contain between 1 and'))
+        : [];
 
     return (
-        <section className="panel p-4 sm:p-5 space-y-3.5" aria-label={t('Channel checks')}>
+        <section
+            className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3.5"
+            aria-label={t('Before you publish')}
+        >
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-foreground">
-                    {hasAnyIssues ? (
-                        <WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />
-                    ) : (
-                        <ShieldCheck size={18} weight="fill" className="shrink-0 text-emerald-500" />
-                    )}
-                    <h2 className="text-[14px] font-semibold text-foreground">{t('Channel checks')}</h2>
-                </div>
-                <span className={`label-xs font-medium px-2 py-0.5 rounded-full ${hasAnyIssues ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                    {hasAnyIssues ? t('Issues detected') : t('All checks passed')}
+                <h3 className="font-heading font-bold text-sm text-foreground">
+                    {t('Before you publish')}
+                </h3>
+                <span className="text-xs font-medium text-muted-foreground">
+                    {completedCount}/{items.length}
                 </span>
             </div>
 
-            <p className="label-xs text-muted-foreground leading-relaxed">
-                {t('Fix the listed issues before reviewing publication. Drafts can be saved at any time. Server permissions are checked during review.')}
-            </p>
+            {/* Yellow Progress Bar */}
+            <div className="h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
+                <div
+                    className="h-full bg-[#ffd631] rounded-full transition-all duration-300 ease-out"
+                    style={{ width: `${progressPercent}%` }}
+                />
+            </div>
 
-            <div className="space-y-2.5 pt-1">
-                {checks.map(({ account, issues }) => {
-                    const currentLength = captionLength(resolveCaption(post, account), account.platform);
-                    const maxLimit = CAPTION_LIMITS[account.platform];
-                    const isOverLimit = maxLimit && currentLength > maxLimit;
-                    const mediaCount = resolveMedia(post, account).length;
-                    const hasIssues = issues.length > 0;
-
-                    return (
-                        <div
-                            key={account.id}
-                            className={`rounded-xl border p-3 text-xs transition-colors ${
-                                hasIssues
-                                    ? 'border-red-200/80 bg-red-50/40'
-                                    : 'border-border bg-card'
+            {/* Checklist Items */}
+            <div className="space-y-3 pt-0.5">
+                {items.map((item) => (
+                    <div key={item.key} className="flex items-center gap-3 text-xs sm:text-[13px] select-none">
+                        {item.completed ? (
+                            <CheckCircle size={18} weight="bold" className="text-emerald-500 shrink-0" />
+                        ) : (
+                            <Circle size={18} weight="regular" className="text-muted-foreground/40 shrink-0" />
+                        )}
+                        <span
+                            className={`transition-all ${
+                                item.completed
+                                    ? 'line-through text-muted-foreground/75'
+                                    : 'text-foreground/90 font-medium'
                             }`}
                         >
-                            <div className="flex items-start justify-between gap-2">
-                                <div className="min-w-0">
-                                    <p className="font-semibold text-foreground truncate">{account.name}</p>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        {PLATFORM_LABEL[account.platform] || account.platform}
-                                    </p>
-                                </div>
-                                <span
-                                    className={`shrink-0 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${
-                                        hasIssues
-                                            ? 'bg-red-100 text-red-700'
-                                            : 'bg-emerald-100 text-emerald-700'
-                                    }`}
-                                >
-                                    {hasIssues ? (
-                                        <>
-                                            <WarningCircle size={12} weight="bold" />
-                                            {issues.length} {t('issues')}
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle size={12} weight="fill" />
-                                            {t('Ready')}
-                                        </>
-                                    )}
-                                </span>
-                            </div>
-
-                            <div className="flex items-center gap-3 mt-2 text-[11px] text-muted-foreground border-t border-border/50 pt-2">
-                                <span className={isOverLimit ? 'text-red-600 font-semibold' : ''}>
-                                    {currentLength} / {maxLimit || '—'} {t('characters')}
-                                </span>
-                                <span>•</span>
-                                <span>
-                                    {t(Object.hasOwn(post.platform_media || {}, account.platform) ? 'Custom media' : 'Shared media')} ({mediaCount})
-                                </span>
-                            </div>
-
-                            {hasIssues && (
-                                <ul className="mt-2.5 space-y-1 rounded-lg bg-red-100/60 p-2 text-[11px] text-red-800">
-                                    {issues.map((issue) => (
-                                        <li key={issue} className="flex items-start gap-1.5">
-                                            <span className="mt-1 h-1 w-1 shrink-0 rounded-full bg-red-600" />
-                                            <span>{t(issue)}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            )}
-                        </div>
-                    );
-                })}
+                            {item.label}
+                        </span>
+                    </div>
+                ))}
             </div>
+
+            {criticalIssues.length > 0 && (
+                <div className="mt-2.5 rounded-xl border border-rose-200/80 bg-rose-50/60 p-3 space-y-1.5 text-xs">
+                    <div className="flex items-center gap-1.5 font-semibold text-rose-800 text-[11px]">
+                        <WarningCircle size={14} weight="fill" className="text-rose-600 shrink-0" />
+                        <span>{t('Issues detected')}</span>
+                    </div>
+                    <ul className="space-y-1 pl-4 list-disc text-[11px] text-rose-700">
+                        {[...new Set(criticalIssues)].map((issue, idx) => (
+                            <li key={idx}>{t(issue)}</li>
+                        ))}
+                    </ul>
+                </div>
+            )}
         </section>
     );
 }
