@@ -18,7 +18,9 @@ Gemini relay follow-up: the private regional actor now completes a bounded respo
 - Build, lint, typecheck: PASS; final build passes with the existing large chunk warning.
 - Live unauthenticated OpenRouter catalog retrieval: PASS, no API key used.
 - Authenticated staging Settings: OpenRouter option and live vision-model list render; Gemini 3.8 Flash selected in the unsaved form.
-- No OpenRouter key has been saved yet. Real OpenRouter authentication, billing/quota, generation, image analysis, cache and review acceptance are pending.
+- Follow-up live acceptance (2026-10-31): user saved OpenRouter key directly in staging Settings. Masked status confirms OpenRouter / google/gemini-3.8-flash stored encrypted. Agent ran the connection test and observed “Đã kiểm tra kết nối AI thành công.”
+- Public Drive test source contains two assets, including gemini-acceptance-test.png (synthetic marketing test image, 3.7 KB). Agent confirmed and queued analysis of this synthetic image. Background Queue transitioned from pending to failed; asset remains failed / pending human review. UI reports only “Cần kiểm tra nguồn hoặc cấu hình”; no specific provider failure is established.
+- Connection authentication test PASS. Real image analysis FAIL; successful OCR, cache and approval acceptance remain pending. No failed result was approved and no publishing was performed. Do not mark Asset Intelligence accepted based on the connection test.
 
 Final staging version: bc66c619-58ba-4829-b365-93b283463e74.
 Production/main unchanged. Existing staging secrets and R2/Queue bindings retained; no production credential was copied. No merge or production deployment.
