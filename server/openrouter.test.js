@@ -11,7 +11,7 @@ test('OpenRouter catalog is fixed, bounded, sanitized and independent of saved p
  const store=createStore(':memory:');try{
  const ai=createAiWriting(store,key,async(url,options)=>{
   calls++;assert.equal(url,'https://openrouter.ai/api/v1/models');assert.equal(options.redirect,'manual');assert.equal(options.headers,undefined);
-  return Response.json({data:[{id:'google/test:free',name:'Gemini',architecture:{input_modalities:['text','image'],output_modalities:['text']},pricing:{prompt:'0',completion:'0'},secret:'not-public'},{id:'bad model',name:'Bad',architecture:{input_modalities:['text'],output_modalities:['text']}}]});
+  return Response.json({data:[{id:'google/test:free',name:'Gemini',architecture:{input_modalities:['text','image'],output_modalities:['text']},pricing:{prompt:'0',completion:'0'},secret:'not-public'},{id:'google/test:batch',name:'Batch only',architecture:{input_modalities:['text','image'],output_modalities:['text']}},{id:'google/responses-only',name:'Responses only',endpoints:['/api/v1/responses'],architecture:{input_modalities:['text','image'],output_modalities:['text']}},{id:'bad model',name:'Bad',architecture:{input_modalities:['text'],output_modalities:['text']}}]});
  });
  await ai('save',{provider:'gemini',model:'test',key:'original-key'});
  const result=await ai('models');assert.equal(result.models.length,1);assert.equal(result.models[0].vision,true);assert.ok(!JSON.stringify(result).includes('secret'));await ai('models');assert.equal(calls,1);assert.equal((await ai('status')).provider,'gemini');
