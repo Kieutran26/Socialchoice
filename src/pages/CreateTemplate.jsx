@@ -236,9 +236,11 @@ export default function CreateTemplate() {
         return (
             <div className="space-y-5">
                 <Skeleton className="h-10 w-48 rounded-xl" />
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <Skeleton className="lg:col-span-7 h-[500px] rounded-2xl" />
-                    <Skeleton className="lg:col-span-5 h-[500px] rounded-2xl" />
+                <div className="composer-shell">
+                    <div className="composer-columns grid gap-5">
+                        <Skeleton className="h-[500px] rounded-2xl" />
+                        <Skeleton className="h-[500px] rounded-2xl" />
+                    </div>
                 </div>
             </div>
         );
@@ -256,7 +258,7 @@ export default function CreateTemplate() {
     }
 
     return (
-        <div className="composer-shell max-w-6xl mx-auto pb-12">
+        <div className="composer-shell w-full pb-12">
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
                 <div className="flex items-center gap-3">
@@ -292,9 +294,9 @@ export default function CreateTemplate() {
             </div>
 
             {/* Main Composer Columns */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="composer-columns grid gap-5 items-start">
                 {/* Left Column: Form Fields */}
-                <div className="lg:col-span-7 space-y-5 min-w-0">
+                <div className="min-w-0 space-y-5">
                     {/* Section 1: Template Info */}
                     <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
                         <div className="flex items-center gap-2 border-b border-border/50 pb-3">
@@ -493,7 +495,7 @@ export default function CreateTemplate() {
                 </div>
 
                 {/* Right Column: Social Preview & Save Actions (Sticky) */}
-                <div className="lg:col-span-5 space-y-5 composer-preview">
+                <div className="space-y-5 composer-preview">
                     {/* Live Social Preview */}
                     <PostPreview
                         planning={true}
