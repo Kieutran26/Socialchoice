@@ -16,6 +16,13 @@ export default function DesktopAiSettings() {
     const [busy, setBusy] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [models, setModels] = useState([]), [modelsBusy, setModelsBusy] = useState(false), [modelsError, setModelsError] = useState('');
+    useEffect(() => {
+        if (isDesktop() || provider !== 'openrouter') return;
+        let active=true; setModelsBusy(true); setModelsError('');
+        aiRequest('models').then(value=>{if(active)setModels(value.models);}).catch(error=>{if(active)setModelsError(error.message);}).finally(()=>{if(active)setModelsBusy(false);});
+        return ()=>{active=false;};
+    }, [provider]);
 
     function accept(value) {
         setSaved(value);
@@ -91,7 +98,7 @@ export default function DesktopAiSettings() {
                         </span>
                         <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-700 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            {t('Active')}
+                            {t('Configured — test connection to verify')}
                         </span>
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-3 p-3.5 rounded-xl bg-card border border-border shadow-2xs">
@@ -106,7 +113,7 @@ export default function DesktopAiSettings() {
                             <div>
                                 <div className="flex items-center gap-2">
                                     <span className="font-bold text-sm text-foreground">
-                                        {saved.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}
+                                        {saved.provider === 'openrouter' ? 'OpenRouter' : saved.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}
                                     </span>
                                     <code className="text-[11px] font-mono px-2 py-0.5 rounded-md bg-muted text-foreground font-semibold border border-border/50">
                                         {saved.model}
@@ -158,6 +165,7 @@ export default function DesktopAiSettings() {
                             setMessage('');
                         }}
                     >
+                        {!isDesktop() && <option value="openrouter">OpenRouter (Gemini / Claude / GPT)</option>}
                         <option value="openai">OpenAI</option>
                         <option value="gemini">Google Gemini</option>
                     </select>
@@ -166,7 +174,14 @@ export default function DesktopAiSettings() {
                     <Label htmlFor="ai-model" className="text-xs font-semibold text-foreground">
                         {t('Model ID')}
                     </Label>
-                    <Input
+                    {provider === 'openrouter' && !isDesktop() ? <>
+                        <select id="ai-model" aria-describedby="ai-model-help" className="mt-2 w-full border border-border rounded-xl p-2.5 text-sm bg-background" disabled={busy || modelsBusy} value={model} onChange={event=>{setModel(event.target.value);setMessage('');}}>
+                            <option value="">{t(modelsBusy ? 'Loading models…' : 'Choose an image-capable model')}</option>
+                            {model && !models.some(item=>item.id===model && item.vision) && <option value={model}>{model}</option>}
+                            {models.filter(item=>item.vision).map(item=><option key={item.id} value={item.id}>{item.name} · {item.id}</option>)}
+                        </select>
+                        {modelsError && <p role="alert" className="label-xs text-dangerFg mt-2">{t(modelsError)}</p>}
+                    </> : <Input
                         id="ai-model"
                         value={model}
                         disabled={busy}
@@ -181,10 +196,10 @@ export default function DesktopAiSettings() {
                             setMessage('');
                         }}
                         maxLength={100}
-                    />
+                    />}
                     <p id="ai-model-help" className="label-xs mt-2 break-words text-muted-foreground">
                         {t(
-                            provider === 'gemini'
+                            provider === 'openrouter' ? 'One OpenRouter key supports Gemini, Claude and GPT models. Images and prompts pass through OpenRouter to the selected provider. API usage is billed by OpenRouter; model availability and pricing can change.' : provider === 'gemini'
                                 ? 'Copy the exact model ID from Google AI Studio, without spaces. Format example: gemini-2.5-flash (not Gemini 2.5 Flash). Choose a model available to your API account.'
                                 : 'Copy the exact model ID from the OpenAI model list, without spaces. Format example: gpt-4.1 (not GPT 4.1). Choose a model available to your API account.'
                         )}
