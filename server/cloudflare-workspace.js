@@ -15,5 +15,15 @@ export class SocialchoiceWorkspace extends DurableObject {
         return handleWebRequest(request, this.runtime.handler);
     }
     async reconcilePhotos() { if (this.runtime) await this.runtime.publisher.resumePhotos(); }
+    async runAutopilot() {
+        if (!this.runtime) return { paused: true, pendingAt: null };
+        try {
+            const result = await this.runtime.autopilot.execute('run', {});
+            return { result, pendingAt: this.runtime.autopilot.pendingAt() };
+        } catch (error) {
+            if ([403, 409].includes(error.status)) return { paused: true, pendingAt: null };
+            throw error;
+        }
+    }
     async alarm() { if (this.runtime) await this.runtime.publisher.runPhotos(); }
 }

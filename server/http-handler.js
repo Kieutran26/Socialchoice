@@ -1,3 +1,4 @@
+import { createAutopilot } from './autopilot.js';
 import { createAiWriting } from './ai-writing.js';
 import { aiFailureDiagnostic } from './ai-errors.js';
 import { createPublishingNotifications } from './publishing-notifications.js';
@@ -10,12 +11,13 @@ import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink }) {
+export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
+    const autopilot = createAutopilot({ store, auth, key: aiKey || metaSettings.key, aiFetch, ...autopilotOptions });
     const notifications=createPublishingNotifications(store);
     const metrics=createFacebookMetrics(store,metaSettings);
     const instagramMedia=createInstagramMediaAccess(store,metaSettings,threadsSettings,tiktokSettings);
-    return async (req, res) => {
+    const handler = async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
             res.end(JSON.stringify(value));
@@ -29,6 +31,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req,res);
             if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req,res);
             if (req.method==='GET'&&req.url?.startsWith('/api/tiktok/callback?')&&tiktok)return await tiktok.callback(req,res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/drive/callback?')) return await autopilot.callback(req, res);
             // Signed GET/HEAD capabilities authorize only their exact delivery media, independently of browser origin.
             if (instagramMedia.serve(req,res)) return;
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
@@ -56,6 +59,14 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 return send(200, { ok: true });
             }
             auth.require(req);
+            if (req.url.startsWith('/api/autopilot/')) {
+                if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
+                let body = '';
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
+                let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
+                if (!Array.isArray(input?.args) || input.args.length !== 1) fail('One Autopilot input required');
+                return send(200, await autopilot.execute(req.url.slice('/api/autopilot/'.length), input.args[0], req, res));
+            }
             if (req.url.startsWith('/api/ai/')) {
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';
@@ -132,4 +143,6 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             send(error.status || 500, { message: error.status ? error.message : 'Internal server error', ...aiDiagnostic });
         }
     };
+    handler.autopilot = autopilot;
+    return handler;
 }

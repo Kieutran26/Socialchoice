@@ -1,0 +1,68 @@
+{
+  "origin": "https://socialchoice-autopilot-staging.nguyenngockieutran.workers.dev",
+  "checks": [
+    {
+      "name": "anonymous rejected",
+      "pass": true
+    },
+    {
+      "name": "R2 and Queue bindings ready",
+      "pass": true,
+      "readiness": {
+        "enabled": true,
+        "ready": true,
+        "driveReady": false,
+        "storageReady": true,
+        "backgroundReady": true,
+        "storagePrefix": "owner/"
+      }
+    },
+    {
+      "name": "real Queue dispatch",
+      "pass": true
+    },
+    {
+      "name": "background R2 ingestion and workspace prefix isolation",
+      "pass": true,
+      "assets": [
+        {
+          "name": "kiem-tra-anh.png",
+          "size": 68,
+          "mime": "image/png"
+        }
+      ],
+      "jobStatus": "done"
+    },
+    {
+      "name": "repeat sync has no duplicate assets",
+      "pass": true
+    },
+    {
+      "name": "private entity forgery rejected",
+      "pass": true
+    },
+    {
+      "name": "cross-origin rejected",
+      "pass": true
+    },
+    {
+      "name": "AI requires confirmation",
+      "pass": true
+    },
+    {
+      "name": "AI fails closed without provider",
+      "pass": true
+    },
+    {
+      "name": "Drive fails closed without OAuth credentials",
+      "pass": true
+    },
+    {
+      "name": "no post created",
+      "pass": true
+    }
+  ],
+  "time": "2026-10-31T10:20:04.776Z",
+  "passed": 11,
+  "total": 11
+}

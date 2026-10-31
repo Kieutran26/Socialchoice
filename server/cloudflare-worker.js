@@ -1,9 +1,11 @@
+import { consumeAutopilotBatch } from './autopilot-queue.js';
 export { SocialchoiceWorkspace } from './cloudflare-workspace.js';
 export { SocialchoiceCustomerDirectory } from './cloudflare-customer-directory.js';
 export { SocialchoiceCustomerWorkspace } from './customer-workspace.js';
 import { customerCookie } from './customer-directory.js';
 
 export default {
+    queue: consumeAutopilotBatch,
     async fetch(request, env) {
         if (!new URL(request.url).pathname.startsWith('/api/')) return Response.json({ message: 'Endpoint not found' }, { status: 404 });
         if (env.SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY) {

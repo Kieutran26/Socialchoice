@@ -1,3 +1,4 @@
+import AutopilotLibrary from '@/components/media/AutopilotLibrary';
 import { useTranslation } from '@/lib/i18n';
 import { useRef, useState } from 'react';
 import { FolderOpen, Trash, MagnifyingGlass } from '@phosphor-icons/react';
@@ -87,6 +88,7 @@ export default function MediaLibrary() {
                 title={t("Media Library")}
                 description={t(isDesktop() ? 'Images and MP4 videos copied into this computer’s workspace.' : 'Private images and MP4 videos stored in this workspace.')}
             />
+            {!isDesktop() && !demoMode && <AutopilotLibrary brandId={uploadBrand} />}
             <section className="panel p-4 mb-5"><Label className="label-xs block mb-2">{t('Brand for uploaded images')}</Label><select className="border rounded-lg p-2 mb-3 text-sm" aria-label={t('Brand for uploaded images')} value={uploadBrand} onChange={event => setUploadBrand(event.target.value)} disabled={demoMode || busy}><option value="">{t('Choose brand')}</option>{brands.filter(brand=>brand.status!=="archived").map(brand => <option key={brand.id} value={brand.id}>{brand.name}</option>)}</select><MediaUploader allowLibrary={false} onBusyChange={setBusy} assets={[]} onChange={() => load()} brandId={uploadBrand} demoMode={demoMode} /></section>
 
             <div className="panel mb-5 p-4">

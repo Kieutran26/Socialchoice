@@ -56,12 +56,13 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
     if (deadline !== undefined && (!Number.isSafeInteger(deadline) || deadline <= 0)) return new Response(null, { status: 400 });
     const reader = request.body?.getReader();
     if (!reader) return new Response(null, { status: 400 });
+    const maxBody = request.headers.get('x-socialchoice-ai-purpose') === 'asset-analysis' ? 4300000 : 100000;
     const chunks = []; let size = 0;
     while (true) {
         const { value, done } = await reader.read();
         if (done) break;
         size += value.byteLength;
-        if (size > 100000) { await reader.cancel(); return new Response(null, { status: 413 }); }
+        if (size > maxBody) { await reader.cancel(); return new Response(null, { status: 413 }); }
         chunks.push(value);
     }
     const body = new Uint8Array(size); let offset = 0;

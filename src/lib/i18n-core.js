@@ -1,3 +1,4 @@
+import autopilot from './locales/vi-autopilot.json' with { type: 'json' };
 import ai from './locales/vi-ai.json' with { type: 'json' };
 import interactiveImages from './locales/vi-interactive-images.json' with { type: 'json' };
 import channels from './locales/vi-channels.json' with { type: 'json' };
@@ -13,7 +14,7 @@ import desktop from './locales/vi-desktop.json' with { type: 'json' };
 import webLicense from './locales/vi-web-license.json' with { type: 'json' };
 
 export const LANGUAGE_STORAGE_KEY = 'socialchoice.language';
-export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin, ...channels, ...crossPlatform, ...desktop, ...webLicense, ...ai, ...interactiveImages };
+export const messages = { ...common, ...components, ...pages, ...instagram, ...threads, ...tiktok, ...linkedin, ...channels, ...crossPlatform, ...desktop, ...webLicense, ...ai, ...interactiveImages, ...autopilot };
 export const normalizeLanguage = (value) => value === 'en' ? 'en' : 'vi';
 const listeners = new Set();
 function storedLanguage() {

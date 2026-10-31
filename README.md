@@ -1,5 +1,9 @@
 # Socialchoice
 
+## Autopilot Phase 1 (feature branch)
+
+Drive/R2 metadata ingestion, an asset catalog, and reviewed image analysis are behind `SOCIALCHOICE_AUTOPILOT_ENABLED`. The flag is off by default. See [configuration, limits, recovery, and acceptance gates](docs/autopilot-phase-1.md). No production configuration or deployment is included.
+
 ## Current product direction
 
 The owner selected a hosted web app with managed customer storage on2026-10-25, retaining one-time license sales. One license belongs to one account and supports multiple devices. The deployed Cloudflare implementation adds signed SCW1 web licenses, customer authentication and separate customer workspaces while retaining the original owner workspace. Starter/Professional/Business currently identify editions with the same features; pricing and differentiated limits remain undecided. The owner-approved backend signing key and account verification are configured. The owner can issue and download licenses at https://socialchoice.vercel.app/admin/licenses; the protected Windows issuer remains available as backup. Actual HTTPS boundary checks pass; first licensed customer enrollment remains unverified in production. See [web licensing and operating instructions](docs/web-licensing.md). Desktop sources and data remain available; desktop SC2 licenses are separate.

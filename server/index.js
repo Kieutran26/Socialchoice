@@ -43,7 +43,7 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
         const tiktok=createTiktokConnection(store,auth,tiktokSettings,{graph:tiktokGraph,tokens:tiktokTokens,creators:tiktokCreators,});
         const publisher = createFacebookPublisher(store, metaSettings,{linkedinConfig:linkedinSettings,threadsConfig:threadsSettings,tiktokConfig:tiktokSettings,tiktokTokens,tiktokCreators,tiktokGraph});
     publisher.resumePhotos();
-    const server = createServer(createHttpHandler({ aiKey: process.env.SOCIALCHOICE_AI_ENCRYPTION_KEY, store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
+    const server = createServer(createHttpHandler({ autopilotOptions: { env: process.env }, aiKey: process.env.SOCIALCHOICE_AI_ENCRYPTION_KEY, store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
     server.on('close', () => { publisher.close(); store.close(); });
     return { server, store };
 }

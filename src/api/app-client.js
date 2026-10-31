@@ -19,6 +19,7 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    autopilot: { call: (operation, input = {}) => request(`autopilot/${operation}`, [input]) },
     licenses: {
         status: () => request('admin/licenses/status'),
         list: () => request('admin/licenses/list'),

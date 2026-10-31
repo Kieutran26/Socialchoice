@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-31",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "url": "https://socialchoice-autopilot-staging.nguyenngockieutran.workers.dev/__preview/",
+  "surface": "Cloud Browser, actual component with explicitly simulated provider data",
+  "liveProviderAcceptance": false,
+  "checks": [
+    {"name": "asset/source panel renders", "pass": true},
+    {"name": "review approval changes visible state", "pass": true},
+    {"name": "AI confirmation dialog opens", "pass": true},
+    {"name": "Escape closes confirmation dialog", "pass": true},
+    {"name": "corrected Vietnamese labels render", "pass": true},
+    {"name": "empty search uses matching-results message", "pass": true},
+    {"name": "mobile R2 source form and source addition", "pass": true},
+    {"name": "video analysis is disabled", "pass": true},
+    {"name": "desktop has no horizontal overflow", "pass": true, "clientWidth": 1348, "scrollWidth": 1348},
+    {"name": "mobile frame has no horizontal overflow", "pass": true, "frameWidth": 390, "clientWidth": 373, "scrollWidth": 373}
+  ],
+  "limitations": [
+    "Two Page.captureScreenshot requests timed out. No screenshot artifact is claimed.",
+    "Authenticated full-dashboard UI was not exercised through the browser.",
+    "Mobile check uses iframe viewport, not device/touch emulation.",
+    "Not a complete accessibility or visual audit."
+  ]
+}

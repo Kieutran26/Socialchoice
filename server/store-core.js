@@ -1,3 +1,4 @@
+import { createAutopilotStore } from './autopilot-store.js';
 import { randomUUID } from 'node:crypto';
 import schemas from './entity-schemas.json' with { type: 'json' };
 import { matches, paginate, aggregate } from './query.js';
@@ -179,6 +180,8 @@ export function createStoreCore(db, transactionSync) {
             }
         },
     };
+    let autopilot;
+    store.autopilot = () => autopilot ||= createAutopilotStore(db, store);
     store.images = createImageStorage(db, store);
     store.metrics = createMetricsStorage(db);
     store.videos = createVideoStorage(db, store);

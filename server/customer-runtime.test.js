@@ -22,7 +22,7 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
     const licenseA = issue('a@example.com'), licenseB = issue('b@example.com');
     const options = convertV4MiniflareOptions({ modules: true, scriptPath: 'worker-dist/customer/cloudflare-worker.js', compatibilityDate: '2026-10-06', compatibilityFlags: ['nodejs_compat'],
         durableObjects: { WORKSPACE: { className: 'SocialchoiceWorkspace', useSQLite: true }, CUSTOMER_DIRECTORY: { className: 'SocialchoiceCustomerDirectory', useSQLite: true }, CUSTOMER_WORKSPACES: { className: 'SocialchoiceCustomerWorkspace', useSQLite: true } },
-        bindings: { SOCIALCHOICE_PUBLIC_ORIGIN: origin, SOCIALCHOICE_BACKEND_ORIGIN: origin, SOCIALCHOICE_ADMIN_PASSWORD_HASH: hashPassword(password), SOCIALCHOICE_STORAGE_KEY: randomBytes(32).toString('hex'), SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY: licenseA.publicKeyHex, SOCIALCHOICE_WEB_LICENSE_PRIVATE_KEY: Buffer.from(issuer.privateKey.export({ format: 'pem', type: 'pkcs8' })).toString('base64'), META_APP_ID: '12345', META_APP_SECRET: 'fixture-secret', META_GRAPH_VERSION: 'v26.0', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex'), META_REDIRECT_URI: origin + '/api/meta/callback' },
+        bindings: { SOCIALCHOICE_AUTOPILOT_ENABLED: 'true', GOOGLE_DRIVE_CLIENT_ID: 'fixture-client', GOOGLE_DRIVE_CLIENT_SECRET: 'fixture-secret', SOCIALCHOICE_PUBLIC_ORIGIN: origin, SOCIALCHOICE_BACKEND_ORIGIN: origin, SOCIALCHOICE_ADMIN_PASSWORD_HASH: hashPassword(password), SOCIALCHOICE_STORAGE_KEY: randomBytes(32).toString('hex'), SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY: licenseA.publicKeyHex, SOCIALCHOICE_WEB_LICENSE_PRIVATE_KEY: Buffer.from(issuer.privateKey.export({ format: 'pem', type: 'pkcs8' })).toString('base64'), META_APP_ID: '12345', META_APP_SECRET: 'fixture-secret', META_GRAPH_VERSION: 'v26.0', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex'), META_REDIRECT_URI: origin + '/api/meta/callback' },
     });
     options.resourcePersistencePath = directory;
     let runtime = new Miniflare(options);
@@ -67,6 +67,19 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await (await request('/api/entities/Brand/list', [], b.cookie)).json()).items.length, 0);
         assert.equal((await request('/api/entities/Brand/update', [brand.id, { name: 'Cross-tenant overwrite' }], b.cookie)).status, 404);
         assert.equal((await request('/api/entities/Post/create', [{ brand_id: brand.id, title: 'Cross-tenant reference' }], b.cookie)).status, 404);
+        const sourceResponse = await request('/api/autopilot/createSource', [{ name: 'Private Drive A', brand_id: brand.id, kind: 'drive', folder: 'fixture-folder' }], a.cookie);
+        assert.equal(sourceResponse.status, 200, await sourceResponse.clone().text()); const source = await sourceResponse.json();
+        assert.equal((await (await request('/api/autopilot/list', [{}], b.cookie)).json()).sources.length, 0);
+        assert.equal((await (await request('/api/autopilot/list', [{}], ownerCookie)).json()).sources.length, 0);
+        assert.equal((await request('/api/autopilot/connect', [{ id: source.id }], b.cookie)).status, 404);
+        assert.equal((await request('/api/autopilot/createSource', [{ name: 'Forged', brand_id: brand.id, kind: 'drive', folder: 'folder' }], b.cookie)).status, 404);
+        const driveStart = await request('/api/autopilot/connect', [{ id: source.id }], a.cookie);
+        assert.equal(driveStart.status, 200, await driveStart.clone().text());
+        const driveUrl = new URL((await driveStart.json()).url), driveNonce = cookieFrom(driveStart);
+        const driveCallback = '/api/drive/callback?state=' + driveUrl.searchParams.get('state') + '&error=access_denied';
+        assert.equal((await request(driveCallback, undefined, b.cookie + '; ' + driveNonce, { 'sec-fetch-site': 'cross-site' })).status, 409);
+        const driveDenied = await request(driveCallback, undefined, a.cookie + '; ' + driveNonce, { 'sec-fetch-site': 'cross-site' });
+        assert.equal(driveDenied.status, 303); assert.ok(driveDenied.headers.get('location').endsWith('/media?drive=failed'));
         const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX6kAAAAASUVORK5CYII=', 'base64');
         const upload = await runtime.dispatchFetch(origin + '/api/media/upload', { method: 'POST', headers: { cookie: a.cookie, 'x-socialchoice-client': 'local-ui', 'content-type': 'image/png', 'x-image-brand': brand.id, 'x-image-name': 'fixture.png' }, body: png });
         assert.equal(upload.status, 200, await upload.clone().text()); const asset = await upload.json();

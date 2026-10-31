@@ -30,6 +30,19 @@ export class SocialchoiceCustomerWorkspace extends DurableObject {
             return handleWebRequest(request, this.runtime.handler);
         } catch (error) { return Response.json({ message: error.status ? error.message : 'Customer workspace unavailable' }, { status: error.status || 503, headers: { 'Cache-Control': 'no-store' } }); }
     }
+    async runAutopilot() {
+        const id = await this.ctx.storage.get('customer-id');
+        if (!id) return { paused: true, pendingAt: null };
+        await this.start(id);
+        try {
+            await this.runtime.authorize();
+            const result = await this.runtime.autopilot.execute('run', {});
+            return { result, pendingAt: this.runtime.autopilot.pendingAt() };
+        } catch (error) {
+            if ([403, 409].includes(error.status)) return { paused: true, pendingAt: null };
+            throw error;
+        }
+    }
     async alarm() {
         const id = await this.ctx.storage.get('customer-id'); if (!id) return;
         await this.start(id);
