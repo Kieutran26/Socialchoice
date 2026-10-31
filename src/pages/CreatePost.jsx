@@ -673,9 +673,9 @@ export default function CreatePost() {
 
                         {/* Row 3: Bottom AI Assistant Bar */}
                         <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/50">
-                            <div className="flex items-center gap-2">
-                                <Sparkle size={15} weight="duotone" className="text-amber-500" />
-                                <span className="text-xs font-medium text-foreground">{t('AI assistant')}</span>
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Sparkle size={15} weight="duotone" className="text-amber-500 shrink-0" />
+                                <span className="text-xs font-medium text-foreground whitespace-nowrap shrink-0">{t('AI assistant')}</span>
                                 <Select value={aiModel} onValueChange={setAiModel}>
                                     <SelectTrigger className="h-8 rounded-lg text-xs w-[140px] bg-muted/40 border-border/60">
                                         <SelectValue />
