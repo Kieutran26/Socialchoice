@@ -3,7 +3,7 @@ import TiktokSettings from '@/components/composer/TiktokSettings';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FloppyDisk,
     PaperPlaneTilt,
@@ -37,35 +37,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
-import { DEFAULT_TIMEZONE } from '@/lib/constants';
-
-const PLATFORM_CARDS = [
-    {
-        key: 'facebook',
-        label: 'Facebook',
-        sublabel: 'Facebook Page',
-    },
-    {
-        key: 'instagram',
-        label: 'Instagram',
-        sublabel: 'Business Account',
-    },
-    {
-        key: 'linkedin',
-        label: 'LinkedIn',
-        sublabel: 'Company Page',
-    },
-    {
-        key: 'tiktok',
-        label: 'TikTok',
-        sublabel: 'TikTok Account',
-    },
-    {
-        key: 'threads',
-        label: 'Threads',
-        sublabel: 'Threads Profile',
-    },
-];
+import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
 
 function PlatformLogo({ platform, size = 32 }) {
     switch (platform) {
@@ -308,32 +280,28 @@ export default function CreatePost() {
         issues: destinationIssues(form, account, resolveMedia(form, account), demoMode, tiktokCreators[account.id]),
     }));
 
-    // Toggle platform card selection
-    const togglePlatform = (platformKey) => {
-        const platformAccs = brandAccounts.filter((a) => a.platform === platformKey);
-        if (!platformAccs.length) {
-            toast({
-                title: t('No accounts connected'),
-                description: t('Connect an account for this platform in Social Accounts.'),
-            });
-            return;
-        }
-        const allSelected = platformAccs.every((a) => form.account_ids.includes(a.id));
-        if (allSelected) {
-            setForm((prev) => ({
-                ...prev,
-                account_ids: prev.account_ids.filter((id) => !platformAccs.some((a) => a.id === id)),
-            }));
-        } else {
-            const toAdd = platformAccs.map((a) => a.id).filter((id) => !form.account_ids.includes(id));
-            setForm((prev) => ({
-                ...prev,
-                account_ids: [...prev.account_ids, ...toAdd],
-            }));
-        }
-    };
+    const connectedAccounts = useMemo(() => {
+        return brandAccounts.filter((a) => {
+            if (!PUBLISHING_PLATFORMS.includes(a.platform)) return false;
+            if (desktop || demoMode) {
+                return a.connection_status !== 'disconnected' && a.connection_status !== 'archived';
+            }
+            return a.connection_status === 'connected' || a.connection_status === 'demo';
+        });
+    }, [brandAccounts, desktop, demoMode]);
 
-    const selectedPlatformCount = [...new Set(selectedAccounts.map((a) => a.platform))].length;
+    // Toggle destination account selection
+    const toggleAccount = (accountId) => {
+        setForm((prev) => {
+            const isSelected = prev.account_ids.includes(accountId);
+            return {
+                ...prev,
+                account_ids: isSelected
+                    ? prev.account_ids.filter((id) => id !== accountId)
+                    : [...prev.account_ids, accountId],
+            };
+        });
+    };
 
     const warnings = [];
     if (selectedAccounts.some((a) => a.platform === 'instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
@@ -545,59 +513,65 @@ export default function CreatePost() {
                                 </p>
                             </div>
                             <span className="text-[11px] font-semibold text-muted-foreground bg-muted/70 px-2.5 py-1 rounded-full border border-border/60 shrink-0">
-                                {selectedPlatformCount} {t('platforms')}
+                                {selectedAccounts.length} {t('destinations')}
                             </span>
                         </div>
 
-                        {/* Platform Selection Cards Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 pt-1">
-                            {PLATFORM_CARDS.map((card) => {
-                                const platformAccounts = brandAccounts.filter((a) => a.platform === card.key);
-                                const isConnected = platformAccounts.length > 0;
-                                const isSelected = isConnected && platformAccounts.some((a) => form.account_ids.includes(a.id));
+                        {/* Connected Destinations Cards */}
+                        {connectedAccounts.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-border/80 p-6 text-center bg-muted/10 space-y-2">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('No connected publishing destinations for this brand.')}
+                                </p>
+                                <Link
+                                    to="/accounts"
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground hover:underline"
+                                >
+                                    <span>{t('Connect accounts in Social Accounts')}</span>
+                                    <span>→</span>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-1">
+                                {connectedAccounts.map((account) => {
+                                    const isSelected = form.account_ids.includes(account.id);
+                                    const platformName = PLATFORM_LABEL[account.platform] || account.platform;
 
-                                return (
-                                    <div
-                                        key={card.key}
-                                        onClick={() => togglePlatform(card.key)}
-                                        className={`group relative rounded-2xl border p-3.5 flex flex-col justify-between cursor-pointer transition-all select-none ${
-                                            isSelected
-                                                ? 'border-[#ffd631] bg-[#ffd631]/8 ring-1 ring-[#ffd631] shadow-2xs'
-                                                : 'border-border/80 bg-card hover:bg-muted/30 hover:border-border'
-                                        }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-3">
-                                            <div className={`transition-transform ${isSelected ? 'scale-105' : 'opacity-85 group-hover:opacity-100'}`}>
-                                                <PlatformLogo platform={card.key} size={32} />
+                                    return (
+                                        <div
+                                            key={account.id}
+                                            onClick={() => toggleAccount(account.id)}
+                                            className={`group relative rounded-2xl border p-3.5 flex flex-col justify-between cursor-pointer transition-all select-none ${
+                                                isSelected
+                                                    ? 'border-[#ffd631] bg-[#ffd631]/8 ring-1 ring-[#ffd631] shadow-2xs'
+                                                    : 'border-border/80 bg-card hover:bg-muted/30 hover:border-border'
+                                            }`}
+                                        >
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className={`transition-transform ${isSelected ? 'scale-105' : 'opacity-85 group-hover:opacity-100'}`}>
+                                                    <PlatformLogo platform={account.platform} size={32} />
+                                                </div>
+                                                {isSelected && (
+                                                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold">
+                                                        ✓
+                                                    </span>
+                                                )}
                                             </div>
-                                            {isSelected && (
-                                                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold">
-                                                    ✓
-                                                </span>
-                                            )}
-                                        </div>
 
-                                        <div>
-                                            <div className="font-heading font-semibold text-xs text-foreground">
-                                                {card.label}
-                                            </div>
-                                            <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
-                                                <span
-                                                    className={`h-1.5 w-1.5 rounded-full shrink-0 ${
-                                                        isConnected ? 'bg-emerald-500' : 'bg-muted-foreground/40'
-                                                    }`}
-                                                />
-                                                <span className="truncate">
-                                                    {isConnected
-                                                        ? platformAccounts[0].name
-                                                        : t(card.sublabel)}
-                                                </span>
+                                            <div>
+                                                <div className="font-heading font-semibold text-xs text-foreground truncate">
+                                                    {platformName}
+                                                </div>
+                                                <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                                    <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-emerald-500" />
+                                                    <span className="truncate">{account.name}</span>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                );
-                            })}
-                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </section>
 
                     {/* CARD 02: Thông tin cơ bản (Basic Info & Caption) */}
