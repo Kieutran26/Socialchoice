@@ -81,7 +81,23 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
         const headers = new Headers(response.headers);
         headers.delete('x-socialchoice-ai-failure');
         headers.set('x-socialchoice-ai-response', 'provider');
-        return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+        // Finish bounded provider I/O inside the regional actor before crossing its response boundary.
+        const responseReader = response.body?.getReader(), chunks = []; let bytes = 0;
+        if (responseReader) {
+            try {
+                while (true) {
+                    signal.throwIfAborted();
+                    const next = await responseReader.read(); if (next.done) break;
+                    bytes += next.value.byteLength;
+                    if (bytes > 1024 * 1024) throw new Error('AI response exceeds limit');
+                    chunks.push(next.value);
+                }
+            } catch (error) { await responseReader.cancel().catch(() => {}); throw error; }
+        }
+        const payload = new Uint8Array(bytes); let offset = 0;
+        for (const value of chunks) { payload.set(value, offset); offset += value.byteLength; }
+        headers.delete('content-length'); headers.delete('content-encoding'); headers.delete('transfer-encoding');
+        return new Response(response.body ? payload : null, { status: response.status, statusText: response.statusText, headers });
     } catch (error) {
         const safe = relayError(['TimeoutError', 'AbortError'].includes(error.name));
         return Response.json({ message: safe.message }, { status: safe.status,
