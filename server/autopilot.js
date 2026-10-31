@@ -10,7 +10,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
     const vault = ready ? createMetaVault(store, key) : null;
     const db = () => store.autopilot(); // Lazy: disabled features do not migrate existing workspaces.
     const origin = env.SOCIALCHOICE_PUBLIC_ORIGIN || `http://127.0.0.1:${env.SOCIALCHOICE_FRONTEND_PORT || 5173}`;
-    const config = { clientId: env.GOOGLE_DRIVE_CLIENT_ID, clientSecret: env.GOOGLE_DRIVE_CLIENT_SECRET, redirectUri: origin + '/api/drive/callback' };
+    const config = { apiKey: env.GOOGLE_DRIVE_PUBLIC_API_KEY, clientId: env.GOOGLE_DRIVE_CLIENT_ID, clientSecret: env.GOOGLE_DRIVE_CLIENT_SECRET, redirectUri: origin + '/api/drive/callback' };
     const driveReady = !!(ready && auth.enabled && config.clientId && config.clientSecret);
     const drive = vault ? createDriveProvider(config, vault, fetcher, source => db().source(source.id).generation === source.generation) : null;
     const r2 = createR2Provider(bucket, storageRoot);
@@ -62,7 +62,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
             }
         },
         async execute(operation, input = {}, req, res) {
-            if (operation === 'status') return { enabled, ready, driveReady, storageReady: !!bucket && ready, backgroundReady: !!wake && ready, storagePrefix: ready && bucket ? storageRoot : null };
+            if (operation === 'status') return { enabled, ready, driveReady, publicDriveReady: !!(ready && config.apiKey), storageReady: !!bucket && ready, backgroundReady: !!wake && ready, storagePrefix: ready && bucket ? storageRoot : null };
             requireReady(); await authorize?.();
             if (!input || typeof input !== 'object' || Array.isArray(input)) fail('Autopilot input required');
             if (operation === 'list') {
@@ -77,6 +77,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
             }
             if (operation === 'createSource') {
                 if (input.kind === 'r2' && !bucket) fail('R2 binding required', 409);
+                if (input.kind === 'drive_public' && !config.apiKey) fail('Public Drive requires a server API key', 409);
                 return db().createSource(input);
             }
             if (operation === 'connect') {
@@ -84,6 +85,13 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 if (source.kind === 'r2') {
                     if (!bucket) fail('R2 binding required', 409);
                     db().saveSource({ ...source, status: 'connected', generation: source.generation + 1, cursor: null });
+                    return { connected: true };
+                }
+                if (source.access === 'public') {
+                    await drive.verify(source);
+                    const current = sourceFor(source.id);
+                    if (current.generation !== source.generation) fail('Drive connection changed', 409);
+                    db().saveSource({ ...current, status: 'connected', generation: current.generation + 1, cursor: null });
                     return { connected: true };
                 }
                 if (!driveReady) fail('Configure Google Drive OAuth and admin sign-in first', 409);
