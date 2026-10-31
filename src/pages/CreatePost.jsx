@@ -35,6 +35,7 @@ import { applyAiSuggestion, applyAiPlatformSuggestion } from '@/lib/ai-draft';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import PlatformLogo from '@/components/composer/PlatformLogo';
+import { aiRequest } from '@/api/ai';
 
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
@@ -82,6 +83,22 @@ export default function CreatePost() {
     const [sourceLoading, setSourceLoading] = useState(!!sourceId);
     const [aiOpen, setAiOpen] = useState(false);
     const [aiModel, setAiModel] = useState('gemini');
+    const [aiConfig, setAiConfig] = useState(null);
+
+    useEffect(() => {
+        let active = true;
+        aiRequest('status')
+            .then((cfg) => {
+                if (active && cfg?.configured) {
+                    setAiConfig(cfg);
+                    setAiModel(cfg.provider);
+                }
+            })
+            .catch(() => {});
+        return () => {
+            active = false;
+        };
+    }, []);
 
     useEffect(() => {
         let active = true;
@@ -568,15 +585,21 @@ export default function CreatePost() {
                             <div className="flex items-center gap-2 shrink-0">
                                 <Sparkle size={15} weight="duotone" className="text-amber-500 shrink-0" />
                                 <span className="text-xs font-medium text-foreground whitespace-nowrap shrink-0">{t('AI assistant')}</span>
-                                <Select value={aiModel} onValueChange={setAiModel}>
-                                    <SelectTrigger className="h-8 rounded-lg text-xs w-[140px] bg-muted/40 border-border/60">
-                                        <SelectValue />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="gemini" className="text-xs">Google Gemini</SelectItem>
-                                        <SelectItem value="openai" className="text-xs">OpenAI GPT-4o</SelectItem>
-                                    </SelectContent>
-                                </Select>
+                                {aiConfig?.configured ? (
+                                    <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/60">
+                                        <span className="text-blue-500">✦</span>
+                                        <span>{aiConfig.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}</span>
+                                        <span className="text-[11px] font-mono text-muted-foreground font-normal">({aiConfig.model})</span>
+                                    </div>
+                                ) : (
+                                    <Link
+                                        to="/settings"
+                                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-amber-600 bg-amber-50/70 border border-amber-200/60 hover:underline"
+                                    >
+                                        <span>{t('Configure your AI key in Settings')}</span>
+                                        <span>→</span>
+                                    </Link>
+                                )}
                             </div>
 
                             <Button
@@ -584,6 +607,7 @@ export default function CreatePost() {
                                 variant="outline"
                                 size="sm"
                                 className="h-8 px-3 rounded-lg text-xs font-medium gap-1.5 cursor-pointer"
+                                disabled={!aiConfig?.configured}
                                 onClick={() => setAiOpen((prev) => !prev)}
                             >
                                 <Sparkle size={13} weight="bold" />
