@@ -338,5 +338,19 @@
   "No destinations match filter": "Không tìm thấy đích đăng phù hợp",
   "Try clearing the search or filter to see all destinations.": "Thử xóa từ khóa tìm kiếm hoặc bộ lọc để xem tất cả.",
   "List view": "Dạng danh sách",
-  "Clear filters": "Xóa bộ lọc"
+  "Clear filters": "Xóa bộ lọc",
+  "Search templates…": "Tìm kiếm mẫu bài viết…",
+  "All templates": "Tất cả mẫu",
+  "All formats": "Tất cả định dạng",
+  "Format": "Định dạng",
+  "Text only": "Chỉ có chữ",
+  "With image": "Kèm ảnh",
+  "With video": "Kèm video",
+  "photos": "ảnh",
+  "Default title": "Tiêu đề mặc định",
+  "Showing {count} templates": "Đang hiển thị {count} mẫu bài viết",
+  "Try adjusting your search or filters to find what you're looking for.": "Thử điều chỉnh từ khóa tìm kiếm hoặc bộ lọc để tìm mẫu.",
+  "Create post from this template": "Tạo bài viết từ mẫu này",
+  "Pillar": "Trụ cột",
+  "Template": "Mẫu bài viết"
 }
