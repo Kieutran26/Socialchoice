@@ -39,6 +39,7 @@ export default function MediaUploader({
     const [draggedId, setDraggedId] = useState(null);
     const [targetId, setTargetId] = useState(null);
     const [library, setLibrary] = useState([]);
+    const [mediaTab, setMediaTab] = useState('all');
     const [showLibrary, setShowLibrary] = useState(false);
     const [loadingLibrary, setLoadingLibrary] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -398,7 +399,7 @@ export default function MediaUploader({
             {/* Popup Dialog chọn từ thư viện */}
             <Dialog open={showLibrary} onOpenChange={setShowLibrary}>
                 <DialogContent className="max-w-[1100px] w-[95vw] max-h-[88vh] flex flex-col p-6 sm:p-7">
-                    <DialogHeader className="mb-3">
+                    <DialogHeader className="mb-2">
                         <DialogTitle className="text-lg font-semibold flex items-center gap-2">
                             <ImageSquare size={22} className="text-foreground" />
                             {t('Choose from library')}
@@ -408,7 +409,54 @@ export default function MediaUploader({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[62vh] pr-1.5 scroll-slim">
+                    {/* Filter Tabs: Tất cả / Hình ảnh / Video */}
+                    {library.length > 0 && (
+                        <div className="flex items-center gap-2 mb-3 border-b border-border/60 pb-3">
+                            <button
+                                type="button"
+                                onClick={() => setMediaTab('all')}
+                                className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                                    mediaTab === 'all'
+                                        ? 'bg-foreground text-background shadow-xs'
+                                        : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
+                                }`}
+                            >
+                                {t('All')} ({library.length})
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMediaTab('image')}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                                    mediaTab === 'image'
+                                        ? 'bg-foreground text-background shadow-xs'
+                                        : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
+                                }`}
+                            >
+                                <ImageSquare size={15} />
+                                <span>{t('Images')}</span>
+                                <span className="opacity-70 font-mono">
+                                    ({library.filter((i) => i.file_type !== 'video').length})
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setMediaTab('video')}
+                                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
+                                    mediaTab === 'video'
+                                        ? 'bg-foreground text-background shadow-xs'
+                                        : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
+                                }`}
+                            >
+                                <VideoCamera size={15} />
+                                <span>{t('Videos')}</span>
+                                <span className="opacity-70 font-mono">
+                                    ({library.filter((i) => i.file_type === 'video').length})
+                                </span>
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[60vh] pr-1.5 scroll-slim">
                         {loadingLibrary ? (
                             <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
                                 <CircleNotch size={28} className="animate-spin text-foreground" />
@@ -426,7 +474,13 @@ export default function MediaUploader({
                             </div>
                         ) : (
                             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-                                {library.map((image) => {
+                                {library
+                                    .filter((image) => {
+                                        if (mediaTab === 'image') return image.file_type !== 'video';
+                                        if (mediaTab === 'video') return image.file_type === 'video';
+                                        return true;
+                                    })
+                                    .map((image) => {
                                     const isSelected = assets.some((asset) => asset.id === image.id);
                                     const isVideo = image.file_type === 'video';
                                     const hasVideo = assets.some((asset) => asset.file_type === 'video');
