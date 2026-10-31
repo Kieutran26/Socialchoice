@@ -54,7 +54,7 @@ export default function DestinationChecks({ checks = [], post = {} }) {
             aria-label={t('Before you publish')}
         >
             <div className="flex items-center justify-between">
-                <h3 className="font-heading font-bold text-base text-foreground tracking-tight">
+                <h3 className="font-heading font-bold text-sm sm:text-[15px] text-foreground">
                     {t('Before you publish')}
                 </h3>
                 <span className="text-xs font-medium text-muted-foreground">

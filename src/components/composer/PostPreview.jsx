@@ -97,7 +97,7 @@ export default function PostPreview({
                 <section className="panel p-5 sm:p-6 bg-card border border-border rounded-3xl shadow-2xs min-w-0" aria-label={t('Content preview')}>
                     {/* Header: Left "Xem trước", Right "Mô phỏng" */}
                     <div className="flex items-center justify-between pb-3.5">
-                        <h2 className="text-base font-bold text-foreground tracking-tight">{t('Preview')}</h2>
+                        <h2 className="text-sm sm:text-[15px] font-bold text-foreground">{t('Preview')}</h2>
                         <span className="text-sm font-normal text-muted-foreground/80">{t('Simulation')}</span>
                     </div>
 
