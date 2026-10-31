@@ -1,6 +1,14 @@
 import { createHash } from 'node:crypto';
 import { fail } from './validation.js';
 export const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.readonly';
+export function parsePublicDriveFolder(value) {
+    let url;
+    try { url = new URL(value); } catch { fail('Enter a public Google Drive folder link', 400); }
+    const match = url.pathname.match(/^\/drive(?:\/u\/\d+)?\/folders\/([a-zA-Z0-9_-]{1,200})\/?$/);
+    const resourceKey = url.searchParams.get('resourcekey');
+    if (url.protocol !== 'https:' || url.hostname !== 'drive.google.com' || url.port || url.username || url.password || !match || resourceKey && !/^[a-zA-Z0-9_-]{1,200}$/.test(resourceKey)) fail('Enter a public Google Drive folder link', 400);
+    return { folder: match[1], resource_key: resourceKey || null, access: 'public' };
+}
 export const IMAGE_LIMIT = 3 * 1024 * 1024;
 export async function boundedBytes(response, limit) {
     const reader = response.body?.getReader(); if (!reader) fail('Empty source response', 502);
@@ -29,8 +37,22 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         if (!isCurrent(source)) fail('Drive connection changed', 409);
         vault.save(credentialId(source), { ...grant, access_token: next.access_token, refresh_token: next.refresh_token || grant.refresh_token, expires: Date.now() + next.expires_in * 1000 }); return next.access_token;
     }
-    const request = async (source, path, params = {}) => fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'error', signal: AbortSignal.timeout(20000) });
+    const request = async (source, path, params = {}, resourceKey) => {
+        if (source.access === 'public') {
+            if (!config.apiKey) fail('Public Drive requires a server API key', 409);
+            const keys = [[source.folder, source.resource_key], [path.startsWith('files/') ? path.slice(6) : '', resourceKey]].filter(([, key]) => key);
+            const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'error', signal: AbortSignal.timeout(20000) });
+            if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401,403,404].includes(response.status) ? 409 : 502, retryable: response.status === 429 || response.status >= 500 }); }
+            return response;
+        }
+        return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'error', signal: AbortSignal.timeout(20000) });
+    };
+    async function verify(source) {
+        const folder = await providerJson(await request(source, 'files/' + source.folder, { fields: 'id,mimeType,trashed', supportsAllDrives: 'true' }));
+        if (folder.id !== source.folder || folder.mimeType !== 'application/vnd.google-apps.folder' || folder.trashed) fail('Choose an accessible public Drive folder', 409);
+    }
     return {
+        verify,
         async exchange(source, code, verifier) {
             const grant = await tokenRequest({ grant_type: 'authorization_code', code, code_verifier: verifier, redirect_uri: config.redirectUri });
             if (typeof grant.access_token !== 'string' || typeof grant.refresh_token !== 'string' || !grant.refresh_token || !Number.isFinite(grant.expires_in) || grant.expires_in <= 0 || !grant.scope?.split(' ').includes(DRIVE_SCOPE)) fail('Drive offline read permission required. Reconnect.', 409);
@@ -44,21 +66,22 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         },
         disconnect: source => vault.remove(credentialId(source)),
         async list(source) {
-            const data = await providerJson(await request(source, 'files', { q: `'${source.folder}' in parents and trashed = false`, fields: 'nextPageToken,incompleteSearch,files(id,name,mimeType,size,version,modifiedTime,md5Checksum)', pageSize: '100', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...(source.cursor ? { pageToken: source.cursor } : {}) }));
+            if (source.access === 'public') await verify(source);
+            const data = await providerJson(await request(source, 'files', { q: `'${source.folder}' in parents and trashed = false`, fields: 'nextPageToken,incompleteSearch,files(id,name,mimeType,size,version,modifiedTime,md5Checksum,resourceKey)', pageSize: '100', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...(source.cursor ? { pageToken: source.cursor } : {}) }));
             if (!Array.isArray(data.files) || data.incompleteSearch || data.nextPageToken && typeof data.nextPageToken !== 'string') fail('Incomplete Drive listing', 502);
-            return { files: data.files.filter(file => !file.mimeType?.startsWith('application/vnd.google-apps.')).map(file => ({ id: file.id, name: file.name, mime: file.mimeType, size: Number(file.size), version: file.md5Checksum || `${file.version}:${file.modifiedTime}` })), cursor: data.nextPageToken || null };
+            return { files: data.files.filter(file => !file.mimeType?.startsWith('application/vnd.google-apps.')).map(file => ({ id: file.id, name: file.name, mime: file.mimeType, size: Number(file.size), resource_key: file.resourceKey || null, version: file.md5Checksum || `${file.version}:${file.modifiedTime}` })), cursor: data.nextPageToken || null };
         },
         async image(source, asset) {
             // Re-check membership/version before sending bytes to an AI provider.
-            const meta = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'id,parents,trashed,version,modifiedTime,md5Checksum', supportsAllDrives: 'true' }));
+            const meta = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'id,parents,trashed,version,modifiedTime,md5Checksum', supportsAllDrives: 'true' }, asset.resource_key));
             if (meta.trashed || !meta.parents?.includes(source.folder) || (meta.md5Checksum || `${meta.version}:${meta.modifiedTime}`) !== asset.version) fail('Source changed. Sync before analyzing.', 409);
-            const response = await request(source, `files/${encodeURIComponent(asset.external_id)}`, { alt: 'media', supportsAllDrives: 'true' });
+            const response = await request(source, `files/${encodeURIComponent(asset.external_id)}`, { alt: 'media', supportsAllDrives: 'true' }, asset.resource_key);
             if (!response.ok) { await providerJson(response); }
             const bytes = await boundedBytes(response, IMAGE_LIMIT);
             if (meta.md5Checksum) {
                 if (createHash('md5').update(bytes).digest('hex') !== meta.md5Checksum) fail('Source changed during download. Sync again.', 409);
             } else {
-                const after = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'parents,trashed,version,modifiedTime', supportsAllDrives: 'true' }));
+                const after = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'parents,trashed,version,modifiedTime', supportsAllDrives: 'true' }, asset.resource_key));
                 if (after.trashed || !after.parents?.includes(source.folder) || `${after.version}:${after.modifiedTime}` !== asset.version) fail('Source changed during download. Sync again.', 409);
             }
             return bytes;
