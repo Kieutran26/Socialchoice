@@ -9,7 +9,6 @@ import {
     PaperPlaneTilt,
     Trash,
     Copy,
-    WarningCircle,
     CalendarBlank,
     Sparkle,
 } from '@phosphor-icons/react';
@@ -237,21 +236,6 @@ export default function CreatePost() {
             };
         });
     };
-
-    const warnings = [];
-    if (selectedAccounts.some((a) => a.platform === 'instagram')) warnings.push(t('Instagram uses one JPEG photo or one MP4 Reel with a caption up to 2200 characters.'));
-    if (selectedAccounts.some((a) => a.platform === 'linkedin')) warnings.push(t('LinkedIn supports up to 3000 characters, JPEG/PNG images or one MP4 video up to 30 MiB. Posts are public.'));
-    if (selectedAccounts.some((a) => a.platform === 'threads')) warnings.push(t('Threads supports text or one photo/video, with a caption up to 500 characters.'));
-    if (selectedAccounts.length && selectedAccounts.every((a) => a.connection_status !== 'connected')) {
-        warnings.push(t('These destinations are planning references. Connect a publishing account before publishing.'));
-    }
-    if (selectedAccounts.some((a) => !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(a.platform))) {
-        warnings.push(t('Publishing supports connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts.'));
-    }
-    if (form.account_ids.length > 30) warnings.push(t('Choose between 1 and 30 different publishing accounts'));
-    if (!form.pillar_id || !form.angle_id) {
-        warnings.push(t('Assign a pillar and an angle so this post counts towards your distribution targets.'));
-    }
 
     const validate = (action) => {
         if (!form.brand_id) return t('Choose the brand this post belongs to.');
@@ -769,23 +753,6 @@ export default function CreatePost() {
 
                     {/* Pre-Publish Checklist (Replaces channel check issues table with checklist) */}
                     <DestinationChecks checks={checks} post={form} />
-
-                    {warnings.length ? (
-                        <div className="rounded-xl border border-amber-200 bg-amber-50/70 p-3 space-y-1.5">
-                            <p className="flex items-center gap-1.5 text-[12px] font-semibold text-amber-900">
-                                <WarningCircle size={15} weight="fill" className="text-amber-600 shrink-0" />
-                                <span>{t(desktop ? 'Planning checks' : 'Before you publish')}</span>
-                            </p>
-                            <ul className="space-y-1 pt-0.5">
-                                {warnings.map((warning) => (
-                                    <li key={warning} className="text-[11px] text-amber-800 flex items-start gap-1.5 leading-relaxed">
-                                        <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-amber-600" />
-                                        <span>{warning}</span>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    ) : null}
 
                     {/* Action Buttons Box */}
                     <div className="panel p-4 sm:p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
