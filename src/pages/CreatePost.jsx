@@ -532,37 +532,51 @@ export default function CreatePost() {
                             </button>
                         )}
                         {desktop ? (
-                            <button
-                                type="button"
-                                className="btn-skew w-full flex items-center justify-center gap-2"
-                                disabled={saving || uploading}
-                                onClick={() => submit('schedule')}
-                            >
-                                <CalendarDots size={16} weight="duotone" />
-                                <span>{t('Save calendar plan')}</span>
-                            </button>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    type="button"
+                                    className="btn-skew w-full flex items-center justify-center gap-1.5 px-2"
+                                    disabled={saving || uploading}
+                                    onClick={() => submit('schedule')}
+                                >
+                                    <CalendarDots size={16} weight="duotone" className="shrink-0" />
+                                    <span className="truncate">{t('Save calendar plan')}</span>
+                                </button>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    className="w-full rounded-xl h-10 border border-border/80 text-foreground hover:bg-muted font-medium px-2"
+                                    disabled={saving || uploading}
+                                    onClick={() => submit('draft')}
+                                >
+                                    <FloppyDisk size={16} className="mr-1.5 shrink-0" />
+                                    <span className="truncate">{t("Save draft")}</span>
+                                </Button>
+                            </div>
                         ) : (
-                            <Button
-                                variant="outline"
-                                type="button"
-                                className="w-full rounded-xl h-10 font-medium"
-                                disabled={saving || uploading}
-                                onClick={() => submit('schedule')}
-                            >
-                                <CalendarDots size={16} weight="fill" className="mr-2" />
-                                <span>{t("Schedule post")}</span>
-                            </Button>
+                            <div className="grid grid-cols-2 gap-2">
+                                <Button
+                                    variant="outline"
+                                    type="button"
+                                    className="w-full rounded-xl h-10 font-medium px-2"
+                                    disabled={saving || uploading}
+                                    onClick={() => submit('schedule')}
+                                >
+                                    <CalendarDots size={16} weight="fill" className="mr-1.5 shrink-0" />
+                                    <span className="truncate">{t("Schedule post")}</span>
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    className="w-full rounded-xl h-10 border border-border/80 text-foreground hover:bg-muted font-medium px-2"
+                                    disabled={saving || uploading}
+                                    onClick={() => submit('draft')}
+                                >
+                                    <FloppyDisk size={16} className="mr-1.5 shrink-0" />
+                                    <span className="truncate">{t("Save draft")}</span>
+                                </Button>
+                            </div>
                         )}
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            className="w-full rounded-xl h-10 border border-border/80 text-foreground hover:bg-muted font-medium"
-                            disabled={saving || uploading}
-                            onClick={() => submit('draft')}
-                        >
-                            <FloppyDisk size={16} className="mr-2" />
-                            <span>{t("Save draft")}</span>
-                        </Button>
                         <div className="rounded-lg bg-muted/40 p-2.5 mt-2">
                             <p className="label-xs flex items-start gap-2 text-muted-foreground leading-relaxed">
                                 <Info size={14} className="mt-0.5 shrink-0 text-foreground/60" />
