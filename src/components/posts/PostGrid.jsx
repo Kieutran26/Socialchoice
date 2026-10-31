@@ -2,6 +2,7 @@ import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/lib/format';
 import { POST_STATUS_LABEL } from '@/lib/constants';
 import PlatformBadge from '../common/PlatformBadge';
+import StatusBadge from '../common/StatusBadge';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import {
@@ -14,33 +15,6 @@ import {
     Stack,
     FileText,
 } from '@phosphor-icons/react';
-
-const STATUS_CONFIG = {
-    published: {
-        bg: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
-        dot: 'bg-emerald-500',
-    },
-    scheduled: {
-        bg: 'bg-amber-50 text-amber-800 border-amber-200/80',
-        dot: 'bg-amber-500 animate-pulse',
-    },
-    draft: {
-        bg: 'bg-zinc-100 text-zinc-700 border-zinc-200/80',
-        dot: 'bg-zinc-400',
-    },
-    processing: {
-        bg: 'bg-sky-50 text-sky-700 border-sky-200/80',
-        dot: 'bg-sky-500 animate-spin',
-    },
-    failed: {
-        bg: 'bg-rose-50 text-rose-700 border-rose-200/80',
-        dot: 'bg-rose-500',
-    },
-    cancelled: {
-        bg: 'bg-zinc-100 text-zinc-600 border-zinc-200/80',
-        dot: 'bg-zinc-400',
-    },
-};
 
 export default function PostGrid({
     posts,
@@ -77,7 +51,6 @@ export default function PostGrid({
                 const mediaCount = (post.media_ids || []).length;
                 const isVideo = firstMedia?.file_type === 'video';
 
-                const statusStyle = STATUS_CONFIG[post.status] || STATUS_CONFIG.draft;
 
                 return (
                     <article
@@ -143,12 +116,7 @@ export default function PostGrid({
                             </div>
 
                             {/* Status badge */}
-                            <span
-                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border shadow-2xs shrink-0 ${statusStyle.bg}`}
-                            >
-                                <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
-                                {POST_STATUS_LABEL[post.status] || post.status}
-                            </span>
+                            <StatusBadge status={post.status} />
                         </div>
 
                         {/* 2. Main Content */}
