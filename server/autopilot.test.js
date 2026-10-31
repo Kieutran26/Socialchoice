@@ -115,7 +115,7 @@ test('durable leases fence late workers and expired AI calls require explicit re
 });
 
 test('source/job checkpoint survives restart and workspaces cannot read each other', t => {
-    const dir = mkdtempSync(join(tmpdir(), 'autopilot-')); t.after(() => rmSync(dir, { recursive: true, force: true }));
+    const dir = mkdtempSync(join(tmpdir(), 'autopilot-'));
     let store = createStore(join(dir, 'workspace.sqlite'));
     const brand = store.write('Brand', { name: 'Persistent' });
     const source = store.autopilot().createSource({ brand_id: brand.id, kind: 'r2', name: 'source', folder: 'assets/' });
@@ -123,6 +123,7 @@ test('source/job checkpoint survives restart and workspaces cannot read each oth
     store = createStore(join(dir, 'workspace.sqlite')); t.after(() => store.close());
     assert.equal(store.autopilot().sources()[0].id, source.id); assert.equal(store.autopilot().claim().target, source.id);
     const other = createStore(':memory:'); t.after(() => other.close()); assert.throws(() => other.autopilot().source(source.id), { status: 404 });
+    t.after(() => rmSync(dir, { recursive: true, force: true }));
 });
 
 test('Drive OAuth enforces nonce, single use, session, encrypted offline grant and private folder verification', async t => {
@@ -222,4 +223,38 @@ test('successful sync pages dispatch a new message instead of consuming the deli
         AUTOPILOT_QUEUE: { send: async (next, options) => { assert.deepEqual(next, body); assert.equal(options.delaySeconds, 1); sent++; } },
     });
     assert.equal(sent, 1); assert.equal(acknowledged, 1);
+});
+
+test('public Drive links validate host/path and preserve resource keys without OAuth', async t => {
+    const { parsePublicDriveFolder } = await import('./autopilot-providers.js');
+    assert.deepEqual(parsePublicDriveFolder('https://drive.google.com/drive/u/1/folders/public_1?resourcekey=0-key'), { folder:'public_1', resource_key:'0-key', access:'public' });
+    for (const link of ['http://drive.google.com/drive/folders/x', 'https://drive.google.com.evil.test/drive/folders/x', 'https://user@drive.google.com/drive/folders/x', 'https://drive.google.com/file/d/x/view', 'https://127.0.0.1/drive/folders/x', 'https://drive.google.com/drive/folders/x?resourcekey=bad%0D%0Akey']) assert.throws(() => parsePublicDriveFolder(link));
+    let unavailable = false, calls = [];
+    const { call, brand, store } = fixture(t, { env: { SOCIALCHOICE_AUTOPILOT_ENABLED:'true', GOOGLE_DRIVE_PUBLIC_API_KEY:'server-only-key' }, fetcher: async (url, init) => {
+        calls.push({url, init}); assert.equal(init.headers.Authorization, undefined); assert.equal(init.headers['X-Goog-Api-Key'], 'server-only-key'); assert.equal(init.redirect, 'error'); assert.equal(new URL(url).hostname, 'www.googleapis.com');
+        if (unavailable) return new Response('',{status:404});
+        if (new URL(url).pathname.endsWith('/files/public_1')) return ok({id:'public_1',mimeType:'application/vnd.google-apps.folder'});
+        return ok({files:[{id:'public-file',name:'test.png',mimeType:'image/png',size:png.length,md5Checksum:'version1',resourceKey:'file-key'}]});
+    } });
+    const source = await call('createSource',{brand_id:brand.id,kind:'drive_public',name:'Public',folder:'https://drive.google.com/drive/folders/public_1?resourcekey=0-key'});
+    assert.equal(source.access,'public');
+    assert.equal((await call('connect',{id:source.id})).url,undefined);
+    for (let i=0;i<2;i++) { await call('sync',{id:source.id}); assert.equal((await call('run')).status,'done'); }
+    assert.equal(store.autopilot().assets().length,1);
+    assert.equal(store.autopilot().assets()[0].resource_key,'file-key');
+    assert.ok(calls.every(c=>!c.url.includes('server-only-key')));
+    assert.ok(calls.some(c=>c.init.headers['X-Goog-Drive-Resource-Keys']==='public_1/0-key'));
+    unavailable=true;
+    await call('sync',{id:source.id}); assert.equal((await call('run')).status,'failed');
+    assert.equal(store.autopilot().assets()[0].availability,'available');
+});
+test('public Drive image rechecks membership before reading and rejects redirects', async () => {
+    const provider=createDriveProvider({apiKey:'key'},null,async (url,init)=>{
+        assert.equal(init.headers.Authorization,undefined);
+        assert.ok(init.headers['X-Goog-Drive-Resource-Keys'].includes('file1/file-key'));
+        return ok({id:'file1',parents:['different-folder'],md5Checksum:'v1'});
+    });
+    await assert.rejects(provider.image({folder:'public_1',access:'public'}, {external_id:'file1',resource_key:'file-key',version:'v1'}),/Source changed/);
+    const redirected=createDriveProvider({apiKey:'key'},null,async()=>new Response(null,{status:302,headers:{Location:'http://127.0.0.1'}}));
+    await assert.rejects(redirected.verify({folder:'public_1',access:'public'}),/Public Drive request failed/);
 });
