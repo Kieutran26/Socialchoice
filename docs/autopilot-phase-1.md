@@ -1,5 +1,15 @@
 # Socialchoice Autopilot Phase 1
 
+## Public Drive link sources — 2026-10-31 update
+
+New Drive sources use a public folder link instead of Google OAuth. Choose Public Google Drive folder, paste an HTTPS drive.google.com/drive/folders/... link (including resourcekey when present), add the source, check public access, then queue sync.
+The owner must set the folder to Anyone with the link / Viewer in Google Drive. Socialchoice never changes sharing automatically.
+The server requires GOOGLE_DRIVE_PUBLIC_API_KEY with Google Drive API enabled and API restrictions limited to Drive. This key stays server-only, never in VITE variables or the browser. OAuth client ID/secret and Test users are not required for public sources.
+Only direct binary children are cataloged. Nested folders, shortcuts and Google Docs export are excluded. Private or revoked folders fail without replacing prior catalog availability.
+Requests use fixed Google API endpoints, bounded reads, deadlines, no redirects and validated folder IDs. Resource keys are preserved. AI downloads recheck parent membership and file version.
+Existing OAuth sources and encrypted grants remain separate legacy records; this change does not silently convert them or revoke grants at Google.
+Verification status: see public-drive-update.md. No production rollout is authorized.
+
 ## Status
 
 This branch adds Drive/R2 metadata ingestion, an asset catalog, and image analysis. The feature is off by default.
