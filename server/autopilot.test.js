@@ -231,7 +231,7 @@ test('public Drive links validate host/path and preserve resource keys without O
     for (const link of ['http://drive.google.com/drive/folders/x', 'https://drive.google.com.evil.test/drive/folders/x', 'https://user@drive.google.com/drive/folders/x', 'https://drive.google.com/file/d/x/view', 'https://127.0.0.1/drive/folders/x', 'https://drive.google.com/drive/folders/x?resourcekey=bad%0D%0Akey']) assert.throws(() => parsePublicDriveFolder(link));
     let unavailable = false, calls = [];
     const { call, brand, store } = fixture(t, { env: { SOCIALCHOICE_AUTOPILOT_ENABLED:'true', GOOGLE_DRIVE_PUBLIC_API_KEY:'server-only-key' }, fetcher: async (url, init) => {
-        calls.push({url, init}); assert.equal(init.headers.Authorization, undefined); assert.equal(init.headers['X-Goog-Api-Key'], 'server-only-key'); assert.equal(init.redirect, 'error'); assert.equal(new URL(url).hostname, 'www.googleapis.com');
+        calls.push({url, init}); assert.equal(init.headers.Authorization, undefined); assert.equal(init.headers['X-Goog-Api-Key'], 'server-only-key'); assert.equal(init.redirect, 'manual'); assert.equal(new URL(url).hostname, 'www.googleapis.com');
         if (unavailable) return new Response('',{status:404});
         if (new URL(url).pathname.endsWith('/files/public_1')) return ok({id:'public_1',mimeType:'application/vnd.google-apps.folder'});
         return ok({files:[{id:'public-file',name:'test.png',mimeType:'image/png',size:png.length,md5Checksum:'version1',resourceKey:'file-key'}]});
