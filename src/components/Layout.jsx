@@ -201,7 +201,7 @@ function Shell() {
             </aside>
 
             <div className="lg:ml-60">
-                <div className="h-14 border-b flex items-center gap-3 px-5">
+                <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center gap-3 px-5 transition-colors">
                     <Button
                         size="icon"
                         variant="ghost"
@@ -212,10 +212,10 @@ function Shell() {
                     >
                         <List size={22} />
                     </Button>
-                    <span className="label-xs">{t("Social Publishing Hub")}</span>
-                    <span className="ml-auto label-xs">{t("Review before publishing")}</span>
+                    <span className="label-xs font-medium text-foreground">{t("Social Publishing Hub")}</span>
+                    <span className="ml-auto label-xs text-muted-foreground">{t("Review before publishing")}</span>
                     {!isDesktop() && <PublishingNotifications />}
-                </div>
+                </header>
 
                 <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
                     {demoMode && (

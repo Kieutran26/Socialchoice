@@ -209,7 +209,7 @@
     }
     .composer-preview {
         position: sticky;
-        top: 24px;
+        top: 72px;
         align-self: start;
     }
 }
