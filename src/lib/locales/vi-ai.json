@@ -41,5 +41,11 @@
   "Could not connect through the AI relay. Please try again later.": "Không thể kết nối qua tuyến chuyển tiếp AI. Vui lòng thử lại sau.",
   "AI relay timed out. Check your provider before trying again.": "Tuyến chuyển tiếp AI hết thời gian chờ. Kiểm tra nhà cung cấp trước khi thử lại.",
   "AI gateway timed out. Check your provider before trying again.": "Cổng AI hết thời gian chờ. Kiểm tra nhà cung cấp trước khi thử lại.",
-  "AI gateway returned an invalid response. Please try again later.": "Cổng AI trả về phản hồi không hợp lệ. Vui lòng thử lại sau."
+  "AI gateway returned an invalid response. Please try again later.": "Cổng AI trả về phản hồi không hợp lệ. Vui lòng thử lại sau.",
+  "Configured — test connection to verify": "Đã cấu hình — cần kiểm tra kết nối",
+  "Loading models…": "Đang tải danh sách model…",
+  "Choose an image-capable model": "Chọn model có khả năng đọc ảnh",
+  "One OpenRouter key supports Gemini, Claude and GPT models. Images and prompts pass through OpenRouter to the selected provider. API usage is billed by OpenRouter; model availability and pricing can change.": "Một API key OpenRouter dùng cho các model Gemini, Claude và GPT. Ảnh và nội dung được gửi qua OpenRouter tới nhà cung cấp đã chọn. OpenRouter tính phí API; model và giá có thể thay đổi.",
+  "Could not load OpenRouter models. Try again.": "Không tải được danh sách model OpenRouter. Vui lòng thử lại.",
+  "Invalid OpenRouter model list": "Danh sách model OpenRouter không hợp lệ"
 }
