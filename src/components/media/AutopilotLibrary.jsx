@@ -12,7 +12,7 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 export default function AutopilotLibrary({ brandId }) {
     const { t } = useTranslation();
     const [status, setStatus] = useState(null), [data, setData] = useState(null);
-    const [kind, setKind] = useState('drive'), [name, setName] = useState(''), [folder, setFolder] = useState('');
+    const [kind, setKind] = useState('drive_public'), [name, setName] = useState(''), [folder, setFolder] = useState('');
     const [search, setSearch] = useState(''), [offset, setOffset] = useState(0);
     const [error, setError] = useState(''), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState(null);
     const version = useRef(0);
@@ -52,22 +52,22 @@ export default function AutopilotLibrary({ brandId }) {
         {error && <p role="alert" className="text-sm text-dangerFg break-words">{t(error)}</p>}
         {!status?.ready ? <p className="text-sm">{t('Autopilot requires server encryption configuration.')}</p> : !brandId ? <p className="text-sm">{t('Choose a brand below to manage its sources.')}</p> : <>
             <form className="grid gap-3 sm:grid-cols-2" onSubmit={event => { event.preventDefault(); click('createSource', { brand_id: brandId, kind, name, folder }); }}>
-                <div><Label htmlFor="autopilot-kind">{t('Source type')}</Label><select id="autopilot-kind" className="border rounded-lg p-2 w-full text-sm mt-1" disabled={busy} value={kind} onChange={event => setKind(event.target.value)}><option value="drive">Google Drive</option><option value="r2" disabled={!status.storageReady}>Storage (R2)</option></select></div>
+                <div><Label htmlFor="autopilot-kind">{t('Source type')}</Label><select id="autopilot-kind" className="border rounded-lg p-2 w-full text-sm mt-1" disabled={busy} value={kind} onChange={event => setKind(event.target.value)}><option value="drive_public">{t("Public Google Drive folder")}</option><option value="r2" disabled={!status.storageReady}>Storage (R2)</option></select></div>
                 <div><Label htmlFor="autopilot-name">{t('Source name')}</Label><Input id="autopilot-name" className="mt-1" required maxLength={160} value={name} disabled={busy} onChange={event => setName(event.target.value)} /></div>
-                <div className="sm:col-span-2"><Label htmlFor="autopilot-folder">{t(kind === 'drive' ? 'Google Drive folder ID' : 'Storage prefix ending in /')}</Label><Input id="autopilot-folder" className="mt-1" required maxLength={200} value={folder} disabled={busy} onChange={event => setFolder(event.target.value)} />{kind === 'r2' && <p className="label-xs mt-1">{t('Workspace storage root')}: {status.storagePrefix}</p>}</div>
+                <div className="sm:col-span-2"><Label htmlFor="autopilot-folder">{t(kind === 'drive_public' ? 'Public Google Drive folder link' : 'Storage prefix ending in /')}</Label><Input id="autopilot-folder" className="mt-1" required maxLength={1000} value={folder} disabled={busy} onChange={event => setFolder(event.target.value)} />{kind === 'drive_public' && <p className="label-xs mt-1">{t('Set the folder to Anyone with the link, Viewer. Only direct files are imported. No Google sign-in is needed.')}</p>}{kind === 'r2' && <p className="label-xs mt-1">{t('Workspace storage root')}: {status.storagePrefix}</p>}</div>
                 <div className="sm:col-span-2 flex justify-end"><button type="submit" className="btn-skew" disabled={busy}>{t('Add source')}</button></div>
             </form>
             {!data ? <Skeleton className="h-24 rounded-xl" /> : <>
                 {!data.sources.length && <p className="text-sm text-muted-foreground">{t('No sources yet. Add a Drive folder or Storage prefix.')}</p>}
                 <ul className="space-y-2">{data.sources.map(source => <li key={source.id} className="border rounded-xl p-3 flex flex-wrap items-center justify-between gap-3">
-                    <div className="min-w-0"><p className="text-sm font-medium break-words">{source.name}</p><p className="label-xs break-all">{source.kind === 'drive' ? 'Google Drive' : 'Storage'} · {t(source.status)}{source.last_synced_at && ` · ${formatDay(source.last_synced_at)}`}</p></div>
+                    <div className="min-w-0"><p className="text-sm font-medium break-words">{source.name}</p><p className="label-xs break-all">{source.kind === 'drive' ? t(source.access === 'public' ? 'Public Google Drive folder' : 'Legacy Google Drive OAuth source') : 'Storage'} · {t(source.status)}{source.last_synced_at && ` · ${formatDay(source.last_synced_at)}`}</p></div>
                     <div className="flex flex-wrap gap-2">
-                        {(source.kind === 'drive' || source.status !== 'connected') && <Button variant="outline" size="sm" disabled={busy || source.kind === 'drive' && !status.driveReady} onClick={() => click('connect', { id: source.id })}>{t(source.status === 'connected' ? 'Reconnect' : 'Connect')}</Button>}
+                        {(source.kind === 'drive' || source.status !== 'connected') && <Button variant="outline" size="sm" disabled={busy || source.kind === 'drive' && !(source.access === 'public' ? status.publicDriveReady : status.driveReady)} onClick={() => click('connect', { id: source.id })}>{t(source.access === 'public' ? 'Check public access' : source.status === 'connected' ? 'Reconnect' : 'Connect')}</Button>}
                         <Button variant="outline" size="sm" disabled={busy || source.status !== 'connected'} onClick={() => click('sync', { id: source.id })}>{t('Queue sync')}</Button>
                         <Button variant="ghost" size="sm" disabled={busy || source.status !== 'connected'} onClick={() => click('disconnect', { id: source.id })}>{t('Disconnect')}</Button>
                     </div>
                 </li>)}</ul>
-                {!status.driveReady && <p className="label-xs">{t('Drive connection requires Google OAuth credentials and a signed-in session on the server.')}</p>}
+                {!status.publicDriveReady && <p className="label-xs">{t('Public Drive requires a server API key')}</p>}
                 <div className="border-t pt-4 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-[15px]">{t('Processing queue')}</h3><Button variant="outline" disabled={busy} onClick={() => click('run')}>{t(busy ? 'Processing…' : 'Process next job')}</Button></div>
                     <p className="label-xs">{t(status.backgroundReady ? 'Background queue is configured. Manual processing remains available for recovery.' : 'This development version processes one queued job per click. Each sync page is a separate job. Background processing is not enabled.')}</p>
