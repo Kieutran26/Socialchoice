@@ -202,7 +202,14 @@
 
 /* Use the available composer width, including when the app sidebar is open. */
 .composer-shell { container-type: inline-size; }
-@container (min-width: 800px) {
-    .composer-columns { grid-template-columns: minmax(0, 3fr) minmax(0, 7fr); }
-    .composer-preview { position: sticky; top: 76px; align-self: start; }
+@container (min-width: 840px) {
+    .composer-columns {
+        grid-template-columns: minmax(0, 1.35fr) minmax(360px, 460px);
+        align-items: start;
+    }
+    .composer-preview {
+        position: sticky;
+        top: 24px;
+        align-self: start;
+    }
 }

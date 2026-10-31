@@ -335,150 +335,155 @@ export default function CreatePost() {
 
             <div className="composer-shell"><div className="composer-columns grid gap-5">
                 <div className="min-w-0 space-y-5">
-                    <section className="panel p-5">
-                        <div className="flex items-center justify-between gap-3 mb-4">
+                    {/* 1. Chọn đích đăng (Destinations) at the very top */}
+                    {!desktop && (
+                        <section className="panel p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2 text-foreground">
+                                    <ShareNetwork size={18} weight="bold" className="shrink-0 text-foreground" />
+                                    <h2 className="text-[15px] font-semibold text-foreground">{t("Destinations")}</h2>
+                                </div>
+                            </div>
+                            <fieldset disabled={uploading || saving}>
+                                <AccountPicker
+                                    accounts={brandAccounts}
+                                    selectedIds={form.account_ids}
+                                    brandName={brand?.name || t("this brand")}
+                                    onToggle={(id) =>
+                                        setForm({
+                                            ...form,
+                                            account_ids: form.account_ids.includes(id)
+                                                ? form.account_ids.filter((value) => value !== id)
+                                                : [...form.account_ids, id],
+                                        })
+                                    }
+                                    onSelectAll={(checked) =>
+                                        setForm({ ...form, account_ids: checked ? brandAccounts.map((a) => a.id) : [] })
+                                    }
+                                />
+                            </fieldset>
+                        </section>
+                    )}
+
+                    {/* 2. Soạn nội dung & Phương tiện (Basics & Media) */}
+                    <section className="panel p-5 space-y-4">
+                        <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2 text-foreground">
                                 <NotePencil size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Basics")}</h2>
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <div className="grid gap-4 sm:grid-cols-2">
-                                <div>
-                                    <Label htmlFor="post-brand" className="label-xs mb-1.5 block">{t("Brand")}</Label>
-                                    <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
-                                        <SelectTrigger id="post-brand" className="rounded-xl">
-                                            <SelectValue placeholder={t("Select brand")} />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {brands.map((item) => (
-                                                <SelectItem key={item.id} value={item.id}>
-                                                    {item.name}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-                                <div>
-                                    <Label htmlFor="post-title" className="label-xs mb-1.5 block">{t("Post title (internal)")}</Label>
-                                    <Input
-                                        id="post-title"
-                                        value={form.title}
-                                        onChange={(event) => setForm({ ...form, title: event.target.value })}
-                                        placeholder={t("Week 42 — product education")}
-                                        className="rounded-xl"
-                                    />
-                                </div>
+
+                        <div className="grid gap-4 sm:grid-cols-2">
+                            <div>
+                                <Label htmlFor="post-brand" className="label-xs mb-1.5 block">{t("Brand")}</Label>
+                                <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
+                                    <SelectTrigger id="post-brand" className="rounded-xl">
+                                        <SelectValue placeholder={t("Select brand")} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {brands.map((item) => (
+                                            <SelectItem key={item.id} value={item.id}>
+                                                {item.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div>
-                                <div className="flex items-center justify-between mb-1.5">
-                                    <Label htmlFor="post-caption" className="label-xs block">{t("Main caption")}</Label>
-                                    <span className="label-xs text-muted-foreground font-mono">
-                                        {form.caption.length} {t("characters")}
-                                    </span>
-                                </div>
-                                <Textarea
-                                    id="post-caption"
-                                    rows={5}
-                                    value={form.caption}
-                                    onChange={(event) => setForm({ ...form, caption: event.target.value })}
-                                    placeholder={t("What should every destination say by default?")}
-                                    className="rounded-xl resize-none text-sm leading-relaxed"
+                                <Label htmlFor="post-title" className="label-xs mb-1.5 block">{t("Post title (internal)")}</Label>
+                                <Input
+                                    id="post-title"
+                                    value={form.title}
+                                    onChange={(event) => setForm({ ...form, title: event.target.value })}
+                                    placeholder={t("Week 42 — product education")}
+                                    className="rounded-xl"
                                 />
                             </div>
                         </div>
-                    </section>
 
-                    {<DesktopAiWriter key={`${form.brand_id}:${sourceId||'new'}`} form={form} disabled={saving||uploading} onApply={(origin,text)=>setForm(current=>applyAiSuggestion(current,origin,text))} onApplyPlatform={(origin,platform,previous,text)=>setForm(current=>applyAiPlatformSuggestion(current,origin,platform,previous,text))} />}
-                    {!desktop && <>
-                    <section className="panel p-5">
-                        <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2 text-foreground">
-                                <ShareNetwork size={18} weight="bold" className="shrink-0 text-foreground" />
-                                <h2 className="text-[15px] font-semibold text-foreground">{t("Destinations")}</h2>
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <Label htmlFor="post-caption" className="label-xs block">{t("Main caption")}</Label>
+                                <span className="label-xs text-muted-foreground font-mono">
+                                    {form.caption.length} {t("characters")}
+                                </span>
                             </div>
+                            <Textarea
+                                id="post-caption"
+                                rows={6}
+                                value={form.caption}
+                                onChange={(event) => setForm({ ...form, caption: event.target.value })}
+                                placeholder={t("What should every destination say by default?")}
+                                className="rounded-xl resize-none text-sm leading-relaxed"
+                            />
                         </div>
-                        <fieldset disabled={uploading || saving}>
-                        <AccountPicker
-                            accounts={brandAccounts}
-                            selectedIds={form.account_ids}
-                            brandName={brand?.name || t("this brand")}
-                            onToggle={(id) =>
-                                setForm({
-                                    ...form,
-                                    account_ids: form.account_ids.includes(id)
-                                        ? form.account_ids.filter((value) => value !== id)
-                                        : [...form.account_ids, id],
-                                })
-                            }
-                            onSelectAll={(checked) =>
-                                setForm({ ...form, account_ids: checked ? brandAccounts.map((a) => a.id) : [] })
-                            }
+
+                        {/* Collapsible AI Assistant */}
+                        <DesktopAiWriter
+                            key={`${form.brand_id}:${sourceId || 'new'}`}
+                            form={form}
+                            disabled={saving || uploading}
+                            onApply={(origin, text) => setForm(current => applyAiSuggestion(current, origin, text))}
+                            onApplyPlatform={(origin, platform, previous, text) => setForm(current => applyAiPlatformSuggestion(current, origin, platform, previous, text))}
                         />
-                        </fieldset>
-                    </section>
 
-                    <PlatformCaptions platforms={platforms} captions={form.platform_captions} mainCaption={form.caption} onChange={platform_captions=>setForm(current=>({...current,platform_captions}))} />
-                    {selectedAccounts.filter(a=>a.platform==='tiktok').map(account=><TiktokSettings key={account.id} account={account} value={form.destination_settings[account.id]?.tiktok} onCreatorChange={creator=>setTiktokCreators(current=>({...current,[account.id]:creator}))} onChange={tiktok=>setForm(current=>({...current,destination_settings:{...current.destination_settings,[account.id]:{...current.destination_settings[account.id],tiktok}}}))}/>)}
-                    <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
-
-                    <section className="panel p-5">
-                        <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2 text-foreground">
-                                <Images size={18} weight="bold" className="shrink-0 text-foreground" />
-                                <h2 className="text-[15px] font-semibold text-foreground">{t("Shared media")}</h2>
-                            </div>
-                        </div>
-                        <fieldset disabled={uploading || saving}>
-                        <MediaUploader
-                            assets={form.media}
-                            onChange={(media) => setForm(prev => media.every(image => !image.brand_id || image.brand_id === prev.brand_id) ? { ...prev, media } : prev)}
-                            brandId={form.brand_id}
-                            demoMode={demoMode}
-                            onBusyChange={setUploading}
-                        />
-                        </fieldset>
-                    </section>
-                    <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
-                    </>}
-
-                    {desktop && (
-                        <section className="panel p-5">
-                            <div className="flex items-center justify-between gap-3 mb-4">
+                        {/* Media Section directly inside content creation */}
+                        <div className="pt-3 border-t border-border">
+                            <div className="flex items-center justify-between gap-3 mb-3">
                                 <div className="flex items-center gap-2 text-foreground">
                                     <Images size={18} weight="bold" className="shrink-0 text-foreground" />
-                                    <h2 className="text-[15px] font-semibold text-foreground">{t('Shared media')}</h2>
+                                    <h3 className="text-[14px] font-semibold text-foreground">{t("Shared media")}</h3>
                                 </div>
                             </div>
                             <fieldset disabled={uploading || saving}>
-                                <MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} />
+                                <MediaUploader
+                                    assets={form.media}
+                                    onChange={(media) => setForm(prev => media.every(image => !image.brand_id || image.brand_id === prev.brand_id) ? { ...prev, media } : prev)}
+                                    brandId={form.brand_id}
+                                    demoMode={desktop ? false : demoMode}
+                                    onBusyChange={setUploading}
+                                />
                             </fieldset>
-                        </section>
-                    )}
-                    <section className="panel p-5">
-                        <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2 text-foreground">
-                                <Target size={18} weight="bold" className="shrink-0 text-foreground" />
-                                <h2 className="text-[15px] font-semibold text-foreground">{t("Content strategy")}</h2>
-                            </div>
                         </div>
-                        <PillarAngleFields
-                            pillars={brandPillars}
-                            angles={brandAngles}
-                            value={form}
-                            onChange={(patch) => setForm({ ...form, ...patch })}
-                        />
                     </section>
 
-                    <section className="panel p-5">
-                        <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2 text-foreground">
-                                <CalendarBlank size={18} weight="bold" className="shrink-0 text-foreground" />
-                                <h2 className="text-[15px] font-semibold text-foreground">{t("Schedule")}</h2>
+                    {!desktop && (
+                        <>
+                            <PlatformCaptions platforms={platforms} captions={form.platform_captions} mainCaption={form.caption} onChange={platform_captions=>setForm(current=>({...current,platform_captions}))} />
+                            {selectedAccounts.filter(a=>a.platform==='tiktok').map(account=><TiktokSettings key={account.id} account={account} value={form.destination_settings[account.id]?.tiktok} onCreatorChange={creator=>setTiktokCreators(current=>({...current,[account.id]:creator}))} onChange={tiktok=>setForm(current=>({...current,destination_settings:{...current.destination_settings,[account.id]:{...current.destination_settings[account.id],tiktok}}}))}/>)}
+                            <PageSettings accounts={selectedAccounts} settings={form.destination_settings} onChange={destination_settings=>setForm({...form,destination_settings})} />
+                            <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
+                        </>
+                    )}
+
+                    {/* 3. Chiến lược & Lên lịch (Side by side on desktop) */}
+                    <div className="grid gap-5 md:grid-cols-2">
+                        <section className="panel p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2 text-foreground">
+                                    <Target size={18} weight="bold" className="shrink-0 text-foreground" />
+                                    <h2 className="text-[15px] font-semibold text-foreground">{t("Content strategy")}</h2>
+                                </div>
                             </div>
-                        </div>
-                        <ScheduleFields value={form} onChange={(patch) => setForm({ ...form, ...patch })} />
-                    </section>
+                            <PillarAngleFields
+                                pillars={brandPillars}
+                                angles={brandAngles}
+                                value={form}
+                                onChange={(patch) => setForm({ ...form, ...patch })}
+                            />
+                        </section>
+
+                        <section className="panel p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2 text-foreground">
+                                    <CalendarBlank size={18} weight="bold" className="shrink-0 text-foreground" />
+                                    <h2 className="text-[15px] font-semibold text-foreground">{t("Schedule")}</h2>
+                                </div>
+                            </div>
+                            <ScheduleFields value={form} onChange={(patch) => setForm({ ...form, ...patch })} />
+                        </section>
+                    </div>
 
                 </div>
 
