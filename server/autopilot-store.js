@@ -1,4 +1,5 @@
 import { randomUUID, createHash } from 'node:crypto';
+import { parsePublicDriveFolder } from './autopilot-providers.js';
 import { fail } from './validation.js';
 
 // Private tables: not registered with the generic entity write API. Each DB is one workspace.
@@ -15,12 +16,14 @@ export function createAutopilotStore(db, store) {
         source: id => get('autopilot_sources', id),
         saveSource: value => save('autopilot_sources', value),
         createSource(input) {
+            if (input.kind === 'drive_public') input = { ...input, kind: 'drive', ...parsePublicDriveFolder(input.folder) };
+            else if (input.access === 'public') fail('Use a public Drive folder link');
             const brand = store.get('Brand', input.brand_id);
             if (brand.is_demo || brand.status === 'archived') fail('Choose an active live brand', 409);
             if (!['drive', 'r2'].includes(input.kind) || typeof input.name !== 'string' || !input.name.trim() || input.name.length > 160) fail('Valid source name and kind required');
             if (api.sources().length >= 30) fail('Source limit reached', 409);
             if (input.kind === 'drive' ? !/^[a-zA-Z0-9_-]{1,200}$/.test(input.folder || '') : !/^[a-zA-Z0-9/_-]{1,200}\/$/.test(input.folder || '') || input.folder.includes('..')) fail('Valid folder ID or storage prefix ending in / required');
-            const source = { id: randomUUID(), brand_id: brand.id, kind: input.kind, name: input.name.trim(), folder: input.folder, status: input.kind === 'drive' ? 'disconnected' : 'connected', generation: 0, created_at: new Date().toISOString() };
+            const source = { id: randomUUID(), brand_id: brand.id, kind: input.kind, name: input.name.trim(), folder: input.folder, status: input.kind === 'drive' ? 'disconnected' : 'connected', ...(input.access === 'public' ? { access: 'public', resource_key: input.resource_key } : {}), generation: 0, created_at: new Date().toISOString() };
             db.prepare('INSERT INTO autopilot_sources VALUES (?,?)').run(source.id, JSON.stringify(source)); return source;
         },
         assets: () => rows('autopilot_assets'),
@@ -32,7 +35,7 @@ export function createAutopilotStore(db, store) {
             const old = row ? JSON.parse(row.data) : null;
             if (!old && api.assets().length >= 10000) fail('Asset limit reached', 409);
             const changed = !old || old.version !== file.version;
-            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, size: file.size, version: file.version, availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
+            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
             db.prepare('INSERT INTO autopilot_assets VALUES (?,?,?,?) ON CONFLICT(source_id,external_id) DO UPDATE SET data=excluded.data').run(asset.id, source.id, file.id, JSON.stringify(asset)); return asset;
         },
         jobs: () => rows('autopilot_jobs'),
