@@ -104,3 +104,14 @@ test('regional calls with the same signal preserve one private deadline and neve
  }
  assert.equal(calls,0);
 });
+
+test('regional relay buffers provider responses within its byte limit and never follows redirects', async () => {
+ const response=await forwardGeminiRequest(new Request(url,options),async(_url,init)=>{
+  assert.equal(init.redirect,'manual');
+  return new Response(new ReadableStream({start(controller){controller.enqueue(new TextEncoder().encode('{"error":{"status":"UNAVAILABLE"}}'));controller.close();}}),{status:503,headers:{'content-type':'application/json'}});
+ });
+ assert.equal(response.status,503);assert.equal(response.headers.get('x-socialchoice-ai-response'),'provider');
+ assert.equal((await response.json()).error.status,'UNAVAILABLE');
+ const oversized=await forwardGeminiRequest(new Request(url,options),async()=>new Response('x'.repeat(1024*1024+1)));
+ assert.equal(oversized.status,502);assert.equal(oversized.headers.get('x-socialchoice-ai-failure'),'AI_RELAY_UNREACHABLE');
+});
