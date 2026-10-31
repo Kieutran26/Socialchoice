@@ -397,10 +397,10 @@ export default function MediaUploader({
 
             {/* Popup Dialog chọn từ thư viện */}
             <Dialog open={showLibrary} onOpenChange={setShowLibrary}>
-                <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col p-6">
-                    <DialogHeader>
-                        <DialogTitle className="text-base font-semibold flex items-center gap-2">
-                            <ImageSquare size={20} className="text-foreground" />
+                <DialogContent className="max-w-[1100px] w-[95vw] max-h-[88vh] flex flex-col p-6 sm:p-7">
+                    <DialogHeader className="mb-3">
+                        <DialogTitle className="text-lg font-semibold flex items-center gap-2">
+                            <ImageSquare size={22} className="text-foreground" />
                             {t('Choose from library')}
                         </DialogTitle>
                         <DialogDescription className="text-xs text-muted-foreground">
@@ -408,21 +408,24 @@ export default function MediaUploader({
                         </DialogDescription>
                     </DialogHeader>
 
-                    <div className="flex-1 overflow-y-auto min-h-[240px] max-h-[55vh] pr-1">
+                    <div className="flex-1 overflow-y-auto min-h-[300px] max-h-[62vh] pr-1.5 scroll-slim">
                         {loadingLibrary ? (
-                            <div className="flex flex-col items-center justify-center h-48 gap-2 text-muted-foreground">
-                                <CircleNotch size={24} className="animate-spin text-foreground" />
-                                <span className="text-xs">{t('Loading…')}</span>
+                            <div className="flex flex-col items-center justify-center h-64 gap-2 text-muted-foreground">
+                                <CircleNotch size={28} className="animate-spin text-foreground" />
+                                <span className="text-xs font-medium">{t('Loading…')}</span>
                             </div>
                         ) : !library.length ? (
-                            <div className="flex flex-col items-center justify-center h-48 text-center border border-dashed border-border rounded-xl p-6">
-                                <ImageSquare size={36} className="text-muted-foreground/40 mb-2" />
-                                <p className="text-sm font-medium text-foreground">
+                            <div className="flex flex-col items-center justify-center h-64 text-center border border-dashed border-border rounded-2xl p-8">
+                                <ImageSquare size={44} className="text-muted-foreground/40 mb-3" />
+                                <p className="text-base font-medium text-foreground">
                                     {t('No stored media for this brand.')}
+                                </p>
+                                <p className="label-xs text-muted-foreground mt-1">
+                                    {t('Upload files from your computer to start building your library.')}
                                 </p>
                             </div>
                         ) : (
-                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                                 {library.map((image) => {
                                     const isSelected = assets.some((asset) => asset.id === image.id);
                                     const isVideo = image.file_type === 'video';
@@ -444,12 +447,12 @@ export default function MediaUploader({
                                                     onChange([...assets, image]);
                                                 }
                                             }}
-                                            className={`group relative rounded-xl border p-2 cursor-pointer transition-all select-none flex flex-col ${
+                                            className={`group relative rounded-xl border p-2.5 cursor-pointer transition-all select-none flex flex-col ${
                                                 isSelected
-                                                    ? 'border-foreground bg-muted/40 ring-1 ring-foreground/20 shadow-xs'
+                                                    ? 'border-brand bg-brand/10 ring-2 ring-brand shadow-sm'
                                                     : isDisabled
                                                     ? 'opacity-40 cursor-not-allowed border-border bg-muted/20'
-                                                    : 'border-border hover:border-border-hover hover:bg-card/70 bg-card'
+                                                    : 'border-border hover:border-border-hover hover:bg-muted/40 bg-card shadow-2xs'
                                             }`}
                                         >
                                             <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">
@@ -461,9 +464,9 @@ export default function MediaUploader({
                                                             preload="metadata"
                                                             muted
                                                         />
-                                                        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                                                            <div className="h-6 w-6 rounded-full bg-black/60 text-white flex items-center justify-center">
-                                                                <VideoCamera size={13} weight="fill" />
+                                                        <div className="absolute inset-0 bg-black/25 flex items-center justify-center">
+                                                            <div className="h-8 w-8 rounded-full bg-black/60 text-white flex items-center justify-center">
+                                                                <VideoCamera size={16} weight="fill" />
                                                             </div>
                                                         </div>
                                                     </>
@@ -476,15 +479,15 @@ export default function MediaUploader({
                                                 )}
 
                                                 {isSelected && (
-                                                    <div className="absolute top-1.5 right-1.5 h-5 w-5 rounded-md bg-foreground text-background flex items-center justify-center shadow-xs">
-                                                        <Check size={12} weight="bold" />
+                                                    <div className="absolute top-2 right-2 h-6 w-6 rounded-md bg-brand text-brand-ink border border-brand-dark flex items-center justify-center shadow-sm">
+                                                        <Check size={14} weight="bold" />
                                                     </div>
                                                 )}
                                             </div>
-                                            <p className="text-xs font-semibold text-foreground truncate mt-2 px-0.5">
+                                            <p className="text-xs font-semibold text-foreground truncate mt-2.5 px-0.5">
                                                 {image.name}
                                             </p>
-                                            <span className="label-xs text-muted-foreground px-0.5">
+                                            <span className="label-xs text-muted-foreground px-0.5 mt-0.5">
                                                 {isVideo ? 'Video MP4' : 'Image'}
                                             </span>
                                         </div>
@@ -494,18 +497,17 @@ export default function MediaUploader({
                         )}
                     </div>
 
-                    <div className="flex items-center justify-between pt-4 border-t border-border mt-3">
-                        <span className="text-xs text-muted-foreground font-medium">
+                    <div className="flex items-center justify-between pt-4 border-t border-border mt-4">
+                        <span className="text-xs text-foreground font-medium bg-muted px-2.5 py-1 rounded-full">
                             {assets.length} / 10 {t('selected')}
                         </span>
-                        <Button
+                        <button
                             type="button"
-                            variant="default"
-                            className="rounded-xl px-4"
+                            className="btn-skew px-6 py-2.5"
                             onClick={() => setShowLibrary(false)}
                         >
                             {t('Done')}
-                        </Button>
+                        </button>
                     </div>
                 </DialogContent>
             </Dialog>
