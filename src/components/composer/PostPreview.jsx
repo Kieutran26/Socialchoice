@@ -6,27 +6,15 @@ import {
     ThumbsUp,
     ChatCircle,
     ShareFat,
-    Eye,
-    FacebookLogo,
-    InstagramLogo,
-    TiktokLogo,
-    LinkedinLogo,
-    ThreadsLogo,
+    Heart,
+    BookmarkSimple,
+    PaperPlaneTilt,
+    ImageSquare,
 } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useTranslation } from '@/lib/i18n';
-import { formatDateTime } from '@/lib/format';
 import { resolveCaption, resolveMedia } from '@/lib/publishing-content';
-import { PLATFORM_LABEL } from '@/lib/constants';
-import { toUtcIso } from '@/lib/tz';
-
-const PLATFORM_ICONS = {
-    facebook: { icon: FacebookLogo, color: 'text-[#1877F2]' },
-    instagram: { icon: InstagramLogo, color: 'text-[#E4405F]' },
-    tiktok: { icon: TiktokLogo, color: 'text-foreground' },
-    threads: { icon: ThreadsLogo, color: 'text-foreground' },
-    linkedin: { icon: LinkedinLogo, color: 'text-[#0A66C2]' },
-};
+import PlatformLogo from './PlatformLogo';
 
 function PhotoGrid({ media }) {
     const { t } = useTranslation();
@@ -99,183 +87,196 @@ export default function PostPreview({
     const page = pages.find((account) => account.id === selectedPage) || pages[0];
     const caption = resolveCaption({ caption: mainCaption, platform_captions: platformCaptions, destination_settings: pageSettings }, page || {});
     const media = resolveMedia({}, page || {}, sharedMedia, platformMedia);
-    const localTime = pageSettings[page?.id]?.localTime;
-    const [date, time] = localTime?.split('T') || [];
-    const previewTime = localTime ? toUtcIso(date, time, timezone) : scheduledAt;
     const pageName = planning ? t('Local content plan') : page?.name || t('Choose a publishing account');
     const longCaption = caption.length > 350 || caption.split('\n').length > 6;
     const visibleCaption = longCaption && !expanded ? caption.slice(0, 350).split('\n').slice(0, 6).join('\n') : caption;
 
-    const currentPlatform = page?.platform || 'facebook';
-    const PlatformIconData = PLATFORM_ICONS[currentPlatform] || { icon: Globe, color: 'text-foreground' };
-    const CurrentPlatformIcon = PlatformIconData.icon;
+    const currentPlatform = page?.platform || 'instagram';
 
     return (
-        <section className="panel p-4 sm:p-5 min-w-0" aria-label={t('Content preview')}>
-            <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2 text-foreground">
-                    <Eye size={18} weight="bold" className="shrink-0" />
-                    <h2 className="text-[14px] font-semibold text-foreground">{t('Content preview')}</h2>
-                </div>
-                <span className="inline-flex items-center gap-1.5 label-xs font-medium text-foreground bg-muted px-2.5 py-0.5 rounded-full">
-                    <CurrentPlatformIcon size={13} weight={/** @type {const} */ ('fill')} className={PlatformIconData.color} />
-                    {planning ? t('Preview') : PLATFORM_LABEL[currentPlatform] || currentPlatform}
-                </span>
+        <section className="panel p-5 sm:p-6 bg-card border border-border rounded-3xl shadow-2xs min-w-0" aria-label={t('Content preview')}>
+            {/* Header: Left "Xem trước", Right "Mô phỏng" */}
+            <div className="flex items-center justify-between pb-3.5">
+                <h2 className="text-base font-bold text-foreground tracking-tight">{t('Preview')}</h2>
+                <span className="text-sm font-normal text-muted-foreground/80">{t('Simulation')}</span>
             </div>
 
-            {pages.length > 1 && (
-                <div className="mb-3.5">
-                    <div className="flex flex-wrap gap-1.5">
-                        {pages.map((account) => {
-                            const isCurrent = (page?.id || '') === account.id;
-                            const pIconData = PLATFORM_ICONS[account.platform];
-                            const PIcon = pIconData?.icon || Globe;
-                            return (
-                                <button
-                                    key={account.id}
-                                    type="button"
-                                    onClick={() => {
-                                        setSelectedPage(account.id);
-                                        setExpanded(false);
-                                    }}
-                                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                                        isCurrent
-                                            ? 'bg-foreground text-background shadow-xs'
-                                            : 'bg-muted/70 hover:bg-muted text-muted-foreground hover:text-foreground'
-                                    }`}
-                                >
-                                    <PIcon size={13} weight={/** @type {const} */ ('fill')} className={isCurrent ? 'text-background' : pIconData?.color} />
-                                    <span className="truncate max-w-[130px]">{account.name}</span>
-                                </button>
-                            );
-                        })}
-                    </div>
+            {/* Platform Switcher Pills */}
+            {pages.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 mb-4">
+                    {pages.map((account) => {
+                        const isCurrent = (page?.id || '') === account.id;
+                        return (
+                            <button
+                                key={account.id}
+                                type="button"
+                                onClick={() => {
+                                    setSelectedPage(account.id);
+                                    setExpanded(false);
+                                }}
+                                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs transition-all ${
+                                    isCurrent
+                                        ? 'bg-[#18181b] text-white font-semibold shadow-2xs'
+                                        : 'bg-muted/70 hover:bg-muted text-foreground/80 font-medium'
+                                }`}
+                            >
+                                <PlatformLogo platform={account.platform} size={16} />
+                                <span className="truncate max-w-[140px]">{account.name}</span>
+                            </button>
+                        );
+                    })}
                 </div>
             )}
 
-            <div className="rounded-xl border border-border bg-muted/40 p-3 sm:p-4">
+            {/* Mockup Frame Canvas */}
+            <div className="rounded-2xl bg-[#f4f4f6]/60 p-3 sm:p-4 border border-border/40">
                 <article
-                    className="mx-auto max-w-[560px] overflow-hidden rounded-xl border border-border bg-card shadow-xs"
+                    className="mx-auto max-w-[480px] overflow-hidden rounded-2xl border border-border/80 bg-white shadow-2xs"
                     aria-label={t(
                         planning
                             ? 'Local content plan'
-                            : page?.platform === 'linkedin'
+                            : currentPlatform === 'linkedin'
                             ? 'LinkedIn post preview'
-                            : page?.platform === 'tiktok'
+                            : currentPlatform === 'tiktok'
                             ? 'TikTok post preview'
-                            : page?.platform === 'threads'
+                            : currentPlatform === 'threads'
                             ? 'Threads post preview'
-                            : page?.platform === 'instagram'
+                            : currentPlatform === 'instagram'
                             ? 'Instagram post preview'
                             : 'Facebook post preview'
                     )}
                 >
-                    <header className="flex items-center gap-3 p-3.5 border-b border-border/40">
-                        <div className="relative">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-foreground/10 text-sm font-semibold text-foreground">
+                    {/* Mockup Header */}
+                    <header className="flex items-center gap-3 p-3.5 sm:p-4">
+                        <div className="relative shrink-0">
+                            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f1f2f4] text-sm font-bold text-[#18181b]">
                                 {pageName.slice(0, 1).toUpperCase()}
                             </div>
-                            <div className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-card ring-1 ring-border">
-                                <CurrentPlatformIcon size={11} weight={/** @type {const} */ ('fill')} className={PlatformIconData.color} />
+                            <div className="absolute -bottom-0.5 -right-0.5 flex items-center justify-center rounded-full ring-2 ring-white shadow-2xs">
+                                <PlatformLogo platform={currentPlatform} size={15} />
                             </div>
                         </div>
 
                         <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-foreground truncate">{pageName}</p>
-                            <p className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                            <p className="text-sm font-bold text-[#09090b] truncate">{page?.username || pageName}</p>
+                            <p className="flex items-center gap-1 text-[11px] text-[#71717a] mt-0.5">
                                 <span>{t('Just now')}</span>
-                                <span>•</span>
+                                <span>·</span>
                                 {planning ? (
                                     t('Local only')
-                                ) : page?.platform === 'tiktok' ? (
+                                ) : currentPlatform === 'tiktok' ? (
                                     t('Only me (sandbox)')
                                 ) : (
                                     <Globe size={11} aria-label={t('Public')} />
                                 )}
                             </p>
                         </div>
-                        <DotsThree size={22} className="text-muted-foreground" aria-hidden="true" />
+                        <DotsThree size={22} weight="bold" className="text-[#71717a] shrink-0" aria-hidden="true" />
                     </header>
 
-                    {page?.platform !== 'instagram' && (
-                        <div className="px-3.5 py-3">
-                            <p className="whitespace-pre-wrap break-words text-[14px] leading-relaxed text-foreground">
-                                {visibleCaption || (
-                                    <span className="text-muted-foreground/60 italic">
-                                        {t('Your caption will appear here.')}
-                                    </span>
-                                )}
-                                {longCaption && !expanded ? '…' : ''}
-                            </p>
-                            {longCaption && (
-                                <Button
-                                    variant="ghost"
-                                    type="button"
-                                    className="h-auto p-0 mt-1 min-h-8 text-xs font-semibold text-foreground hover:underline"
-                                    onClick={() => setExpanded(!expanded)}
-                                >
-                                    {t(expanded ? 'See less' : 'See more')}
-                                </Button>
+                    {/* INSTAGRAM MOCKUP BODY */}
+                    {currentPlatform === 'instagram' ? (
+                        <>
+                            {/* Caption / Placeholder lines */}
+                            {caption ? (
+                                <div className="px-4 pb-3.5 pt-0.5 text-xs text-[#09090b] leading-relaxed break-words whitespace-pre-wrap">
+                                    <span className="font-bold mr-1.5">{page?.username || pageName}</span>
+                                    <span>{caption}</span>
+                                </div>
+                            ) : (
+                                <div className="px-4 pb-3.5 pt-0.5 space-y-2" aria-hidden="true">
+                                    <div className="h-2 rounded-full bg-[#ebecef] w-[80%]" />
+                                    <div className="h-2 rounded-full bg-[#ebecef] w-[65%]" />
+                                    <div className="h-2 rounded-full bg-[#ebecef] w-[45%]" />
+                                </div>
                             )}
-                        </div>
-                    )}
 
-                    {media[0]?.file_type === 'video' ? (
-                        <video src={media[0].file_url} controls preload="metadata" className="w-full max-h-[460px] bg-muted object-contain" />
+                            {/* 1:1 Aspect Ratio Media Container */}
+                            <div className="aspect-square w-full bg-[#faf7ee] flex items-center justify-center relative overflow-hidden border-y border-border/20">
+                                {media.length > 0 ? (
+                                    media[0]?.file_type === 'video' ? (
+                                        <video
+                                            src={media[0].file_url}
+                                            controls
+                                            preload="metadata"
+                                            className="w-full h-full object-cover"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={media[0].file_url}
+                                            alt={media[0].name || t('Post image')}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    )
+                                ) : (
+                                    <div className="flex items-center justify-center text-slate-300">
+                                        <ImageSquare size={44} weight="regular" className="text-slate-300/90" />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Instagram Action Footer Bar */}
+                            <footer className="px-4 py-3 flex items-center justify-between bg-white text-[#18181b]">
+                                <div className="flex items-center gap-4">
+                                    <Heart size={22} weight="regular" className="cursor-pointer hover:text-red-500 transition-colors" />
+                                    <ChatCircle size={22} weight="regular" className="cursor-pointer hover:text-slate-600 transition-colors" />
+                                    <PaperPlaneTilt size={22} weight="regular" className="-rotate-12 cursor-pointer hover:text-slate-600 transition-colors" />
+                                </div>
+                                <BookmarkSimple size={22} weight="regular" className="cursor-pointer hover:text-slate-600 transition-colors" />
+                            </footer>
+                        </>
                     ) : (
-                        media.length > 0 && <PhotoGrid media={media} />
-                    )}
+                        /* OTHER PLATFORMS (Facebook, LinkedIn, TikTok, Threads) */
+                        <>
+                            <div className="px-4 py-3">
+                                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
+                                    {visibleCaption || (
+                                        <span className="text-muted-foreground/60 italic">
+                                            {t('Your caption will appear here.')}
+                                        </span>
+                                    )}
+                                    {longCaption && !expanded ? '…' : ''}
+                                </p>
+                                {longCaption && (
+                                    <Button
+                                        variant="ghost"
+                                        type="button"
+                                        className="h-auto p-0 mt-1 min-h-8 text-xs font-semibold text-foreground hover:underline"
+                                        onClick={() => setExpanded(!expanded)}
+                                    >
+                                        {t(expanded ? 'See less' : 'See more')}
+                                    </Button>
+                                )}
+                            </div>
 
-                    {page?.platform === 'instagram' && (
-                        <div className="px-3.5 py-3 text-xs leading-relaxed">
-                            <span className="font-semibold text-foreground mr-1.5">{page.username || pageName}</span>
-                            <span className="text-foreground">
-                                {caption || <span className="text-muted-foreground/60 italic">{t('Your caption will appear here.')}</span>}
-                            </span>
-                        </div>
-                    )}
+                            {media[0]?.file_type === 'video' ? (
+                                <video src={media[0].file_url} controls preload="metadata" className="w-full max-h-[460px] bg-muted object-contain" />
+                            ) : (
+                                media.length > 0 && <PhotoGrid media={media} />
+                            )}
 
-                    {!planning && (!page || page.platform === 'facebook') && (
-                        <footer className="grid grid-cols-3 border-t border-border/50 py-2.5 text-muted-foreground bg-muted/20" aria-label={t('Preview only')}>
-                            {[
-                                ['Like', ThumbsUp],
-                                ['Comment', ChatCircle],
-                                ['Share this post', ShareFat],
-                            ].map(([label, Icon]) => (
-                                <button
-                                    type="button"
-                                    key={String(label)}
-                                    className="flex justify-center items-center gap-1.5 text-xs font-medium hover:text-foreground transition-colors py-1 cursor-default"
-                                >
-                                    <Icon size={16} />
-                                    <span>{t(String(label))}</span>
-                                </button>
-                            ))}
-                        </footer>
+                            {!planning && (!page || currentPlatform === 'facebook') && (
+                                <footer className="grid grid-cols-3 border-t border-border/50 py-2.5 text-muted-foreground bg-muted/20" aria-label={t('Preview only')}>
+                                    {[
+                                        ['Like', ThumbsUp],
+                                        ['Comment', ChatCircle],
+                                        ['Share this post', ShareFat],
+                                    ].map(([label, Icon]) => (
+                                        <button
+                                            type="button"
+                                            key={String(label)}
+                                            className="flex justify-center items-center gap-1.5 text-xs font-medium hover:text-foreground transition-colors py-1 cursor-default"
+                                        >
+                                            <Icon size={16} />
+                                            <span>{t(String(label))}</span>
+                                        </button>
+                                    ))}
+                                </footer>
+                            )}
+                        </>
                     )}
                 </article>
             </div>
-
-            <p className="label-xs mt-3 text-muted-foreground leading-relaxed">
-                {t(
-                    planning
-                        ? 'This is a local plan only. No automatic publishing.'
-                        : page?.platform === 'linkedin'
-                        ? 'Preview approximates LinkedIn. Final layout can vary by device.'
-                        : page?.platform === 'tiktok'
-                        ? 'Preview approximates TikTok. Final layout can vary by device.'
-                        : page?.platform === 'threads'
-                        ? 'Preview approximates Threads. Final layout can vary by device.'
-                        : page?.platform === 'instagram'
-                        ? 'Preview approximates Instagram. Final cropping and layout can vary by device.'
-                        : 'Preview approximates Facebook. Final cropping and layout can vary by device.'
-                )}
-            </p>
-            {previewTime && (
-                <p className="label-xs mt-1 text-muted-foreground font-mono">
-                    {formatDateTime(previewTime, timezone)} · {timezone}
-                </p>
-            )}
         </section>
     );
 }
