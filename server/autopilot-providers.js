@@ -27,7 +27,7 @@ export async function providerJson(response) {
     if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Invalid source response', 502); return data;
 }
 export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = () => true) {
-    const tokenRequest = body => fetcher('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(20000), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, ...body }).toString() }).then(providerJson);
+    const tokenRequest = body => fetcher('https://oauth2.googleapis.com/token', { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams({ client_id: config.clientId, client_secret: config.clientSecret, ...body }).toString() }).then(providerJson);
     const credentialId = source => `autopilot:drive:${source.id}:${source.generation || 0}`;
     async function token(source) {
         const grant = vault.read(credentialId(source));
@@ -41,11 +41,11 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         if (source.access === 'public') {
             if (!config.apiKey) fail('Public Drive requires a server API key', 409);
             const keys = [[source.folder, source.resource_key], [path.startsWith('files/') ? path.slice(6) : '', resourceKey]].filter(([, key]) => key);
-            const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'error', signal: AbortSignal.timeout(20000) });
+            const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
             if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401,403,404].includes(response.status) ? 409 : 502, retryable: response.status === 429 || response.status >= 500 }); }
             return response;
         }
-        return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'error', signal: AbortSignal.timeout(20000) });
+        return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
     };
     async function verify(source) {
         const folder = await providerJson(await request(source, 'files/' + source.folder, { fields: 'id,mimeType,trashed', supportsAllDrives: 'true' }));
