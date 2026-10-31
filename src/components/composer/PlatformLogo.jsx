@@ -69,3 +69,4 @@ export default function PlatformLogo({ platform, size = 32, className = '' }) {
             return null;
     }
 }
+

@@ -335,10 +335,10 @@ export default function CreatePost() {
                     action === 'draft'
                         ? t('Find it again from All Posts.')
                         : t('Calendar plan saved for {value1} {value2} ({value3}). Automatic publishing is not configured.', {
-                              value1: form.date,
-                              value2: form.time,
-                              value3: form.timezone,
-                          }),
+                            value1: form.date,
+                            value2: form.time,
+                            value3: form.timezone,
+                        }),
             });
             navigate(`/posts?post=${saved.id}`);
         } catch (error) {
@@ -476,11 +476,10 @@ export default function CreatePost() {
                                         <div
                                             key={account.id}
                                             onClick={() => toggleAccount(account.id)}
-                                            className={`group relative rounded-2xl border p-3.5 flex flex-col justify-between cursor-pointer transition-all select-none ${
-                                                isSelected
+                                            className={`group relative rounded-2xl border p-3.5 flex flex-col justify-between cursor-pointer transition-all select-none ${isSelected
                                                     ? 'border-[#ffd631] bg-[#ffd631]/8 ring-1 ring-[#ffd631] shadow-2xs'
                                                     : 'border-border/80 bg-card hover:bg-muted/30 hover:border-border'
-                                            }`}
+                                                }`}
                                         >
                                             <div className="flex items-center justify-between mb-3">
                                                 <div className={`transition-transform ${isSelected ? 'scale-105' : 'opacity-85 group-hover:opacity-100'}`}>
@@ -755,18 +754,18 @@ export default function CreatePost() {
 
                 {/* RIGHT COLUMN: Live Social Preview & Action Panel */}
                 <div className="space-y-5 composer-preview">
-                    {/* Live Post Preview */}
-                    <PostPreview
-                        planning={desktop}
-                        caption={form.caption}
-                        media={form.media}
-                        accounts={selectedAccounts}
-                        scheduledAt={scheduledAt}
-                        timezone={form.timezone}
-                        pageSettings={form.destination_settings}
-                        platformCaptions={form.platform_captions}
-                        platformMedia={form.platform_media}
-                    />
+                        {/* Live Post Preview */}
+                        <PostPreview
+                            planning={desktop}
+                            caption={form.caption}
+                            media={form.media}
+                            accounts={selectedAccounts}
+                            scheduledAt={scheduledAt}
+                            timezone={form.timezone}
+                            pageSettings={form.destination_settings}
+                            platformCaptions={form.platform_captions}
+                            platformMedia={form.platform_media}
+                        />
 
                     {/* Pre-Publish Checklist (Replaces channel check issues table with checklist) */}
                     <DestinationChecks checks={checks} post={form} />
@@ -847,10 +846,10 @@ export default function CreatePost() {
                                 result.status === 'queued'
                                     ? 'Automatic schedule confirmed'
                                     : result.status === 'published'
-                                    ? 'Post published'
-                                    : result.status === 'processing'
-                                    ? 'Publishing is still processing'
-                                    : 'Delivery needs attention'
+                                        ? 'Post published'
+                                        : result.status === 'processing'
+                                            ? 'Publishing is still processing'
+                                            : 'Delivery needs attention'
                             ),
                             description: t(result.message || 'Open publishing history for the result.'),
                             ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}),
