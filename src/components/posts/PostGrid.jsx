@@ -55,11 +55,10 @@ export default function PostGrid({
                 return (
                     <article
                         key={post.id}
-                        className={`group relative flex flex-col justify-between rounded-2xl border bg-card shadow-2xs hover:shadow-md transition-all overflow-hidden p-4 ${
-                            isSelected
+                        className={`group relative flex flex-col justify-between rounded-2xl border bg-card shadow-2xs hover:shadow-md transition-all overflow-hidden p-4 ${isSelected
                                 ? 'border-brand-dark ring-2 ring-primary/20 bg-brand/5'
                                 : 'border-border hover:border-border/80'
-                        }`}
+                            }`}
                     >
                         {/* 1. Header: Platform Badge + Brand Dot + Status Pill + Checkbox */}
                         <div className="flex items-center justify-between gap-2 pb-3 border-b border-border/50">
@@ -197,12 +196,12 @@ export default function PostGrid({
                                 <span className="truncate">
                                     {post.scheduled_at
                                         ? formatDateTime(
-                                              post.scheduled_at,
-                                              displayTimezone || post.timezone || timezone
-                                          )
+                                            post.scheduled_at,
+                                            displayTimezone || post.timezone || timezone
+                                        )
                                         : post.status === 'draft'
-                                        ? t('Draft')
-                                        : '—'}
+                                            ? t('Draft')
+                                            : '—'}
                                 </span>
                             </div>
 

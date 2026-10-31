@@ -57,6 +57,12 @@ Navigation, forms, dialogs, notifications, filters, statuses, calendar and analy
 
 Optional server configuration is listed in .env.example. For overrides, copy it to .env.local and set matching API/frontend ports in both terminals. The API script reads .env.local; Vite loads it for its config. No secret values belong in VITE_* variables or Git. The default timezone is Asia/Ho_Chi_Minh and scheduled timestamps are stored in UTC.
 
+## Interactive screenshots
+
+Open Content > Interactive images (`/interactive-images`). Choose a PNG, JPEG or WebP screenshot up to 5 MB / 40 megapixels. Drag over the image to create up to 20 numbered regions, or use Add region and edit percentage coordinates with the keyboard. Enter a title and annotation for each region, then select Preview interactions. Hover/focus shows the annotation; clicking a marker spotlights its region and dims the rest. Click the dimmed image, click the marker again or press Escape to clear the highlight. Coordinates scale with the image on smaller screens.
+
+This editor runs entirely in the browser tab and does not upload screenshots. Download interactive HTML to keep or share the result; the downloaded file includes its image and works offline. Leaving/reloading the editor discards the current work, and choosing another image resets annotations. HTML is an interactive viewing export, not an editable project or a static social-platform image.
+
 ## Data and backup
 
 Persistent data: data/socialchoice.sqlite. Refreshing or restarting the server preserves it. Data and .env files are ignored by Git. With the API stopped cleanly, copy the data folder to a safe backup location. Restore that folder only while the API is stopped. Do not remove it to fix frontend problems. Tests use separate temporary/in-memory databases.

@@ -84,9 +84,8 @@ export default function PostTable({
                             return (
                                 <tr
                                     key={post.id}
-                                    className={`hover:bg-muted/30 transition-colors group ${
-                                        isSelected ? 'bg-brand/5' : ''
-                                    }`}
+                                    className={`hover:bg-muted/30 transition-colors group ${isSelected ? 'bg-brand/5' : ''
+                                        }`}
                                 >
                                     {/* Selection checkbox */}
                                     {onSelect && (

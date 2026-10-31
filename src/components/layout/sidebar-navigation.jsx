@@ -14,6 +14,7 @@ const contentLinks = [
     ['/strategy/pillars', 'Content Pillars', Stack],
     ['/strategy/angles', 'Content Angles', Compass],
     ['/media', 'Media Library', Image],
+    ['/interactive-images', 'Interactive images', Image],
 ];
 const otherLinks = [
     ['/accounts', 'Social Accounts', PlugsConnected],
