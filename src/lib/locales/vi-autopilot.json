@@ -52,5 +52,15 @@
   "Previous": "Trước",
   "Next": "Tiếp",
   "Retry": "Thử lại",
-  "No matching assets. Try another search.": "Không tìm thấy tài sản phù hợp. Hãy thử từ khóa khác."
+  "No matching assets. Try another search.": "Không tìm thấy tài sản phù hợp. Hãy thử từ khóa khác.",
+  "Public Google Drive folder": "Thư mục Google Drive công khai",
+  "Public Google Drive folder link": "Link thư mục Google Drive công khai",
+  "Set the folder to Anyone with the link, Viewer. Only direct files are imported. No Google sign-in is needed.": "Đặt thư mục ở chế độ Bất kỳ ai có đường liên kết, Người xem. Chỉ nhập tệp trực tiếp trong thư mục. Không cần đăng nhập Google.",
+  "Legacy Google Drive OAuth source": "Nguồn Google Drive OAuth cũ",
+  "Check public access": "Kiểm tra truy cập công khai",
+  "Public Drive requires a server API key": "Máy chủ cần cấu hình API key để đọc Drive công khai",
+  "Enter a public Google Drive folder link": "Nhập link thư mục Google Drive công khai hợp lệ",
+  "Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.": "Không đọc được thư mục hoặc tệp công khai. Kiểm tra quyền Bất kỳ ai có đường liên kết và giới hạn API key trên máy chủ.",
+  "Choose an accessible public Drive folder": "Chọn thư mục Drive công khai có thể truy cập",
+  "Public Drive request failed": "Yêu cầu đọc Drive công khai thất bại"
 }
