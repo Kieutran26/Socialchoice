@@ -6,7 +6,7 @@ import PublishingNotifications from './layout/PublishingNotifications';
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet } from 'react-router-dom';
-import { List, X, SquaresFour, CaretDown, Check } from '@phosphor-icons/react';
+import { List, X, SquaresFour, CaretUpDown, Check, SignOut } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
@@ -48,13 +48,15 @@ function Shell() {
                     open ? '' : '-translate-x-full'
                 }`}
             >
-                <div className="flex items-center justify-between mb-7">
-                    <NavLink to="/" className="flex items-center -ml-1.5">
-                        <img
-                            src="/postchoice-logo.png"
-                            alt="PostChoice"
-                            className="h-12 w-auto max-w-[195px] object-contain object-left"
-                        />
+                <div className="flex items-center justify-between mb-4">
+                    <NavLink to="/" className="flex items-center gap-2.5">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ffd631] text-[#2b2100] font-heading font-bold text-base shadow-2xs">
+                            P
+                        </div>
+                        <div>
+                            <div className="font-heading font-bold text-sm text-foreground leading-tight tracking-tight">Post Choice</div>
+                            <div className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">CONTENT STUDIO</div>
+                        </div>
                     </NavLink>
                     <Button
                         size="icon"
@@ -69,46 +71,19 @@ function Shell() {
                 </div>
 
                 {/* Workspace / Brand Selector */}
-                <div className="relative mb-6" ref={brandDropdownRef}>
-                    <p className="label-xs mb-2 font-medium tracking-wider text-muted-foreground">
-                        {t("WORKSPACE")}
-                    </p>
+                <div className="relative mb-4" ref={brandDropdownRef}>
                     <button
                         type="button"
                         aria-label={t("Select brand")}
                         aria-haspopup="listbox"
                         aria-expanded={openBrandDropdown}
                         onClick={() => setOpenBrandDropdown((prev) => !prev)}
-                        className={`flex h-10 w-full items-center justify-between gap-1.5 rounded-xl border bg-card px-2.5 text-[12px] font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
+                        className={`flex h-9 w-full items-center justify-between gap-1.5 rounded-xl border bg-card px-3 text-xs font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
                             openBrandDropdown ? 'border-brand-dark ring-2 ring-primary/20' : 'border-border'
                         }`}
                     >
-                        <div className="flex items-center gap-2 min-w-0">
-                            {selectedBrand ? (
-                                <>
-                                    <span
-                                        className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md text-[10px] font-bold text-white shadow-2xs"
-                                        style={{ backgroundColor: selectedBrand.color || '#9ca3af' }}
-                                    >
-                                        {selectedBrand.name.charAt(0).toUpperCase()}
-                                    </span>
-                                    <span className="truncate">{selectedBrand.name}</span>
-                                </>
-                            ) : (
-                                <>
-                                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-                                        <SquaresFour size={12} weight="duotone" />
-                                    </span>
-                                    <span className="truncate">{t("All brands")}</span>
-                                </>
-                            )}
-                        </div>
-                        <CaretDown
-                            size={13}
-                            className={`shrink-0 text-muted-foreground transition-transform duration-200 ${
-                                openBrandDropdown ? 'rotate-180 text-foreground' : ''
-                            }`}
-                        />
+                        <span className="truncate">{selectedBrand ? selectedBrand.name : t("All brands")}</span>
+                        <CaretUpDown size={13} className="shrink-0 text-muted-foreground" />
                     </button>
 
                     {openBrandDropdown && (
@@ -178,26 +153,37 @@ function Shell() {
                     )}
                 </div>
 
-                {['admin-session', 'web-customer'].includes(mode) && (
-                    <button
-                        type="button"
-                        className="btn-skew w-full mb-4"
-                        onClick={() => appClient.auth.logout().catch((e) => window.alert(t(e.message)))}
-                    >
-                        {t('Sign out')}
-                    </button>
-                )}
-
                 <SidebarNavigation onNavigate={() => setOpen(false)} />
 
-                <p className="label-xs mt-auto pt-5">
-                    {t(
-                        mode === 'web-customer' || user?.storage === 'hosted'
-                            ? 'Online workspace · {timezone}'
-                            : 'Local workspace · {timezone}',
-                        { timezone }
-                    )}
-                </p>
+                {/* Workspace Profile Card */}
+                <div className="mt-auto pt-3 border-t border-border/60">
+                    <div className="rounded-2xl border border-border/70 bg-card p-2.5 flex items-center justify-between gap-2.5 shadow-2xs">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted font-heading text-xs font-bold text-foreground">
+                                {user?.full_name ? user.full_name.slice(0, 2).toUpperCase() : 'MC'}
+                            </div>
+                            <div className="min-w-0">
+                                <div className="font-heading font-semibold text-xs text-foreground truncate">
+                                    {user?.full_name || 'Mây Creative'}
+                                </div>
+                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground truncate">
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
+                                    <span className="truncate">{timezone || 'Asia/Ho_Chi_Minh'}</span>
+                                </div>
+                            </div>
+                        </div>
+                        {['admin-session', 'web-customer'].includes(mode) && (
+                            <button
+                                type="button"
+                                title={t('Sign out')}
+                                onClick={() => appClient.auth.logout().catch((e) => window.alert(t(e.message)))}
+                                className="text-muted-foreground hover:text-dangerFg text-xs p-1 cursor-pointer"
+                            >
+                                <SignOut size={16} />
+                            </button>
+                        )}
+                    </div>
+                </div>
             </aside>
 
             <div className="lg:ml-60">

@@ -43,6 +43,7 @@ export default function MediaUploader({
     const [showLibrary, setShowLibrary] = useState(false);
     const [loadingLibrary, setLoadingLibrary] = useState(false);
     const [busy, setBusy] = useState(false);
+    const [dragOver, setDragOver] = useState(false);
     const [progress, setProgress] = useState(0);
     const [error, setError] = useState('');
 
@@ -90,9 +91,7 @@ export default function MediaUploader({
         };
     }, [brandId, onBusyChange]);
 
-    async function upload(event) {
-        const files = Array.from(event.target.files || []);
-        event.target.value = '';
+    async function handleFiles(files) {
         if (!brandId || demoMode || !files.length) return;
         if (assets.length + files.length > 10) {
             setError('Choose up to 10 different images');
@@ -146,6 +145,12 @@ export default function MediaUploader({
             setBusy(false);
             onBusyChange(false);
         }
+    }
+
+    async function upload(event) {
+        const files = Array.from(event.target.files || []);
+        event.target.value = '';
+        await handleFiles(files);
     }
 
     async function chooseLibrary() {
@@ -207,9 +212,6 @@ export default function MediaUploader({
 
     return (
         <div ref={root} className="space-y-3">
-            <p className="label-xs text-muted-foreground">
-                {t('Images: up to 10, 3 MiB each. Video: one MP4/H.264, up to 100 MB.')}
-            </p>
             <input
                 ref={input}
                 aria-label={t('Upload media')}
@@ -221,30 +223,56 @@ export default function MediaUploader({
                 onChange={upload}
             />
 
-            <div className="flex flex-wrap gap-2.5">
-                <Button
-                    variant="outline"
-                    type="button"
-                    className="rounded-xl font-medium"
-                    disabled={busy || !brandId || demoMode}
-                    onClick={() => (isDesktop() ? importLocal() : input.current.click())}
-                >
-                    <UploadSimple size={16} weight="duotone" className="mr-1.5" />
-                    {t(isDesktop() ? 'Import media' : 'Upload media')}
-                </Button>
-
-                {allowLibrary && (
+            {/* Centered Modern Dropzone */}
+            <div
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                    e.preventDefault();
+                    setDragOver(false);
+                    const files = Array.from(e.dataTransfer.files || []);
+                    if (files.length) handleFiles(files);
+                }}
+                className={`rounded-2xl border-2 border-dashed p-6 text-center transition-all ${
+                    dragOver ? 'border-[#ffd631] bg-[#ffd631]/5' : 'border-border/80 bg-muted/20 hover:bg-muted/30'
+                }`}
+            >
+                <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-muted text-muted-foreground mb-2">
+                    <ImageSquare size={22} weight="duotone" />
+                </div>
+                <div className="font-heading font-semibold text-xs text-foreground mb-1">
+                    {t('Drag and drop files here')}
+                </div>
+                <p className="text-[11px] text-muted-foreground mb-3">
+                    {t('or click to upload · JPG, PNG, MP4 · up to 10 photos or 1 video')}
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
                     <Button
                         variant="outline"
+                        size="sm"
                         type="button"
-                        className="rounded-xl font-medium"
+                        className="rounded-xl h-8 px-3 text-xs font-medium cursor-pointer"
                         disabled={busy || !brandId || demoMode}
-                        onClick={chooseLibrary}
+                        onClick={() => (isDesktop() ? importLocal() : input.current.click())}
                     >
-                        <ImageSquare className="mr-1.5" size={16} />
-                        {t('Choose from library')}
+                        <UploadSimple size={14} className="mr-1.5" />
+                        {t(isDesktop() ? 'Import media' : 'Upload media')}
                     </Button>
-                )}
+
+                    {allowLibrary && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            type="button"
+                            className="rounded-xl h-8 px-3 text-xs font-medium cursor-pointer"
+                            disabled={busy || !brandId || demoMode}
+                            onClick={chooseLibrary}
+                        >
+                            <ImageSquare className="mr-1.5" size={14} />
+                            {t('Choose from library')}
+                        </Button>
+                    )}
+                </div>
             </div>
 
             {busy && !showLibrary && (
