@@ -10,8 +10,9 @@ import {
     PencilSimple,
     CopySimple,
     Play,
-    NotePencil,
     Images,
+    Stack,
+    FileText,
 } from '@phosphor-icons/react';
 
 const STATUS_CONFIG = {
@@ -81,64 +82,16 @@ export default function PostGrid({
                 return (
                     <article
                         key={post.id}
-                        className={`group relative flex flex-col justify-between rounded-2xl border bg-card shadow-2xs hover:shadow-md transition-all overflow-hidden ${
-                            isSelected ? 'border-brand-dark ring-2 ring-primary/20' : 'border-border'
+                        className={`group relative flex flex-col justify-between rounded-2xl border bg-card shadow-2xs hover:shadow-md transition-all overflow-hidden p-4 ${
+                            isSelected
+                                ? 'border-brand-dark ring-2 ring-primary/20 bg-brand/5'
+                                : 'border-border hover:border-border/80'
                         }`}
                     >
-                        {/* Top Media / Header */}
-                        <div className="relative">
-                            {firstMedia ? (
-                                <div
-                                    className="relative h-44 w-full bg-muted/60 overflow-hidden cursor-pointer"
-                                    onClick={() => onOpen(post)}
-                                >
-                                    {isVideo ? (
-                                        <div className="relative w-full h-full">
-                                            <video
-                                                src={firstMedia.file_url}
-                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                preload="metadata"
-                                            />
-                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-black/50 backdrop-blur-xs shadow-md group-hover:scale-110 transition-transform">
-                                                    <Play size={18} weight="fill" />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <img
-                                            src={firstMedia.file_url}
-                                            alt={post.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                        />
-                                    )}
-
-                                    {/* Multiple media indicator */}
-                                    {mediaCount > 1 && (
-                                        <div className="absolute bottom-2.5 right-2.5 flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-[11px] font-medium text-white backdrop-blur-xs">
-                                            <Images size={13} weight="bold" />
-                                            <span>{mediaCount}</span>
-                                        </div>
-                                    )}
-                                </div>
-                            ) : (
-                                <div
-                                    className="relative h-28 w-full bg-linear-to-br from-muted/60 to-muted/20 p-4 border-b border-border/50 cursor-pointer flex flex-col justify-between"
-                                    onClick={() => onOpen(post)}
-                                >
-                                    <div className="flex items-center gap-1.5 text-muted-foreground text-[11px]">
-                                        <NotePencil size={15} weight="duotone" />
-                                        <span>{t('Text post')}</span>
-                                    </div>
-                                    <p className="line-clamp-2 text-xs italic text-muted-foreground/80">
-                                        "{post.caption || t('No caption')}"
-                                    </p>
-                                </div>
-                            )}
-
-                            {/* Floating Selection Checkbox */}
-                            {onSelect && (
-                                <div className="absolute top-2.5 left-2.5 z-10">
+                        {/* 1. Header: Platform Badge + Brand Dot + Status Pill + Checkbox */}
+                        <div className="flex items-center justify-between gap-2 pb-3 border-b border-border/50">
+                            <div className="flex items-center gap-2 min-w-0">
+                                {onSelect && (
                                     <input
                                         type="checkbox"
                                         aria-label={t('Select {title}', { title: post.title })}
@@ -150,39 +103,57 @@ export default function PostGrid({
                                                     : selected.filter((id) => id !== post.id)
                                             )
                                         }
-                                        className="h-4 w-4 rounded-sm border-border bg-white text-primary shadow-xs cursor-pointer accent-[#ffd631]"
+                                        className="h-4 w-4 rounded-sm border-border bg-white text-primary shadow-xs cursor-pointer accent-[#ffd631] shrink-0"
                                     />
-                                </div>
-                            )}
+                                )}
 
-                            {/* Floating Status Badge */}
-                            <div className="absolute top-2.5 right-2.5 z-10">
-                                <span
-                                    className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border shadow-2xs backdrop-blur-md ${statusStyle.bg}`}
-                                >
-                                    <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
-                                    {POST_STATUS_LABEL[post.status] || post.status}
-                                </span>
-                            </div>
-                        </div>
-
-                        {/* Card Content */}
-                        <div className="p-4 flex-1 flex flex-col">
-                            {/* Destinations */}
-                            {postAccounts.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mb-2">
-                                    {postAccounts.map((acc) => (
+                                {/* Destination badges or Brand */}
+                                {postAccounts.length > 0 ? (
+                                    <div className="flex items-center gap-1 min-w-0">
                                         <PlatformBadge
-                                            key={acc.id}
-                                            platform={acc.platform}
-                                            name={acc.name}
+                                            platform={postAccounts[0].platform}
+                                            name={postAccounts[0].name}
                                             size="sm"
                                         />
-                                    ))}
-                                </div>
-                            )}
+                                        {postAccounts.length > 1 && (
+                                            <span className="text-[10px] font-semibold text-muted-foreground bg-muted rounded-md px-1 py-0.5 shrink-0">
+                                                +{postAccounts.length - 1}
+                                            </span>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                                        <FileText size={14} className="shrink-0" />
+                                        <span>{t('Post')}</span>
+                                    </div>
+                                )}
 
-                            {/* Title */}
+                                {brand && (
+                                    <div
+                                        className="flex items-center gap-1 text-[11px] text-muted-foreground truncate"
+                                        title={brand.name}
+                                    >
+                                        <span
+                                            className="h-1.5 w-1.5 rounded-full shrink-0"
+                                            style={{ backgroundColor: brand.color || '#9ca3af' }}
+                                        />
+                                        <span className="truncate max-w-[80px] font-medium">{brand.name}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Status badge */}
+                            <span
+                                className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-medium border shadow-2xs shrink-0 ${statusStyle.bg}`}
+                            >
+                                <span className={`h-1.5 w-1.5 rounded-full ${statusStyle.dot}`} />
+                                {POST_STATUS_LABEL[post.status] || post.status}
+                            </span>
+                        </div>
+
+                        {/* 2. Main Content */}
+                        <div className="py-3 flex-1 flex flex-col gap-2.5">
+                            {/* Post Title */}
                             <button
                                 type="button"
                                 onClick={() => onOpen(post)}
@@ -191,49 +162,83 @@ export default function PostGrid({
                                 {post.title || t('Untitled')}
                             </button>
 
-                            {/* Caption Snippet */}
-                            <p className="text-[12px] text-muted-foreground line-clamp-2 mt-1 leading-relaxed">
-                                {post.caption || t('No caption')}
-                            </p>
-
-                            {/* Brand & Strategy Meta */}
-                            <div className="mt-auto pt-3 border-t border-border/50 flex items-center justify-between gap-2 text-[11px] text-muted-foreground">
-                                <div className="flex items-center gap-1.5 min-w-0">
-                                    {brand && (
-                                        <span
-                                            className="h-2 w-2 rounded-full shrink-0"
-                                            style={{ backgroundColor: brand.color || '#9ca3af' }}
+                            {/* Media Preview (if any) */}
+                            {firstMedia && (
+                                <div
+                                    className="relative h-36 w-full rounded-xl overflow-hidden border border-border/80 bg-muted/60 cursor-pointer group-hover:border-border transition-colors shrink-0"
+                                    onClick={() => onOpen(post)}
+                                >
+                                    {isVideo ? (
+                                        <div className="relative w-full h-full">
+                                            <video
+                                                src={firstMedia.file_url}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                preload="metadata"
+                                            />
+                                            <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
+                                                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-xs shadow-md group-hover:scale-110 transition-transform">
+                                                    <Play size={16} weight="fill" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <img
+                                            src={firstMedia.file_url}
+                                            alt={post.title}
+                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                         />
                                     )}
-                                    <span className="truncate font-medium text-foreground">
-                                        {brand?.name || '—'}
-                                    </span>
-                                </div>
 
-                                {pillar && (
-                                    <span className="truncate rounded-md bg-muted/60 px-1.5 py-0.5 font-medium">
+                                    {mediaCount > 1 && (
+                                        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/60 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs">
+                                            <Images size={12} weight="bold" />
+                                            <span>{mediaCount}</span>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Post Caption (Single, clean text box) */}
+                            <div
+                                onClick={() => onOpen(post)}
+                                className="rounded-xl border border-border/50 bg-muted/30 p-2.5 cursor-pointer hover:bg-muted/50 transition-colors"
+                            >
+                                <p className="text-[12px] text-foreground/85 line-clamp-3 leading-relaxed">
+                                    {post.caption || (
+                                        <span className="italic text-muted-foreground/60">{t('No caption text')}</span>
+                                    )}
+                                </p>
+                            </div>
+
+                            {/* Pillar & Angle Strategy Tag (if assigned) */}
+                            {pillar && (
+                                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground mt-auto">
+                                    <Stack size={13} weight="duotone" className="shrink-0 text-muted-foreground" />
+                                    <span className="truncate">
                                         {pillar.name}
                                         {angle?.name ? ` · ${angle.name}` : ''}
                                     </span>
-                                )}
-                            </div>
+                                </div>
+                            )}
                         </div>
 
-                        {/* Card Footer */}
-                        <div className="px-4 py-2.5 bg-muted/30 border-t border-border/50 flex items-center justify-between gap-2">
-                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium">
+                        {/* 3. Card Footer */}
+                        <div className="pt-2.5 border-t border-border/50 flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-medium truncate">
                                 <CalendarBlank size={14} className="shrink-0" />
-                                <span>
+                                <span className="truncate">
                                     {post.scheduled_at
                                         ? formatDateTime(
                                               post.scheduled_at,
                                               displayTimezone || post.timezone || timezone
                                           )
+                                        : post.status === 'draft'
+                                        ? t('Draft')
                                         : '—'}
                                 </span>
                             </div>
 
-                            <div className="flex items-center gap-1">
+                            <div className="flex items-center gap-1 shrink-0">
                                 <Button
                                     variant="ghost"
                                     size="icon"

@@ -96,3 +96,4 @@ export default function PlatformBadge({ platform, name = '', showName = true, cl
         </span>
     );
 }
+
