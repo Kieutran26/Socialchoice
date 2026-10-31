@@ -88,13 +88,9 @@ export default function DesktopAiWriter({ form, disabled, onApply, onApplyPlatfo
     return (
         <section className="panel p-5">
             <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20">
-                        <Sparkle size={18} weight="fill" />
-                    </div>
-                    <div>
-                        <h2 className="text-[15px] font-semibold text-foreground">{t('AI writing assistant')}</h2>
-                    </div>
+                <div className="flex items-center gap-2 text-foreground">
+                    <Sparkle size={18} weight="fill" className="shrink-0 text-amber-500" />
+                    <h2 className="text-[15px] font-semibold text-foreground">{t('AI writing assistant')}</h2>
                 </div>
                 {settings?.configured && (
                     <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/60 px-2.5 py-0.5 text-[11px] font-medium text-muted-foreground">

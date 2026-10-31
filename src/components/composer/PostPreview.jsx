@@ -113,10 +113,8 @@ export default function PostPreview({
     return (
         <section className="panel p-4 sm:p-5 min-w-0" aria-label={t('Content preview')}>
             <div className="flex items-center justify-between gap-3 mb-3">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                        <Eye size={17} weight="bold" />
-                    </div>
+                <div className="flex items-center gap-2 text-foreground">
+                    <Eye size={18} weight="bold" className="shrink-0" />
                     <h2 className="text-[14px] font-semibold text-foreground">{t('Content preview')}</h2>
                 </div>
                 <span className="inline-flex items-center gap-1.5 label-xs font-medium text-foreground bg-muted px-2.5 py-0.5 rounded-full">

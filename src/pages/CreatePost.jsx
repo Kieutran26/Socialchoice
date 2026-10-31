@@ -337,10 +337,8 @@ export default function CreatePost() {
                 <div className="min-w-0 space-y-5">
                     <section className="panel p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-foreground/5 text-foreground border border-border">
-                                    <NotePencil size={18} weight="bold" />
-                                </div>
+                            <div className="flex items-center gap-2 text-foreground">
+                                <NotePencil size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Basics")}</h2>
                             </div>
                         </div>
@@ -395,10 +393,8 @@ export default function CreatePost() {
                     {!desktop && <>
                     <section className="panel p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 border border-blue-500/20">
-                                    <ShareNetwork size={18} weight="bold" />
-                                </div>
+                            <div className="flex items-center gap-2 text-foreground">
+                                <ShareNetwork size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Destinations")}</h2>
                             </div>
                         </div>
@@ -428,10 +424,8 @@ export default function CreatePost() {
 
                     <section className="panel p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                    <Images size={18} weight="bold" />
-                                </div>
+                            <div className="flex items-center gap-2 text-foreground">
+                                <Images size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Shared media")}</h2>
                             </div>
                         </div>
@@ -448,20 +442,23 @@ export default function CreatePost() {
                     <PlatformMedia platforms={platforms} media={form.platform_media} brandId={form.brand_id} demoMode={demoMode} disabled={uploading || saving} onBusyChange={setUploading} onChange={platform_media => setForm(current => Object.values(platform_media).flat().every(asset => !asset.brand_id || asset.brand_id === current.brand_id) ? { ...current, platform_media } : current)} />
                     </>}
 
-                    {desktop && <section className="panel p-5"><div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-                                    <Images size={18} weight="bold" />
+                    {desktop && (
+                        <section className="panel p-5">
+                            <div className="flex items-center justify-between gap-3 mb-4">
+                                <div className="flex items-center gap-2 text-foreground">
+                                    <Images size={18} weight="bold" className="shrink-0 text-foreground" />
+                                    <h2 className="text-[15px] font-semibold text-foreground">{t('Shared media')}</h2>
                                 </div>
-                                <h2 className="text-[15px] font-semibold text-foreground">{t('Shared media')}</h2>
                             </div>
-                        </div><fieldset disabled={uploading || saving}><MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} /></fieldset></section>}
+                            <fieldset disabled={uploading || saving}>
+                                <MediaUploader assets={form.media} brandId={form.brand_id} demoMode={false} onBusyChange={setUploading} onChange={media=>setForm(current=>media.every(asset=>asset.brand_id===current.brand_id)?{...current,media}:current)} />
+                            </fieldset>
+                        </section>
+                    )}
                     <section className="panel p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 border border-purple-500/20">
-                                    <Target size={18} weight="bold" />
-                                </div>
+                            <div className="flex items-center gap-2 text-foreground">
+                                <Target size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Content strategy")}</h2>
                             </div>
                         </div>
@@ -475,10 +472,8 @@ export default function CreatePost() {
 
                     <section className="panel p-5">
                         <div className="flex items-center justify-between gap-3 mb-4">
-                            <div className="flex items-center gap-2">
-                                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-500/10 text-sky-600 border border-sky-500/20">
-                                    <CalendarBlank size={18} weight="bold" />
-                                </div>
+                            <div className="flex items-center gap-2 text-foreground">
+                                <CalendarBlank size={18} weight="bold" className="shrink-0 text-foreground" />
                                 <h2 className="text-[15px] font-semibold text-foreground">{t("Schedule")}</h2>
                             </div>
                         </div>

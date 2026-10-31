@@ -12,10 +12,12 @@ export default function DestinationChecks({ checks, post }) {
     return (
         <section className="panel p-4 sm:p-5 space-y-3.5" aria-label={t('Channel checks')}>
             <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className={`flex h-7 w-7 items-center justify-center rounded-lg ${hasAnyIssues ? 'bg-amber-500/10 text-amber-600' : 'bg-emerald-500/10 text-emerald-600'}`}>
-                        {hasAnyIssues ? <WarningCircle size={17} weight="fill" /> : <ShieldCheck size={17} weight="fill" />}
-                    </div>
+                <div className="flex items-center gap-2 text-foreground">
+                    {hasAnyIssues ? (
+                        <WarningCircle size={18} weight="fill" className="shrink-0 text-amber-500" />
+                    ) : (
+                        <ShieldCheck size={18} weight="fill" className="shrink-0 text-emerald-500" />
+                    )}
                     <h2 className="text-[14px] font-semibold text-foreground">{t('Channel checks')}</h2>
                 </div>
                 <span className={`label-xs font-medium px-2 py-0.5 rounded-full ${hasAnyIssues ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}>
