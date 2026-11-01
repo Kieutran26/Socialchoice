@@ -81,12 +81,12 @@ function Shell() {
                 className={`fixed inset-y-0 left-0 z-40 w-60 border-r bg-surface p-5 flex flex-col transition-transform lg:translate-x-0 ${open ? '' : '-translate-x-full'
                     }`}
             >
-                <div className="flex items-center justify-between mb-4">
-                    <NavLink to="/" className="flex items-center">
+                <div className="flex items-center justify-between mb-5">
+                    <NavLink to="/" className="flex items-center py-0.5">
                         <img
                             src="/postchoice-logo.png"
                             alt="PostChoice"
-                            className="h-8 w-auto max-h-8 max-w-[170px] object-contain"
+                            className="h-9 w-auto max-h-9 max-w-[185px] object-contain"
                         />
                     </NavLink>
                     <Button
