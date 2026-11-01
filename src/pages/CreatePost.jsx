@@ -588,7 +588,7 @@ export default function CreatePost() {
                                 {aiConfig?.configured ? (
                                     <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/60">
                                         <span className="text-blue-500">✦</span>
-                                        <span>{aiConfig.provider === 'gemini' ? 'Google Gemini' : 'OpenAI'}</span>
+                                        <span>{aiConfig.provider === 'gemini' ? 'Google Gemini' : aiConfig.provider === 'openrouter' ? 'OpenRouter' : 'OpenAI'}</span>
                                         <span className="text-[11px] font-mono text-muted-foreground font-normal">({aiConfig.model})</span>
                                     </div>
                                 ) : (
