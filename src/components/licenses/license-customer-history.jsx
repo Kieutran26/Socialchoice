@@ -1,42 +1,318 @@
 import { useState } from 'react';
-import { DownloadSimple, ArrowClockwise } from '@phosphor-icons/react';
+import {
+    DownloadSimple,
+    ArrowClockwise,
+    MagnifyingGlass,
+    CaretDown,
+    ClockCounterClockwise,
+    Prohibit,
+    CheckCircle,
+} from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { formatDay, formatDateTime } from '@/lib/format';
+import StatusBadge from '@/components/common/StatusBadge';
 
-export default function LicenseCustomerHistory({ items, busy, refreshing, onRefresh, onDownload, onRevoke }) {
+export default function LicenseCustomerHistory({
+    items,
+    busy,
+    refreshing,
+    onRefresh,
+    onDownload,
+    onRevoke,
+}) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState(''), [status, setStatus] = useState('all'), [activation, setActivation] = useState('all');
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('all');
+    const [activation, setActivation] = useState('all');
+
     const query = search.trim().toLocaleLowerCase();
-    const visible = items.filter(item => (!query || `${item.email} ${item.licensed_to}`.toLocaleLowerCase().includes(query))
-        && (status === 'all' || (item.status || 'active') === status)
-        && (activation === 'all' || (item.activated === true ? 'activated' : item.activated === false ? 'pending' : 'unknown') === activation));
-    const selectClass = 'h-9 w-full rounded-lg border border-input bg-background px-3 text-sm';
-    return <section className="panel min-w-0 p-5 space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="text-[15px]">{t('Recently issued licenses')}</h2>
-            <Button variant="outline" size="sm" disabled={busy} onClick={onRefresh}><ArrowClockwise size={16} />{t(refreshing ? 'Refreshing…' : 'Refresh customer status')}</Button>
-        </div>
-        <p className="text-xs text-muted-foreground">{t('Up to 100 recent web-issued licenses. Downloading again keeps the same license. Earlier Windows-issued files are not listed here.')}</p>
-        <div className="grid gap-3 sm:grid-cols-2">
-            <div className="sm:col-span-2"><label htmlFor="customer-search" className="label-xs mb-1.5 block">{t('Search customers')}</label><Input id="customer-search" type="search" value={search} onChange={event => setSearch(event.target.value)} placeholder={t('Email, customer name or order label')} /></div>
-            <div><label htmlFor="customer-license-status" className="label-xs mb-1.5 block">{t('License status')}</label><select id="customer-license-status" className={selectClass} value={status} onChange={event => setStatus(event.target.value)}><option value="all">{t('All licenses')}</option><option value="active">{t('License active')}</option><option value="revoked">{t('Revoked')}</option></select></div>
-            <div><label htmlFor="customer-activation" className="label-xs mb-1.5 block">{t('Activation status')}</label><select id="customer-activation" className={selectClass} value={activation} onChange={event => setActivation(event.target.value)}><option value="all">{t('All activation states')}</option><option value="activated">{t('Account activated')}</option><option value="pending">{t('Not activated')}</option></select></div>
-        </div>
-        <p role="status" className="text-xs text-muted-foreground">{t('Showing {count} of {total} licenses', { count: visible.length, total: items.length })}</p>
-        {items.length === 0 ? <p className="py-5 text-sm text-muted-foreground">{t('No licenses have been issued from the web yet.')}</p> : visible.length === 0 ? <p className="py-5 text-sm text-muted-foreground">{t('No customers match these filters.')}</p> : <div className="overflow-x-auto"><table className="w-full text-left text-sm">
-            <thead className="bg-muted text-xs text-muted-foreground"><tr>{['Customer email', 'Edition', 'Issued', 'Status', 'Activation status', 'Last sign-in', 'File', 'Actions'].map(label => <th key={label} className="p-3">{t(label)}</th>)}</tr></thead>
-            <tbody>{visible.map(item => <tr key={item.request_id} className="border-b hover:bg-muted/50">
-                <td className="p-3"><p className="max-w-64 break-words">{item.email}</p><p className="max-w-64 break-words text-xs text-muted-foreground">{item.licensed_to}</p></td>
-                <td className="p-3">{item.edition}</td><td className="p-3 whitespace-nowrap">{formatDay(item.issued_at)}</td>
-                <td className="p-3"><span className={item.status === 'revoked' ? 'text-dangerFg' : 'text-muted-foreground'}>{t(item.status === 'revoked' ? 'Revoked' : 'License active')}</span>{item.revoked_at && <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">{formatDateTime(item.revoked_at)}</p>}</td>
-                <td className="p-3"><span>{t(item.activated === true ? 'Account activated' : item.activated === false ? 'Not activated' : 'Refresh to check')}</span>{item.activated && <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">{item.activated_at ? formatDateTime(item.activated_at) : t('Activation date not recorded')}</p>}</td>
-                <td className="p-3 whitespace-nowrap">{item.last_login_at ? formatDateTime(item.last_login_at) : t(item.activated ? 'Sign-in date not recorded' : '—')}</td>
-                <td className="p-3"><Button variant="outline" size="sm" disabled={busy || item.status === 'revoked'} onClick={() => onDownload(item)} aria-label={`${t('Download license')}: ${item.email}`}><DownloadSimple size={16} /></Button></td>
-                <td className="p-3"><Button variant="outline" size="sm" disabled={busy || item.status === 'revoked'} onClick={() => onRevoke(item)}>{t('Revoke license')}</Button></td>
-            </tr>)}</tbody>
-        </table></div>}
-        <p className="text-xs text-muted-foreground">{t('Dates use Asia/Ho_Chi_Minh. Earlier account dates may not have been recorded. Last sign-in includes activation and successful recovery; it is not online status.')}</p>
-    </section>;
+    const visible = items.filter(
+        (item) =>
+            (!query ||
+                `${item.email} ${item.licensed_to}`.toLocaleLowerCase().includes(query)) &&
+            (status === 'all' || (item.status || 'active') === status) &&
+            (activation === 'all' ||
+                (item.activated === true
+                    ? 'activated'
+                    : item.activated === false
+                    ? 'pending'
+                    : 'unknown') === activation)
+    );
+
+    const getEditionBadge = (edition) => {
+        const ed = (edition || 'starter').toLowerCase();
+        if (ed === 'business') {
+            return 'bg-amber-50 text-amber-700 border-amber-200/60';
+        }
+        if (ed === 'professional') {
+            return 'bg-purple-50 text-purple-700 border-purple-200/60';
+        }
+        return 'bg-blue-50 text-blue-700 border-blue-200/60';
+    };
+
+    return (
+        <section className="panel min-w-0 p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
+                <div className="flex items-center gap-2.5">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                        <ClockCounterClockwise size={18} weight="duotone" />
+                    </span>
+                    <div>
+                        <h2 className="text-[15px] font-semibold text-foreground">
+                            {t('Recently issued licenses')}
+                        </h2>
+                        <p className="label-xs text-muted-foreground mt-0.5">
+                            {t(
+                                'Up to 100 recent web-issued licenses. Downloading again keeps the same license. Earlier Windows-issued files are not listed here.'
+                            )}
+                        </p>
+                    </div>
+                </div>
+
+                <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={busy}
+                    onClick={onRefresh}
+                    className="h-9 px-3 rounded-xl text-xs font-medium gap-1.5"
+                >
+                    <ArrowClockwise size={14} className={refreshing ? 'animate-spin' : ''} />
+                    <span>{t(refreshing ? 'Refreshing…' : 'Refresh customer status')}</span>
+                </Button>
+            </div>
+
+            {/* Filter Toolbar */}
+            <div className="rounded-xl border border-border/60 bg-muted/20 p-4 space-y-3">
+                <div>
+                    <label
+                        htmlFor="customer-search"
+                        className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5"
+                    >
+                        {t('Search customers')}
+                    </label>
+                    <div className="relative">
+                        <MagnifyingGlass
+                            size={15}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                        />
+                        <Input
+                            id="customer-search"
+                            type="search"
+                            value={search}
+                            onChange={(event) => setSearch(event.target.value)}
+                            placeholder={t('Email, customer name or order label')}
+                            className="h-10 pl-9 rounded-xl border-border/80 bg-background text-xs"
+                        />
+                    </div>
+                </div>
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                    <div>
+                        <label
+                            htmlFor="customer-license-status"
+                            className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5"
+                        >
+                            {t('License status')}
+                        </label>
+                        <div className="relative flex items-center">
+                            <select
+                                id="customer-license-status"
+                                value={status}
+                                onChange={(event) => setStatus(event.target.value)}
+                                className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
+                            >
+                                <option value="all">{t('All licenses')}</option>
+                                <option value="active">{t('License active')}</option>
+                                <option value="revoked">{t('Revoked')}</option>
+                            </select>
+                            <CaretDown
+                                size={14}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label
+                            htmlFor="customer-activation"
+                            className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5"
+                        >
+                            {t('Activation status')}
+                        </label>
+                        <div className="relative flex items-center">
+                            <select
+                                id="customer-activation"
+                                value={activation}
+                                onChange={(event) => setActivation(event.target.value)}
+                                className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer"
+                            >
+                                <option value="all">{t('All activation states')}</option>
+                                <option value="activated">{t('Account activated')}</option>
+                                <option value="pending">{t('Not activated')}</option>
+                            </select>
+                            <CaretDown
+                                size={14}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="pt-1 flex items-center justify-between text-xs text-muted-foreground">
+                    <span>
+                        {t('Showing {count} of {total} licenses', {
+                            count: visible.length,
+                            total: items.length,
+                        })}
+                    </span>
+                    {(status !== 'all' || activation !== 'all' || search.trim()) && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearch('');
+                                setStatus('all');
+                                setActivation('all');
+                            }}
+                            className="text-xs text-primary hover:underline font-medium"
+                        >
+                            {t('Reset')}
+                        </button>
+                    )}
+                </div>
+            </div>
+
+            {items.length === 0 ? (
+                <div className="py-12 text-center text-xs text-muted-foreground">
+                    <p>{t('No licenses have been issued from the web yet.')}</p>
+                </div>
+            ) : visible.length === 0 ? (
+                <div className="py-12 text-center text-xs text-muted-foreground">
+                    <p>{t('No customers match these filters.')}</p>
+                </div>
+            ) : (
+                <div className="overflow-x-auto rounded-xl border border-border/80">
+                    <table className="w-full text-left text-xs">
+                        <thead>
+                            <tr className="bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                <th className="p-3.5">{t('Customer email')}</th>
+                                <th className="p-3.5">{t('Edition')}</th>
+                                <th className="p-3.5 whitespace-nowrap">{t('Issued')}</th>
+                                <th className="p-3.5">{t('Status')}</th>
+                                <th className="p-3.5">{t('Activation status')}</th>
+                                <th className="p-3.5 whitespace-nowrap">{t('Last sign-in')}</th>
+                                <th className="p-3.5 text-center">{t('File')}</th>
+                                <th className="p-3.5 text-right">{t('Actions')}</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/60">
+                            {visible.map((item) => (
+                                <tr key={item.request_id} className="hover:bg-muted/20 transition-colors">
+                                    <td className="p-3.5">
+                                        <p className="font-semibold text-foreground max-w-64 break-words">
+                                            {item.email}
+                                        </p>
+                                        <p className="max-w-64 break-words text-[11px] text-muted-foreground mt-0.5">
+                                            {item.licensed_to}
+                                        </p>
+                                    </td>
+
+                                    <td className="p-3.5">
+                                        <span
+                                            className={`inline-flex items-center px-2 py-0.5 rounded-md text-[11px] font-semibold border capitalize ${getEditionBadge(
+                                                item.edition
+                                            )}`}
+                                        >
+                                            {item.edition}
+                                        </span>
+                                    </td>
+
+                                    <td className="p-3.5 whitespace-nowrap text-muted-foreground font-medium">
+                                        {formatDay(item.issued_at)}
+                                    </td>
+
+                                    <td className="p-3.5">
+                                        {item.status === 'revoked' ? (
+                                            <div>
+                                                <StatusBadge tone="destructive">
+                                                    {t('Revoked')}
+                                                </StatusBadge>
+                                                {item.revoked_at && (
+                                                    <p className="mt-1 whitespace-nowrap text-[10px] text-muted-foreground font-mono">
+                                                        {formatDateTime(item.revoked_at)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <StatusBadge tone="success">
+                                                {t('License active')}
+                                            </StatusBadge>
+                                        )}
+                                    </td>
+
+                                    <td className="p-3.5">
+                                        {item.activated === true ? (
+                                            <div>
+                                                <span className="inline-flex items-center gap-1 text-emerald-700 font-medium">
+                                                    <CheckCircle size={13} weight="fill" />
+                                                    <span>{t('Account activated')}</span>
+                                                </span>
+                                                {item.activated_at && (
+                                                    <p className="mt-1 whitespace-nowrap text-[10px] text-muted-foreground font-mono">
+                                                        {formatDateTime(item.activated_at)}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <span className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-[11px] text-muted-foreground font-medium">
+                                                {t('Not activated')}
+                                            </span>
+                                        )}
+                                    </td>
+
+                                    <td className="p-3.5 whitespace-nowrap font-mono text-[11px] text-muted-foreground">
+                                        {item.last_login_at
+                                            ? formatDateTime(item.last_login_at)
+                                            : t(item.activated ? 'Sign-in date not recorded' : '—')}
+                                    </td>
+
+                                    <td className="p-3.5 text-center">
+                                        <Button
+                                            variant="outline"
+                                            size="sm"
+                                            disabled={busy || item.status === 'revoked'}
+                                            onClick={() => onDownload(item)}
+                                            aria-label={`${t('Download license')}: ${item.email}`}
+                                            className="h-8 w-8 p-0 rounded-lg"
+                                        >
+                                            <DownloadSimple size={15} />
+                                        </Button>
+                                    </td>
+
+                                    <td className="p-3.5 text-right">
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            disabled={busy || item.status === 'revoked'}
+                                            onClick={() => onRevoke(item)}
+                                            className="h-8 rounded-lg text-xs text-dangerFg hover:text-dangerFg hover:bg-rose-50"
+                                        >
+                                            {t('Revoke license')}
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+
+            <p className="label-xs text-muted-foreground pt-1 leading-relaxed">
+                {t(
+                    'Dates use Asia/Ho_Chi_Minh. Earlier account dates may not have been recorded. Last sign-in includes activation and successful recovery; it is not online status.'
+                )}
+            </p>
+        </section>
+    );
 }
