@@ -63,7 +63,7 @@ export function createAiWriting(store, key, fetcher = fetch) {
                 ...(lowThinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) };
             const response = await fetchAiProvider(fetcher, openai ? router ? OPENROUTER_CHAT_URL : 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
                 method: 'POST', redirect: 'manual', signal,
-                headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}` } : { 'x-goog-api-key': config.key }) },
+                headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}`, ...(router ? { 'HTTP-Referer': 'https://socialchoice.vercel.app', 'X-Title': 'Socialchoice' } : {}) } : { 'x-goog-api-key': config.key }) },
                 body: JSON.stringify(openai ? { model: config.model, ...(router ? { provider: { allow_fallbacks: false } } : { store: false }), messages: [{ role: 'user', content: prompt }], ...(router ? { max_tokens: input.action === 'strategy' ? 16000 : operation === 'test' ? 256 : 2048 } : { max_completion_tokens: input.action === 'strategy' ? 16000 : operation === 'test' ? 32 : 2048 }) } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
             }, response=>rejectProvider(response,signal));
             providerStatus = response.status;

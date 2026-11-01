@@ -88,7 +88,7 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
         signal.throwIfAborted();
         const response = await awaitAiIo(fetcher(request.url, {
             method: 'POST', redirect: 'manual', signal,
-            headers: { 'Content-Type': 'application/json', ...(router ? { Authorization: `Bearer ${key}` } : { 'x-goog-api-key': key }) }, body,
+            headers: { 'Content-Type': 'application/json', ...(router ? { Authorization: `Bearer ${key}`, 'HTTP-Referer': 'https://socialchoice.vercel.app', 'X-Title': 'Socialchoice' } : { 'x-goog-api-key': key }) }, body,
         }),signal,value=>value.body?.cancel());
         // Distinguish a real provider reply from an actor/platform-generated HTTP error.
         const headers = new Headers(response.headers);

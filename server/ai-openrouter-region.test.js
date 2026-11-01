@@ -6,7 +6,7 @@ const options={method:'POST',headers:{Authorization:'Bearer private-key',cookie:
 test('OpenRouter inference uses its own US actor and forwards only its credential',async()=>{
  let calls=0;
  const namespace={jurisdiction(region){assert.equal(region,'us');return {idFromName(name){assert.equal(name,'openrouter-us-v1');return 'id';},get(){return {fetch:request=>forwardGeminiRequest(request,async(target,init)=>{
-  calls++;assert.equal(target,url);assert.equal(init.redirect,'manual');assert.deepEqual(init.headers,{'Content-Type':'application/json',Authorization:'Bearer private-key'});
+  calls++;assert.equal(target,url);assert.equal(init.redirect,'manual');assert.deepEqual(init.headers,{'Content-Type':'application/json',Authorization:'Bearer private-key','HTTP-Referer':'https://socialchoice.vercel.app','X-Title':'Socialchoice'});
   return Response.json({choices:[{message:{content:'OK'},finish_reason:'stop'}]});
  })};}};}};
  const response=await createRegionalAiFetch(namespace,()=>{throw Error('must not run directly');})(url,options);
