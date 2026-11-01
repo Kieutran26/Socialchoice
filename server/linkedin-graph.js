@@ -64,5 +64,12 @@ export function createLinkedinGraph(config) {
             if (response.status !== 201) fail('LinkedIn publication is unconfirmed', 502);
             return linkedinPublishedId(response.headers.get('x-restli-id'));
         },
+        async publishComment(actorIdOrUrn, postUrn, text, token) {
+            const actor = String(actorIdOrUrn).startsWith('urn:li:') ? String(actorIdOrUrn) : `urn:li:person:${actorIdOrUrn}`;
+            const response = await request(`https://api.linkedin.com/v2/socialActions/${encodeURIComponent(postUrn)}/comments`, token, { actor, object: postUrn, message: { text } });
+            const id = response.headers.get('x-restli-id');
+            if (!id) fail('LinkedIn comment is unconfirmed', 502);
+            return { id };
+        },
     };
 }

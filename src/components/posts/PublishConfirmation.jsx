@@ -30,6 +30,20 @@ export default function PublishConfirmation({ review, onClose, onResult }) {
             {item.platform==='linkedin'&&<p className="text-sm">{t('Visibility: Public')}</p>}
             {item.platform==='tiktok'&&<p className="text-sm">TikTok · {item.tiktokCreator} · {t('Only me (sandbox)')} · {t('Comments')}: {item.tiktokOptions?.allowComment?t('Yes'):t('No')} · Duet: {item.tiktokOptions?.allowDuet?t('Yes'):t('No')} · Stitch: {item.tiktokOptions?.allowStitch?t('Yes'):t('No')} · {t('Disclose promotional content')}: {item.tiktokOptions?.commercial?t('Yes'):t('No')} · {t('Your own brand')}: {item.tiktokOptions?.ownBrand?t('Yes'):t('No')} · AI: {item.tiktokOptions?.aiGenerated?t('Yes'):t('No')} · {t('Music consent confirmed')}: {item.tiktokOptions?.musicConsent?t('Yes'):t('No')} · <a className="underline" href="https://www.tiktok.com/legal/page/global/music-usage-confirmation/en" target="_blank" rel="noreferrer">Music Usage Confirmation</a></p>}
             <MediaAttachments media={item.media || []} />
+            {item.comments?.length > 0 && (
+                <div className="mt-3 border-t pt-3 space-y-2">
+                    <p className="text-xs font-semibold">{t('Follow-up comments')} ({item.comments.length})</p>
+                    {item.comments.map((comment, idx) => (
+                        <div key={idx} className="rounded border bg-muted/20 p-2.5 text-xs space-y-1.5">
+                            <p className="font-medium">
+                                #{idx + 1} · {(comment.delay_minutes || 0) === 0 ? t('Publishes immediately after the main post') : t('Publishes {minutes} min after previous step', { minutes: comment.delay_minutes })}
+                            </p>
+                            {comment.message && <p className="whitespace-pre-wrap break-words">{comment.message}</p>}
+                            {comment.media?.length > 0 && <MediaAttachments media={comment.media} />}
+                        </div>
+                    ))}
+                </div>
+            )}
         </section>)}</div>
         {error && <p role="alert" className="mt-3 text-sm text-dangerFg">{t(error)}</p>}
         <div className="mt-4 flex flex-wrap justify-end gap-3"><Button variant="outline" disabled={busy} onClick={onClose}>{t('Cancel')}</Button><button className="btn-skew" disabled={busy} onClick={confirm}>{t(busy ? 'Saving…' : review.scheduledFor ? 'Confirm automatic schedule' : 'Confirm and publish')}</button></div>

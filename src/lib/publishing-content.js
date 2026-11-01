@@ -1,6 +1,7 @@
 // Match the owned adapters' supported subset, not all formats a platform may offer.
 export const PUBLISHING_PLATFORMS = ['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'];
 export const CAPTION_LIMITS = { facebook: 63206, instagram: 2200, threads: 500, tiktok: 2200, linkedin: 3000 };
+export const COMMENT_MEDIA_PLATFORMS = ['facebook', 'threads'];
 
 export function resolveCaption(post, account) {
     return post.destination_settings?.[account.id]?.caption?.trim()
@@ -9,17 +10,37 @@ export function resolveCaption(post, account) {
             ? post.platform_captions[account.platform] : post.caption || '';
 }
 
-// An explicit empty platform list means text-only, not inheritance.
+// An explicit empty account or platform list means text-only, not inheritance.
 export function resolveMediaIds(post, account) {
+    const accountSettings = post.destination_settings?.[account?.id] || {};
+    if (Object.hasOwn(accountSettings, 'media_ids')) return accountSettings.media_ids || [];
     return Object.hasOwn(post.platform_media_ids || {}, account.platform)
         ? post.platform_media_ids[account.platform] : post.media_ids || [];
 }
 
+export function resolveComments(post, account) {
+    const accountSettings = post.destination_settings?.[account?.id] || {};
+    if (Object.hasOwn(accountSettings, 'comments')) return accountSettings.comments || [];
+    return post.comments || [];
+}
+
 export function referencedMediaIds(post) {
-    return [...new Set([...(post.media_ids || []), ...Object.values(post.platform_media_ids || {}).flat()])];
+    const commentIds = (list = []) => (Array.isArray(list) ? list : []).flatMap(item => item?.media_ids || []);
+    const destinationIds = Object.values(post.destination_settings || {}).flatMap(setting => [
+        ...(setting?.media_ids || []),
+        ...commentIds(setting?.comments),
+    ]);
+    return [...new Set([
+        ...(post.media_ids || []),
+        ...Object.values(post.platform_media_ids || {}).flat(),
+        ...commentIds(post.comments),
+        ...destinationIds,
+    ])];
 }
 
 export function resolveMedia(post, account, sharedMedia = post.media || [], platformMedia = post.platform_media || {}) {
+    const accountSettings = post.destination_settings?.[account?.id] || {};
+    if (Object.hasOwn(accountSettings, 'media')) return accountSettings.media || [];
     return Object.hasOwn(platformMedia, account.platform) ? platformMedia[account.platform] : sharedMedia;
 }
 
@@ -27,15 +48,43 @@ export function captionLength(caption, platform) {
     return ['threads', 'linkedin'].includes(platform) ? Array.from(caption).length : caption.length;
 }
 
+export function commentIssues(platform, comments = []) {
+    const issues = [];
+    if (!Array.isArray(comments) || !comments.length) return issues;
+    if (comments.length > 10) issues.push('Choose up to 10 follow-up comments');
+    if (platform === 'tiktok') {
+        issues.push('TikTok does not support automatic comments');
+        return issues;
+    }
+    for (const comment of comments) {
+        const text = comment?.message || '';
+        const media = comment?.media || comment?.media_ids || [];
+        const delay = comment?.delay_minutes ?? 0;
+        if (!text.trim() && !media.length) issues.push('Each comment requires text or an image');
+        if (text && captionLength(text, platform) > (CAPTION_LIMITS[platform] || 3000)) issues.push('Comment exceeds platform character limit');
+        if (!Number.isInteger(delay) || delay < 0 || delay > 10080) issues.push('Comment delay must be between 0 and 10080 minutes');
+        if (media.length > 1) issues.push('Each comment supports at most one image');
+        if (media.length > 0) {
+            if (platform === 'instagram') issues.push('Instagram comments do not support media attachments');
+            else if (platform === 'linkedin') issues.push('LinkedIn comments do not support media attachments');
+            else if (media.some(asset => typeof asset === 'object' && asset.file_type === 'video')) issues.push('Comment attachments only support images');
+            else if (platform === 'threads' && media.some(asset => typeof asset === 'object' && asset.mime_type && asset.mime_type !== 'image/jpeg')) issues.push('Threads comment images must be JPEG');
+        }
+    }
+    return [...new Set(issues)];
+}
+
 export function contentIssues(platform, caption, media) {
     const issues = [];
     if (!PUBLISHING_PLATFORMS.includes(platform)) return ['Publishing supports connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts.'];
     if (!caption.trim() || captionLength(caption, platform) > CAPTION_LIMITS[platform]) {
-        issues.push({ facebook: 'Facebook caption must contain between 1 and 63206 characters',
+        issues.push({
+            facebook: 'Facebook caption must contain between 1 and 63206 characters',
             instagram: 'Instagram caption must contain between 1 and 2200 characters',
             threads: 'Threads caption must contain between 1 and 500 characters',
             tiktok: 'TikTok caption must contain between 1 and 2200 characters',
-            linkedin: 'LinkedIn caption must contain between 1 and 3000 characters' }[platform]);
+            linkedin: 'LinkedIn caption must contain between 1 and 3000 characters'
+        }[platform]);
     }
     if (media.length > 10) issues.push('Choose up to 10 different images');
     if (media.some(asset => asset.file_type === 'video') && media.length !== 1) issues.push('Choose one video or up to 10 images, not both');
@@ -54,7 +103,10 @@ export function contentIssues(platform, caption, media) {
 }
 
 export function destinationIssues(post, account, media, demoMode = false, creator = null) {
-    const issues = contentIssues(account.platform, resolveCaption(post, account), media);
+    const issues = [
+        ...contentIssues(account.platform, resolveCaption(post, account), media),
+        ...commentIssues(account.platform, resolveComments(post, account)),
+    ];
     if (!demoMode && (account.connection_status !== 'connected' || account.platform === 'facebook' && account.account_type !== 'page')) issues.unshift('Connect the selected publishing accounts before publishing');
     if (account.platform === 'tiktok') {
         const options = post.destination_settings?.[account.id]?.tiktok;

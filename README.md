@@ -205,3 +205,7 @@ Open Content → Post templates to search, rename, delete or use one. Every use 
 ## Web AI writing assistant
 
 Settings now supports your own OpenAI/Gemini model and encrypted API key. Create Post offers brief-to-caption, rewrite, shorten, ideas, tone, CTA and platform adaptation with review-before-apply and stale-edit protection. Adaptation updates only the selected platform caption. Applying does not save or publish. See [AI writing setup and verification](docs/ai-writing.md). Implemented locally; real provider use and online deployment remain unverified.
+
+## Postiz backend (local/staging)
+
+Social Accounts can import connected Facebook channels from a server-configured Postiz instance. Existing composer drafts, reviewed publishing and automatic schedules use Postiz for those channels; native connections keep their current route. See [Postiz integration, private setup, verification and rollback](docs/postiz-integration.md). Production and desktop enablement are outside this change.

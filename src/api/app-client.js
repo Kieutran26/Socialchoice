@@ -19,6 +19,7 @@ async function request(path, args) {
 
 // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
 export const appClient = {
+    postiz: { status: () => request('postiz/status'), channels: () => request('postiz/channels'), importChannels: (brandId, ids) => request('postiz/import', [brandId, ids]), check: id => request('postiz/check', [id]), disconnect: id => request('postiz/disconnect', [id]) },
     autopilot: { call: (operation, input = {}) => request(`autopilot/${operation}`, [input]) },
     licenses: {
         status: () => request('admin/licenses/status'),

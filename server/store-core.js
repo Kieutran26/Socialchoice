@@ -27,7 +27,7 @@ export function createStoreCore(db, transactionSync) {
     };
     if (attemptTable?.sql.includes('post_id TEXT UNIQUE')) {
         if (transactionSync) transactionSync(migrateAttempts);
-        else { db.exec('BEGIN IMMEDIATE'); try { migrateAttempts(); db.exec('COMMIT'); } catch(error) { db.exec('ROLLBACK'); throw error; } }
+        else { db.exec('BEGIN IMMEDIATE'); try { migrateAttempts(); db.exec('COMMIT'); } catch (error) { db.exec('ROLLBACK'); throw error; } }
     }
     db.exec('CREATE TABLE IF NOT EXISTS publish_attempts (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, data TEXT NOT NULL); CREATE INDEX IF NOT EXISTS attempts_by_post ON publish_attempts(post_id);');
     db.exec('CREATE TABLE IF NOT EXISTS publishing_reviews (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
@@ -36,35 +36,35 @@ export function createStoreCore(db, transactionSync) {
     db.exec('CREATE TABLE IF NOT EXISTS notification_reads (id TEXT PRIMARY KEY, read_at INTEGER NOT NULL);');
     db.exec("CREATE INDEX IF NOT EXISTS publishing_problem_recent ON publish_attempts(COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) DESC) WHERE json_extract(data,'$.status') IN ('failed','unknown');");
     const store = {
-        savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id,JSON.stringify(value)),
-        publishingReview: id => {const row=db.prepare('SELECT data FROM publishing_reviews WHERE id=?').get(id);return row ? JSON.parse(row.data) : null;},
-        attemptsForPost: id => typeof id === 'string' ? db.prepare('SELECT data FROM publish_attempts WHERE post_id=? ORDER BY rowid').all(id).map(row=>JSON.parse(row.data)) : [],
+        savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),
+        publishingReview: id => { const row = db.prepare('SELECT data FROM publishing_reviews WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
+        attemptsForPost: id => typeof id === 'string' ? db.prepare('SELECT data FROM publish_attempts WHERE post_id=? ORDER BY rowid').all(id).map(row => JSON.parse(row.data)) : [],
         currentAttempts: id => {
             const current = new Map();
             for (const attempt of store.attemptsForPost(id)) {
                 // An unconfirmed retry review does not hide a previous execution result.
-                if (attempt.status === 'prepared' && current.has(attempt.accountId) && !['prepared','cancelled'].includes(current.get(attempt.accountId).status)) continue;
-                current.set(attempt.accountId,attempt);
+                if (attempt.status === 'prepared' && current.has(attempt.accountId) && !['prepared', 'cancelled'].includes(current.get(attempt.accountId).status)) continue;
+                current.set(attempt.accountId, attempt);
             }
-            const postRow=db.prepare("SELECT data FROM records WHERE entity='Post' AND id=?").get(id);
-            const accountIds=postRow ? JSON.parse(postRow.data).account_ids : null;
+            const postRow = db.prepare("SELECT data FROM records WHERE entity='Post' AND id=?").get(id);
+            const accountIds = postRow ? JSON.parse(postRow.data).account_ids : null;
             // Cancelled history survives edits, but removed Pages are no longer current destinations.
-            return [...current.values()].filter(attempt=>!accountIds || accountIds.includes(attempt.accountId));
+            return [...current.values()].filter(attempt => !accountIds || accountIds.includes(attempt.accountId));
         },
-        saveScheduleBatch: value => db.prepare('INSERT INTO schedule_batches VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id,JSON.stringify(value)),
-        scheduleBatch: id => { const row=db.prepare('SELECT data FROM schedule_batches WHERE id=?').get(id); if(!row) fail('Batch review not found',404); return JSON.parse(row.data); },
+        saveScheduleBatch: value => db.prepare('INSERT INTO schedule_batches VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),
+        scheduleBatch: id => { const row = db.prepare('SELECT data FROM schedule_batches WHERE id=?').get(id); if (!row) fail('Batch review not found', 404); return JSON.parse(row.data); },
         notificationRows: () => db.prepare("WITH recent AS (SELECT id,data,COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) AS time FROM publish_attempts WHERE json_extract(data,'$.status') IN ('failed','unknown') ORDER BY time DESC LIMIT 100) SELECT recent.id||':'||json_extract(recent.data,'$.status') AS id,json_extract(recent.data,'$.postId') AS postId,json_extract(post.data,'$.title') AS title,json_extract(recent.data,'$.pageName') AS pageName,json_extract(recent.data,'$.status') AS status,json_extract(recent.data,'$.message') AS message,recent.time AS time,json_extract(post.data,'$.updated_date') AS updatedDate,read.read_at AS readAt FROM recent JOIN records post ON post.entity='Post' AND post.id=json_extract(recent.data,'$.postId') LEFT JOIN notification_reads read ON read.id=recent.id||':'||json_extract(recent.data,'$.status') ORDER BY (read.read_at IS NULL) DESC,recent.time DESC").all(),
         unreadNotificationCount: () => db.prepare("SELECT COUNT(*) AS count FROM publish_attempts p LEFT JOIN notification_reads r ON r.id=p.id||':'||json_extract(p.data,'$.status') WHERE json_extract(p.data,'$.status') IN ('failed','unknown') AND r.id IS NULL").get().count,
-        hasNotification: id => { const [attemptId,status,...extra]=id.split(':'); if(extra.length||!['failed','unknown'].includes(status))return false; return !!db.prepare("SELECT id FROM publish_attempts WHERE id=? AND json_extract(data,'$.status')=?").get(attemptId,status); },
+        hasNotification: id => { const [attemptId, status, ...extra] = id.split(':'); if (extra.length || !['failed', 'unknown'].includes(status)) return false; return !!db.prepare("SELECT id FROM publish_attempts WHERE id=? AND json_extract(data,'$.status')=?").get(attemptId, status); },
         readAllNotifications: () => db.prepare("INSERT OR IGNORE INTO notification_reads SELECT id||':'||json_extract(data,'$.status'),? FROM publish_attempts WHERE json_extract(data,'$.status') IN ('failed','unknown')").run(Date.now()),
-        readNotification: id => db.prepare('INSERT INTO notification_reads VALUES (?,?) ON CONFLICT(id) DO NOTHING').run(id,Date.now()),
-        saveCollaboration: value => db.prepare('INSERT INTO collaboration_invites VALUES (?,?,?,?) ON CONFLICT(post_id,target_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id,value.postId,value.targetId,JSON.stringify(value)),
-        collaborations: id => db.prepare('SELECT data FROM collaboration_invites WHERE post_id=?').all(id).map(row=>JSON.parse(row.data)),
-        collaboration: id => {const row=db.prepare('SELECT data FROM collaboration_invites WHERE id=?').get(id);if(!row)fail('Invitation not found',404);return JSON.parse(row.data);},
+        readNotification: id => db.prepare('INSERT INTO notification_reads VALUES (?,?) ON CONFLICT(id) DO NOTHING').run(id, Date.now()),
+        saveCollaboration: value => db.prepare('INSERT INTO collaboration_invites VALUES (?,?,?,?) ON CONFLICT(post_id,target_id) DO UPDATE SET id=excluded.id,data=excluded.data').run(value.id, value.postId, value.targetId, JSON.stringify(value)),
+        collaborations: id => db.prepare('SELECT data FROM collaboration_invites WHERE post_id=?').all(id).map(row => JSON.parse(row.data)),
+        collaboration: id => { const row = db.prepare('SELECT data FROM collaboration_invites WHERE id=?').get(id); if (!row) fail('Invitation not found', 404); return JSON.parse(row.data); },
         attemptForPost: id => {
             if (typeof id !== 'string') return null;
             const attempts = store.currentAttempts(id);
-            return attempts.find(value=>!['prepared','cancelled'].includes(value.status)) || attempts.find(value=>value.status==='prepared') || null;
+            return attempts.find(value => !['prepared', 'cancelled'].includes(value.status)) || attempts.find(value => value.status === 'prepared') || null;
         },
         attempt: id => {
             const row = db.prepare('SELECT data FROM publish_attempts WHERE id=?').get(id);
@@ -72,9 +72,10 @@ export function createStoreCore(db, transactionSync) {
             return JSON.parse(row.data);
         },
         saveAttempt: value => db.prepare('INSERT INTO publish_attempts VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, value.postId, JSON.stringify(value)),
-        removePrepared: (postId,accountId) => db.prepare("DELETE FROM publish_attempts WHERE post_id=? AND json_extract(data,'$.status')='prepared' AND json_extract(data,'$.accountId')=?").run(postId,accountId),
+        removePrepared: (postId, accountId) => db.prepare("DELETE FROM publish_attempts WHERE post_id=? AND json_extract(data,'$.status')='prepared' AND json_extract(data,'$.accountId')=?").run(postId, accountId),
         pendingAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='processing'").all().map(row => JSON.parse(row.data)),
         queuedAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='queued'").all().map(row => JSON.parse(row.data)),
+        commentAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='published' AND json_extract(data,'$.commentStatus') IN ('queued','processing')").all().map(row => JSON.parse(row.data)),
         imageWrite: input => store.write('MediaAsset', input, undefined, imageWriter),
         publishingWrite: (entity, input, id) => {
             if (!['Post', 'PublishJob', 'PostVariant', 'PublishingLog'].includes(entity)) fail('Invalid publishing entity');
@@ -98,7 +99,7 @@ export function createStoreCore(db, transactionSync) {
         references(entity, id) {
             const field = links[entity];
             if (!field) return false;
-            return Object.keys(schemas).some((name) => store.all(name).some((r) => matches(r, { [field]: id }) || (entity === 'SocialAccount' && r.account_ids?.includes(id)) || (entity === 'MediaAsset' && Object.values(r.platform_media_ids || {}).some(ids => ids.includes(id)))));
+            return Object.keys(schemas).some((name) => store.all(name).some((r) => matches(r, { [field]: id }) || (entity === 'SocialAccount' && (r.account_ids?.includes(id) || (r.comments || []).some(c => c?.actor_account_id === id) || Object.values(r.destination_settings || {}).some(s => (s?.comments || []).some(c => c?.actor_account_id === id)))) || (entity === 'MediaAsset' && (Object.values(r.platform_media_ids || {}).some(ids => ids.includes(id)) || (r.comments || []).some(c => c?.media_ids?.includes(id)) || Object.values(r.destination_settings || {}).some(s => s?.media_ids?.includes(id) || (s?.comments || []).some(c => c?.media_ids?.includes(id)))))));
         },
         write(entity, input, id, capability) {
             store.all(entity);
@@ -111,7 +112,7 @@ export function createStoreCore(db, transactionSync) {
             if (entity === 'MediaAsset' && capability !== imageWriter && (previous?.storage_id || record.storage_id || record.sha256 || record.file_url?.startsWith('/api/media/files/'))) fail('Stored image metadata is server-owned', 409);
             if (capability !== publisher) {
                 const attempt = store.attemptForPost(entity === 'Post' ? record.id : record.post_id);
-                if (attempt?.status === 'queued') fail('Cancel the automatic schedule before editing this post',409);
+                if (attempt?.status === 'queued') fail('Cancel the automatic schedule before editing this post', 409);
                 if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
             }
             validateRecord(entity, record, previous, schemas[entity], store, capability === verified, capability === publisher);

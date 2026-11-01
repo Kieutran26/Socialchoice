@@ -19,6 +19,7 @@ import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import PostPreview from '@/components/composer/PostPreview';
 import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import PageSettings from '@/components/composer/PageSettings';
+import CommentChainEditor from '@/components/composer/CommentChainEditor';
 import { templateDataFromForm } from '@/lib/post-templates';
 import { referencedMediaIds, PUBLISHING_PLATFORMS } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,16 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const hydrateCommentFromApi = (item = {}, mediaItems = []) => ({
+    ...(item.id ? { id: item.id } : {}),
+    message: item.message || '',
+    delay_minutes: Number.isInteger(item.delay_minutes) ? item.delay_minutes : 0,
+    media: (item.media_ids || [])
+        .map((id) => mediaItems.find((asset) => asset.id === id))
+        .filter(Boolean),
+    ...(item.actor_account_id ? { actor_account_id: item.actor_account_id } : {}),
+});
 
 const emptyTemplateForm = (brandId = '') => ({
     brand_id: brandId || '',
@@ -39,6 +50,7 @@ const emptyTemplateForm = (brandId = '') => ({
     media: [],
     platform_media: {},
     destination_settings: {},
+    comments: [],
 });
 
 export default function CreateTemplate() {
@@ -96,6 +108,7 @@ export default function CreateTemplate() {
                 angle_id: '',
                 account_ids: [],
                 destination_settings: {},
+                comments: [],
             }));
         },
         []
@@ -138,7 +151,31 @@ export default function CreateTemplate() {
                             ids.map((id) => mediaAssets.items.find((a) => a.id === id)).filter(Boolean),
                         ])
                     ),
-                    destination_settings: template.destination_settings || {},
+                    destination_settings: Object.fromEntries(
+                        Object.entries(template.destination_settings || {}).map(([id, setting]) => [
+                            id,
+                            {
+                                ...(setting.caption ? { caption: setting.caption } : {}),
+                                ...(Object.hasOwn(setting, 'media_ids')
+                                    ? {
+                                        media: (setting.media_ids || [])
+                                            .map((mediaId) => mediaAssets.items.find((a) => a.id === mediaId))
+                                            .filter(Boolean),
+                                    }
+                                    : {}),
+                                ...(Object.hasOwn(setting, 'comments')
+                                    ? {
+                                        comments: (setting.comments || []).map((c) =>
+                                            hydrateCommentFromApi(c, mediaAssets.items)
+                                        ),
+                                    }
+                                    : {}),
+                            },
+                        ])
+                    ),
+                    comments: (template.comments || []).map((c) =>
+                        hydrateCommentFromApi(c, mediaAssets.items)
+                    ),
                 });
             } catch (err) {
                 if (active) setLoadError(err.message);
@@ -450,6 +487,20 @@ export default function CreateTemplate() {
                             />
                         </div>
 
+                        {/* Shared Follow-up Comment Chain */}
+                        {platforms.some((p) => p !== 'tiktok') && (
+                            <div className="pt-3 border-t border-border/50">
+                                <CommentChainEditor
+                                    comments={form.comments || []}
+                                    onChange={(comments) => setForm((prev) => ({ ...prev, comments }))}
+                                    brandId={form.brand_id}
+                                    demoMode={demoMode}
+                                    disabled={uploading || saving}
+                                    onBusyChange={setUploading}
+                                />
+                            </div>
+                        )}
+
                         {/* Per-platform custom captions */}
                         {platforms.length > 1 && (
                             <div className="pt-4 border-t border-border/50">
@@ -468,6 +519,11 @@ export default function CreateTemplate() {
                                 <PageSettings
                                     accounts={selectedAccounts}
                                     settings={form.destination_settings}
+                                    brandId={form.brand_id}
+                                    demoMode={demoMode}
+                                    disabled={uploading || saving}
+                                    onBusyChange={setUploading}
+                                    showSchedule={false}
                                     onChange={(destination_settings) =>
                                         setForm((prev) => ({ ...prev, destination_settings }))
                                     }
@@ -501,6 +557,7 @@ export default function CreateTemplate() {
                         planning={true}
                         caption={form.caption}
                         media={form.media}
+                        comments={form.comments}
                         accounts={selectedAccounts}
                         scheduledAt={null}
                         timezone={brand?.timezone || 'Asia/Ho_Chi_Minh'}

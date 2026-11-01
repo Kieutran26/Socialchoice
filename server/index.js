@@ -1,3 +1,5 @@
+import { postizConfig } from './postiz-client.js';
+import { createPostizConnection } from './postiz-connection.js';
 import { linkedinConfig } from './linkedin-config.js';
 import { createLinkedinConnection } from './linkedin-connection.js';
 import { tiktokConfig } from './tiktok-config.js';
@@ -33,6 +35,8 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     if (threadsSettings.ready && (publicOrigin ? threadsSettings.origin !== publicOrigin : !allowedHost(new URL(threadsSettings.redirectUri).hostname))) throw new Error('Threads callback origin must match the Socialchoice app origin');
     if (metaSettings.ready && (publicOrigin ? metaSettings.origin !== publicOrigin : !allowedHost(new URL(metaSettings.redirectUri).hostname))) throw new Error('Meta callback origin must match the Socialchoice app origin');
     const store = createStore(dbPath);
+    const postizSettings = postizConfig();
+    const postiz = createPostizConnection(store, postizSettings);
     const meta = createMetaConnection(store, auth, metaSettings);
     const linkedin=createLinkedinConnection(store,auth,linkedinSettings);
         const threads=createThreadsConnection(store,auth,threadsSettings);
@@ -41,9 +45,9 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
         const tiktokTokens=createTiktokTokens(store,tiktokSettings,tiktokGraph);
         const tiktokCreators=new Map();
         const tiktok=createTiktokConnection(store,auth,tiktokSettings,{graph:tiktokGraph,tokens:tiktokTokens,creators:tiktokCreators,});
-        const publisher = createFacebookPublisher(store, metaSettings,{linkedinConfig:linkedinSettings,threadsConfig:threadsSettings,tiktokConfig:tiktokSettings,tiktokTokens,tiktokCreators,tiktokGraph});
+        const publisher = createFacebookPublisher(store, metaSettings,{postizConfig:postizSettings, postizClient:postiz.client, linkedinConfig:linkedinSettings,threadsConfig:threadsSettings,tiktokConfig:tiktokSettings,tiktokTokens,tiktokCreators,tiktokGraph});
     publisher.resumePhotos();
-    const server = createServer(createHttpHandler({ autopilotOptions: { env: process.env }, aiKey: process.env.SOCIALCHOICE_AI_ENCRYPTION_KEY, store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
+    const server = createServer(createHttpHandler({ postiz, autopilotOptions: { env: process.env }, aiKey: process.env.SOCIALCHOICE_AI_ENCRYPTION_KEY, store, auth, meta, linkedin, threads, tiktok, tiktokSettings, publisher, metaSettings, threadsSettings, publicOrigin, frontendPort, allowedHosts, serveStatic: siteDirectory ? (req, res) => serveSite(req, res, siteDirectory) : null }));
     server.on('close', () => { publisher.close(); store.close(); });
     return { server, store };
 }

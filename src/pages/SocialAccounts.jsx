@@ -1,3 +1,4 @@
+import PostizConnectionCard from '@/components/accounts/postiz-connection-card';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import AddChannelDialog, { hasConnectionReturn } from '@/components/accounts/add-channel-dialog';
 import { useTranslation } from '@/lib/i18n';
@@ -162,7 +163,7 @@ export default function SocialAccounts() {
 
     const disconnect = async (account) => {
         if (account.credential_id) {
-            await (account.platform === 'linkedin'
+            await (account.connection_provider === 'postiz' ? appClient.postiz : account.platform === 'linkedin'
                 ? appClient.linkedin
                 : account.platform === 'tiktok'
                 ? appClient.tiktok
@@ -201,7 +202,7 @@ export default function SocialAccounts() {
     const handleCheckAccess = async (account) => {
         setCheckingId(account.id);
         try {
-            await (account.platform === 'linkedin'
+            const result = await (account.connection_provider === 'postiz' ? appClient.postiz : account.platform === 'linkedin'
                 ? appClient.linkedin
                 : account.platform === 'tiktok'
                 ? appClient.tiktok
@@ -209,6 +210,7 @@ export default function SocialAccounts() {
                 ? appClient.threads
                 : appClient.meta
             ).check(account.id);
+            if (result.connected === false) throw new Error('Postiz channel is disconnected');
             toast({
                 title: t(
                     account.platform === 'linkedin'
@@ -231,6 +233,7 @@ export default function SocialAccounts() {
     };
 
     const handleFixConnection = (account) => {
+        if (account.connection_provider === 'postiz') { handleCheckAccess(account); return; }
         if (isDesktop() && ['facebook', 'instagram', 'threads', 'linkedin', 'tiktok'].includes(account.platform)) {
             setReconnect({ platform: account.platform, brandId: account.brand_id });
             setChannelOpen(true);
@@ -303,6 +306,7 @@ export default function SocialAccounts() {
                 }
             />
 
+            <PostizConnectionCard brands={brands} defaultBrandId={selectedBrandId} demoMode={demoMode} onChanged={load} />
             <div className="space-y-6">
                 {/* Metric Summary Bar */}
                 {!loading && accounts.length > 0 && (

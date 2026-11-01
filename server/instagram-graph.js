@@ -34,5 +34,6 @@ export function createInstagramGraph(config) {
         async status(id,token) {return instagramContainerState(await request(id,{fields:'id,status_code'},token),id);},
         async publish(profileId,id,token) {return confirmedId(await request(`${profileId}/media_publish`,{creation_id:id},token,'POST'));},
         async verify(profileId,id,token) {return instagramPublishedMedia(await request(id,{fields:'id,permalink,owner'},token),id,profileId);},
+        async publishComment(mediaId,message,token) {return {id:confirmedId(await request(`${mediaId}/comments`,{message},token,'POST'))};},
     };
 }

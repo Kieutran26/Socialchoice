@@ -23,5 +23,9 @@
   "Connection cancelled. Choose a platform to try again.": "Đã hủy kết nối. Chọn nền tảng để thử lại.",
   "Connection failed. Choose the platform you want to reconnect.": "Kết nối thất bại. Chọn nền tảng bạn muốn kết nối lại.",
   "Meta connection failed. Check app configuration and permissions, then try again.": "Kết nối Meta thất bại. Kiểm tra cấu hình và quyền đã cấp rồi thử lại.",
-  "Meta connection cancelled.": "Đã hủy kết nối Meta."
+  "Meta connection cancelled.": "Đã hủy kết nối Meta.",
+  "Postiz channels": "Kênh Postiz",
+  "Import connected Facebook Pages from Postiz into a brand.": "Nhập các Facebook Page đã kết nối với Postiz vào thương hiệu.",
+  "Load Postiz channels": "Tải kênh Postiz",
+  "Import selected channels": "Nhập kênh đã chọn"
 }

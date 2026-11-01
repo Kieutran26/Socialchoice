@@ -11,7 +11,7 @@ import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
-export function createHttpHandler({ store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
+export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const autopilot = createAutopilot({ store, auth, key: aiKey || metaSettings.key, aiFetch, ...autopilotOptions });
     const notifications=createPublishingNotifications(store);
@@ -82,6 +82,17 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
                 for await (const chunk of req) { const bytes = Buffer.from(chunk); length += bytes.length; if (length > MAX_IMAGE_BYTES) fail('Images must be at most 3 MiB', 413); chunks.push(bytes); }
                 let name; try { name = decodeURIComponent(req.headers['x-image-name'] || ''); } catch { fail('Valid image filename required'); }
                 return send(200, store.images.upload(req.headers['x-image-brand'], name, req.headers['content-type'], Buffer.concat(chunks)));
+            }
+            const postizRoute = req.url?.match(/^\/api\/postiz\/(status|channels|import|check|disconnect)$/);
+            if (postizRoute) {
+                if (!postiz) return send(200, postizRoute[1] === 'status' ? { ready: false } : { channels: [] });
+                if (req.method === 'GET' && ['status', 'channels'].includes(postizRoute[1])) return send(200, await postiz.execute(postizRoute[1], req, res));
+                if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
+                let body = '';
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
+                let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
+                if (!Array.isArray(input?.args) || input.args.length !== (postizRoute[1] === 'import' ? 2 : 1)) fail('Invalid Postiz arguments');
+                return send(200, await postiz.execute(postizRoute[1], req, res, input.args));
             }
             const metaRoute = req.url?.match(/^\/api\/meta\/(status|start|pages|import|disconnect|check)$/);
             const threadsRoute=req.url?.match(/^\/api\/threads\/(status|start|profile|import|disconnect|check)$/);

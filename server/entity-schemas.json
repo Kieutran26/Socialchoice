@@ -199,6 +199,12 @@
       },
       "platform_media_ids": {
         "type": "object"
+      },
+      "comments": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
       }
     },
     "required": [
@@ -276,6 +282,14 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "connection_provider": {
+        "type": "string",
+        "enum": [
+          "native",
+          "postiz"
+        ],
+        "default": "native"
       }
     },
     "required": [
@@ -540,6 +554,12 @@
       },
       "destination_settings": {
         "type": "object"
+      },
+      "comments": {
+        "type": "array",
+        "items": {
+          "type": "object"
+        }
       },
       "is_demo": {
         "type": "boolean",

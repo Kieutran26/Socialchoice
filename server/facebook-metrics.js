@@ -39,7 +39,7 @@ export function createFacebookMetrics(store,config,options={}) {
         async refresh(input) {
             const filter=metricOptions(input);
             if(!graph)fail('Configure Meta before refreshing metrics',409);
-            const candidates=store.metrics.candidates(filter).items.sort((a,b)=>(a.metric?.lastAttemptAt||0)-(b.metric?.lastAttemptAt||0));
+            const candidates=store.metrics.candidates(filter).items.filter(row=>row.account.connection_provider!=='postiz').sort((a,b)=>(a.metric?.lastAttemptAt||0)-(b.metric?.lastAttemptAt||0));
             let refreshed=0;
             for(const row of candidates) {
                 if(refreshed>=3)break;

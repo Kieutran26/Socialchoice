@@ -7,12 +7,12 @@ export function threadsProfile(value) {
     return { id: value.id, username: value.username };
 }
 export function threadsContainerState(value, id) {
-    if (value?.id !== id || !['IN_PROGRESS','FINISHED','ERROR','EXPIRED','PUBLISHED'].includes(value.status)) fail('Threads returned an invalid container status', 502);
+    if (value?.id !== id || !['IN_PROGRESS', 'FINISHED', 'ERROR', 'EXPIRED', 'PUBLISHED'].includes(value.status)) fail('Threads returned an invalid container status', 502);
     return value.status;
 }
 export function threadsPublishedMedia(value, id, profileId) {
     let url; try { url = new URL(value?.permalink); } catch { fail('Threads did not confirm a publication link', 502); }
-    if (value.id !== id || value.owner?.id !== profileId || url.protocol !== 'https:' || !['threads.net','www.threads.net','threads.com','www.threads.com'].includes(url.hostname) || url.username || url.password || url.port || !/^\/@[a-zA-Z0-9._]+\/post\/[a-zA-Z0-9_-]+\/?$/.test(url.pathname) || url.search || url.hash) fail('Threads publication identity mismatch', 409);
+    if (value.id !== id || value.owner?.id !== profileId || url.protocol !== 'https:' || !['threads.net', 'www.threads.net', 'threads.com', 'www.threads.com'].includes(url.hostname) || url.username || url.password || url.port || !/^\/@[a-zA-Z0-9._]+\/post\/[a-zA-Z0-9_-]+\/?$/.test(url.pathname) || url.search || url.hash) fail('Threads publication identity mismatch', 409);
     return { id, url: url.href };
 }
 export function threadsTokenDetails(value, appId, profileId, now = Date.now()) {
@@ -48,13 +48,13 @@ export function createThreadsGraph(config) {
         },
         async profile(token) { return threadsProfile(await request('me', { fields: 'id,username' }, token)); },
         async permissions(token, profileId) { return threadsTokenDetails(await request('debug_token', { input_token: token }, token, 'GET', true), config.appId, profileId); },
-        async create(profileId, asset, publicUrl, text, token) {
-            if (!numericId(profileId)) fail('Valid Threads profile required');
-            const media = asset ? (asset.file_type === 'video' ? { media_type: 'VIDEO', video_url: publicUrl } : { media_type: 'IMAGE', image_url: publicUrl }) : { media_type: 'TEXT' };
-            return confirmedId(await request(`${profileId}/threads`, { ...media, text }, token, 'POST'));
-        },
+        async create(profileId, asset, publicUrl, text, token, replyToId) {
+                if (!numericId(profileId)) fail('Valid Threads profile required');
+                const media = asset ? (asset.file_type === 'video' ? { media_type: 'VIDEO', video_url: publicUrl } : { media_type: 'IMAGE', image_url: publicUrl }) : { media_type: 'TEXT' };
+                return confirmedId(await request(`${profileId}/threads`, { ...media, text, ...(replyToId ? { reply_to_id: replyToId } : {}) }, token, 'POST'));
+            },
         async status(id, token) { return threadsContainerState(await request(id, { fields: 'id,status,error_message' }, token), id); },
         async publish(profileId, id, token) { return confirmedId(await request(`${profileId}/threads_publish`, { creation_id: id }, token, 'POST')); },
         async verify(profileId, id, token) { return threadsPublishedMedia(await request(id, { fields: 'id,permalink,owner' }, token), id, profileId); },
-    };
-}
+        };
+    }
