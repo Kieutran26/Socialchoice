@@ -1,6 +1,6 @@
 # Socialchoice Autopilot Phase 1
 
-Current acceptance (2026-11-01): see [real staging evidence and remaining gates](../plans/261031-autopilot-phase-1/acceptance-20261101.md). Public Drive ingestion, one real OpenRouter/Gemini image with exact OCR and approved persistence, access-revocation sync recovery, removed-file restoration and synthetic dead-letter recovery pass. Local runtime/customer/source/AI gate tests pass 27/27. Cloud cross-customer isolation, real binary-version invalidation, resource-key protected folders and large-folder pagination remain open. Phase 1 is not accepted for production.
+Current acceptance (2026-11-01): see [real staging evidence and remaining gate](../plans/261031-autopilot-phase-1/acceptance-20261101.md#closing-gate-follow-up--2026-11-01). Real public Drive ingestion, OpenRouter/Gemini OCR/review, access-revocation and removed-file recovery, DLQ recovery, binary-version invalidation/restoration, and 101-file pagination/repeat-sync pass. Separate customer-enabled cloud staging passes 23/23 isolation checks and its public endpoint is now disabled. Fixed restored-version reanalysis and stale AI completion fencing; current server suite passes 242/242. The real resource-key-required folder fixture remains blocked, so Phase 1 is not fully closed or accepted for production.
 
 ## Public Drive link sources — 2026-10-31 update
 
