@@ -163,7 +163,7 @@ export function createCommentDelivery(store, vaults, graphs, mediaAccess, wake) 
                         commentBusy: false,
                         commentIndex: hasMore ? nextIdx : idx,
                         commentStatus: hasMore ? (nextDelayMs > 0 ? 'queued' : 'processing') : 'published',
-                        commentNextAt: hasMore ? Date.now() + Math.max(50, nextDelayMs) : undefined,
+                        commentNextAt: hasMore ? Date.now() + nextDelayMs : undefined,
                         commentThreadsContainerId: undefined,
                         commentThreadsStage: undefined,
                         commentThreadsSince: undefined,

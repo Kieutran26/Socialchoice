@@ -20,6 +20,7 @@ import PostPreview from '@/components/composer/PostPreview';
 import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import PageSettings from '@/components/composer/PageSettings';
 import CommentChainEditor from '@/components/composer/CommentChainEditor';
+import LinkedinMentionBar from '@/components/composer/LinkedinMentionBar';
 import { templateDataFromForm } from '@/lib/post-templates';
 import { referencedMediaIds, PUBLISHING_PLATFORMS } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
@@ -212,6 +213,10 @@ export default function CreateTemplate() {
                 PUBLISHING_PLATFORMS.includes(platform)
             ),
         [selectedAccounts]
+    );
+    const linkedinAccounts = useMemo(
+        () => brandAccounts.filter((a) => a.platform === 'linkedin'),
+        [brandAccounts]
     );
 
     const handleSave = async (e) => {
@@ -471,6 +476,17 @@ export default function CreateTemplate() {
                                 placeholder={t('Write your reusable template caption here…')}
                                 className="rounded-xl text-sm leading-relaxed p-3.5 bg-white resize-y"
                             />
+                            {platforms.includes('linkedin') && (
+                                <LinkedinMentionBar
+                                    linkedinAccounts={linkedinAccounts}
+                                    onInsert={(token) =>
+                                        setForm((prev) => {
+                                            const sep = prev.caption && !/\s$/.test(prev.caption) ? ' ' : '';
+                                            return { ...prev, caption: `${prev.caption}${sep}${token} ` };
+                                        })
+                                    }
+                                />
+                            )}
                         </div>
 
                         {/* Media Uploader */}
@@ -497,6 +513,8 @@ export default function CreateTemplate() {
                                     demoMode={demoMode}
                                     disabled={uploading || saving}
                                     onBusyChange={setUploading}
+                                    platforms={platforms}
+                                    linkedinAccounts={linkedinAccounts}
                                 />
                             </div>
                         )}
@@ -508,6 +526,7 @@ export default function CreateTemplate() {
                                     platforms={platforms}
                                     captions={form.platform_captions}
                                     mainCaption={form.caption}
+                                    linkedinAccounts={linkedinAccounts}
                                     onChange={(caps) => setForm({ ...form, platform_captions: caps })}
                                 />
                             </div>
@@ -524,6 +543,7 @@ export default function CreateTemplate() {
                                     disabled={uploading || saving}
                                     onBusyChange={setUploading}
                                     showSchedule={false}
+                                    linkedinAccounts={linkedinAccounts}
                                     onChange={(destination_settings) =>
                                         setForm((prev) => ({ ...prev, destination_settings }))
                                     }
@@ -559,6 +579,7 @@ export default function CreateTemplate() {
                         media={form.media}
                         comments={form.comments}
                         accounts={selectedAccounts}
+                        linkedinAccounts={linkedinAccounts}
                         scheduledAt={null}
                         timezone={brand?.timezone || 'Asia/Ho_Chi_Minh'}
                         pageSettings={form.destination_settings}

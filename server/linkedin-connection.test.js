@@ -69,3 +69,37 @@ test('synthetic OAuth profile requires explicit selection and SQLite stores only
     } finally { f.store.close(); }
 });
 
+test('LinkedIn connection discovers and imports administered Company Pages alongside Personal Profile', async () => {
+    const expiry = Date.now() + 60000;
+    const graph = {
+        async exchange() { return { token: 'synthetic-linkedin-token', profileId: '789', expiresAt: expiry }; },
+        async profile() { return { id: '789', username: 'Jane Founder' }; },
+        async permissions() { return { scopes: ['openid', 'profile', 'w_member_social'], expiresAt: expiry }; },
+        async organizations() { return [{ id: '888999', name: 'Acme Corp', username: 'acme-corp', account_type: 'page' }]; },
+    };
+    const f = fixture(graph);
+    try {
+        const start = await f.connection.execute('start', f.req, f.res, [f.brand.id]);
+        await f.connection.callback({ url: `/api/linkedin/callback?state=${new URL(start.url).searchParams.get('state')}&code=synthetic`, headers: { cookie: f.cookie() } }, f.res);
+        const pendingProfile = await f.connection.execute('profile', f.req, f.res);
+        assert.equal(pendingProfile.organizations.length, 1);
+        assert.equal(pendingProfile.organizations[0].id, '888999');
+
+        const imported = await f.connection.execute('import', f.req, f.res, [['789', '888999']]);
+        assert.deepEqual(imported, { imported: 2 });
+
+        const accounts = f.store.all('SocialAccount');
+        assert.equal(accounts.length, 2);
+        const personal = accounts.find(a => a.external_id === '789');
+        const company = accounts.find(a => a.external_id === '888999');
+        assert.equal(personal.account_type, 'profile');
+        assert.equal(company.account_type, 'page');
+        assert.equal(company.name, 'Acme Corp');
+
+        const checked = await f.connection.execute('check', f.req, f.res, [company.id]);
+        assert.deepEqual(checked, { connected: true });
+    } finally {
+        f.store.close();
+    }
+});
+

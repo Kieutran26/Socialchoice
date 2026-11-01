@@ -14,7 +14,8 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
     const requireBrand = id => { const brand = store.get('Brand', id); if (brand.is_demo || brand.status !== 'active') fail('Choose an active real brand', 409); return brand; };
     const accountFor = id => { const account = store.get('SocialAccount', id); if (account.is_demo || account.platform !== 'linkedin' || !account.credential_id) fail('This destination has no Linkedin connection', 409); return account; };
     const validCredential = (credential, account) => {
-        if (credential.platform !== 'linkedin' || credential.profileId !== account.external_id || !LINKEDIN_SCOPES.every(scope => credential.scopes?.includes(scope))) fail('Linkedin credential identity mismatch. Reconnect Linkedin.', 409);
+        const expectedId = account.account_type === 'page' ? (credential.organizationId || credential.profileId) : credential.profileId;
+        if (credential.platform !== 'linkedin' || expectedId !== account.external_id || !LINKEDIN_SCOPES.every(scope => credential.scopes?.includes(scope))) fail('Linkedin credential identity mismatch. Reconnect Linkedin.', 409);
         if (!Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now()) throw Object.assign(new Error('Linkedin authorization expired. Reconnect Linkedin.'), { status: 409, metaCode: 190 });
     };
     return {
@@ -35,9 +36,10 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 const profile = await graph.profile(credential.token);
                 credential.profileId = profile.id;
                 const details = await graph.permissions(credential.token, profile.id);
+                const organizations = typeof graph.organizations === 'function' ? await graph.organizations(credential.token) : [];
                 if (!auth.sessionActive(ticket.session) || ticket.expires <= Date.now() || pending.get(ticket.session)?.flowId !== state) fail('Linkedin connection request expired', 401);
                 requireBrand(ticket.brandId);
-                pending.set(ticket.session, { session: ticket.session, credential: { ...credential, scopes: details.scopes, expiresAt: Math.min(credential.expiresAt, details.expiresAt), platform: 'linkedin' }, profile, brandId: ticket.brandId, expires: Date.now() + ttl });
+                pending.set(ticket.session, { session: ticket.session, credential: { ...credential, scopes: details.scopes, expiresAt: Math.min(credential.expiresAt, details.expiresAt), platform: 'linkedin' }, profile, ...(organizations.length ? { organizations } : {}), brandId: ticket.brandId, expires: Date.now() + ttl });
                 return finish('select');
             } catch (error) {
                 if (pending.get(ticket.session)?.flowId === state) {
@@ -80,21 +82,34 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 const result = pending.get(session);
                 if (!result || result.processing) return { profile: null, pending: false };
                 if (result.failure) return { profile: null, pending: false, failure: result.failure };
-                return { pending: true, platform: 'linkedin', brandId: result.brandId, profile: result.profile, scopes: result.credential.scopes, expiresAt: result.credential.expiresAt };
+                return { pending: true, platform: 'linkedin', brandId: result.brandId, profile: result.profile, ...(result.organizations?.length ? { organizations: result.organizations } : {}), scopes: result.credential.scopes, expiresAt: result.credential.expiresAt };
             }
             if (operation === 'import') {
                 const result = pending.get(session);
                 if (!result || result.failure || result.processing) fail('Linkedin profile selection expired. Connect again.', 409);
                 requireBrand(result.brandId);
-                if (args.length !== 1 || args[0] !== result.profile.id) fail('Select the profile returned by Linkedin');
-                validCredential(result.credential, { external_id: result.profile.id });
+                const rawSelection = Array.isArray(args[0]) ? args[0] : (args.length === 1 && typeof args[0] === 'string' ? [args[0]] : []);
+                const selectedIds = [...new Set(rawSelection.filter(id => typeof id === 'string' && id.trim()))];
+                const orgMap = new Map((result.organizations || []).map(org => [org.id, org]));
+                if (!selectedIds.length || selectedIds.some(id => id !== result.profile.id && !orgMap.has(id))) {
+                    fail('Select the profile returned by Linkedin');
+                }
+                validCredential(result.credential, { external_id: result.profile.id, account_type: 'profile' });
                 store.transaction(() => {
-                    const existing = store.all('SocialAccount').find(account => !account.is_demo && account.platform === 'linkedin' && account.external_id === result.profile.id && account.brand_id === result.brandId);
-                    const credentialId = randomUUID(); vault.save(credentialId, result.credential);
-                    store.verifiedAccount({ name: result.profile.username, username: result.profile.username, external_id: result.profile.id, brand_id: result.brandId, platform: 'linkedin', account_type: 'profile', is_demo: false, credential_id: credentialId, scopes: result.credential.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
-                    if (existing?.credential_id && !store.all('SocialAccount').some(account => account.credential_id === existing.credential_id)) vault.remove(existing.credential_id);
+                    for (const id of selectedIds) {
+                        const isOrg = id !== result.profile.id && orgMap.has(id);
+                        const org = orgMap.get(id);
+                        const accountType = isOrg ? 'page' : 'profile';
+                        const name = isOrg ? org.name : result.profile.username;
+                        const username = isOrg ? (org.username || org.name) : result.profile.username;
+                        const existing = store.all('SocialAccount').find(account => !account.is_demo && account.platform === 'linkedin' && account.external_id === id && account.brand_id === result.brandId);
+                        const credentialId = randomUUID();
+                        vault.save(credentialId, isOrg ? { ...result.credential, organizationId: id } : result.credential);
+                        store.verifiedAccount({ name, username, external_id: id, brand_id: result.brandId, platform: 'linkedin', account_type: accountType, is_demo: false, credential_id: credentialId, scopes: result.credential.scopes, connection_status: 'connected', last_synced_at: new Date().toISOString() }, existing?.id);
+                        if (existing?.credential_id && !store.all('SocialAccount').some(account => account.credential_id === existing.credential_id)) vault.remove(existing.credential_id);
+                    }
                 });
-                pending.delete(session); return { imported: 1 };
+                pending.delete(session); return { imported: selectedIds.length };
             }
             if (operation === 'check') {
                 const account = accountFor(args[0]);
@@ -102,9 +117,12 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                     const credential = vault.read(account.credential_id); validCredential(credential, account);
                     const profile = await graph.profile(credential.token);
                     await graph.permissions(credential.token);
-                    if (profile.id !== account.external_id) fail('Linkedin profile identity changed. Reconnect Linkedin.', 409);
+                    if (profile.id !== credential.profileId) fail('Linkedin profile identity changed. Reconnect Linkedin.', 409);
                     if (store.get('SocialAccount', account.id).credential_id !== account.credential_id) fail('Linkedin connection changed. Check again.', 409);
-                    store.verifiedAccount({ name: profile.username, username: profile.username, connection_status: 'connected', last_synced_at: new Date().toISOString() }, account.id);
+                    const patch = account.account_type === 'page'
+                        ? { connection_status: 'connected', last_synced_at: new Date().toISOString() }
+                        : { name: profile.username, username: profile.username, connection_status: 'connected', last_synced_at: new Date().toISOString() };
+                    store.verifiedAccount(patch, account.id);
                     return { connected: true };
                 } catch (error) {
                     if ((error.metaCode === 190 || error.linkedinGrantInvalid) && store.get('SocialAccount', account.id).credential_id === account.credential_id) store.verifiedAccount({ connection_status: 'expired' }, account.id);

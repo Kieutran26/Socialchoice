@@ -44,8 +44,59 @@ export function resolveMedia(post, account, sharedMedia = post.media || [], plat
     return Object.hasOwn(platformMedia, account.platform) ? platformMedia[account.platform] : sharedMedia;
 }
 
+const LINKEDIN_MENTION_PATTERN = /@\[([^\]]{1,200})\]\((urn:li:(?:organization|person):[a-zA-Z0-9_-]{1,128})\)/g;
+
+export function parseLinkedinMentions(text) {
+    const raw = typeof text === 'string' ? text : '';
+    let rendered = '';
+    let lastIndex = 0;
+    const attributes = [];
+    for (const match of raw.matchAll(LINKEDIN_MENTION_PATTERN)) {
+        const matchIndex = match.index ?? 0;
+        rendered += raw.slice(lastIndex, matchIndex);
+        const displayName = match[1].trim() || match[1];
+        const urn = match[2];
+        const start = rendered.length;
+        rendered += displayName;
+        attributes.push({
+            start,
+            length: displayName.length,
+            value: urn.startsWith('urn:li:organization:')
+                ? { 'com.linkedin.common.CompanyAttributedEntity': { company: urn } }
+                : { 'com.linkedin.common.MemberAttributedEntity': { member: urn } },
+        });
+        lastIndex = matchIndex + match[0].length;
+    }
+    rendered += raw.slice(lastIndex);
+    return { text: rendered, attributes };
+}
+
+export function splitLinkedinSegments(text) {
+    const raw = typeof text === 'string' ? text : '';
+    const segments = [];
+    let lastIndex = 0;
+    for (const match of raw.matchAll(LINKEDIN_MENTION_PATTERN)) {
+        const matchIndex = match.index ?? 0;
+        if (matchIndex > lastIndex) {
+            segments.push({ type: 'text', text: raw.slice(lastIndex, matchIndex) });
+        }
+        segments.push({
+            type: 'mention',
+            text: match[1].trim() || match[1],
+            urn: match[2],
+            entityType: match[2].startsWith('urn:li:organization:') ? 'organization' : 'person',
+        });
+        lastIndex = matchIndex + match[0].length;
+    }
+    if (lastIndex < raw.length) {
+        segments.push({ type: 'text', text: raw.slice(lastIndex) });
+    }
+    return segments.length ? segments : [{ type: 'text', text: raw }];
+}
+
 export function captionLength(caption, platform) {
-    return ['threads', 'linkedin'].includes(platform) ? Array.from(caption).length : caption.length;
+    if (platform === 'linkedin') return Array.from(parseLinkedinMentions(caption).text).length;
+    return platform === 'threads' ? Array.from(caption).length : caption.length;
 }
 
 export function commentIssues(platform, comments = []) {

@@ -2,6 +2,7 @@ import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import TiktokSettings from '@/components/composer/TiktokSettings';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import CommentChainEditor from '@/components/composer/CommentChainEditor';
+import LinkedinMentionBar from '@/components/composer/LinkedinMentionBar';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -267,6 +268,10 @@ const brandAngles = useMemo(() => angles.filter((a) => a.brand_id === form.brand
 const selectedAccounts = useMemo(() => accounts.filter((a) => form.account_ids.includes(a.id)), [accounts, form.account_ids]);
 const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
 const platforms = [...new Set(selectedAccounts.map((account) => account.platform))].filter((platform) => PUBLISHING_PLATFORMS.includes(platform));
+const linkedinAccounts = useMemo(
+    () => brandAccounts.filter((a) => a.platform === 'linkedin' && (a.connection_status === 'connected' || a.connection_status === 'demo')),
+    [brandAccounts]
+);
 const checks = selectedAccounts.map((account) => ({
     account,
     issues: destinationIssues(form, account, resolveMedia(form, account), demoMode, tiktokCreators[account.id]),
@@ -628,6 +633,17 @@ return (
                                 placeholder={t('Write the content you want to share…')}
                                 className="rounded-xl resize-none text-xs leading-relaxed bg-white"
                             />
+                            {platforms.includes('linkedin') && (
+                                <LinkedinMentionBar
+                                    linkedinAccounts={linkedinAccounts}
+                                    onInsert={(token) =>
+                                        setForm((current) => {
+                                            const sep = current.caption && !/\s$/.test(current.caption) ? ' ' : '';
+                                            return { ...current, caption: `${current.caption}${sep}${token} ` };
+                                        })
+                                    }
+                                />
+                            )}
                         </div>
 
                         {/* Row 3: Bottom AI Assistant Bar */}
@@ -690,6 +706,8 @@ return (
                                 demoMode={demoMode}
                                 disabled={uploading || saving}
                                 onBusyChange={setUploading}
+                                platforms={platforms}
+                                linkedinAccounts={linkedinAccounts}
                             />
                         </div>
                     )}
@@ -701,6 +719,7 @@ return (
                                 platforms={platforms}
                                 captions={form.platform_captions}
                                 mainCaption={form.caption}
+                                linkedinAccounts={linkedinAccounts}
                                 onChange={(platform_captions) => setForm((current) => ({ ...current, platform_captions }))}
                             />
                         </div>
@@ -742,6 +761,7 @@ return (
                             demoMode={demoMode}
                             disabled={uploading || saving}
                             onBusyChange={setUploading}
+                            linkedinAccounts={linkedinAccounts}
                             onChange={(destination_settings) => setForm({ ...form, destination_settings })}
                         />
                     )}
@@ -837,6 +857,7 @@ return (
                     media={form.media}
                     comments={form.comments}
                     accounts={selectedAccounts}
+                    linkedinAccounts={linkedinAccounts}
                     scheduledAt={scheduledAt}
                     timezone={form.timezone}
                     pageSettings={form.destination_settings}

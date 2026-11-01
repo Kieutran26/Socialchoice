@@ -34,5 +34,21 @@
   "Connect a publishing account before publishing": "Kết nối tài khoản đăng bài trước khi đăng",
   "Choose at least one publishing account": "Chọn ít nhất một tài khoản đăng bài",
   "Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.": "Quản lý tài khoản Facebook, Instagram, Threads, TikTok và LinkedIn theo thương hiệu.",
-  "Choose between 1 and 30 different publishing accounts": "Chọn từ 1 đến 30 tài khoản đăng bài khác nhau"
+  "Personal Profile": "Hồ sơ cá nhân",
+  "Company Page": "Trang công ty",
+  "LinkedIn mention": "Gắn thẻ LinkedIn",
+  "Insert mention for {value1}": "Chèn thẻ nhắc tên {value1}",
+  "Tag LinkedIn company or member": "Tag công ty hoặc cá nhân LinkedIn",
+  "Company": "Công ty",
+  "Member": "Cá nhân",
+  "Display name (e.g. Acme Corp)": "Tên hiển thị (VD: Acme Corp)",
+  "LinkedIn mention display name": "Tên hiển thị khi tag trên LinkedIn",
+  "Organization ID (e.g. 12345678)": "Mã tổ chức / Company ID (VD: 12345678)",
+  "Member ID / URN": "Mã thành viên / URN",
+  "LinkedIn mention ID": "Mã định danh tag trên LinkedIn",
+  "Insert tag": "Chèn thẻ",
+  "Comment as": "Bình luận dưới tên",
+  "Posting account (default)": "Tài khoản đăng bài (mặc định)",
+  "LinkedIn comment actor for comment #{number}": "Tài khoản bình luận LinkedIn cho bình luận #{number}",
+  "Connect the selected LinkedIn comment account before publishing": "Kết nối tài khoản LinkedIn dùng để bình luận trước khi đăng"
 }

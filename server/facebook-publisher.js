@@ -21,7 +21,7 @@ import { createPhotoDelivery } from './facebook-photo-delivery.js';
 import { createVideoDelivery } from './facebook-video-delivery.js';
 import { createMultiPageDelivery } from './facebook-multi-page.js';
 import { contentRevision, syncDeliveryState } from './publishing-state.js';
-import { resolveCaption, resolveMediaIds, resolveComments } from '../src/lib/publishing-content.js';
+import { resolveCaption, resolveMediaIds, resolveComments, parseLinkedinMentions } from '../src/lib/publishing-content.js';
 import { licensedGraph } from './licensed-graph.js';
 import { hasVerifiedPagePublishGrant } from './meta-page-discovery.js';
 
@@ -97,8 +97,18 @@ export function createFacebookPublisher(store, config, options = {}) {
             if (!Array.isArray(itemMediaIds) || itemMediaIds.length > 1) fail('Each comment supports at most one image');
             if (!message.trim() && !itemMediaIds.length) fail('Each comment requires text or an image');
             const maxLen = { facebook: 63206, instagram: 2200, threads: 500, linkedin: 3000 }[account.platform] || 3000;
-            const len = ['threads', 'linkedin'].includes(account.platform) ? Array.from(message).length : message.length;
+            const len = account.platform === 'linkedin'
+                ? Array.from(parseLinkedinMentions(message).text).length
+                : account.platform === 'threads'
+                    ? Array.from(message).length
+                    : message.length;
             if (message && len > maxLen) fail('Comment exceeds platform character limit');
+            if (item?.actor_account_id && account.platform === 'linkedin') {
+                const actorAccount = store.get('SocialAccount', item.actor_account_id);
+                if (actorAccount.is_demo || actorAccount.brand_id !== post.brand_id || actorAccount.platform !== 'linkedin' || !['profile', 'page'].includes(actorAccount.account_type) || actorAccount.connection_status !== 'connected') {
+                    fail('Connect the selected LinkedIn comment account before publishing', 409);
+                }
+            }
             if (itemMediaIds.length && ['instagram', 'linkedin'].includes(account.platform)) {
                 fail(account.platform === 'instagram' ? 'Instagram comments do not support media attachments' : 'LinkedIn comments do not support media attachments', 409);
             }
@@ -123,7 +133,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             const dest = postizDestination(store, options.postizConfig || {}, account, post, media);
             return { ...dest, comments };
         }
-        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(account.platform) || account.account_type !== (account.platform !== 'facebook' ? 'profile' : 'page') || account.connection_status !== 'connected' || !account.credential_id || !(account.platform === 'linkedin' ? linkedinMemberId(account.external_id) : (account.platform === 'tiktok' ? /^[\w.-]{1,256}$/ : /^\d+$/).test(account.external_id))) fail(account.platform === 'facebook' ? 'Connect a Facebook Page before publishing' : 'Connect the selected publishing accounts before publishing', 409);
+        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(account.platform) || !(account.platform === 'linkedin' ? ['profile', 'page'].includes(account.account_type) : account.account_type === (account.platform !== 'facebook' ? 'profile' : 'page')) || account.connection_status !== 'connected' || !account.credential_id || !(account.platform === 'linkedin' ? linkedinMemberId(account.external_id) : (account.platform === 'tiktok' ? /^[\w.-]{1,256}$/ : /^\d+$/).test(account.external_id))) fail(account.platform === 'facebook' ? 'Connect a Facebook Page before publishing' : 'Connect the selected publishing accounts before publishing', 409);
         if (!(account.platform === 'linkedin' ? linkedinConfig.ready : account.platform === 'tiktok' ? tiktokConfig.ready : account.platform === 'threads' ? threadsConfig.ready : config.ready)) fail('Configure the destination integration before publishing', 409);
         const credential = account.platform === 'tiktok' ? tiktokTokens.peek(account) : (account.platform === 'linkedin' ? linkedinVault : account.platform === 'threads' ? threadsVault : vault).read(account.credential_id);
         if (account.platform === 'facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
@@ -131,8 +141,10 @@ export function createFacebookPublisher(store, config, options = {}) {
         if (typeof credential.token !== 'string' || !credential.token) fail(account.platform === 'facebook' ? 'Reconnect Facebook before publishing' : 'Reconnect the selected account before publishing', 409);
         const caption = resolveCaption(post, account);
         if (account.platform === 'linkedin') {
-            if (credential.platform !== 'linkedin' || credential.profileId !== account.external_id || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now() || !['openid', 'profile', 'w_member_social'].every(scope => account.scopes?.includes(scope) && credential.scopes?.includes(scope))) fail('Reconnect LinkedIn and grant publishing permissions', 409);
-            if (typeof caption !== 'string' || !caption.trim() || Array.from(caption).length > 3000) fail('LinkedIn caption must contain between 1 and 3000 characters');
+            const expectedLinkedinId = account.account_type === 'page' ? (credential.organizationId || credential.profileId) : credential.profileId;
+            if (credential.platform !== 'linkedin' || expectedLinkedinId !== account.external_id || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now() || !['openid', 'profile', 'w_member_social'].every(scope => account.scopes?.includes(scope) && credential.scopes?.includes(scope))) fail('Reconnect LinkedIn and grant publishing permissions', 409);
+            const parsedCaption = parseLinkedinMentions(caption).text;
+            if (typeof caption !== 'string' || !parsedCaption.trim() || Array.from(parsedCaption).length > 3000) fail('LinkedIn caption must contain between 1 and 3000 characters');
             if (media.some(asset => !['image/jpeg', 'image/png', 'video/mp4'].includes(asset.mime_type))) fail('LinkedIn supports stored JPEG/PNG images or one MP4 video', 409);
             if (media.some(asset => asset.file_type === 'video' && asset.size_bytes > 30 * 1024 * 1024)) fail('LinkedIn videos must be at most 30 MiB', 409);
         }

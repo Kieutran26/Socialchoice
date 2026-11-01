@@ -28,3 +28,60 @@ test('LinkedIn Graph pins credential recipients, checks upload host, status path
         await assert.rejects(()=>graph.register('member_id',false,'token'));
     } finally {globalThis.fetch=original;}
 });
+
+test('LinkedIn Graph formats organization/member mentions into shareCommentary and socialActions comment attributes and supports Company Page author', async () => {
+    const original = globalThis.fetch;
+    const calls = [];
+    const graph = createLinkedinGraph({ appId: 'abc123', appSecret: 'synthetic-private', redirectUri: 'https://app.example/api/linkedin/callback' });
+    try {
+        globalThis.fetch = async (url, options) => {
+            calls.push({ url: String(url), options });
+            return new Response('', { status: 201, headers: { 'x-restli-id': 'urn:li:ugcPost:999001' } });
+        };
+        const result = await graph.publish(
+            '888999',
+            'Big update with @[Acme Corp](urn:li:organization:12345) and @[Jane Doe](urn:li:person:member_42)!',
+            [],
+            false,
+            'synthetic-token',
+            'page'
+        );
+        assert.equal(result.id, 'urn:li:ugcPost:999001');
+        const postBody = JSON.parse(calls[0].options.body);
+        assert.equal(postBody.author, 'urn:li:organization:888999');
+        const commentary = postBody.specificContent['com.linkedin.ugc.ShareContent'].shareCommentary;
+        assert.equal(commentary.text, 'Big update with Acme Corp and Jane Doe!');
+        assert.deepEqual(commentary.attributes, [
+            {
+                start: 16,
+                length: 9,
+                value: { 'com.linkedin.common.CompanyAttributedEntity': { company: 'urn:li:organization:12345' } },
+            },
+            {
+                start: 30,
+                length: 8,
+                value: { 'com.linkedin.common.MemberAttributedEntity': { member: 'urn:li:person:member_42' } },
+            },
+        ]);
+
+        const commentRes = await graph.publishComment(
+            'urn:li:organization:888999',
+            'urn:li:ugcPost:999001',
+            'Replying from @[Acme Corp](urn:li:organization:888999)',
+            'synthetic-token'
+        );
+        assert.equal(commentRes.id, 'urn:li:ugcPost:999001');
+        const commentBody = JSON.parse(calls[1].options.body);
+        assert.equal(commentBody.actor, 'urn:li:organization:888999');
+        assert.equal(commentBody.message.text, 'Replying from Acme Corp');
+        assert.deepEqual(commentBody.message.attributes, [
+            {
+                start: 14,
+                length: 9,
+                value: { 'com.linkedin.common.CompanyAttributedEntity': { company: 'urn:li:organization:888999' } },
+            },
+        ]);
+    } finally {
+        globalThis.fetch = original;
+    }
+});

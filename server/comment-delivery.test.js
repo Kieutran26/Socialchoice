@@ -200,3 +200,94 @@ test('Facebook publisher executes immediate and delayed follow-up comments with 
     }
 });
 
+test('LinkedIn publisher supports mentions and dual-actor commenting (Personal Profile post + Company Page comment)', async () => {
+    const store = createStore(':memory:');
+    const key = randomBytes(32).toString('hex');
+    const config = { ready: true, key, appSecret: 'test-secret', version: 'v26.0' };
+    const linkedinConfig = { ready: true, key, appId: 'li-app', appSecret: 'li-secret', redirectUri: 'https://app.example/api/linkedin/callback' };
+    const brand = store.write('Brand', { name: 'LinkedIn Dual Actor Brand' });
+    const linkedinVault = createMetaVault(store, linkedinConfig.key);
+    const scopes = ['openid', 'profile', 'w_member_social'];
+    const expiresAt = Date.now() + 3600000;
+
+    linkedinVault.save('cred-li-person', { platform: 'linkedin', token: 'li-person-token', profileId: 'member_1', scopes, expiresAt });
+    linkedinVault.save('cred-li-company', { platform: 'linkedin', token: 'li-company-token', profileId: 'member_1', organizationId: 'org_555', scopes, expiresAt });
+
+    const personalAccount = store.verifiedAccount({
+        name: 'Jane Doe',
+        username: 'janedoe',
+        brand_id: brand.id,
+        platform: 'linkedin',
+        account_type: 'profile',
+        external_id: 'member_1',
+        credential_id: 'cred-li-person',
+        connection_status: 'connected',
+        scopes,
+    });
+    const companyAccount = store.verifiedAccount({
+        name: 'Acme Corp',
+        username: 'acmecorp',
+        brand_id: brand.id,
+        platform: 'linkedin',
+        account_type: 'page',
+        external_id: 'org_555',
+        credential_id: 'cred-li-company',
+        connection_status: 'connected',
+        scopes,
+    });
+
+    const post = store.write('Post', {
+        title: 'LinkedIn Launch',
+        caption: 'Excited to launch with @[Acme Corp](urn:li:organization:org_555)!',
+        brand_id: brand.id,
+        account_ids: [personalAccount.id],
+        comments: [
+            { message: 'Personal profile follow-up link', delay_minutes: 0 },
+            { message: 'Official response from @[Acme Corp](urn:li:organization:org_555)', delay_minutes: 0, actor_account_id: companyAccount.id },
+        ],
+    });
+
+    const commentCalls = [];
+    const linkedinGraph = {
+        async profile() { return { id: 'member_1', username: 'Jane Doe' }; },
+        async permissions() { return { scopes, expiresAt }; },
+        async publish(profileId, caption) {
+            assert.equal(profileId, 'member_1');
+            assert.ok(caption.includes('@[Acme Corp](urn:li:organization:org_555)'));
+            return { id: 'urn:li:ugcPost:424242', url: 'https://www.linkedin.com/feed/update/urn:li:ugcPost:424242/' };
+        },
+        async publishComment(actorUrn, postUrn, text, token) {
+            commentCalls.push({ actorUrn, postUrn, text, token });
+            return { id: `urn:li:comment:${commentCalls.length}` };
+        },
+    };
+
+    const publisher = createFacebookPublisher(store, config, { linkedinConfig, linkedinGraph, wake: async () => {} });
+    try {
+        const review = publisher.prepare(post.id);
+        const started = await publisher.publish(review.attemptId);
+        assert.equal(started.status, 'processing');
+
+        // Run LinkedIn delivery + comment chain
+        await publisher.runPhotos();
+        await publisher.runPhotos();
+
+        const finalStatus = publisher.status(review.attemptId);
+        assert.equal(finalStatus.status, 'published');
+        assert.equal(finalStatus.commentStatus, 'published');
+        assert.equal(commentCalls.length, 2);
+
+        // Comment #1 posted as Personal Profile (urn:li:person:member_1)
+        assert.equal(commentCalls[0].actorUrn, 'urn:li:person:member_1');
+        assert.equal(commentCalls[0].token, 'li-person-token');
+
+        // Comment #2 posted as Company Page (urn:li:organization:org_555)
+        assert.equal(commentCalls[1].actorUrn, 'urn:li:organization:org_555');
+        assert.equal(commentCalls[1].token, 'li-company-token');
+    } finally {
+        publisher.close();
+        store.close();
+    }
+});
+
+

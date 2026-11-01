@@ -14,8 +14,26 @@ import {
 } from '@phosphor-icons/react';
 import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { useTranslation } from '@/lib/i18n';
-import { resolveCaption, resolveMedia, resolveComments } from '@/lib/publishing-content';
+import { resolveCaption, resolveMedia, resolveComments, splitLinkedinSegments } from '@/lib/publishing-content';
 import PlatformLogo from './PlatformLogo';
+
+function renderCaptionText(text, isLinkedin) {
+    if (!isLinkedin || !text) return text;
+    const segments = splitLinkedinSegments(text);
+    return segments.map((seg, index) =>
+        seg.type === 'mention' ? (
+            <span
+                key={index}
+                className="inline-flex items-center rounded bg-[#0a66c2]/10 px-1 py-0.5 font-semibold text-[#0a66c2]"
+                title={seg.urn}
+            >
+                @{seg.text}
+            </span>
+        ) : (
+            <span key={index}>{seg.text}</span>
+        )
+    );
+}
 
 function PhotoGrid({ media }) {
     const { t } = useTranslation();
@@ -75,11 +93,16 @@ export default function PostPreview({
     media: sharedMedia,
     comments: sharedComments = [],
     accounts,
+    linkedinAccounts = [],
+    scheduledAt = null,
+    timezone = '',
     pageSettings = {},
     platformCaptions = {},
     platformMedia = {},
     planning = false,
 }) {
+    void scheduledAt;
+    void timezone;
     const { t } = useTranslation();
     const [expanded, setExpanded] = useState(false);
     const [selectedPage, setSelectedPage] = useState('');
@@ -99,6 +122,7 @@ export default function PostPreview({
     const visibleCaption = longCaption && !expanded ? caption.slice(0, 350).split('\n').slice(0, 6).join('\n') : caption;
 
     const currentPlatform = page?.platform || 'instagram';
+    const isLinkedin = currentPlatform === 'linkedin';
 
     return (
         <section className="panel p-5 sm:p-6 bg-card border border-border rounded-3xl shadow-2xs min-w-0" aria-label={t('Content preview')}>
@@ -122,8 +146,8 @@ export default function PostPreview({
                                     setExpanded(false);
                                 }}
                                 className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs transition-all ${isCurrent
-                                        ? 'bg-[#18181b] text-white font-semibold shadow-2xs'
-                                        : 'bg-muted/70 hover:bg-muted text-foreground/80 font-medium'
+                                    ? 'bg-[#18181b] text-white font-semibold shadow-2xs'
+                                    : 'bg-muted/70 hover:bg-muted text-foreground/80 font-medium'
                                     }`}
                             >
                                 <PlatformLogo platform={account.platform} size={16} />
@@ -235,10 +259,13 @@ export default function PostPreview({
                         <>
                             <div className="px-4 py-3">
                                 <p className="whitespace-pre-wrap break-words text-sm leading-relaxed text-foreground">
-                                    {visibleCaption || (
-                                        <span className="text-muted-foreground/60 italic">
-                                            {t('Your caption will appear here.')}
-                                        </span>
+                                        {
+                                            visibleCaption?(
+                                                renderCaptionText(visibleCaption, isLinkedin)
+                                    ) : (
+                                    <span className="text-muted-foreground/60 italic">
+                                        {t('Your caption will appear here.')}
+                                    </span>
                                     )}
                                     {longCaption && !expanded ? '…' : ''}
                                 </p>
@@ -287,36 +314,51 @@ export default function PostPreview({
                             <p className="text-[11px] font-semibold text-muted-foreground">
                                 {t('Follow-up comments')} ({comments.length})
                             </p>
-                            {comments.map((comment, idx) => (
-                                <div key={idx} className="rounded-xl bg-white border border-border/60 p-2.5 text-xs space-y-1.5">
-                                    <div className="flex items-center justify-between gap-2">
-                                        <span className="font-bold text-[#09090b] truncate">
-                                            {page?.username || pageName} · #{idx + 1}
-                                        </span>
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full shrink-0">
-                                            <Clock size={11} />
-                                            {(comment.delay_minutes || 0) === 0
-                                                ? t('Immediate')
-                                                : `+${comment.delay_minutes}m`}
-                                        </span>
-                                    </div>
-                                    {comment.message && (
-                                        <p className="whitespace-pre-wrap break-words text-xs text-foreground leading-relaxed">
-                                            {comment.message}
-                                        </p>
-                                    )}
-                                    {(comment.media || []).length > 0 && comment.media[0]?.file_url && (
-                                        <img
-                                            src={comment.media[0].file_url}
-                                            alt={comment.media[0].name || t('Comment image')}
-                                            className="max-h-36 rounded-lg border border-border/50 object-contain"
-                                        />
-                                    )}
+                                        {comments.map((comment, idx) => {
+                                            const actor =
+                                                isLinkedin && comment.actor_account_id
+                                                    ? linkedinAccounts.find((a) => a.id === comment.actor_account_id) ||
+                                                    accounts.find((a) => a.id === comment.actor_account_id)
+                                                    : null;
+                                            const actorLabel = actor ? actor.name : page?.username || pageName;
+                                            return (
+                                                <div key={idx} className="rounded-xl bg-white border border-border/60 p-2.5 text-xs space-y-1.5">
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-1.5 min-w-0">
+                                                            <span className="font-bold text-[#09090b] truncate">
+                                                                {actorLabel} · #{idx + 1}
+                                                            </span>
+                                                            {actor && (
+                                                                <span className="rounded bg-[#0a66c2]/10 px-1.5 py-0.5 text-[10px] font-medium text-[#0a66c2] shrink-0">
+                                                                    {actor.account_type === 'page' ? t('Company Page') : t('Personal Profile')}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        <span className="inline-flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-full shrink-0">
+                                                            <Clock size={11} />
+                                                            {(comment.delay_minutes || 0) === 0
+                                                                ? t('Immediate')
+                                                                : `+${comment.delay_minutes}m`}
+                                                        </span>
+                                                    </div>
+                                                    {comment.message && (
+                                                        <p className="whitespace-pre-wrap break-words text-xs text-foreground leading-relaxed">
+                                                            {renderCaptionText(comment.message, isLinkedin)}
+                                                        </p>
+                                                    )}
+                                                    {(comment.media || []).length > 0 && comment.media[0]?.file_url && (
+                                                        <img
+                                                            src={comment.media[0].file_url}
+                                                            alt={comment.media[0].name || t('Comment image')}
+                                                            className="max-h-36 rounded-lg border border-border/50 object-contain"
+                                                        />
+                                                    )}
+                                                </div>
+                                    );
+                            })}
                                 </div>
-                            ))}
-                        </div>
-                    )}
-                </article>
+                            )}
+                        </article>
             </div>
         </section>
     );
