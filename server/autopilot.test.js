@@ -87,6 +87,12 @@ test('analysis requires consent, validates bytes, caches by version/model, and i
     assert.equal((await call('analyze', { id: asset.id, confirmed: true })).cached, true); assert.equal(aiCalls, 1);
     version = 'v2'; await call('sync', { id: source.id }); await call('run');
     const changed = store.autopilot().asset(asset.id); assert.equal(changed.analysis, null); assert.equal(changed.review, 'pending');
+    version = 'v1'; await call('sync', { id: source.id }); await call('run');
+    const renewed = await call('analyze', { id: asset.id, confirmed: true });
+    assert.equal(renewed.status, 'queued'); assert.equal(renewed.version.revision, 2);
+    assert.equal((await call('run')).status, 'done'); assert.equal(aiCalls, 2);
+    assert.equal(store.autopilot().asset(asset.id).review, 'pending');
+    assert.equal((await call('analyze', { id: asset.id, confirmed: true })).cached, true); assert.equal(aiCalls, 2);
     await call('disconnect', { id: source.id });
     await assert.rejects(call('analyze', { id: asset.id, confirmed: true }), { status: 409 });
     await call('connect', { id: source.id });
@@ -323,3 +329,15 @@ test('failed image jobs persist only safe stage/status diagnostics and explicit 
     assert.equal(store.autopilot().asset(asset.id).review, 'approved');
     assert.equal(store.autopilot().jobs().at(-1).diagnostic, null); assert.equal(store.all('Post').length, 0);
 });
+
+ test('late AI completion cannot restore approval after v1 to v2 to v1', async t => {
+ let release, started; const waiting = new Promise(r => { release = r; }); const entered = new Promise(r => { started = r; });
+ const {store, brand, call, key} = fixture(t, {bucket: {list: async()=>({objects:[object('owner/assets/a.png')],truncated:false}),get:async()=>({body:new Response(png).body,size:png.length})}, aiFetch:async()=>{started();await waiting;return ok({choices:[{finish_reason:'stop',message:{content:JSON.stringify(analysis)}}]});}});
+ createMetaVault(store,key).save('ai:writing',{provider:'openai',model:'fixture',key:'fixture'});
+ const source=await call('createSource',{brand_id:brand.id,kind:'r2',name:'Fixture',folder:'assets/'});await call('sync',{id:source.id});await call('run');
+ const asset=store.autopilot().assets()[0];await call('analyze',{id:asset.id,confirmed:true});const pending=call('run');await entered;
+ store.autopilot().upsertAsset(source,{id:asset.external_id,name:asset.name,mime:asset.mime,size:asset.size,version:'v2'});
+ store.autopilot().upsertAsset(source,{id:asset.external_id,name:asset.name,mime:asset.mime,size:asset.size,version:'v1'});release();
+ assert.equal((await pending).status,'failed');assert.equal(store.autopilot().asset(asset.id).analysis,null);assert.equal(store.autopilot().asset(asset.id).analysis_status,'not_analyzed');
+ assert.equal((await call('analyze',{id:asset.id,confirmed:true})).status,'queued');
+ });

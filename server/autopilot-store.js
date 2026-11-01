@@ -35,7 +35,7 @@ export function createAutopilotStore(db, store) {
             const old = row ? JSON.parse(row.data) : null;
             if (!old && api.assets().length >= 10000) fail('Asset limit reached', 409);
             const changed = !old || old.version !== file.version;
-            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
+            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, analysis_revision: (old?.analysis_revision || 0) + (old && changed ? 1 : 0), availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
             db.prepare('INSERT INTO autopilot_assets VALUES (?,?,?,?) ON CONFLICT(source_id,external_id) DO UPDATE SET data=excluded.data').run(asset.id, source.id, file.id, JSON.stringify(asset)); return asset;
         },
         jobs: () => rows('autopilot_jobs'),
@@ -52,7 +52,7 @@ export function createAutopilotStore(db, store) {
                 // Expired leases are recoverable; a random lease fences late workers.
                 for (const expired of api.jobs().filter(job => job.kind === 'analyze' && job.status === 'running' && job.lease_until <= now)) {
                     save('autopilot_jobs', { ...expired, status: 'failed', error: 'INTERRUPTED_REVIEW_REQUIRED', lease: null, lease_until: 0 });
-                    const asset = api.assets().find(asset => asset.id === expired.target && asset.version === expired.version.asset);
+                    const asset = api.assets().find(asset => asset.id === expired.target && asset.version === expired.version.asset && (asset.analysis_revision || 0) === (expired.version.revision || 0));
                     if (asset) api.saveAsset({ ...asset, analysis_status: 'failed' });
                 }
                 const job = api.jobs().find(job => job.status === 'queued' && job.due <= now || job.kind === 'sync' && job.status === 'running' && job.lease_until <= now);
