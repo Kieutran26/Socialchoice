@@ -2,6 +2,10 @@
 
 **Phase 1 CLOSED on staging for ordinary public Drive folders — user accepted 2026-11-01.** Evidence: see [real staging evidence and remaining gate](../plans/261031-autopilot-phase-1/acceptance-20261101.md#closing-gate-follow-up--2026-11-01). Real public Drive ingestion, OpenRouter/Gemini OCR/review, access-revocation and removed-file recovery, DLQ recovery, binary-version invalidation/restoration, and 101-file pagination/repeat-sync pass. Separate customer-enabled cloud staging passes 23/23 isolation checks and its public endpoint is now disabled. Fixed restored-version reanalysis and stale AI completion fencing; current server suite passes 242/242. Real resource-key-required folders are explicitly deferred from this accepted scope and remain unverified, not passed. Production release remains unauthorized. See the report's User acceptance section; historical open-gate tables below are superseded only within this scoped staging acceptance.
 
+## Phase 2 follow-up — single-image Facebook drafts
+
+Approved available images can now create a reviewed Facebook caption, then save an ordinary draft with a private image copy and open the existing composer. See [implementation and real staging acceptance](autopilot-phase-2-drafts.md). The test draft persisted after reload; scheduling still requires a connected Page and existing confirmation. No production rollout or Phase 2 batch/automatic-publishing acceptance is implied.
+
 ## Public Drive link sources — 2026-10-31 update
 
 New Drive sources use a public folder link instead of Google OAuth. Choose Public Google Drive folder, paste an HTTPS drive.google.com/drive/folders/... link (including resourcekey when present), add the source, check public access, then queue sync.
@@ -39,7 +43,7 @@ The authenticated gateway selects the workspace. The service validates each sour
 Generic entity APIs cannot write sources, assets, jobs, credentials, or analysis results.
 
 Drive/R2 retains the original bytes. SQLite retains metadata, private credentials, job state, and analysis.
-The ingestion code does not create `MediaAsset` rows or post drafts. Imported assets cannot enter the composer yet.
+Phase 1 sync still does not create `MediaAsset` rows or post drafts. The Phase 2 follow-up now explicitly copies one approved selected image into private media and creates a reviewed draft on Save; see the follow-up above.
 
 ## Configuration
 
