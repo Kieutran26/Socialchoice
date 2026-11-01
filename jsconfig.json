@@ -25,6 +25,9 @@
     },
     "include": [
         "src/components/**/*.js",
+        "src/components/**/*.jsx",
+        "src/components/*.jsx",
+        "src/pages/**/*.js",
         "src/pages/**/*.jsx",
         "src/Layout.jsx"
     ],

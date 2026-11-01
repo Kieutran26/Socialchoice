@@ -1,5 +1,5 @@
 import { isDesktop } from '@/api/desktop/runtime';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { aiRequest } from '@/api/ai';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
