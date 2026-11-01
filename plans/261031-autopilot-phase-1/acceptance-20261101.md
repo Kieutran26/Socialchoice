@@ -93,3 +93,57 @@ Cache evidence is application/UI behavior combined with existing automated cache
 A screenshot of the actual approved result and exact OCR was saved locally. Automatic approval review rejected publishing that screenshot to GitHub because of possible workspace metadata disclosure without separate publication authorization; it was not uploaded. This text records only the synthetic fixture details already documented in the repository.
 
 This accepts **one real synthetic-image path with the configured model**, not every model/file format or a production release. Live cross-customer isolation, access-revocation acceptance, resource-key folder/pagination cases and dead-letter operations remain separate gates.
+
+## Operational failure gates — 2026-11-01
+
+### Real staging: public-access revocation and recovery — PASS
+
+Used only the existing synthetic folder Socialchoice Autopilot Staging Test. The owner browser showed the folder's initial Anyone with the link / Viewer sharing state.
+
+1. Changed general access to Restricted and observed Google's access-updated confirmation.
+2. Queued a real staging sync. The job failed with the safe SOURCE_ACCESS_DENIED message at Reading source metadata. The two catalog records and the approved AI result were preserved.
+3. Restored the same original Anyone with the link / Viewer state and verified Google's access-updated confirmation.
+4. Selected Retry for the failed sync. The existing job completed successfully; the catalog was not duplicated.
+
+This verifies failed sync preservation and manual recovery, not a separate revoked-access AI-byte request. No AI call was made in this gate run.
+
+### Real staging: removed file and restoration — PASS
+
+Moved only the synthetic 68-byte drive-public-test.png into Google Drive Trash (recoverable, not permanently deleted). After a complete queued sync, the catalog retained its record as Missing and disabled Analyze image. The independently approved gemini-acceptance-test.png remained available and approved.
+
+Restored exactly drive-public-test.png from Trash. Drive folder listing again contains both known synthetic files. A further Queue sync completed, returned the same catalog record to Available and left exactly two assets, with the other image's approved analysis retained. No unrelated Trash item was modified.
+
+This verifies deletion/restoration availability. A real byte-replacement/version-change invalidation test was not performed; automated version/cache invalidation coverage passes.
+
+### Real Cloudflare Queue → DLQ → operator recovery — PASS for synthetic routing failure
+
+- Verified staging consumer: batch 1, max concurrency 1, eight retries, staging dead-letter Queue; DLQ initially empty with no consumers.
+- Sent one routing-only synthetic message targeting a deliberately nonexistent fixture workspace. It contained no credentials, filenames, image bytes or prompts.
+- Observed the message in the staging DLQ after about 251 seconds. DLQ metadata identified the staging source Queue and the synthetic payload.
+- The first pull returned HTTP 405 because DLQ http_pull mode was not enabled. Created a temporary HTTP pull consumer after verifying there were no existing consumers.
+- Pulled and matched only the synthetic message. Dispatched its deliberately corrected owner fixture routing to the main staging Queue, then acknowledged only the original test lease after dispatch succeeded. API returned ackCount 1 / retryCount 0. No unrelated message was acknowledged.
+- Removed the temporary pull consumer and read back an empty consumer list.
+- Final readback: main backlog_count 0, DLQ backlog_count 0; final UI sync completed.
+
+This is a controlled operator recovery test for a known synthetic routing defect. It does **not** authorize mapping unknown customer messages to owner, replaying uncertain paid AI calls, or purging a Queue. For a real dead letter, establish its correct workspace before redelivery; retain the original when dispatch fails.
+
+### Workspace isolation — runtime PASS; live customer-cloud gate still BLOCKED
+
+Recreated an isolated source-only test directory, synchronized the current feature's modified server/tests, and ran:
+
+node --test server/customer-runtime.test.js server/autopilot-runtime.test.js server/autopilot.test.js server/openrouter.test.js
+
+Result: **27/27 PASS**, Windows / Node 24.17.0. Tests include actual workerd, SQLite and Queue, two independently authenticated customer workspaces, cross-customer brand/source/OAuth/media/session rejection, owner isolation, provider fixtures, source membership/version checks and consented retry/cache/review. These are real local runtime components with synthetic external responses, not new cloud customer accounts.
+
+The live staging /api/customer/config endpoint returned ready:false. Its currently configured single-owner mode cannot register two licensed customer accounts, so local two-customer tests and live brand filtering are not claimed as a completed cloud cross-customer gate. No customer licensing keys, bindings or production data were copied or provisioned to force this test.
+
+### Final state and remaining release gates
+
+- Existing public folder sharing and both synthetic files restored.
+- Exactly two imported public assets; meaningful image analysis remains approved.
+- No pending staging Queue/DLQ messages from these tests; temporary DLQ consumer removed.
+- No application code change or new deployment in this gate run. Worker remains 73490a83-f44d-471e-bc18-b0b6d9648209.
+- No main change, merge, production deployment, secret inspection or social publication.
+- Actual-state screenshot saved locally; no screenshot upload to GitHub was attempted in this run.
+
+Phase 1 remains **not accepted for production**. Outstanding real cases include cloud customer-to-customer isolation (requires an isolated customer-enabled staging configuration), binary-version invalidation, resource-key protected folders and large-folder pagination. Public-folder ingestion, one real AI image path, access-revocation sync recovery, removed-file restoration and synthetic DLQ operations now have real staging evidence.
