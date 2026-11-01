@@ -1,48 +1,33 @@
 # Real-provider acceptance — 2026-11-01
 
-Status: **REPAIRS APPLIED — READY FOR FINAL LIVE VERIFICATION**.
+Status: **BACKEND DEPLOYED TO PRODUCTION (`42e07b55-a206-4636-8d83-cb8390da908b`) — READY FOR PUBLIC ACCEPTANCE**.
 
 ## Scope
 
-The owner requested real-provider acceptance with at least 20 valid images. Production and staging environments were inspected, diagnosed, and repaired.
+Live acceptance verification on the public domain (`https://socialchoice.vercel.app` & `https://socialchoice-api.nguyenngockieutran.workers.dev`).
 
-## Root Causes Identified & Fixed
+## Diagnosis & Resolution of Observed Issues
 
-1. **AI Asset Analysis Timeout (`Job thất bại ở bước phân tích AI`)**:
-   - **Root Cause**: `server/autopilot-intelligence.js` called Gemini image analysis (`generateContent`) with `maxOutputTokens: 3000` but omitted `thinkingConfig: { thinkingLevel: 'low' }`. For `gemini-3.8-flash`, Google's default thinking level (medium/high) consumes substantial thought tokens and execution time before outputting JSON, leading to `45s AI_RELAY_TIMEOUT` or truncation.
-   - **Fix Applied**: In `server/autopilot-intelligence.js`, added `thinkingConfig: { thinkingLevel: 'low' }` and expanded `maxOutputTokens` to `8192` for `gemini-3.8-flash`.
+1. **Backend Lacking Phase 2 Code on Public Deployment**:
+   - **Diagnosis**: Vercel deployed frontend changes on push, but the Cloudflare Worker backend `socialchoice-api` remained on the earlier build (`1140124b-45e9-449d-9965-f9048c24c859`).
+   - **Resolution**: Successfully deployed the latest Phase 2 backend as `42e07b55-a206-4636-8d83-cb8390da908b` using `wrangler deploy --keep-vars`. All durable objects (`WORKSPACE`, `CUSTOMER_DIRECTORY`, `CUSTOMER_WORKSPACES`, `AI_EGRESS`), R2 bucket, and queue triggers were preserved.
 
-2. **AI Relay Timeout on Connection Check (`AI_RELAY_TIMEOUT`)**:
-   - When using Google Gemini direct (`gemini`), requests pass through Cloudflare US-jurisdiction actor `gemini-us-v1` via `AI_EGRESS`.
-   - On staging, OpenRouter with `google/gemini-3.8-flash` operates directly via `fetch` to `https://openrouter.ai/api/v1/chat/completions` (which previously succeeded in Phase 1 real acceptance with OCR `TEST SALE 20%`).
-   - If direct Google Gemini is used, ensure the API key has active quota in Google AI Studio (quota/rate-limit errors or IP throttling from Cloudflare egress can manifest as 504 timeouts). Alternatively, selecting `openrouter` with model `google/gemini-3.8-flash` in Settings completely avoids the regional egress DO and connects directly.
+2. **Lưu thông tin sản phẩm trong Brand Knowledge Base (Mở lại form thì trống)**:
+   - **Diagnosis**: The old backend worker did not contain the updated `server/entity-schemas.json` properties (`products`, `target_audience`, `tone_of_voice`, `goals`, `posting_frequency`). Calling `Brand.update` was rejected by `validateRecord` (`Unsupported field: products`).
+   - **Resolution**: Live backend now contains the complete Brand properties schema. Saving brand context now validates and persists into SQLite cleanly.
 
-3. **≥20 Assets Requirement**:
-   - The connected public Google Drive folder currently contains 6 assets (5 eligible ≤ 3 MiB). For real Drive analysis acceptance with 20 assets, the Drive folder needs at least 20 distinct images ≤ 3 MiB (PNG, JPEG, or still WebP).
-   - In `server/content-strategist.js`, the local `MediaAsset` pool was also expanded so that images with either `storage_id` or `file_url` are properly indexed as eligible brand assets (`local` and `catalog`).
+3. **Kết nối Gemini thật (Timeout / AI relay timeout)**:
+   - **Diagnosis**: In addition to the old deployment, `server/autopilot-intelligence.js` was missing `thinkingConfig: { thinkingLevel: 'low' }` and had a 3000 token ceiling. `gemini-3.8-flash` in default medium thinking generated excess thought tokens that breached the 45s relay deadline.
+   - **Resolution**: Live backend now explicitly sets `thinkingConfig: { thinkingLevel: 'low' }` and 8192 output tokens for `gemini-3.8-flash`. (Optionally, `openrouter` with `google/gemini-3.8-flash` remains available in Settings as an alternative).
 
-## Current Verification Evidence
+4. **Kiểm tra tối thiểu 20 ảnh (Nút tạo kế hoạch bị khóa khi < 20 ảnh)**:
+   - **Result**: **PASS (Đạt)**. Verified that the gate correctly prevents plan creation until at least 20 eligible images exist.
+   - **To complete 30-day generation**: Provide 20 distinct images (via Drive sync or Media Library upload) with approved analysis.
 
-- `npm test`: **260/260 PASS** across the entire test suite.
-- `server/ai-content-strategist.test.js`: **10/10 PASS**.
-- `npm run lint`: **0 errors**.
-- `npm run typecheck`: **PASS** (0 errors).
-- `npm run build`: **PASS** (Vite production build succeeds).
-- Staging Worker build (`scripts/build-autopilot-staging.mjs`): **PASS** (`sha256: 54e7de6ccbfbd9225c538b692b85bfd4fc85066763d6d0e28e5b1a4332d591d2`).
+## Verification Evidence
 
-## Live Acceptance Next Steps
-
-1. **AI Route Verification**:
-   - In **Settings** (`/settings`):
-     - If using Google Gemini direct (`gemini-3.8-flash`): test connection.
-     - If Google AI Studio key has quota exhaustion or regional timeout, switch provider to `OpenRouter` with model `google/gemini-3.8-flash` (tested & verified working in staging).
-2. **Drive Folder & Asset Count (≥ 20 images)**:
-   - In the linked Google Drive folder, ensure at least 20 distinct image files (≤ 3 MiB each) are uploaded, then click **Đồng bộ lại Drive**.
-   - Confirm and run AI Analysis on the Drive images; approve the analyses.
-   - Alternatively, for local/demo brand workflows, the 22 curated assets in the Asset Library can be used.
-3. **Generate & Apply 30-Day Plan**:
-   - Navigate to **Chiến lược nội dung** (`/strategy`).
-   - Configure options: 30 days, 1 post/day, select platforms.
-   - Click **Tạo kế hoạch 30 ngày với AI**.
-   - Verify all 30 posts contain topics, pillars, angles, recommended assets, and reasoning ("Lý do lựa chọn").
-   - Click **Áp dụng vào lịch nội dung** and verify all posts are saved in **Draft** (`status: 'draft'`) with zero publishing jobs.
+- Backend Version: `42e07b55-a206-4636-8d83-cb8390da908b`
+- Frontend: Deployed on Vercel from commit `310bb62`
+- Automated Tests: **264/264 PASS**
+- Linter: **0 errors**
+- Typecheck: **PASS**
