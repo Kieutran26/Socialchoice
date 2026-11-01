@@ -17,31 +17,9 @@ import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
 import { toZonedParts, toUtcIso, addDays, todayInZone } from '@/lib/tz';
 import EmptyState from '../common/EmptyState';
+import StatCard from '../common/StatCard';
 import { Input } from '../ui/input';
 import PerformanceTables, { metricValue } from './PerformanceTables';
-
-        function PerformanceStatCard({ label, value, hint, icon: Icon, iconBg, iconColor }) {
-            return (
-                <div className="panel p-4.5 flex flex-col justify-between rounded-2xl border border-border/80 bg-card hover:border-border transition-all shadow-2xs">
-                    <div className="flex items-center justify-between gap-2">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">{label}</span>
-                        {Icon && (
-                            <span className={`flex h-8 w-8 items-center justify-center rounded-xl ${iconBg || 'bg-muted/60'} ${iconColor || 'text-foreground'}`}>
-                                <Icon size={16} weight="duotone" />
-                            </span>
-                        )}
-                    </div>
-                    <div className="mt-3">
-                        <div className="font-heading text-2xl font-bold tracking-tight text-foreground">{value}</div>
-                        {hint && (
-                            <div className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-muted/50 px-2 py-0.5 text-[11px] text-muted-foreground">
-                                {hint}
-                            </div>
-                        )}
-                    </div>
-                </div>
-            );
-        }
 
         export default function FacebookPerformance({ scope, timezone }) {
             const { t } = useTranslation();
@@ -192,7 +170,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5 mt-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
                     <div>
                         <label className="block text-[11px] font-bold text-muted-foreground uppercase tracking-wider mb-1.5">
                             {t('Published from')}
@@ -204,7 +182,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                                 type="date"
                                 value={dates.from}
                                 onChange={(e) => setDates({ ...dates, from: e.target.value })}
-                                className="h-9.5 rounded-xl border-border/80 bg-background pl-9 pr-3 text-xs focus:ring-primary/20 font-medium"
+                                className="h-10 rounded-xl border-border/80 bg-background pl-9 pr-3 text-xs focus:ring-primary/20 font-medium"
                             />
                         </div>
                     </div>
@@ -220,7 +198,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                                 type="date"
                                 value={dates.to}
                                 onChange={(e) => setDates({ ...dates, to: e.target.value })}
-                                className="h-9.5 rounded-xl border-border/80 bg-background pl-9 pr-3 text-xs focus:ring-primary/20 font-medium"
+                                className="h-10 rounded-xl border-border/80 bg-background pl-9 pr-3 text-xs focus:ring-primary/20 font-medium"
                             />
                         </div>
                     </div>
@@ -232,7 +210,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                         <div className="relative flex items-center">
                             <select
                                 aria-label={t('Page')}
-                                className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border cursor-pointer appearance-none"
+                                className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border cursor-pointer appearance-none"
                                 value={accountId}
                                 onChange={(e) => setAccountId(e.target.value)}
                             >
@@ -254,7 +232,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                         <div className="relative flex items-center">
                             <select
                                 aria-label={t('Pillar')}
-                                className="h-9.5 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border cursor-pointer appearance-none"
+                                className="h-10 w-full rounded-xl border border-border/80 bg-background px-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border cursor-pointer appearance-none"
                                 value={pillarId}
                                 onChange={(e) => setPillarId(e.target.value)}
                             >
@@ -331,15 +309,15 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
             {!!report?.total && (
                 <>
                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                        <PerformanceStatCard
+                        <StatCard
                             label={t('Published deliveries')}
                             value={report.total}
-                            hint={t('Confirmed by Facebook')}
+                            hint={t('Confirmed by the destination')}
                             icon={PaperPlaneTilt}
                             iconBg="bg-emerald-50"
                             iconColor="text-emerald-600"
                         />
-                        <PerformanceStatCard
+                        <StatCard
                             label={t('Reactions')}
                             value={metricValue(report.totals.reactions)}
                             hint={t('{measured} of {total} publications measured', {
@@ -350,7 +328,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                             iconBg="bg-blue-50"
                             iconColor="text-[#1877F2]"
                         />
-                        <PerformanceStatCard
+                        <StatCard
                             label={t('Comments')}
                             value={metricValue(report.totals.comments)}
                             hint={t('{measured} of {total} publications measured', {
@@ -361,7 +339,7 @@ import PerformanceTables, { metricValue } from './PerformanceTables';
                             iconBg="bg-indigo-50"
                             iconColor="text-indigo-600"
                         />
-                        <PerformanceStatCard
+                        <StatCard
                             label={t('Shares')}
                             value={metricValue(report.totals.shares)}
                             hint={t('{measured} of {total} publications measured', {
