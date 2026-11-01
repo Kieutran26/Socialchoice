@@ -17,7 +17,7 @@ export function createContentStrategist({ store, write, sourceFor, readImage, au
             const source = sourceFor(a.source_id);
             return { id: a.id, brand_id: brand.id, name: a.name, size_bytes: a.size, file_type: 'image', file_url: '', notes: [a.analysis.summary, ...a.analysis.tags].join(' ').slice(0, 1000), is_autopilot: true, snapshot: assetSnapshot(a, source) };
         });
-        const local = store.all('MediaAsset').filter(a => a.brand_id === brand.id && !a.is_demo && (a.storage_id || a.file_url) && a.file_type === 'image').map(a => ({ ...a, notes: (a.notes || '').slice(0, 1000), snapshot: JSON.stringify([a.storage_id || a.file_url, a.updated_date || a.created_date || '']) }));
+        const local = store.all('MediaAsset').filter(a => a.brand_id === brand.id && !a.is_demo && a.storage_id && a.file_type === 'image').map(a => ({ ...a, notes: (a.notes || '').slice(0, 1000), snapshot: JSON.stringify([a.storage_id, a.updated_date]) }));
         return [...local, ...catalog];
     };
     const current = (receipt, brand) => {
