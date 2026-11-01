@@ -61,15 +61,15 @@ export function createAutopilotStore(db, store) {
             });
         },
         current: job => { const latest = get('autopilot_jobs', job.id); return latest.status === 'running' && latest.lease === job.lease && latest.lease_until > Date.now(); },
-        finish(job, error, retryable = false) {
+        finish(job, error, retryable = false, diagnostic = null) {
             if (!api.current(job)) return;
-            save('autopilot_jobs', { ...job, status: error ? retryable && job.attempts < 3 ? 'queued' : 'failed' : 'done', due: Date.now() + Math.min(60000, 1000 * 2 ** job.attempts), error: error || null, lease: null, lease_until: 0 });
+            save('autopilot_jobs', { ...job, status: error ? retryable && job.attempts < 3 ? 'queued' : 'failed' : 'done', due: Date.now() + Math.min(60000, 1000 * 2 ** job.attempts), error: error || null, diagnostic: error ? diagnostic : null, lease: null, lease_until: 0 });
         },
         retry(id, confirmed) {
             const job = get('autopilot_jobs', id);
             if (job.kind === 'analyze' && confirmed !== true) fail('Confirm retrying the AI request', 409);
             if (job.status !== 'failed') fail('Only failed jobs can be retried', 409);
-            return save('autopilot_jobs', { ...job, status: 'queued', due: Date.now(), attempts: 0, error: null });
+            return save('autopilot_jobs', { ...job, status: 'queued', due: Date.now(), attempts: 0, error: null, diagnostic: null });
         },
         oauthSave(state, value) {
             for (const row of db.prepare("SELECT state FROM autopilot_oauth WHERE json_extract(data,'$.expires')<?").all(Date.now())) store.deleteCredential(`autopilot:oauth:${row.state}`);

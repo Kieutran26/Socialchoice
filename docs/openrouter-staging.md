@@ -1,5 +1,7 @@
 # OpenRouter staging integration
 
+Latest follow-up: [2026-11-01 recovery, diagnostics, deployment and acceptance limits](../plans/261031-autopilot-phase-1/acceptance-20261101.md). Current staging version: `73490a83-f44d-471e-bc18-b0b6d9648209`. Full suite 241/241 passes. Real vision acceptance remains blocked by the new browser needing authentication; no real AI retry occurred in that follow-up.
+
 OpenRouter is available in web Settings and Asset Intelligence on feature/autopilot-phase-1. Desktop native integration is unchanged.
 
 Select OpenRouter, choose an image-capable model, enter an OpenRouter API key directly in the protected Settings form and save. Changing providers requires a new key; a stored Gemini/OpenAI key is never silently reused. Existing saved configuration stays active until a successful save. The masked card now says configured, not verified active.
@@ -22,5 +24,5 @@ Gemini relay follow-up: the private regional actor now completes a bounded respo
 - Public Drive test source contains two assets, including gemini-acceptance-test.png (synthetic marketing test image, 3.7 KB). Agent confirmed and queued analysis of this synthetic image. Background Queue transitioned from pending to failed; asset remains failed / pending human review. UI reports only “Cần kiểm tra nguồn hoặc cấu hình”; no specific provider failure is established.
 - Connection authentication test PASS. Real image analysis FAIL; successful OCR, cache and approval acceptance remain pending. No failed result was approved and no publishing was performed. Do not mark Asset Intelligence accepted based on the connection test.
 
-Final staging version: bc66c619-58ba-4829-b365-93b283463e74.
+2026-10-31 staging version: bc66c619-58ba-4829-b365-93b283463e74.
 Production/main unchanged. Existing staging secrets and R2/Queue bindings retained; no production credential was copied. No merge or production deployment.

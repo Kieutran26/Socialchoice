@@ -37,19 +37,48 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         if (!isCurrent(source)) fail('Drive connection changed', 409);
         vault.save(credentialId(source), { ...grant, access_token: next.access_token, refresh_token: next.refresh_token || grant.refresh_token, expires: Date.now() + next.expires_in * 1000 }); return next.access_token;
     }
-    const request = async (source, path, params = {}, resourceKey) => {
+    const request = async (source, path, params = {}, resourceKey, signal) => {
         if (source.access === 'public') {
             if (!config.apiKey) fail('Public Drive requires a server API key', 409);
             const keys = [[source.folder, source.resource_key], [path.startsWith('files/') ? path.slice(6) : '', resourceKey]].filter(([, key]) => key);
-            const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
-            if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401,403,404].includes(response.status) ? 409 : 502, retryable: response.status === 429 || response.status >= 500 }); }
+            const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'manual', signal: signal || AbortSignal.timeout(20000) });
+            if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401,403,404].includes(response.status) ? 409 : 502, code: [401,403,404].includes(response.status) ? 'SOURCE_ACCESS_DENIED' : undefined, providerStatus: response.status, retryable: response.status === 429 || response.status >= 500 }); }
             return response;
         }
-        return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'manual', signal: AbortSignal.timeout(20000) });
+        return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'manual', signal: signal || AbortSignal.timeout(20000) });
     };
-    async function verify(source) {
-        const folder = await providerJson(await request(source, 'files/' + source.folder, { fields: 'id,mimeType,trashed', supportsAllDrives: 'true' }));
+    async function verify(source, signal) {
+        const folder = await providerJson(await request(source, 'files/' + source.folder, { fields: 'id,mimeType,trashed', supportsAllDrives: 'true' }, undefined, signal));
         if (folder.id !== source.folder || folder.mimeType !== 'application/vnd.google-apps.folder' || folder.trashed) fail('Choose an accessible public Drive folder', 409);
+    }
+    const fileVersion = file => file.md5Checksum || `${file.version}:${file.modifiedTime}`;
+    async function imageMetadata(source, asset, signal) {
+        signal.throwIfAborted();
+        const meta = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'id,parents,trashed,version,modifiedTime,md5Checksum', supportsAllDrives: 'true' }, asset.resource_key, signal));
+        if (meta.trashed || fileVersion(meta) !== asset.version || meta.id && meta.id !== asset.external_id) throw Object.assign(new Error('Source changed. Sync before analyzing.'), { status: 409, code: 'SOURCE_CHANGED' });
+        if (Array.isArray(meta.parents)) {
+            if (!meta.parents.includes(source.folder)) throw Object.assign(new Error('Source changed. Sync before analyzing.'), { status: 409, code: 'SOURCE_CHANGED' });
+            return { ...meta, membershipByListing: false };
+        }
+        // Anonymous metadata can omit parents. A missing field is never permission to send a file.
+        // Prove membership through the same folder-scoped API query used for ingestion instead.
+        if (source.access !== 'public') throw Object.assign(new Error('Folder membership could not be verified'), { status: 409, code: 'SOURCE_MEMBERSHIP_UNVERIFIED' });
+        await verify(source, signal);
+        let cursor; const seen = new Set();
+        for (let page = 0; page < 100; page++) {
+            signal.throwIfAborted();
+            const data = await providerJson(await request(source, 'files', { q: `'${source.folder}' in parents and trashed = false`, fields: 'nextPageToken,incompleteSearch,files(id,md5Checksum,version,modifiedTime)', pageSize: '100', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...(cursor ? { pageToken: cursor } : {}) }, undefined, signal));
+            if (!Array.isArray(data.files) || data.incompleteSearch || data.nextPageToken && typeof data.nextPageToken !== 'string') fail('Incomplete Drive listing', 502);
+            const member = data.files.find(file => file.id === asset.external_id);
+            if (member) {
+                if (fileVersion(member) !== asset.version) throw Object.assign(new Error('Source changed. Sync before analyzing.'), { status: 409, code: 'SOURCE_CHANGED' });
+                return { ...meta, membershipByListing: true };
+            }
+            if (!data.nextPageToken) break;
+            if (seen.has(data.nextPageToken)) fail('Drive listing cursor did not advance', 502);
+            cursor = data.nextPageToken; seen.add(cursor);
+        }
+        throw Object.assign(new Error('Folder membership could not be verified'), { status: 409, code: 'SOURCE_MEMBERSHIP_UNVERIFIED' });
     }
     return {
         verify,
@@ -73,17 +102,16 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         },
         async image(source, asset) {
             // Re-check membership/version before sending bytes to an AI provider.
-            const meta = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'id,parents,trashed,version,modifiedTime,md5Checksum', supportsAllDrives: 'true' }, asset.resource_key));
-            if (meta.trashed || !meta.parents?.includes(source.folder) || (meta.md5Checksum || `${meta.version}:${meta.modifiedTime}`) !== asset.version) fail('Source changed. Sync before analyzing.', 409);
-            const response = await request(source, `files/${encodeURIComponent(asset.external_id)}`, { alt: 'media', supportsAllDrives: 'true' }, asset.resource_key);
+            const signal = AbortSignal.timeout(45000);
+            const meta = await imageMetadata(source, asset, signal);
+            const response = await request(source, `files/${encodeURIComponent(asset.external_id)}`, { alt: 'media', supportsAllDrives: 'true' }, asset.resource_key, signal);
             if (!response.ok) { await providerJson(response); }
             const bytes = await boundedBytes(response, IMAGE_LIMIT);
             if (meta.md5Checksum) {
-                if (createHash('md5').update(bytes).digest('hex') !== meta.md5Checksum) fail('Source changed during download. Sync again.', 409);
-            } else {
-                const after = await providerJson(await request(source, `files/${encodeURIComponent(asset.external_id)}`, { fields: 'parents,trashed,version,modifiedTime', supportsAllDrives: 'true' }, asset.resource_key));
-                if (after.trashed || !after.parents?.includes(source.folder) || `${after.version}:${after.modifiedTime}` !== asset.version) fail('Source changed during download. Sync again.', 409);
+                if (createHash('md5').update(bytes).digest('hex') !== meta.md5Checksum) throw Object.assign(new Error('Source changed during download. Sync again.'), { status: 409, code: 'SOURCE_CHANGED' });
             }
+            // Revalidate after download when the file has no checksum or membership was proven by listing.
+            if (!meta.md5Checksum || meta.membershipByListing) await imageMetadata(source, asset, signal);
             return bytes;
         },
     };

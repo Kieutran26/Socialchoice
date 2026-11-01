@@ -2,6 +2,7 @@ import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { createMetaVault } from './meta-vault.js';
 import { createDriveProvider, createR2Provider, DRIVE_SCOPE, IMAGE_LIMIT } from './autopilot-providers.js';
 import { createAssetIntelligence, ANALYSIS_VERSION } from './autopilot-intelligence.js';
+import { autopilotFailureDiagnostic } from './autopilot-errors.js';
 import { fail } from './validation.js';
 
 export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoot = 'owner/', aiFetch, fetcher, authorize, wake }) {
@@ -128,6 +129,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 const version = { asset: asset.version, generation: source.generation, schema: ANALYSIS_VERSION, provider: config.provider, model: config.model };
                 if (asset.analysis && asset.analysis_key === JSON.stringify(version)) return { cached: true, asset };
                 const job = db().enqueue('analyze', asset.id, version);
+                if (job.status === 'failed') fail('Previous analysis failed. Use Retry on the failed job and confirm again.', 409);
                 if (['queued', 'running'].includes(job.status)) db().saveAsset({ ...asset, analysis_status: 'queued' }); return notify(job);
             }
             if (operation === 'review') {
@@ -135,10 +137,20 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 if (asset.availability !== 'available' || !asset.analysis || !['approved', 'rejected'].includes(input.review)) fail('Choose an analyzed asset and review outcome');
                 return db().saveAsset({ ...asset, review: input.review, reviewed_at: new Date().toISOString() });
             }
-            if (operation === 'retry') return notify(db().retry(input.id, input.confirmed));
+            if (operation === 'retry') {
+                const job = store.transaction(() => {
+                    const retried = db().retry(input.id, input.confirmed);
+                    if (retried.kind === 'analyze') {
+                        const asset = db().asset(retried.target);
+                        if (asset.version === retried.version.asset) db().saveAsset({ ...asset, analysis_status: 'queued' });
+                    }
+                    return retried;
+                });
+                return notify(job);
+            }
             if (operation !== 'run') fail('Unknown Autopilot operation', 404);
             if (busy) fail('Autopilot worker is busy', 429); busy = true;
-            let job;
+            let job, stage = 'source_check';
             try {
                 job = db().claim(); if (!job) return { idle: true };
                 const asset = job.kind === 'analyze' ? db().asset(job.target) : null;
@@ -147,8 +159,10 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 if (job.kind === 'sync') {
                     if (source.scan !== job.version.scan || source.cursor !== job.version.cursor) fail('Sync cursor is stale. Start a new sync.', 409);
                     if ((source.scan_pages || 0) >= 100) fail('Sync page limit reached', 409);
+                    stage = 'source_list';
                     const page = await (source.kind === 'drive' ? drive : r2).list(source);
                     await authorize?.();
+                    stage = 'save_result';
                     store.transaction(() => {
                         const current = sourceFor(source.id);
                         if (!db().current(job) || current.generation !== source.generation || current.scan !== source.scan) fail('Source changed during sync', 409);
@@ -161,12 +175,15 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                     });
                 } else {
                     if (asset.version !== job.version.asset || asset.availability !== 'available') fail('Asset changed. Queue a new analysis.', 409);
+                    stage = 'source_image';
                     const bytes = await (source.kind === 'drive' ? drive : r2).image(source, asset);
                     await authorize?.();
                     const latest = db().asset(asset.id);
                     if (!db().current(job) || sourceFor(source.id).generation !== source.generation || latest.version !== asset.version || latest.availability !== 'available') fail('Source changed before analysis', 409);
+                    stage = 'ai_analysis';
                     const analysis = await intelligence.analyze(asset, bytes, job.version);
                     await authorize?.();
+                    stage = 'save_result';
                     store.transaction(() => {
                         const current = db().asset(asset.id);
                         if (!db().current(job) || sourceFor(source.id).generation !== source.generation || current.version !== asset.version || current.availability !== 'available') fail('Asset changed during analysis', 409);
@@ -179,7 +196,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 // AI calls are never automatically retried: cost/uncertain outcomes need explicit action.
                 const code = ['TimeoutError', 'AbortError'].includes(error.name) ? 'TIMEOUT' : error.status === 409 ? 'REVIEW_REQUIRED' : 'PROVIDER_OR_ASSET_ERROR';
                 const ownsLease = db().current(job);
-                db().finish(job, code, job.kind === 'sync' && (error.retryable || code === 'TIMEOUT'));
+                db().finish(job, code, job.kind === 'sync' && (error.retryable || code === 'TIMEOUT'), autopilotFailureDiagnostic(error, stage));
                 if (ownsLease && job.kind === 'analyze' && db().asset(job.target).version === job.version.asset) { const asset = db().asset(job.target); db().saveAsset({ ...asset, analysis_status: 'failed' }); }
                 return { job: job.id, status: 'failed', error: code };
             } finally { busy = false; }

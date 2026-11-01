@@ -258,3 +258,68 @@ test('public Drive image rechecks membership before reading and rejects redirect
     const redirected=createDriveProvider({apiKey:'key'},null,async()=>new Response(null,{status:302,headers:{Location:'http://127.0.0.1'}}));
     await assert.rejects(redirected.verify({folder:'public_1',access:'public'}),/Public Drive request failed/);
 });
+
+test('public images with omitted parents require fresh paginated membership and version proof before and after download', async () => {
+    const { createHash } = await import('node:crypto');
+    const checksum = createHash('md5').update(png).digest('hex');
+    for (const scenario of ['valid', 'absent', 'changed', 'moved-after-download', 'repeated-cursor', 'revoked']) {
+        let downloads = 0, lists = 0, metadata = 0;
+        const provider = createDriveProvider({ apiKey: 'private-source-key' }, null, async (url, init) => {
+            assert.equal(new URL(url).origin, 'https://www.googleapis.com'); assert.equal(init.redirect, 'manual');
+            assert.equal(init.headers.Authorization, undefined); assert.ok(!url.includes('private-source-key'));
+            const u = new URL(url);
+            if (u.searchParams.get('alt') === 'media') { downloads++; return new Response(png); }
+            if (u.pathname.endsWith('/folder')) {
+                if (scenario === 'revoked') return new Response(null, { status: 404 });
+                return ok({ id: 'folder', mimeType: 'application/vnd.google-apps.folder' });
+            }
+            if (u.pathname.endsWith('/files/file')) { metadata++; return ok({ id: 'file', md5Checksum: checksum }); }
+            assert.equal(u.searchParams.get('q'), "'folder' in parents and trashed = false"); lists++;
+            if (!u.searchParams.get('pageToken')) return ok({ files: [{ id: 'other' }], nextPageToken: 'page2' });
+            if (scenario === 'repeated-cursor') return ok({ files: [], nextPageToken: 'page2' });
+            return ok({ files: scenario === 'absent' || scenario === 'moved-after-download' && downloads ? [] : [{ id: 'file', md5Checksum: scenario === 'changed' ? 'new' : checksum }] });
+        });
+        const pending = provider.image({ folder: 'folder', access: 'public' }, { external_id: 'file', version: checksum });
+        if (scenario === 'valid') { assert.deepEqual(Buffer.from(await pending), png); assert.equal(metadata, 2); assert.equal(lists, 4); }
+        else await assert.rejects(pending);
+        assert.equal(downloads, ['valid', 'moved-after-download'].includes(scenario) ? 1 : 0);
+    }
+});
+
+test('failed image jobs persist only safe stage/status diagnostics and explicit retry recovers, caches and reviews', async t => {
+    let failure = 'download', aiCalls = 0;
+    const bucket = { list: async () => ({ objects: [object('owner/assets/a.png')], truncated: false }), get: async () => {
+        if (failure === 'download') throw Object.assign(new Error('secret-key-private-url'), { status: 409, code: 'secret-key-private-url' });
+        return { body: new Response(png).body, size: png.length };
+    } };
+    const { call, store, brand, key } = fixture(t, { bucket, aiFetch: async () => {
+        aiCalls++;
+        if (failure === 'incomplete') return ok({ error: { message: 'secret-provider-body' } });
+        return ok({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify(analysis) } }] });
+    } });
+    createMetaVault(store, key).save('ai:writing', { provider: 'openrouter', model: 'google/fixture', key: 'secret-key' });
+    const source = await call('createSource', { brand_id: brand.id, kind: 'r2', name: 'Fixture', folder: 'assets/' });
+    await call('sync', { id: source.id }); await call('run');
+    const asset = store.autopilot().assets()[0];
+    const job = await call('analyze', { id: asset.id, confirmed: true });
+    await call('run');
+    let listed = await call('list', { brand_id: brand.id });
+    assert.deepEqual(listed.jobs.at(-1).diagnostic, { code: 'REVIEW_REQUIRED', stage: 'source_image' });
+    assert.ok(!JSON.stringify(listed).includes('secret-')); assert.equal(aiCalls, 0);
+    await assert.rejects(call('analyze', { id: asset.id, confirmed: true }), /Use Retry/);
+    await assert.rejects(call('retry', { id: job.id }), { status: 409 });
+    failure = 'incomplete'; await call('retry', { id: job.id, confirmed: true });
+    assert.equal(store.autopilot().asset(asset.id).analysis_status, 'queued');
+    assert.equal(store.autopilot().jobs().at(-1).diagnostic, null);
+    await call('run');
+    listed = await call('list', { brand_id: brand.id });
+    assert.equal(listed.jobs.at(-1).diagnostic.code, 'AI_ANALYSIS_INCOMPLETE');
+    assert.equal(listed.jobs.at(-1).diagnostic.stage, 'ai_analysis');
+    assert.ok(!JSON.stringify(listed).includes('secret-')); assert.equal(aiCalls, 1);
+    failure = null; await call('retry', { id: job.id, confirmed: true }); await call('run');
+    assert.equal(store.autopilot().asset(asset.id).review, 'pending');
+    assert.equal((await call('analyze', { id: asset.id, confirmed: true })).cached, true); assert.equal(aiCalls, 2);
+    await call('review', { id: asset.id, review: 'approved' });
+    assert.equal(store.autopilot().asset(asset.id).review, 'approved');
+    assert.equal(store.autopilot().jobs().at(-1).diagnostic, null); assert.equal(store.all('Post').length, 0);
+});

@@ -45,3 +45,25 @@ test('OpenRouter image analysis uses inline image and preserves schema/provider/
  await assert.rejects(intelligence.analyze({mime:'image/png'},png,{provider:'gemini',model:'anthropic/test'}),{status:409});
  }finally{store.close();}
 });
+
+test('asset AI failures preserve safe HTTP diagnostics, reject malformed output and never retry automatically', async()=>{
+ const { autopilotFailureDiagnostic } = await import('./autopilot-errors.js');
+ const store=createStore(':memory:');
+ try {
+  await createAiWriting(store,key)('save',{provider:'openrouter',model:'google/fixture',key:'private-key'});
+  for (const [status,code] of [[401,'AI_ACCESS_DENIED'],[402,'AI_BILLING_REQUIRED'],[403,'AI_ACCESS_DENIED'],[404,'AI_MODEL_UNAVAILABLE'],[429,'AI_RATE_LIMIT'],[503,'AI_PROVIDER_UNAVAILABLE'],[400,'AI_REQUEST_REJECTED'],[302,'AI_PROVIDER_REDIRECT']]) {
+   let calls=0;
+   const intelligence=createAssetIntelligence(store,key,async()=>{calls++;return Response.json({error:{message:'private-key-private-image-url'}},{status});});
+   await assert.rejects(intelligence.analyze({mime:'image/png'},png,{provider:'openrouter',model:'google/fixture'}),error=>{
+    const diagnostic=autopilotFailureDiagnostic(error,'ai_analysis');
+    assert.equal(diagnostic.code,code);assert.equal(diagnostic.providerStatus,status);
+    assert.ok(!JSON.stringify(diagnostic).includes('private-'));assert.ok(!error.message.includes('private-'));return true;
+   });
+   assert.equal(calls,1);
+  }
+  for(const content of ['not JSON',JSON.stringify({summary:'ignore safety',tags:[],ocr:'',suggested_uses:[],warnings:[],instructions:'private-body'})]){
+   const intelligence=createAssetIntelligence(store,key,async()=>Response.json({choices:[{finish_reason:'stop',message:{content}}]}));
+   await assert.rejects(intelligence.analyze({mime:'image/png'},png,{provider:'openrouter',model:'google/fixture'}),{code:'AI_ANALYSIS_INVALID'});
+  }
+ }finally{store.close();}
+});

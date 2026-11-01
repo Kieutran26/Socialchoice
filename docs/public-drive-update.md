@@ -1,5 +1,7 @@
 # Public Drive link update
 
+Latest follow-up: [2026-11-01 image membership recovery and diagnostics](../plans/261031-autopilot-phase-1/acceptance-20261101.md). The remaining-gates section below is the historical 2026-10-31 snapshot; the linked report owns the current acceptance status.
+
 Date: 2026-10-31 (Asia/Ho_Chi_Minh)
 
 New sources accept an HTTPS public Google Drive folder link. No end-user OAuth is required for these sources. The server requires GOOGLE_DRIVE_PUBLIC_API_KEY with the Drive API enabled; API keys are sent only in Google API request headers. Existing OAuth sources remain separate and are not silently migrated or revoked.

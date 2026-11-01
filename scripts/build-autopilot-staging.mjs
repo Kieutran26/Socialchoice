@@ -41,7 +41,19 @@ export default {
 };
 `);
 const config = { name: 'socialchoice-autopilot-staging', main: 'worker.mjs', compatibility_date: '2026-10-06', compatibility_flags: ['nodejs_compat'], durable_objects: { bindings: [{ name: 'WORKSPACE', class_name: 'SocialchoiceWorkspace' }, { name: 'AI_EGRESS', class_name: 'SocialchoiceAiEgress' }] }, migrations: [{ tag: 'autopilot-staging-v1', new_sqlite_classes: ['SocialchoiceWorkspace', 'SocialchoiceAiEgress'] }] };
-writeFileSync(join(directory, 'wrangler.json'), JSON.stringify(config, null, 2));
+const configFile = join(directory, 'wrangler.json');
+// Rebuilds must never silently drop live staging Queue/R2 bindings or re-enable preview URLs.
+let existing;
+try { existing = JSON.parse(readFileSync(configFile, 'utf8')); } catch (error) { if (error.code !== 'ENOENT') throw error; }
+if (existing && existing.name !== config.name) throw Error('Refusing to build a non-staging Worker configuration');
+const stagingOrigin = 'https://socialchoice-autopilot-staging.nguyenngockieutran.workers.dev';
+const defaults = { ...config, preview_urls: false, vars: {
+    SOCIALCHOICE_AUTOPILOT_ENABLED: 'true', SOCIALCHOICE_PUBLIC_ORIGIN: stagingOrigin, SOCIALCHOICE_BACKEND_ORIGIN: stagingOrigin,
+}, r2_buckets: [{ binding: 'AUTOPILOT_ASSETS', bucket_name: 'socialchoice-autopilot-staging' }],
+queues: { producers: [{ binding: 'AUTOPILOT_QUEUE', queue: 'socialchoice-autopilot-staging' }],
+    consumers: [{ queue: 'socialchoice-autopilot-staging', max_batch_size: 1, max_batch_timeout: 1, max_retries: 8, max_concurrency: 1, dead_letter_queue: 'socialchoice-autopilot-staging-dlq' }] },
+observability: { enabled: false } };
+writeFileSync(configFile, JSON.stringify(existing || defaults, null, 2));
 const build = spawnSync(process.execPath, ['node_modules/wrangler/bin/wrangler.js', 'deploy', '--dry-run', '--config', join(directory, 'wrangler.json'), '--outdir', join(directory, 'bundle')], { cwd: root, encoding: 'utf8', env: { ...process.env, WRANGLER_SEND_METRICS: 'false' } });
 if (build.status) throw Error(build.stderr);
 const script = readFileSync(join(directory, 'bundle/worker.js'));

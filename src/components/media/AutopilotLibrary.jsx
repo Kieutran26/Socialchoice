@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
+import { autopilotDiagnosticLabels } from '@/lib/autopilot-diagnostics';
 import { formatBytes, formatDay } from '@/lib/format';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -71,7 +72,13 @@ export default function AutopilotLibrary({ brandId }) {
                 <div className="border-t pt-4 space-y-3">
                     <div className="flex flex-wrap items-center justify-between gap-3"><h3 className="text-[15px]">{t('Processing queue')}</h3><Button variant="outline" disabled={busy} onClick={() => click('run')}>{t(busy ? 'Processing…' : 'Process next job')}</Button></div>
                     <p className="label-xs">{t(status.backgroundReady ? 'Background queue is configured. Manual processing remains available for recovery.' : 'This development version processes one queued job per click. Each sync page is a separate job. Background processing is not enabled.')}</p>
-                    <ul className="space-y-2 max-h-48 overflow-y-auto">{data.jobs.map(job => <li key={job.id} className="flex flex-wrap items-center justify-between gap-2 text-xs"><span className="break-all">{job.kind === 'sync' ? t('Sync') : t('AI analysis')} · {t(job.status)}{job.error && ` · ${t(job.error)}`}</span>{job.status === 'failed' && <Button variant="outline" size="sm" disabled={busy} onClick={() => job.kind === 'analyze' ? setConfirmation({ id: job.id, retry: true }) : click('retry', { id: job.id })}>{t('Retry')}</Button>}</li>)}</ul>
+                    <ul className="space-y-2 max-h-48 overflow-y-auto">{data.jobs.map(job => {
+                        const diagnostic = autopilotDiagnosticLabels(job.diagnostic);
+                        return <li key={job.id} className="flex flex-wrap items-center justify-between gap-2 text-xs">
+                            <div className="min-w-0"><p className="break-words">{job.kind === 'sync' ? t('Sync') : t('AI analysis')} · {t(job.status)}{job.error && ` · ${t(diagnostic.message || job.error)}`}</p>{diagnostic.stage && <p className="label-xs break-words">{t('Failed step')}: {t(diagnostic.stage)}</p>}</div>
+                            {job.status === 'failed' && <Button variant="outline" size="sm" disabled={busy} onClick={() => job.kind === 'analyze' ? setConfirmation({ id: job.id, retry: true }) : click('retry', { id: job.id })}>{t('Retry')}</Button>}
+                        </li>;
+                    })}</ul>
                 </div>
                 <div className="border-t pt-4"><Label htmlFor="autopilot-search">{t('Search assets by name, summary or tags')}</Label><Input id="autopilot-search" className="mt-1" value={search} onChange={event => setSearch(event.target.value)} /></div>
                 {!data.assets.length && <p className="text-sm text-muted-foreground">{t(search.trim() ? 'No matching assets. Try another search.' : 'No ingested assets. Queue a sync and process its jobs.')}</p>}
