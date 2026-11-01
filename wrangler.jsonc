@@ -56,9 +56,34 @@
     "TIKTOK_REDIRECT_URI": "https://socialchoice.vercel.app/api/tiktok/callback",
     "THREADS_APP_ID": "1880622033307199",
     "THREADS_REDIRECT_URI": "https://socialchoice.vercel.app/api/threads/callback",
-    "META_REDIRECT_URI": "https://socialchoice.vercel.app/api/meta/callback"
+    "META_REDIRECT_URI": "https://socialchoice.vercel.app/api/meta/callback",
+    "SOCIALCHOICE_AUTOPILOT_ENABLED": "true"
   },
   "observability": {
     "enabled": false
+  },
+  "r2_buckets": [
+    {
+      "binding": "AUTOPILOT_ASSETS",
+      "bucket_name": "socialchoice-autopilot-production"
+    }
+  ],
+  "queues": {
+    "producers": [
+      {
+        "binding": "AUTOPILOT_QUEUE",
+        "queue": "socialchoice-autopilot-production"
+      }
+    ],
+    "consumers": [
+      {
+        "queue": "socialchoice-autopilot-production",
+        "max_batch_size": 1,
+        "max_batch_timeout": 1,
+        "max_retries": 8,
+        "max_concurrency": 1,
+        "dead_letter_queue": "socialchoice-autopilot-production-dlq"
+      }
+    ]
   }
 }
