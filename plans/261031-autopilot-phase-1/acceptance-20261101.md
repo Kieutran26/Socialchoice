@@ -1,8 +1,10 @@
 # Autopilot follow-up: public-image recovery and safe diagnostics
 
+Latest result: the authenticated real AI follow-up at the end of this report passes for one synthetic image. Historical blockers below describe the first run.
+
 Date: 2026-11-01 (Asia/Ho_Chi_Minh)
 
-## Outcome
+## Outcome of first run (before authenticated follow-up)
 
 Reproduced and fixed a public Drive image failure when `files.get` omits `parents`. This is a reproducible failure mode, **not a confirmed diagnosis of the earlier live staging failure**. The previous live job retained only `REVIEW_REQUIRED`, which cannot establish the underlying cause retrospectively.
 
@@ -63,3 +65,31 @@ Screenshots: [desktop fixture](evidence-20261101/desktop.jpg), [mobile frame](ev
 5. Recheck another brand and workspace boundary. Record live evidence separately from fixture coverage.
 
 Production release, OAuth refresh, real resource-key folder pagination, live cross-customer isolation and operator dead-letter recovery remain separate open gates. Phase 1 is not accepted for production.
+
+## Authenticated real AI follow-up — 2026-11-01
+
+**Outcome: the single synthetic public-Drive image / OpenRouter vision flow passes staging acceptance.** This section supersedes the authentication blocker from the first run above. The existing in-app browser became available again and showed the signed-in workspace owner; no password or provider key was read or entered.
+
+On the deployed version `73490a83-f44d-471e-bc18-b0b6d9648209`, the agent explicitly retried the earlier failed analysis of `gemini-acceptance-test.png` in brand Autopilot Drive Acceptance. Queue progressed queued → running → done without manual job processing.
+
+Observed real output:
+- Provider/model: `openrouter / google/gemini-3.8-flash`.
+- OCR: **TEST SALE 20%**, matching the synthetic source image.
+- Vietnamese summary correctly describes the white background, black pixel text, green rectangle and black horizontal line.
+- Tags and suggested uses were returned, with warnings that this is test/unfinished content and suggestions need human review.
+- Result initially remained pending human review. The agent reviewed this synthetic result and selected Approve; UI changed to Analyzed / Approved.
+
+| Live check | Evidence |
+|---|---|
+| Public image download + real AI analysis | Queue completed and returned image-specific facts and exact OCR |
+| Cache behavior | Confirmed Analyze again for the same image/model; existing result remained, with still exactly one completed AI job and no new queued/running AI job |
+| Approval persistence | Reloaded page, reselected brand; approved analysis and OCR still present |
+| Repeat sync / deduplication | New Queue sync completed automatically; exactly 2 imported assets remain, analysis/approval retained |
+| Brand filtering | Autopilot Acceptance shows only its existing R2 fixture and source/jobs; public Drive image and its analysis absent |
+| Credentials / production | No credentials inspected; no main edit, production deployment or social posting |
+
+Cache evidence is application/UI behavior combined with existing automated cache tests. OpenRouter usage counters and billing records were not independently inspected; no exact charge or provider-side request-count claim is made. The earlier generic failure's precise cause remains unproven retrospectively, although the repaired flow now succeeds.
+
+A screenshot of the actual approved result and exact OCR was saved locally. Automatic approval review rejected publishing that screenshot to GitHub because of possible workspace metadata disclosure without separate publication authorization; it was not uploaded. This text records only the synthetic fixture details already documented in the repository.
+
+This accepts **one real synthetic-image path with the configured model**, not every model/file format or a production release. Live cross-customer isolation, access-revocation acceptance, resource-key folder/pagination cases and dead-letter operations remain separate gates.
