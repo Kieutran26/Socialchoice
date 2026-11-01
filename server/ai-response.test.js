@@ -20,3 +20,12 @@ test('JSON proxy messages never leak private text, including forged diagnostic f
   await assert.rejects(readAiResponse(Response.json({message:'private-key private prompt',...extra},{status:502})),error=>!error.message.includes('private') && error.message.includes('invalid response'));
  }
 });
+
+test('browser accepts only fixed provider reasons and provides actionable region guidance',async()=>{
+ const {providerReasonMessage}=await import('../src/api/ai-diagnostics.js');
+ for(const [providerReason,expected] of [['GEOGRAPHIC_RESTRICTION','GEOGRAPHIC_RESTRICTION'],['PRIVATE_API_KEY',undefined]]) {
+  await assert.rejects(readAiResponse(Response.json({message:'AI API access is denied. Check key restrictions, API enablement and model permissions in your provider console.',providerReason},{status:502})),e=>e.providerReason===expected);
+ }
+ assert.match(providerReasonMessage('GEOGRAPHIC_RESTRICTION'),/geographic restriction/);
+ assert.equal(providerReasonMessage('PRIVATE_API_KEY'),undefined);
+});

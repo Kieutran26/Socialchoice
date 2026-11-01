@@ -2,8 +2,8 @@
 export class AiError extends Error {}
 const ioSteps = new Set(['actor_request','provider_headers','provider_body']);
 export const safeAiIoStep = value => ioSteps.has(value) ? value : undefined;
-const providerReasons = new Set(['CANCELLED', 'UNKNOWN', 'INVALID_ARGUMENT', 'DEADLINE_EXCEEDED', 'NOT_FOUND', 'ALREADY_EXISTS', 'PERMISSION_DENIED', 'RESOURCE_EXHAUSTED', 'FAILED_PRECONDITION', 'ABORTED', 'OUT_OF_RANGE', 'UNIMPLEMENTED', 'INTERNAL', 'UNAVAILABLE', 'DATA_LOSS', 'UNAUTHENTICATED', 'INVALID_ERROR_RESPONSE', 'ACCOUNT_RESTRICTED', 'KEY_LIMIT_EXCEEDED', 'REGION_RESTRICTED', 'EU_ENDPOINT_REQUIRED', 'GEOGRAPHIC_RESTRICTION', 'POLICY_BLOCKED', 'MODEL_RESTRICTED', 'ACCESS_DENIED']);
-export function safeProviderReason(value) { return providerReasons.has(value) ? value : undefined; }
+import { safeProviderReason } from '../src/api/ai-diagnostics.js';
+export { safeProviderReason };
 export function aiFailureDiagnostic(error) {
     if (!(error instanceof AiError) || !['binding', 'relay', 'provider'].includes(error.stage) || !/^AI_[A-Z_]{1,50}$/.test(error.code)) return {};
     return { code: error.code, stage: error.stage,

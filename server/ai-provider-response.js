@@ -23,7 +23,7 @@ export async function rejectProvider(response, signal) {
     let data, invalidErrorResponse = false;
     try { data = await readProviderJson(response,signal); } catch(error) { if(signal?.aborted)throw error;data = {}; invalidErrorResponse = true; }
     // Classify private provider details; never return raw messages, keys or prompts.
-    const detail = JSON.stringify(data?.error || {}).slice(0, 262144);
+    const detail = providerErrorDetail(data?.error);
     let message;
     if (/API_KEY_INVALID|API_KEY_EXPIRED|invalid_api_key|api key not valid/i.test(detail) || response.status === 401)
         message = 'AI API key is invalid or expired. Replace it in Settings.';
@@ -58,9 +58,24 @@ export function classifyAccessDenial(detail) {
     if (/inference is blocked|account (?:is |has been )?(?:disabled|blocked|restricted|suspended)|user (?:is )?banned/i.test(detail)) return 'ACCOUNT_RESTRICTED';
     if (/key limit exceeded|budget.*exceeded|spending limit/i.test(detail)) return 'KEY_LIMIT_EXCEEDED';
     if (/eu\.openrouter\.ai/i.test(detail)) return 'EU_ENDPOINT_REQUIRED';
-    if (/country|territory|geograph|region.*restrict/i.test(detail)) return 'GEOGRAPHIC_RESTRICTION';
+    if (/(?:country|territory|location|region).*(?:not supported|unsupported|not available|restricted|restriction|not allowed)|(?:unsupported|restricted|blocked).*(?:country|territory|region)|geographic (?:restriction|block)/i.test(detail)) return 'GEOGRAPHIC_RESTRICTION';
     if (/data region|allowed.*hostnames/i.test(detail)) return 'REGION_RESTRICTED';
     if (/guardrail|content.policy|moderation|content filter/i.test(detail)) return 'POLICY_BLOCKED';
     if (/model.*(?:not allowed|not permitted|denied)|allowlist|author.*banned/i.test(detail)) return 'MODEL_RESTRICTED';
     return 'ACCESS_DENIED';
+}
+
+// Classify only error messages, never echoed inputs, headers or arbitrary metadata.
+function providerErrorDetail(error) {
+    const messages = typeof error?.message === 'string' ? [error.message.slice(0, 16000)] : [];
+    const raw = error?.metadata?.raw;
+    if (typeof raw === 'string' && raw.length <= 262144) {
+        try {
+            const nested = JSON.parse(raw);
+            const message = nested?.error?.message ?? nested?.message;
+            if (typeof message === 'string') messages.push(message.slice(0, 16000));
+        } catch { /* Non-JSON upstream bodies are not diagnostic messages. */ }
+    }
+    if (error?.code === 'insufficient_quota' || error?.code === 'model_not_found') messages.push(error.code);
+    return messages.join(' ');
 }

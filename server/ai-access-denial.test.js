@@ -11,3 +11,11 @@ test('access denial diagnostics classify provider failures without returning pri
   });
  }
 });
+
+test('echoed user content and arbitrary metadata cannot change error classification',async()=>{
+ await assert.rejects(rejectProvider(Response.json({error:{message:'Forbidden',metadata:{flagged_input:'country region restricted leaked private-key',country:'US',raw:'private-key'}}},{status:403})),e=>{
+  assert.equal(e.providerReason,'ACCESS_DENIED');assert.match(e.message,/access is denied/);return true;
+ });
+ await assert.rejects(rejectProvider(Response.json({error:{message:'Provider returned error',metadata:{raw:JSON.stringify({error:{message:'Your region is restricted'}})}}},{status:403})),e=>e.providerReason==='GEOGRAPHIC_RESTRICTION');
+ await assert.rejects(rejectProvider(Response.json({error:{message:'This request arrived on the global data region but permits only eu.openrouter.ai'}} ,{status:403})),e=>e.providerReason==='EU_ENDPOINT_REQUIRED');
+});

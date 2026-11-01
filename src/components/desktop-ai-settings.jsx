@@ -1,6 +1,7 @@
 import { isDesktop } from '@/api/desktop/runtime';
 import React, { useEffect, useState } from 'react';
 import { aiRequest } from '@/api/ai';
+import { providerReasonMessage } from '@/api/ai-diagnostics';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,6 +28,7 @@ export default function DesktopAiSettings() {
     const [busy, setBusy] = useState(true);
     const [error, setError] = useState('');
     const [message, setMessage] = useState('');
+    const [connection, setConnection] = useState('untested');
     const [models, setModels] = useState([]);
     const [modelsBusy, setModelsBusy] = useState(false);
     const [modelsError, setModelsError] = useState('');
@@ -53,11 +55,12 @@ export default function DesktopAiSettings() {
 
     function formatError(err) {
         if (!err) return '';
-        const msg = t(err.message || 'Could not connect to the AI provider. Please try again later.');
+        const msg = t(providerReasonMessage(err.providerReason) || err.message || 'Could not connect to the AI provider. Please try again later.');
         return err.providerReason ? `${msg} (${err.providerReason})` : msg;
     }
 
     function accept(value) {
+        setConnection('untested');
         setSaved(value);
         setProvider(value.provider);
         setModel(value.model);
@@ -91,6 +94,7 @@ export default function DesktopAiSettings() {
                 action === 'save' ? { provider, model, key } : {}
             );
             if (action === 'status' || action === 'save' || action === 'clear') accept(value);
+            if (action === 'test') setConnection('verified');
             setMessage(
                 t(
                     action === 'save'
@@ -105,6 +109,7 @@ export default function DesktopAiSettings() {
                 )
             );
         } catch (err) {
+            if (action === 'test') setConnection('failed');
             setError(formatError(err));
         } finally {
             setBusy(false);
@@ -158,7 +163,7 @@ export default function DesktopAiSettings() {
                         </span>
                         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
                             <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                            {t('Configured — test connection to verify')}
+                            {t(connection === 'verified' ? 'AI connection verified.' : connection === 'failed' ? 'AI connection failed.' : 'Configured — test connection to verify')}
                         </span>
                     </div>
 
@@ -204,7 +209,7 @@ export default function DesktopAiSettings() {
                             variant="outline"
                             size="sm"
                             className="h-8 text-xs font-medium rounded-lg gap-1.5"
-                            disabled={busy}
+                            disabled={busy || changed}
                             onClick={() => run('test')}
                         >
                             <ArrowCounterClockwise size={13} className={busy ? 'animate-spin' : ''} />
@@ -426,7 +431,7 @@ export default function DesktopAiSettings() {
                 </div>
             )}
             {error && (
-                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200/60 text-xs text-dangerFg flex items-center gap-2">
+                <div role="alert" className="p-3 rounded-xl bg-rose-50 border border-rose-200/60 text-xs text-dangerFg flex items-center gap-2">
                     <Info size={15} className="shrink-0" />
                     <span>{error}</span>
                 </div>

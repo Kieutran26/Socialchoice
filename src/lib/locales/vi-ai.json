@@ -47,5 +47,13 @@
   "Choose an image-capable model": "Chọn model có khả năng đọc ảnh",
   "One OpenRouter key supports Gemini, Claude and GPT models. Images and prompts pass through OpenRouter to the selected provider. API usage is billed by OpenRouter; model availability and pricing can change.": "Một API key OpenRouter dùng cho các model Gemini, Claude và GPT. Ảnh và nội dung được gửi qua OpenRouter tới nhà cung cấp đã chọn. OpenRouter tính phí API; model và giá có thể thay đổi.",
   "Could not load OpenRouter models. Try again.": "Không tải được danh sách model OpenRouter. Vui lòng thử lại.",
-  "Invalid OpenRouter model list": "Danh sách model OpenRouter không hợp lệ"
+  "Invalid OpenRouter model list": "Danh sách model OpenRouter không hợp lệ",
+  "The AI provider rejected this request because of a geographic restriction. Check the provider account and deployment region, or contact provider support.": "Nhà cung cấp AI từ chối vì hạn chế địa lý. Cần kiểm tra tài khoản và vùng triển khai, hoặc liên hệ bộ phận hỗ trợ của nhà cung cấp.",
+  "The OpenRouter workspace requires a different data region. Check its allowed API regions.": "Workspace OpenRouter yêu cầu vùng dữ liệu khác. Cần kiểm tra các vùng API được phép.",
+  "The OpenRouter workspace requires the EU API endpoint. The current global endpoint is not allowed.": "Workspace OpenRouter yêu cầu endpoint API tại EU. Endpoint toàn cầu hiện tại không được phép.",
+  "AI inference is blocked on this provider account. Contact provider support.": "Tài khoản này đã bị nhà cung cấp chặn sử dụng AI. Cần liên hệ bộ phận hỗ trợ của nhà cung cấp.",
+  "The AI key or workspace spending limit has been reached. Check the provider budget.": "Key AI hoặc workspace đã chạm giới hạn chi tiêu. Cần kiểm tra ngân sách tại nhà cung cấp.",
+  "The AI provider blocked this request under its content or guardrail policy.": "Nhà cung cấp AI chặn yêu cầu theo chính sách nội dung hoặc guardrail.",
+  "This AI model is not allowed by the provider account or workspace policy.": "Model AI này không được chính sách tài khoản hoặc workspace cho phép.",
+  "AI connection failed.": "Kết nối AI thất bại."
 }

@@ -1,3 +1,4 @@
+import { safeProviderReason } from './ai-diagnostics.js';
 // Trust only application-owned fixed messages, even when a proxy returns JSON.
 const safeMessages = new Set([
     'AI encryption is not configured on the server.', 'Choose a provider and a valid model ID.',
@@ -37,7 +38,7 @@ export async function readAiResponse(response) {
             stage: ['binding', 'relay', 'provider'].includes(result?.stage) ? result.stage : 'proxy',
             ...(typeof result?.code === 'string' && /^AI_[A-Z_]{1,50}$/.test(result.code) ? { code: result.code } : {}),
             ...(Number.isInteger(result?.providerStatus) && result.providerStatus >= 100 && result.providerStatus <= 599 ? { providerStatus: result.providerStatus } : {}),
-            ...(typeof result?.providerReason === 'string' && /^[A-Z_]{1,50}$/.test(result.providerReason) ? { providerReason: result.providerReason } : {}),
+            ...(safeProviderReason(result?.providerReason) ? { providerReason: result.providerReason } : {}),
         });
     }
     return result;
