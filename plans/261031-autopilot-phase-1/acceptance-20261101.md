@@ -147,3 +147,59 @@ The live staging /api/customer/config endpoint returned ready:false. Its current
 - Actual-state screenshot saved locally; no screenshot upload to GitHub was attempted in this run.
 
 Phase 1 remains **not accepted for production**. Outstanding real cases include cloud customer-to-customer isolation (requires an isolated customer-enabled staging configuration), binary-version invalidation, resource-key protected folders and large-folder pagination. Public-folder ingestion, one real AI image path, access-revocation sync recovery, removed-file restoration and synthetic DLQ operations now have real staging evidence.
+
+## Closing-gate follow-up — 2026-11-01
+
+This section supersedes the remaining-gate list above where explicitly marked PASS. Phase 1 is still **not fully closed**: a real resource-key-required folder fixture is unavailable.
+
+### Live cloud customer isolation — PASS, 23/23 checks
+
+Deployed the feature backend to a separate disposable staging configuration, `socialchoice-autopilot-isolation-staging`, with its own R2 bucket, workspace/customer-directory/customer-workspace Durable Objects, freshly generated test-only licensing issuer and encryption key. No production or main-staging credentials or data were copied.
+
+Version: `975d4b5a-5c7e-4d60-be41-61b203fd83f3`; backend artifact SHA-256 `408ab3bf2486220ba6836a0fdc72f104097460a416de5743071e609141d3c595`.
+
+Two independently licensed synthetic customer accounts registered successfully. Actual API checks verified distinct actors and storage prefixes; customer B cannot list/update A's brand, connect A's source, forge a source under A's brand, retry A's job or read A's image. Anonymous catalog/image requests return 401; cross-customer writes/image access return 404. A can sync through the real private R2 binding and read identical uploaded bytes. B cannot see A's sources, jobs, assets or encrypted dummy AI configuration. Logging out B does not revoke A.
+
+These 23 checks use real Cloudflare customer sessions, Durable Objects and private storage, with synthetic data. The dummy AI credential was never sent to a provider. They do not claim a new paid AI request in customer mode.
+
+After testing, disabled the isolation Worker's workers.dev endpoint and preview URLs; readback confirms both false. Temporary build-upload R2 objects were removed. The isolated fixture resources remain for review. Main staging stays in its existing owner mode.
+
+### Real binary-version invalidation and restoration — PASS after repair
+
+Uploaded a valid PNG variant of only the existing synthetic gemini-acceptance-test.png through Drive Manage versions: 3837 to 3877 bytes. Pixels were unchanged; a valid metadata chunk changed the binary checksum. A real queued sync cleared the existing AI analysis and approval, while retaining the asset identity and exactly two original-folder assets.
+
+Restoring the original 3837 bytes and syncing exposed a real defect: Analyze returned the historical completed job while the asset remained Not analyzed. Reproduced before repair; no new AI job appeared.
+
+Fixed in feature commit `7204ddc3912047c90a34b92834d758b35d156f99`:
+- Increment an asset analysis revision on each observed binary-version change, including a return to previous bytes.
+- Include that revision in analysis cache/job deduplication, preserving legacy keys for unchanged assets.
+- Fence source-read, pre-AI, result-commit, failure-state and expired-lease handling by revision so a late old worker cannot revive an invalidated result.
+- On explicit Analyze, recover legacy completed jobs whose invalidated result is absent by creating a new revision/job. No automatic AI retry was introduced.
+
+After deploying only staging, explicitly confirmed one new analysis. Queue completed; real OpenRouter/google/gemini-3.8-flash returned exact OCR TEST SALE 20% and correct image facts. Result was pending review, then approved again. Original Drive bytes are restored.
+
+### Live large-folder pagination and repeat sync — PASS
+
+Created a synthetic subfolder Phase1 Pagination Synthetic 20261101 within the existing public test folder; sharing is inherited. Uploaded 101 generated 68-byte PNGs; Drive confirmed 101/101 uploaded. Added the separate source Phase1 Pagination Synthetic under Autopilot Drive Acceptance.
+
+The configured Drive page size is 100. A queued sync completed automatically through two sync jobs, importing all 101 files. Catalog total became 103 including the two existing original-folder assets. Next page displayed the final three catalog items, with Previous enabled and Next disabled. A second sync also completed through two jobs; total remains 103. No Analyze request was made for these 101 files. The original source still imports direct binary children only; the subfolder itself is not imported as an asset.
+
+The clearly named fixture source/folder is retained for repeat testing. Main Queue and DLQ metrics both read backlog_count 0 after completion.
+
+### Verification and staging deployment
+
+- Current targeted runtime/provider/customer suite: **28/28 PASS**, including v1 → v2 → v1 reanalysis/cache and late AI result rejection.
+- Full server suite: **242/242 PASS**, Windows / Node 24.17.0. Initial broad runs failed because the isolated test copy lacked frontend/desktop fixture dependencies; after restoring those dependencies, the complete server run passed. A separate default node --test run also encountered the existing PowerShell PATH limitation; this is not claimed as passing.
+- Only server storage/analysis code and its regression tests changed; frontend assets were retained byte-for-byte from the existing staging artifact.
+- Staging version: `4bffc1a5-3daf-4cd6-971d-bbf336be407d`, 100%.
+- Deployment: `73995bbc-af95-4fbf-9edb-c3e6c4da6bd7`, created `2026-11-01T01:45:36.26043Z`.
+- Artifact SHA-256: `920c1354a6e5b005db8bfdceb5f6bdfea98106b4bde241c4bf445c6cc362c48d`, 2692820 bytes; remote readback matches.
+- Upload replaced only the two exact matched compiled functions in the previous artifact; mismatched input aborts the patch. First module upload failed validation (wrong MIME type), then corrected module upload succeeded; the failed attempt did not deploy.
+- Readback retained existing DO namespaces, R2, Queue and all five Secret names. No Secret values were read. Logpush and observability remain disabled; preview URLs remain disabled.
+- Actual UI screenshots are saved locally, not uploaded to this repository. No main change, merge, production deploy or social publication.
+
+### Remaining external fixture gate
+
+**Real resource-key-required public folder: BLOCKED, not passed.** Existing runtime fixtures verify parsing and the X-Goog-Drive-Resource-Keys header. The two real synthetic folders used here do not establish enforced resource-key access. Google's documentation describes resourceKey as read-only: https://developers.google.com/workspace/drive/api/guides/resource-keys .
+
+Required to finish this gate: an authorized synthetic public folder link containing a real resourcekey for which anonymous Drive API access without that key fails, then verify with-key ingestion and image access. A fabricated query parameter is not an acceptance substitute. OAuth is legacy and outside the user's selected public-link path. Production rollout remains separately unauthorized.
