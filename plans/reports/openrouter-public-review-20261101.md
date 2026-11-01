@@ -23,3 +23,7 @@ Preserved the user's HTTP-Referer and X-Title headers in writing, vision and pri
 A real public connection test against the user's saved GPT-4o-mini configuration still returned HTTP 403 / GEOGRAPHIC_RESTRICTION before this repair deployment. The workspace guardrail overview showed budget, model/provider, prompt-injection and sensitive-info policies as Not configured. This does not establish which provider/account/network rule rejected inference. Do not claim that adding attribution headers or selecting a US Durable Object solved the geographic restriction.
 
 No social post was published; no API key, model, provider guardrail or account permission was changed. Acceptance with 20 approved distinct valid images and a full 30-day real-provider plan remains unverified.
+
+## Post-deployment verification
+
+Frontend commit 08a15ab6a62250f6209500b3c8c6252452b342f9: Vercel success. Backend version af2b4142-ed3a-4b0f-a59e-0ce32d8aa2ae. A fresh real public test returned 403 / ACCESS_DENIED after restricting classification to actual provider error messages. The previous GEOGRAPHIC_RESTRICTION label is not sufficient evidence of the root cause. The UI now displays the failed connection state and an accessible alert. Both test buttons were verified disabled for an unsaved model edit; the form was restored without saving. The user's saved GPT-4o-mini model and key were preserved. Live inference remains blocked; acceptance is not complete.
