@@ -82,14 +82,12 @@ function Shell() {
                     }`}
             >
                 <div className="flex items-center justify-between mb-4">
-                    <NavLink to="/" className="flex items-center gap-2.5">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#ffd631] text-[#2b2100] font-heading font-bold text-base shadow-2xs">
-                            P
-                        </div>
-                        <div>
-                            <div className="font-heading font-bold text-sm text-foreground leading-tight tracking-tight">Post Choice</div>
-                            <div className="text-[9px] font-bold tracking-wider text-muted-foreground uppercase">CONTENT STUDIO</div>
-                        </div>
+                    <NavLink to="/" className="flex items-center">
+                        <img
+                            src="/postchoice-logo.png"
+                            alt="PostChoice"
+                            className="h-8 w-auto max-h-8 max-w-[170px] object-contain"
+                        />
                     </NavLink>
                     <Button
                         size="icon"
