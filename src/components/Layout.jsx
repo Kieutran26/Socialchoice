@@ -5,11 +5,29 @@ import SidebarNavigation from './layout/sidebar-navigation';
 import PublishingNotifications from './layout/PublishingNotifications';
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
-import { List, X, SquaresFour, CaretUpDown, Check, SignOut } from '@phosphor-icons/react';
+import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, MagnifyingGlass } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
+
+const ROUTE_LABELS = {
+    '/': 'Overview',
+    '/analytics': 'Analytics',
+    '/create': 'Create Post',
+    '/posts': 'All Posts',
+    '/templates': 'Post templates',
+    '/templates/create': 'Create Template',
+    '/calendar': 'Content Calendar',
+    '/strategy': 'Content Strategy',
+    '/strategy/pillars': 'Content Pillars',
+    '/strategy/angles': 'Content Angles',
+    '/media': 'Media Library',
+    '/interactive-images': 'Interactive Images',
+    '/accounts': 'Social Accounts',
+    '/settings': 'Settings',
+    '/admin/licenses': 'Admin Licenses',
+};
 
 function Shell() {
     const { t } = useTranslation();
@@ -18,8 +36,24 @@ function Shell() {
     const [open, setOpen] = useState(false);
     const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
     const brandDropdownRef = useRef(null);
+    const searchInputRef = useRef(null);
+    const [searchQuery, setSearchQuery] = useState('');
+    const location = useLocation();
 
     const selectedBrand = brands.find((b) => b.id === selectedBrandId);
+    const currentLabel = ROUTE_LABELS[location.pathname] || 'Overview';
+    const currentPageTitle = t(currentLabel);
+
+    useEffect(() => {
+        function handleKeyDown(e) {
+            if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+                e.preventDefault();
+                searchInputRef.current?.focus();
+            }
+        }
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    }, []);
 
     useEffect(() => {
         function handleClickOutside(event) {
@@ -44,9 +78,8 @@ function Shell() {
                 />
             )}
             <aside
-                className={`fixed inset-y-0 left-0 z-40 w-60 border-r bg-surface p-5 flex flex-col transition-transform lg:translate-x-0 ${
-                    open ? '' : '-translate-x-full'
-                }`}
+                className={`fixed inset-y-0 left-0 z-40 w-60 border-r bg-surface p-5 flex flex-col transition-transform lg:translate-x-0 ${open ? '' : '-translate-x-full'
+                    }`}
             >
                 <div className="flex items-center justify-between mb-4">
                     <NavLink to="/" className="flex items-center gap-2.5">
@@ -78,9 +111,8 @@ function Shell() {
                         aria-haspopup="listbox"
                         aria-expanded={openBrandDropdown}
                         onClick={() => setOpenBrandDropdown((prev) => !prev)}
-                        className={`flex h-9 w-full items-center justify-between gap-1.5 rounded-xl border bg-card px-3 text-xs font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${
-                            openBrandDropdown ? 'border-brand-dark ring-2 ring-primary/20' : 'border-border'
-                        }`}
+                        className={`flex h-9 w-full items-center justify-between gap-1.5 rounded-xl border bg-card px-3 text-xs font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${openBrandDropdown ? 'border-brand-dark ring-2 ring-primary/20' : 'border-border'
+                            }`}
                     >
                         <span className="truncate">{selectedBrand ? selectedBrand.name : t("All brands")}</span>
                         <CaretUpDown size={13} className="shrink-0 text-muted-foreground" />
@@ -99,11 +131,10 @@ function Shell() {
                                     setSelectedBrandId('all');
                                     setOpenBrandDropdown(false);
                                 }}
-                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${
-                                    selectedBrandId === 'all'
+                                className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${selectedBrandId === 'all'
                                         ? 'bg-brand/15 text-brand-ink font-semibold'
                                         : 'text-foreground hover:bg-muted/60'
-                                }`}
+                                    }`}
                             >
                                 <div className="flex items-center gap-2">
                                     <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded bg-muted text-muted-foreground">
@@ -130,11 +161,10 @@ function Shell() {
                                             setSelectedBrandId(b.id);
                                             setOpenBrandDropdown(false);
                                         }}
-                                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${
-                                            isSelected
+                                        className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${isSelected
                                                 ? 'bg-brand/15 text-brand-ink font-semibold'
                                                 : 'text-foreground hover:bg-muted/60'
-                                        }`}
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2 min-w-0">
                                             <span
@@ -187,52 +217,84 @@ function Shell() {
             </aside>
 
             <div className="lg:ml-60">
-                <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center gap-3 px-5 transition-colors">
-                    <Button
-                        size="icon"
-                        variant="ghost"
-                        type="button"
-                        className="lg:hidden"
-                        aria-label={t("Open menu")}
-                        onClick={() => setOpen(true)}
-                    >
-                        <List size={22} />
-                    </Button>
-                    <span className="label-xs font-medium text-foreground">{t("Social Publishing Hub")}</span>
-                    <span className="ml-auto label-xs text-muted-foreground">{t("Review before publishing")}</span>
-                    {!isDesktop() && <PublishingNotifications />}
-                </header>
+                    <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center justify-between gap-3 px-5 transition-colors">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <Button
+                                size="icon"
+                                variant="ghost"
+                                type="button"
+                                className="lg:hidden shrink-0 -ml-2"
+                                aria-label={t("Open menu")}
+                                onClick={() => setOpen(true)}
+                            >
+                                <List size={20} />
+                            </Button>
+                            <div className="flex items-center gap-2 text-sm select-none min-w-0">
+                                <NavLink
+                                    to="/"
+                                    className="font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
+                                >
+                                    PostChoice
+                                </NavLink>
+                                <CaretRight size={12} weight="bold" className="text-muted-foreground/60 shrink-0" />
+                                <span className="font-semibold text-foreground truncate">
+                                    {currentPageTitle}
+                                </span>
+                            </div>
+                        </div>
 
-                <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
-                    {demoMode && (
-                        <div
-                            role="status"
-                            className="mb-5 rounded-lg border border-warnFg bg-warnBg p-3 text-sm text-warnFg"
-                        >
-                            {t(
-                                "Demo workspace — simulated accounts and publishing results only. Nothing is sent to social platforms."
-                            )}
+                        <div className="ml-auto flex items-center gap-3 shrink-0">
+                            <div className="relative hidden sm:flex items-center">
+                                <MagnifyingGlass size={15} weight="regular" className="absolute left-3 text-muted-foreground pointer-events-none" />
+                                <input
+                                    ref={searchInputRef}
+                                    type="text"
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    placeholder={t("Search...")}
+                                    className="h-9 w-52 sm:w-64 md:w-72 rounded-xl border border-border bg-card/50 pl-9 pr-11 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
+                                />
+                                <div className="absolute right-2.5 flex items-center pointer-events-none">
+                                    <kbd className="inline-flex h-5 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
+                                        ⌘K
+                                    </kbd>
+                                </div>
+                            </div>
+
+                            {!isDesktop() && <PublishingNotifications />}
                         </div>
-                    )}
-                    {loading ? (
-                        <p role="status" className="text-sm text-muted-foreground">
-                            {t("Loading workspace…")}
-                        </p>
-                    ) : error ? (
-                        <div role="alert" className="panel p-5">
-                            <p className="mb-3">{t(error)}</p>
-                            <button type="button" className="btn-skew" onClick={retry}>
-                                {t('Retry')}
-                            </button>
-                        </div>
-                    ) : isDesktop() ? (
-                        <DesktopPrototype>
+                    </header>
+
+                    <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
+                        {demoMode && (
+                            <div
+                                role="status"
+                                className="mb-5 rounded-lg border border-warnFg bg-warnBg p-3 text-sm text-warnFg"
+                            >
+                                {t(
+                                    "Demo workspace — simulated accounts and publishing results only. Nothing is sent to social platforms."
+                                )}
+                            </div>
+                        )}
+                        {loading ? (
+                            <p role="status" className="text-sm text-muted-foreground">
+                                {t("Loading workspace…")}
+                            </p>
+                        ) : error ? (
+                            <div role="alert" className="panel p-5">
+                                <p className="mb-3">{t(error)}</p>
+                                <button type="button" className="btn-skew" onClick={retry}>
+                                    {t('Retry')}
+                                </button>
+                            </div>
+                        ) : isDesktop() ? (
+                            <DesktopPrototype>
+                                <Outlet />
+                            </DesktopPrototype>
+                        ) : (
                             <Outlet />
-                        </DesktopPrototype>
-                    ) : (
-                        <Outlet />
-                    )}
-                </main>
+                        )}
+                    </main>
             </div>
         </div>
     );
