@@ -7,6 +7,7 @@ export function createAutopilotStore(db, store) {
     db.exec(`CREATE TABLE IF NOT EXISTS autopilot_sources (id TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS autopilot_assets (id TEXT PRIMARY KEY, source_id TEXT NOT NULL, external_id TEXT NOT NULL, data TEXT NOT NULL, UNIQUE(source_id,external_id));
         CREATE TABLE IF NOT EXISTS autopilot_jobs (id TEXT PRIMARY KEY, dedupe TEXT UNIQUE NOT NULL, data TEXT NOT NULL);
+        CREATE TABLE IF NOT EXISTS autopilot_drafts (id TEXT PRIMARY KEY, data TEXT NOT NULL);
         CREATE TABLE IF NOT EXISTS autopilot_oauth (state TEXT PRIMARY KEY, data TEXT NOT NULL);`);
     const rows = table => db.prepare(`SELECT data FROM ${table} ORDER BY rowid`).all().map(row => JSON.parse(row.data));
     const get = (table, id) => { const row = db.prepare(`SELECT data FROM ${table} WHERE id=?`).get(id); if (!row) fail('Autopilot record not found', 404); return JSON.parse(row.data); };
@@ -37,6 +38,14 @@ export function createAutopilotStore(db, store) {
             const changed = !old || old.version !== file.version;
             const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, analysis_revision: (old?.analysis_revision || 0) + (old && changed ? 1 : 0), availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
             db.prepare('INSERT INTO autopilot_assets VALUES (?,?,?,?) ON CONFLICT(source_id,external_id) DO UPDATE SET data=excluded.data').run(asset.id, source.id, file.id, JSON.stringify(asset)); return asset;
+        },
+        drafts: () => rows('autopilot_drafts'),
+        draft: id => get('autopilot_drafts', id),
+        saveDraft: value => save('autopilot_drafts', value),
+        createDraft(value) {
+            if (api.drafts().length >= 1000) fail('Asset draft history is full', 409);
+            db.prepare('INSERT INTO autopilot_drafts VALUES (?,?)').run(value.id, JSON.stringify(value));
+            return value;
         },
         jobs: () => rows('autopilot_jobs'),
         enqueue(kind, target, version) {

@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { hashPassword } from './admin-auth.js';
 const require = createRequire(import.meta.url);
@@ -33,6 +33,10 @@ test('actual Worker, R2, Queue and private RPC ingest and analyze with isolated 
         assert.equal(request.headers.get('Authorization'), 'Bearer fixture-ai-key');
         const body = await request.json();
         assert.equal(body.model, 'google/fixture');
+        if (typeof body.messages[0].content === 'string') {
+            assert.match(body.messages[0].content, /approved_image/);
+            return Response.json({ choices: [{ finish_reason: 'stop', message: { content: 'Facebook runtime draft #test' } }] });
+        }
         assert.equal(body.messages[0].content[1].image_url.url, 'data:image/png;base64,' + png.toString('base64'));
         if (rejectAi) return Response.json({ error: { message: 'private-provider-detail' } }, { status: 402 });
         return Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ summary: 'Ảnh kiểm thử', tags: ['test'], ocr: 'TEST', suggested_uses: [], warnings: [] }) } }] });
@@ -111,6 +115,26 @@ test('actual Worker, R2, Queue and private RPC ingest and analyze with isolated 
         const isolated = await (await request('autopilot/list', { brand_id: other.id }, cookie)).json();
         assert.equal(isolated.assets.length, 0); assert.equal(isolated.jobs.length, 0);
         const posts = await (await request('entities/Post/list', {}, cookie)).json(); assert.equal(posts.items.length, 0);
+        await request('autopilot/review', { id: driveAsset.id, review: 'approved' }, cookie);
+        const draftInput = { id: driveAsset.id, request_id: randomUUID(), goal: 'Test design', tone: 'Friendly', brief: 'Synthetic fixture only', cta: '', language: 'vi', confirmed: true };
+        assert.equal((await request('autopilot/generateDraft', draftInput)).status, 401);
+        const draftResponse = await request('autopilot/generateDraft', draftInput, cookie);
+        assert.equal(draftResponse.status, 200, await draftResponse.clone().text()); const draft = await draftResponse.json();
+        assert.equal(draft.text, 'Facebook runtime draft #test'); assert.equal(aiCalls, 4);
+        assert.equal((await request('autopilot/generateDraft', draftInput, cookie)).status, 200); assert.equal(aiCalls, 4);
+        const saveInput = { id: draft.id, title: 'Runtime human review', caption: 'Edited runtime caption' };
+        const savedResponse = await request('autopilot/saveAssetDraft', saveInput, cookie);
+        assert.equal(savedResponse.status, 200, await savedResponse.clone().text()); const saved = await savedResponse.json();
+        assert.equal((await (await request('autopilot/saveAssetDraft', saveInput, cookie)).json()).post_id, saved.post_id);
+        const savedPost = await (await request('entities/Post/get', saved.post_id, cookie)).json();
+        assert.equal(savedPost.status, 'draft'); assert.equal(savedPost.caption, saveInput.caption); assert.equal(savedPost.media_ids.length, 1);
+        const mediaPage = await (await request('entities/MediaAsset/list', {}, cookie)).json();
+        assert.equal(mediaPage.items.length, 1); const media = mediaPage.items[0];
+        assert.equal((await runtime.dispatchFetch(origin + media.file_url)).status, 401);
+        const imageResponse = await runtime.dispatchFetch(origin + media.file_url, { headers: { cookie } });
+        assert.equal(imageResponse.status, 200); assert.deepEqual(Buffer.from(await imageResponse.arrayBuffer()), png);
+        const afterPosts = await (await request('entities/Post/list', {}, cookie)).json(); assert.equal(afterPosts.items.length, 1);
+        const deliveries = await (await request('entities/PublishJob/list', {}, cookie)).json(); assert.equal(deliveries.items.length, 0);
         // RPC has no publicly routable HTTP counterpart.
         assert.equal((await runtime.dispatchFetch(origin + '/runAutopilot')).status, 404);
         assert.equal((await request('autopilot/runAutopilot', {}, cookie)).status, 404);

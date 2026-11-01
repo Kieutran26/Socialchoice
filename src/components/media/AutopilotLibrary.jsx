@@ -1,3 +1,4 @@
+import AssetDraftDialog from './AssetDraftDialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
@@ -16,6 +17,8 @@ export default function AutopilotLibrary({ brandId }) {
     const [kind, setKind] = useState('drive_public'), [name, setName] = useState(''), [folder, setFolder] = useState('');
     const [search, setSearch] = useState(''), [offset, setOffset] = useState(0);
     const [error, setError] = useState(''), [busy, setBusy] = useState(false), [confirmation, setConfirmation] = useState(null);
+    const [draftAsset, setDraftAsset] = useState(null);
+    useEffect(() => { setDraftAsset(null); }, [brandId]);
     const version = useRef(0);
     const load = useCallback(async () => {
         const current = ++version.current;
@@ -89,12 +92,14 @@ export default function AutopilotLibrary({ brandId }) {
                     {asset.analysis && <div className="text-sm space-y-2"><p className="break-words">{asset.analysis.summary}</p><p className="label-xs break-words">{asset.analysis.tags.join(' · ')}</p>{asset.analysis.ocr && <details><summary>{t('Visible text')}</summary><p className="whitespace-pre-wrap break-words">{asset.analysis.ocr}</p></details>}<ul className="list-disc pl-5 break-words">{asset.analysis.suggested_uses.map((value, index) => <li key={index}>{value}</li>)}</ul>{asset.analysis.warnings.map((value, index) => <p className="text-warnFg break-words" key={index}>{value}</p>)}<p className="label-xs">{asset.analysis.provider} · {asset.analysis.model} · {formatDay(asset.analysis.analyzed_at)}</p></div>}
                     <div className="flex flex-wrap gap-2">
                         <Button size="sm" variant="outline" disabled={busy || asset.availability !== 'available' || !['image/png', 'image/jpeg', 'image/webp'].includes(asset.mime) || asset.size > 3145728} onClick={() => setConfirmation(asset)}>{t('Analyze image')}</Button>
+                        <Button size="sm" variant="outline" disabled={busy || asset.availability !== 'available' || asset.review !== 'approved' || asset.analysis_status !== 'analyzed'} onClick={() => setDraftAsset(asset)}>{t('Create Facebook draft')}</Button>
                         {asset.analysis && <><Button size="sm" variant="outline" disabled={busy} onClick={() => click('review', { id: asset.id, review: 'approved' })}>{t('Approve analysis')}</Button><Button size="sm" variant="ghost" disabled={busy} onClick={() => click('review', { id: asset.id, review: 'rejected' })}>{t('Reject analysis')}</Button></>}
                     </div>
                 </article>)}</div>
                 <div className="flex flex-wrap items-center justify-between gap-2"><span className="label-xs">{t('{count} ingested assets', { count: data.total })}</span><div className="flex gap-2"><Button variant="outline" size="sm" disabled={busy || offset === 0} onClick={() => setOffset(Math.max(0, offset - 100))}>{t('Previous')}</Button><Button variant="outline" size="sm" disabled={busy || data.nextOffset === null} onClick={() => setOffset(data.nextOffset)}>{t('Next')}</Button></div></div>
             </>}
         </>}
+        {draftAsset && <AssetDraftDialog key={draftAsset.id} asset={draftAsset} onClose={() => setDraftAsset(null)} />}
         <ConfirmDialog destructive={false} open={!!confirmation} onOpenChange={open => !open && setConfirmation(null)} title={t('Send image for AI analysis?')} description={t('The selected image will be sent to the AI provider configured in Settings. Provider charges may apply. Output remains unapproved until you review it.')} confirmLabel="Queue AI analysis" onConfirm={() => action(confirmation.retry ? 'retry' : 'analyze', { id: confirmation.id, confirmed: true })} />
     </section>;
 }
