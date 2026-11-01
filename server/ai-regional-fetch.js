@@ -1,7 +1,7 @@
 import { aiError, relayError, safeAiIoStep } from './ai-errors.js';
 import { awaitAiIo } from './ai-io-deadline.js';
 
-// Gemini runs through a private US-jurisdiction actor; workspace storage stays in place.
+// AI inference uses private US-jurisdiction actors; workspace storage stays in place.
 export function isGeminiEndpoint(value) {
     try {
         const url = new URL(value);
@@ -9,14 +9,22 @@ export function isGeminiEndpoint(value) {
             && /^\/v1beta\/models\/[a-zA-Z0-9][a-zA-Z0-9._-]{0,99}:generateContent$/.test(url.pathname);
     } catch { return false; }
 }
+export function isOpenRouterEndpoint(value) {
+    try {
+        const url = new URL(value);
+        return url.origin === 'https://openrouter.ai' && !url.username && !url.password && !url.search && !url.hash
+            && url.pathname === '/api/v1/chat/completions';
+    } catch { return false; }
+}
 export function createRegionalAiFetch(namespace, directFetch = fetch) {
     const deadlines = new WeakMap();
     return async (url, options) => {
-        if (!isGeminiEndpoint(url)) return directFetch(url, options);
+        const router = isOpenRouterEndpoint(url);
+        if (!router && !isGeminiEndpoint(url)) return directFetch(url, options);
         let actor;
         try {
             const us = namespace.jurisdiction('us');
-            actor = us.get(us.idFromName('gemini-us-v1'));
+            actor = us.get(us.idFromName(router ? 'openrouter-us-v1' : 'gemini-us-v1'));
         } catch {
             throw aiError('Regional AI binding is unavailable. Contact the server administrator.', 503, 'AI_BINDING_UNAVAILABLE', 'binding');
         }
@@ -50,9 +58,10 @@ export function createRegionalAiFetch(namespace, directFetch = fetch) {
 
 // Only a private Durable Object binding can reach this handler. No public relay route.
 export async function forwardGeminiRequest(request, fetcher = fetch) {
-    if (request.method !== 'POST' || !isGeminiEndpoint(request.url))
+    const router = isOpenRouterEndpoint(request.url);
+    if (request.method !== 'POST' || (!router && !isGeminiEndpoint(request.url)))
         return new Response(null, { status: 400 });
-    const key = request.headers.get('x-goog-api-key');
+    const key = router ? request.headers.get('authorization')?.match(/^Bearer ([^\s]{1,512})$/)?.[1] : request.headers.get('x-goog-api-key');
     if (!key || key.length > 512 || /\s/.test(key)) return new Response(null, { status: 400 });
     const deadlineHeader = request.headers.get('x-socialchoice-ai-deadline');
     const deadline = deadlineHeader === null ? undefined : Number(deadlineHeader);
@@ -79,9 +88,9 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
         signal.throwIfAborted();
         const response = await awaitAiIo(fetcher(request.url, {
             method: 'POST', redirect: 'manual', signal,
-            headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body,
+            headers: { 'Content-Type': 'application/json', ...(router ? { Authorization: `Bearer ${key}` } : { 'x-goog-api-key': key }) }, body,
         }),signal,value=>value.body?.cancel());
-        // Distinguish a real Google reply from an actor/platform-generated HTTP error.
+        // Distinguish a real provider reply from an actor/platform-generated HTTP error.
         const headers = new Headers(response.headers);
         headers.delete('x-socialchoice-ai-failure');
         headers.delete('x-socialchoice-ai-io-step');

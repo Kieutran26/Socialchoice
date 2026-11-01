@@ -47,7 +47,20 @@ export async function rejectProvider(response, signal) {
         message = 'AI provider rejected the request parameters. Check model compatibility and API account requirements.';
     else message = 'AI provider rejected the request. Check your key and model.';
     const error = aiError(message, 502, 'AI_PROVIDER_REJECTED', 'provider', response.status);
-    error.providerReason = invalidErrorResponse ? 'INVALID_ERROR_RESPONSE' : safeProviderReason(data?.error?.status);
+    error.providerReason = invalidErrorResponse ? 'INVALID_ERROR_RESPONSE' : safeProviderReason(data?.error?.status)
+        || (response.status === 403 ? classifyAccessDenial(detail) : undefined);
     throw error;
 }
 
+
+// Fixed categories only: upstream messages may contain prompts or credentials.
+export function classifyAccessDenial(detail) {
+    if (/inference is blocked|account (?:is |has been )?(?:disabled|blocked|restricted|suspended)|user (?:is )?banned/i.test(detail)) return 'ACCOUNT_RESTRICTED';
+    if (/key limit exceeded|budget.*exceeded|spending limit/i.test(detail)) return 'KEY_LIMIT_EXCEEDED';
+    if (/eu\.openrouter\.ai/i.test(detail)) return 'EU_ENDPOINT_REQUIRED';
+    if (/country|territory|geograph|region.*restrict/i.test(detail)) return 'GEOGRAPHIC_RESTRICTION';
+    if (/data region|allowed.*hostnames/i.test(detail)) return 'REGION_RESTRICTED';
+    if (/guardrail|content.policy|moderation|content filter/i.test(detail)) return 'POLICY_BLOCKED';
+    if (/model.*(?:not allowed|not permitted|denied)|allowlist|author.*banned/i.test(detail)) return 'MODEL_RESTRICTED';
+    return 'ACCESS_DENIED';
+}

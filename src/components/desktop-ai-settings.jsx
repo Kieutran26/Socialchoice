@@ -41,7 +41,7 @@ export default function DesktopAiSettings() {
                 if (active) setModels(value.models);
             })
             .catch((err) => {
-                if (active) setModelsError(err.message);
+                if (active) setModelsError(formatError(err));
             })
             .finally(() => {
                 if (active) setModelsBusy(false);
@@ -50,6 +50,12 @@ export default function DesktopAiSettings() {
             active = false;
         };
     }, [provider]);
+
+    function formatError(err) {
+        if (!err) return '';
+        const msg = t(err.message || 'Could not connect to the AI provider. Please try again later.');
+        return err.providerReason ? `${msg} (${err.providerReason})` : msg;
+    }
 
     function accept(value) {
         setSaved(value);
@@ -65,7 +71,7 @@ export default function DesktopAiSettings() {
                 if (active) accept(value);
             })
             .catch((err) => {
-                if (active) setError(err.message);
+                if (active) setError(formatError(err));
             })
             .finally(() => {
                 if (active) setBusy(false);
@@ -99,7 +105,7 @@ export default function DesktopAiSettings() {
                 )
             );
         } catch (err) {
-            setError(err.message);
+            setError(formatError(err));
         } finally {
             setBusy(false);
         }
@@ -422,7 +428,7 @@ export default function DesktopAiSettings() {
             {error && (
                 <div className="p-3 rounded-xl bg-rose-50 border border-rose-200/60 text-xs text-dangerFg flex items-center gap-2">
                     <Info size={15} className="shrink-0" />
-                    <span>{t(error)}</span>
+                    <span>{error}</span>
                 </div>
             )}
         </section>

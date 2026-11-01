@@ -9,7 +9,7 @@ test('AI client handles HTML, empty, malformed and timeout proxy replies without
 });
 
 test('AI client preserves safe API diagnostics and successful responses', async () => {
- const diagnostic={message:'AI API key is invalid or expired. Replace it in Settings.',code:'AI_PROVIDER_REJECTED',stage:'provider',providerStatus:403};
+ const diagnostic={message:'AI API key is invalid or expired. Replace it in Settings.',code:'AI_PROVIDER_REJECTED',stage:'provider',providerStatus:403,providerReason:'KEY_LIMIT_EXCEEDED'};
  await assert.rejects(readAiResponse(Response.json(diagnostic,{status:502})),{...diagnostic,status:502});
  for (const result of [{configured:true,provider:'gemini',model:'test-model'},{text:'A complete suggestion'}])
   assert.deepEqual(await readAiResponse(Response.json(result)),result);

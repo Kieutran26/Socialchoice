@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createRequire } from 'node:module';
-import { mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -41,8 +41,13 @@ test('actual Worker, R2, Queue and private RPC ingest and analyze with isolated 
         if (rejectAi) return Response.json({ error: { message: 'private-provider-detail' } }, { status: 402 });
         return Response.json({ choices: [{ finish_reason: 'stop', message: { content: JSON.stringify({ summary: 'Ảnh kiểm thử', tags: ['test'], ocr: 'TEST', suggested_uses: [], warnings: [] }) } }] });
     };
-    const options = convertV4MiniflareOptions({ modules: true, scriptPath: 'worker-dist/autopilot/cloudflare-worker.js', compatibilityDate: '2026-10-06', compatibilityFlags: ['nodejs_compat'],
-        durableObjects: { WORKSPACE: { className: 'SocialchoiceWorkspace', useSQLite: true } },
+    // Local workerd has no US jurisdiction namespace. Adapt only that platform lookup;
+    // unit tests assert the US binding, while this fixture exercises the real actor hop.
+    const bundled = readFileSync('worker-dist/autopilot/cloudflare-worker.js', 'utf8');
+    assert.equal(bundled.split('namespace.jurisdiction("us")').length, 2);
+    const script = bundled.replace('namespace.jurisdiction("us")', 'namespace');
+    const options = convertV4MiniflareOptions({ modules: true, script, compatibilityDate: '2026-10-06', compatibilityFlags: ['nodejs_compat'],
+        durableObjects: { WORKSPACE: { className: 'SocialchoiceWorkspace', useSQLite: true }, AI_EGRESS: { className: 'SocialchoiceAiEgress', useSQLite: true } },
         r2Buckets: ['AUTOPILOT_ASSETS'], queueProducers: { AUTOPILOT_QUEUE: { queueName: 'autopilot-test' } }, queueConsumers: { 'autopilot-test': { maxBatchSize: 1, maxBatchTimeout: 0, maxRetries: 2 } },
         outboundService,
         bindings: { GOOGLE_DRIVE_PUBLIC_API_KEY: 'fixture-source-key', SOCIALCHOICE_PUBLIC_ORIGIN: origin, SOCIALCHOICE_BACKEND_ORIGIN: origin, SOCIALCHOICE_ADMIN_PASSWORD_HASH: hashPassword(password), SOCIALCHOICE_STORAGE_KEY: randomBytes(32).toString('hex'), SOCIALCHOICE_AUTOPILOT_ENABLED: 'true' },
