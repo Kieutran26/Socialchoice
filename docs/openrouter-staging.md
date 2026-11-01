@@ -1,6 +1,6 @@
 # OpenRouter staging integration
 
-Latest follow-up: [2026-11-01 recovery, diagnostics, deployment and acceptance limits](../plans/261031-autopilot-phase-1/acceptance-20261101.md). Current staging version: `73490a83-f44d-471e-bc18-b0b6d9648209`. Full suite 241/241 passes. Real vision acceptance remains blocked by the new browser needing authentication; no real AI retry occurred in that follow-up.
+Latest follow-up: [2026-11-01 recovery, diagnostics, deployment and acceptance limits](../plans/261031-autopilot-phase-1/acceptance-20261101.md). Current staging version: `73490a83-f44d-471e-bc18-b0b6d9648209`. Full suite 241/241 passes. Later authenticated follow-up passes real analysis of the synthetic public Drive image with OpenRouter / google/gemini-3.8-flash: OCR TEST SALE 20%, human approval persists after reload, repeated Analyze creates no additional AI job, repeat sync keeps two assets, and another brand does not show this result. See the final section of the linked acceptance report. Provider usage/billing counters were not inspected; production release remains open.
 
 OpenRouter is available in web Settings and Asset Intelligence on feature/autopilot-phase-1. Desktop native integration is unchanged.
 
