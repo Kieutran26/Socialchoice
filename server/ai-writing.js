@@ -6,7 +6,7 @@ import { readProviderJson, rejectProvider } from './ai-provider-response.js';
 import { fetchAiProvider } from './ai-provider-fetch.js';
 
 
-const tasks = { draft: 'Write a social caption from the brief.', rewrite: 'Rewrite the caption following the instructions.', shorten: 'Shorten the caption, preserving meaning.', ideas: 'Suggest five concrete content ideas.', tone: 'Change the tone following the instructions.', cta: 'Improve the caption and add a relevant call to action.', adapt: 'Adapt the caption for the specified platform.' };
+const tasks = { strategy: 'Create a content strategy. Follow the JSON schema in the brief and return only valid JSON.', draft: 'Write a social caption from the brief.', rewrite: 'Rewrite the caption following the instructions.', shorten: 'Shorten the caption, preserving meaning.', ideas: 'Suggest five concrete content ideas.', tone: 'Change the tone following the instructions.', cta: 'Improve the caption and add a relevant call to action.', adapt: 'Adapt the caption for the specified platform.' };
 export function createAiWriting(store, key, fetcher = fetch) {
     const vault = /^[a-f0-9]{64}$/i.test(key || '') ? createMetaVault(store, key) : null;
     const id = 'ai:writing';
@@ -39,8 +39,8 @@ export function createAiWriting(store, key, fetcher = fetch) {
         let prompt = 'Reply with OK.';
         if (operation === 'generate') {
             if (input.confirmed !== true || !tasks[input.action] || !['vi', 'en'].includes(input.language)) fail('Review and confirm the AI request.');
-            for (const [field, limit] of Object.entries({ title: 500, caption: 20000, brief: 4000 })) if (typeof input[field] !== 'string' || input[field].length > limit) fail('AI input exceeds the supported limit.');
-            if (['draft', 'ideas'].includes(input.action) ? !input.brief.trim() : !input.caption.trim()) fail('Add a brief or caption first.');
+            for (const [field, limit] of Object.entries({ title: 500, caption: 20000, brief: input.action === 'strategy' ? 60000 : 4000 })) if (typeof input[field] !== 'string' || input[field].length > limit) fail('AI input exceeds the supported limit.');
+            if (['draft', 'ideas', 'strategy'].includes(input.action) ? !input.brief.trim() : !input.caption.trim()) fail('Add a brief or caption first.');
             const brand = store.get('Brand', input.brand_id);
             const context = { brand: { name: brand.name, description: brand.description }, title: input.title, caption: input.caption, brief: input.brief };
             for (const [field, entity] of [['pillar_id', 'ContentPillar'], ['angle_id', 'ContentAngle']]) if (input[field]) {
@@ -54,23 +54,24 @@ export function createAiWriting(store, key, fetcher = fetch) {
         if (busy) fail('An AI request is already running. Try again shortly.', 429);
         busy = true;
         let providerStatus;
+        const signal = AbortSignal.timeout(45000);
         try {
             const router = config.provider === 'openrouter', openai = config.provider !== 'gemini';
             const lowThinking = config.model === 'gemini-3.8-flash';
             // Gemini's output limit includes thought tokens; 32 can exhaust the test before an answer.
-            const generationConfig = { maxOutputTokens: operation === 'test' && !lowThinking ? 32 : 2048,
+            const generationConfig = { maxOutputTokens: input.action === 'strategy' ? 16000 : operation === 'test' && !lowThinking ? 32 : 2048,
                 ...(lowThinking ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) };
             const response = await fetchAiProvider(fetcher, openai ? router ? OPENROUTER_CHAT_URL : 'https://api.openai.com/v1/chat/completions' : `https://generativelanguage.googleapis.com/v1beta/models/${config.model}:generateContent`, {
-                method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(45000),
+                method: 'POST', redirect: 'manual', signal,
                 headers: { 'Content-Type': 'application/json', ...(openai ? { Authorization: `Bearer ${config.key}` } : { 'x-goog-api-key': config.key }) },
-                body: JSON.stringify(openai ? { model: config.model, ...(router ? { provider: { allow_fallbacks: false } } : { store: false }), messages: [{ role: 'user', content: prompt }], ...(router ? { max_tokens: operation === 'test' ? 256 : 2048 } : { max_completion_tokens: operation === 'test' ? 32 : 2048 }) } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
-            }, rejectProvider);
+                body: JSON.stringify(openai ? { model: config.model, ...(router ? { provider: { allow_fallbacks: false } } : { store: false }), messages: [{ role: 'user', content: prompt }], ...(router ? { max_tokens: input.action === 'strategy' ? 16000 : operation === 'test' ? 256 : 2048 } : { max_completion_tokens: input.action === 'strategy' ? 16000 : operation === 'test' ? 32 : 2048 }) } : { contents: [{ parts: [{ text: prompt }] }], generationConfig }),
+            }, response=>rejectProvider(response,signal));
             providerStatus = response.status;
             if (response.status >= 300 && response.status < 400) throw aiError('AI provider redirect was blocked.', 502, 'AI_PROVIDER_REDIRECT', 'provider', providerStatus);
-            if (!response.ok) await rejectProvider(response);
-            const data = await readProviderJson(response);
+            if (!response.ok) await rejectProvider(response,signal);
+            const data = await readProviderJson(response,signal);
             const text = openai ? data.choices?.[0]?.message?.content : data.candidates?.[0]?.content?.parts?.map(part => part.text || '').join('');
-            if (typeof text !== 'string' || !text.trim() || text.length > 20000 || (openai ? data.choices?.[0]?.finish_reason !== 'stop' : data.candidates?.[0]?.finishReason !== 'STOP')) throw aiError('AI returned no complete suggestion. Try a shorter request.', 502, 'AI_PROVIDER_INCOMPLETE', 'provider', providerStatus);
+            if (typeof text !== 'string' || !text.trim() || text.length > (input.action === 'strategy' ? 120000 : 20000) || (openai ? data.choices?.[0]?.finish_reason !== 'stop' : data.candidates?.[0]?.finishReason !== 'STOP')) throw aiError('AI returned no complete suggestion. Try a shorter request.', 502, 'AI_PROVIDER_INCOMPLETE', 'provider', providerStatus);
             return { text, provider: config.provider, model: config.model };
         } catch (error) { if (error instanceof AiError) throw error;
             if (['TimeoutError', 'AbortError'].includes(error.name)) throw aiError('AI provider timed out. Check your provider before trying again.', 504, 'AI_PROVIDER_TIMEOUT', 'provider', providerStatus);

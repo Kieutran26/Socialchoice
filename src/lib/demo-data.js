@@ -8,6 +8,11 @@ const BRANDS = [
         description: 'Specialty roastery with four cafés across Saigon.',
         color: '#79D94B',
         timezone: DEFAULT_TIMEZONE,
+        products: 'Cà phê hạt Single Origin Ethiopia & Cầu Đất, Cold Brew đóng chai, Phin Pour-over gốm thủ công, Drip bag tiện lợi',
+        target_audience: 'Người yêu cà phê đặc sản 22-38 tuổi tại TP.HCM, dân văn phòng sáng tạo, người thích tự pha chế tại nhà',
+        tone_of_voice: 'Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng về nghệ thuật cà phê thủ công',
+        goals: 'Tăng đơn hàng cà phê pha tại nhà, xây dựng thói quen uống specialty coffee, phát triển tệp khách hàng thân thiết',
+        posting_frequency: '1 bài/ngày',
     },
     {
         key: 'b2',
@@ -15,6 +20,11 @@ const BRANDS = [
         description: 'Boutique strength and conditioning studios.',
         color: '#4F7CA8',
         timezone: DEFAULT_TIMEZONE,
+        products: 'Gói tập Personal Training 1:1, Lớp nhóm Strength & Conditioning, Thẻ hội viên không giới hạn, Tư vấn dinh dưỡng cá nhân hóa',
+        target_audience: 'Nhân viên văn phòng, người bận rộn 24-40 tuổi muốn rèn luyện thể lực bền bỉ, cải thiện vóc dáng và giải tỏa căng thẳng',
+        tone_of_voice: 'Năng động, động viên, kỷ luật nhưng thấu hiểu, chuyên nghiệp',
+        goals: 'Thu hút 50 khách hàng đăng ký trải nghiệm studio mới, nâng cao nhận diện thương hiệu về phong cách tập bền vững',
+        posting_frequency: '1 bài/ngày',
     },
     {
         key: 'b3',
@@ -22,6 +32,11 @@ const BRANDS = [
         description: 'Clean-formula skincare built for tropical climates.',
         color: '#C6A15B',
         timezone: DEFAULT_TIMEZONE,
+        products: 'Serum cấp ẩm Niacinamide 10%, Gel rửa mặt tràm trà kiềm dầu, Kem chống nắng kiềm dầu SPF50+ PA++++, Kem phục hồi da B5',
+        target_audience: 'Phụ nữ & nam giới trẻ 18-35 tuổi tại vùng khí hậu nhiệt đới nóng ẩm, da dầu mụn, tìm kiếm giải pháp dưỡng da lành tính',
+        tone_of_voice: 'Khoa học, minh bạch, ân cần, dễ hiểu, không thần thánh hóa',
+        goals: 'Tăng 30% doanh số combo chống nắng kiềm dầu mùa hè, giáo dục người dùng về thứ tự skincare khoa học',
+        posting_frequency: '1 bài/ngày',
     },
 ];
 
@@ -130,14 +145,39 @@ const BRAND_POSTS = {
 };
 
 const MEDIA = [
-    { key: 'm1', brandKey: 'b1', name: 'aster-roastery.jpg', file_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm2', brandKey: 'b1', name: 'aster-beans.jpg', file_url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm3', brandKey: 'b1', name: 'aster-pourover.jpg', file_url: 'https://images.unsplash.com/photo-1521302200778-33500795e128?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm4', brandKey: 'b2', name: 'northwind-floor.jpg', file_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm5', brandKey: 'b2', name: 'northwind-lifting.jpg', file_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm6', brandKey: 'b3', name: 'lumen-serum.jpg', file_url: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm7', brandKey: 'b3', name: 'lumen-flatlay.jpg', file_url: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
-    { key: 'm8', brandKey: 'b3', name: 'lumen-bottles.jpg', file_url: 'https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?auto=format&fit=crop&w=1200&q=80', file_type: 'image' },
+    // Aster Coffee Roasters (b1) - 22 rich assets for 30-day planner
+    { key: 'm1', brandKey: 'b1', name: 'aster-roastery.jpg', file_url: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Xưởng rang cà phê mộc và mẻ rang Arabica Cầu Đất lúc sáng sớm' },
+    { key: 'm2', brandKey: 'b1', name: 'aster-beans.jpg', file_url: 'https://images.unsplash.com/photo-1442512595331-e89e73853f31?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Cà phê hạt Single Origin Ethiopia đóng túi zip van 1 chiều cao cấp' },
+    { key: 'm3', brandKey: 'b1', name: 'aster-pourover.jpg', file_url: 'https://images.unsplash.com/photo-1521302200778-33500795e128?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Dòng nước rót thủ công trên phễu lọc V60 giấy Nhật Bản' },
+    { key: 'm4', brandKey: 'b1', name: 'aster-coldbrew.jpg', file_url: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Chai thủy tinh Cold Brew ủ lạnh 16 tiếng với hương hoa nhài' },
+    { key: 'm5', brandKey: 'b1', name: 'aster-latte-art.jpg', file_url: 'https://images.unsplash.com/photo-1534778101976-62847782c213?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Tách Flat White với lớp bọt sữa mịn màng và họa tiết tulip tinh tế' },
+    { key: 'm6', brandKey: 'b1', name: 'aster-cupping.jpg', file_url: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Quy trình thử nếm cupping chuẩn SCA chấm điểm hương vị hạt' },
+    { key: 'm7', brandKey: 'b1', name: 'aster-cafe-thaodien.jpg', file_url: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Không gian mở tràn ngập ánh sáng tại chi nhánh Thảo Điền Quận 2' },
+    { key: 'm8', brandKey: 'b1', name: 'aster-espresso-crema.jpg', file_url: 'https://images.unsplash.com/photo-1510591509098-f4fdc6d0ff04?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Dòng espresso vàng óng chảy từ tay pha máy La Marzocco' },
+    { key: 'm9', brandKey: 'b1', name: 'aster-drip-bag.jpg', file_url: 'https://images.unsplash.com/photo-1509785307050-d4066910ec1e?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Túi cà phê phin giấy tiện lợi mang đi làm và du lịch' },
+    { key: 'm10', brandKey: 'b1', name: 'aster-ceramic-dripper.jpg', file_url: 'https://images.unsplash.com/photo-1577968897966-3d4325b36b61?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Bộ phễu lọc gốm thủ công mộc mạc đặt riêng từ làng gốm Bát Tràng' },
+    { key: 'm11', brandKey: 'b1', name: 'aster-iced-latte.jpg', file_url: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Ly Iced Oat Latte tầng lớp sữa và cà phê mát lạnh sảng khoái' },
+    { key: 'm12', brandKey: 'b1', name: 'aster-coffee-farm.jpg', file_url: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Nông trại cà phê Arabica liên kết tại Cầu Đất, độ cao 1600m' },
+    { key: 'm13', brandKey: 'b1', name: 'aster-croissant.jpg', file_url: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Bánh sừng bò nướng mới giòn rụm kết hợp cùng Americano đá' },
+    { key: 'm14', brandKey: 'b1', name: 'aster-roast-machine.jpg', file_url: 'https://images.unsplash.com/photo-1518057111178-44a106bad636?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Hệ thống máy rang Giesen kiểm soát nhiệt lượng và luồng gió tối ưu' },
+    { key: 'm15', brandKey: 'b1', name: 'aster-green-coffee.jpg', file_url: 'https://images.unsplash.com/photo-1524350876685-274059332603?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Hạt nhân xanh được sàng lọc kỹ lưỡng, loại bỏ hoàn toàn hạt lỗi' },
+    { key: 'm16', brandKey: 'b1', name: 'aster-morning-regulars.jpg', file_url: 'https://images.unsplash.com/photo-1525610553991-2bede1a236e2?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Khách quen đọc sách và làm việc trong góc quán ngập tràn hương cà phê' },
+    { key: 'm17', brandKey: 'b1', name: 'aster-brewing-workshop.jpg', file_url: 'https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Buổi hướng dẫn kỹ thuật pour-over tại gia cùng trưởng nhóm barista' },
+    { key: 'm18', brandKey: 'b1', name: 'aster-coldbrew-tonic.jpg', file_url: 'https://images.unsplash.com/photo-1517256064527-09c73fc73e38?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Signature Cold Brew Tonic sủi bọt cùng lát cam vàng mọng nước' },
+    { key: 'm19', brandKey: 'b1', name: 'aster-gift-set.jpg', file_url: 'https://images.unsplash.com/photo-1544787219-7f47ccb76574?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Set quà tặng 3 vùng hương vị cà phê kèm bình giữ nhiệt inox' },
+    { key: 'm20', brandKey: 'b1', name: 'aster-grinder-burrs.jpg', file_url: 'https://images.unsplash.com/photo-1498804103079-a6351b050096?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Bộ lưỡi dao phẳng máy xay Mahlkönig cho kích thước bột đồng đều tuyệt đối' },
+    { key: 'm21', brandKey: 'b1', name: 'aster-barista-team.jpg', file_url: 'https://images.unsplash.com/photo-1497636577773-f1231844b336?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Nụ cười rạng rỡ của đội ngũ pha chế Aster chào đón ngày mới' },
+    { key: 'm22', brandKey: 'b1', name: 'aster-eco-cup.jpg', file_url: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Cốc mang đi tự phân hủy sinh học từ sợi bã mía bảo vệ môi trường' },
+
+    // Northwind Fitness (b2)
+    { key: 'm23', brandKey: 'b2', name: 'northwind-floor.jpg', file_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Khu vực thảm tập chức năng và tạ chuông kettlebell' },
+    { key: 'm24', brandKey: 'b2', name: 'northwind-lifting.jpg', file_url: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Học viên thực hiện bài deadlift dưới sự giám sát của HLV' },
+    { key: 'm25', brandKey: 'b2', name: 'northwind-dumbbells.jpg', file_url: 'https://images.unsplash.com/photo-1583454110551-21f2fa2afe61?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Dàn tạ tay bọc urethane chuyên nghiệp từ 2.5kg đến 50kg' },
+
+    // Lumen Skincare (b3)
+    { key: 'm26', brandKey: 'b3', name: 'lumen-serum.jpg', file_url: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Chai serum Niacinamide kết cấu lỏng nhẹ thấm nhanh' },
+    { key: 'm27', brandKey: 'b3', name: 'lumen-flatlay.jpg', file_url: 'https://images.unsplash.com/photo-1526947425960-945c6e72858f?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Bộ 4 bước chăm sóc da buổi sáng kiềm dầu và chống nắng' },
+    { key: 'm28', brandKey: 'b3', name: 'lumen-bottles.jpg', file_url: 'https://images.unsplash.com/photo-1570194065650-d99fb4bedf0a?auto=format&fit=crop&w=1200&q=80', file_type: 'image', notes: 'Bao bì thủy tinh tối màu bảo vệ hoạt chất khỏi ánh sáng' },
 ];
 
 const SCHEDULE = [

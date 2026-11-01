@@ -17,5 +17,6 @@ export function autopilotFailureDiagnostic(error, stage) {
     if (!code) code = ['TimeoutError', 'AbortError'].includes(error.name) ? 'TIMEOUT'
         : error.status === 409 ? 'REVIEW_REQUIRED' : 'PROVIDER_OR_ASSET_ERROR';
     return { stage: stages.has(stage) ? stage : 'source_check', code,
+        ...(ai.ioStep ? { ioStep: ai.ioStep } : {}),
         ...(Number.isInteger(providerStatus) && providerStatus >= 100 && providerStatus <= 599 ? { providerStatus } : {}) };
 }

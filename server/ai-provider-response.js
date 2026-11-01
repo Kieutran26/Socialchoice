@@ -1,26 +1,27 @@
 import { aiError, safeProviderReason } from './ai-errors.js';
+import { awaitAiIo } from './ai-io-deadline.js';
 
-export async function readProviderJson(response) {
+export async function readProviderJson(response, signal) {
     const reader = response.body?.getReader();
     if (!reader) return {};
     const decoder = new TextDecoder();
     let content = '', bytes = 0;
-    while (true) {
-        const { value, done } = await reader.read();
+    try { while (true) {
+        const { value, done } = signal ? await awaitAiIo(reader.read(),signal) : await reader.read();
         if (done) break;
         bytes += value.byteLength;
-        if (bytes > 262144) { await reader.cancel(); throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', response.status); }
+        if (bytes > 262144) { void reader.cancel().catch(()=>{}); throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', response.status); }
         content += decoder.decode(value, { stream: true });
-    }
+    }} catch(error) { void reader.cancel().catch(()=>{}); throw error; }
     const data = JSON.parse(content + decoder.decode());
     if (!data || typeof data !== 'object' || Array.isArray(data))
         throw aiError('AI provider returned an invalid response.', 502, 'AI_PROVIDER_INVALID_RESPONSE', 'provider', response.status);
     return data;
 }
 
-export async function rejectProvider(response) {
+export async function rejectProvider(response, signal) {
     let data, invalidErrorResponse = false;
-    try { data = await readProviderJson(response); } catch { data = {}; invalidErrorResponse = true; }
+    try { data = await readProviderJson(response,signal); } catch(error) { if(signal?.aborted)throw error;data = {}; invalidErrorResponse = true; }
     // Classify private provider details; never return raw messages, keys or prompts.
     const detail = JSON.stringify(data?.error || {}).slice(0, 262144);
     let message;

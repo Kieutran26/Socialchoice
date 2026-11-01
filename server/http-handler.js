@@ -62,7 +62,7 @@ export function createHttpHandler({ store, auth, meta, publisher, metaSettings, 
             if (req.url.startsWith('/api/autopilot/')) {
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';
-                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > (req.url === '/api/autopilot/strategyApply' ? 1024 * 1024 : 16384)) fail('Request too large', 413); }
                 let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
                 if (!Array.isArray(input?.args) || input.args.length !== 1) fail('One Autopilot input required');
                 return send(200, await autopilot.execute(req.url.slice('/api/autopilot/'.length), input.args[0], req, res));

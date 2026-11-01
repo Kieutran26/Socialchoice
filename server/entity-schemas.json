@@ -312,6 +312,21 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "products": {
+        "type": "string"
+      },
+      "target_audience": {
+        "type": "string"
+      },
+      "tone_of_voice": {
+        "type": "string"
+      },
+      "goals": {
+        "type": "string"
+      },
+      "posting_frequency": {
+        "type": "string"
       }
     },
     "required": [

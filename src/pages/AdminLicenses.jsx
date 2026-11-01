@@ -9,7 +9,6 @@ import {
     CaretDown,
     Prohibit,
     UserCheck,
-    ShieldCheck,
     Info,
 } from '@phosphor-icons/react';
 import { useAuth } from '@/lib/AuthContext';

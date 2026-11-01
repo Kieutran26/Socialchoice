@@ -5,7 +5,6 @@ import {
     MagnifyingGlass,
     CaretDown,
     ClockCounterClockwise,
-    Prohibit,
     CheckCircle,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';

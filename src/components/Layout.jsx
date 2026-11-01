@@ -130,8 +130,8 @@ function Shell() {
                                     setOpenBrandDropdown(false);
                                 }}
                                 className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${selectedBrandId === 'all'
-                                        ? 'bg-brand/15 text-brand-ink font-semibold'
-                                        : 'text-foreground hover:bg-muted/60'
+                                    ? 'bg-brand/15 text-brand-ink font-semibold'
+                                    : 'text-foreground hover:bg-muted/60'
                                     }`}
                             >
                                 <div className="flex items-center gap-2">
@@ -160,8 +160,8 @@ function Shell() {
                                             setOpenBrandDropdown(false);
                                         }}
                                         className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${isSelected
-                                                ? 'bg-brand/15 text-brand-ink font-semibold'
-                                                : 'text-foreground hover:bg-muted/60'
+                                            ? 'bg-brand/15 text-brand-ink font-semibold'
+                                            : 'text-foreground hover:bg-muted/60'
                                             }`}
                                     >
                                         <div className="flex items-center gap-2 min-w-0">
@@ -215,84 +215,84 @@ function Shell() {
             </aside>
 
             <div className="lg:ml-60">
-                    <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center justify-between gap-3 px-5 transition-colors">
-                        <div className="flex items-center gap-3 min-w-0">
-                            <Button
-                                size="icon"
-                                variant="ghost"
-                                type="button"
-                                className="lg:hidden shrink-0 -ml-2"
-                                aria-label={t("Open menu")}
-                                onClick={() => setOpen(true)}
+                <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center justify-between gap-3 px-5 transition-colors">
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Button
+                            size="icon"
+                            variant="ghost"
+                            type="button"
+                            className="lg:hidden shrink-0 -ml-2"
+                            aria-label={t("Open menu")}
+                            onClick={() => setOpen(true)}
+                        >
+                            <List size={20} />
+                        </Button>
+                        <div className="flex items-center gap-2 text-sm select-none min-w-0">
+                            <NavLink
+                                to="/"
+                                className="font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
                             >
-                                <List size={20} />
-                            </Button>
-                            <div className="flex items-center gap-2 text-sm select-none min-w-0">
-                                <NavLink
-                                    to="/"
-                                    className="font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
-                                >
-                                    PostChoice
-                                </NavLink>
-                                <CaretRight size={12} weight="bold" className="text-muted-foreground/60 shrink-0" />
-                                <span className="font-semibold text-foreground truncate">
-                                    {currentPageTitle}
-                                </span>
+                                PostChoice
+                            </NavLink>
+                            <CaretRight size={12} weight="bold" className="text-muted-foreground/60 shrink-0" />
+                            <span className="font-semibold text-foreground truncate">
+                                {currentPageTitle}
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="ml-auto flex items-center gap-3 shrink-0">
+                        <div className="relative hidden sm:flex items-center">
+                            <MagnifyingGlass size={15} weight="regular" className="absolute left-3 text-muted-foreground pointer-events-none" />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={t("Search...")}
+                                className="h-9 w-52 sm:w-64 md:w-72 rounded-xl border border-border bg-card/50 pl-9 pr-11 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
+                            />
+                            <div className="absolute right-2.5 flex items-center pointer-events-none">
+                                <kbd className="inline-flex h-5 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
+                                    ⌘K
+                                </kbd>
                             </div>
                         </div>
 
-                        <div className="ml-auto flex items-center gap-3 shrink-0">
-                            <div className="relative hidden sm:flex items-center">
-                                <MagnifyingGlass size={15} weight="regular" className="absolute left-3 text-muted-foreground pointer-events-none" />
-                                <input
-                                    ref={searchInputRef}
-                                    type="text"
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    placeholder={t("Search...")}
-                                    className="h-9 w-52 sm:w-64 md:w-72 rounded-xl border border-border bg-card/50 pl-9 pr-11 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
-                                />
-                                <div className="absolute right-2.5 flex items-center pointer-events-none">
-                                    <kbd className="inline-flex h-5 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
-                                        ⌘K
-                                    </kbd>
-                                </div>
-                            </div>
+                        {!isDesktop() && <PublishingNotifications />}
+                    </div>
+                </header>
 
-                            {!isDesktop() && <PublishingNotifications />}
+                <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
+                    {demoMode && (
+                        <div
+                            role="status"
+                            className="mb-5 rounded-lg border border-warnFg bg-warnBg p-3 text-sm text-warnFg"
+                        >
+                            {t(
+                                "Demo workspace — simulated accounts and publishing results only. Nothing is sent to social platforms."
+                            )}
                         </div>
-                    </header>
-
-                    <main className="mx-auto max-w-[1600px] p-5 lg:p-8">
-                        {demoMode && (
-                            <div
-                                role="status"
-                                className="mb-5 rounded-lg border border-warnFg bg-warnBg p-3 text-sm text-warnFg"
-                            >
-                                {t(
-                                    "Demo workspace — simulated accounts and publishing results only. Nothing is sent to social platforms."
-                                )}
-                            </div>
-                        )}
-                        {loading ? (
-                            <p role="status" className="text-sm text-muted-foreground">
-                                {t("Loading workspace…")}
-                            </p>
-                        ) : error ? (
-                            <div role="alert" className="panel p-5">
-                                <p className="mb-3">{t(error)}</p>
-                                <button type="button" className="btn-skew" onClick={retry}>
-                                    {t('Retry')}
-                                </button>
-                            </div>
-                        ) : isDesktop() ? (
-                            <DesktopPrototype>
-                                <Outlet />
-                            </DesktopPrototype>
-                        ) : (
+                    )}
+                    {loading ? (
+                        <p role="status" className="text-sm text-muted-foreground">
+                            {t("Loading workspace…")}
+                        </p>
+                    ) : error ? (
+                        <div role="alert" className="panel p-5">
+                            <p className="mb-3">{t(error)}</p>
+                            <button type="button" className="btn-skew" onClick={retry}>
+                                {t('Retry')}
+                            </button>
+                        </div>
+                    ) : isDesktop() ? (
+                        <DesktopPrototype>
                             <Outlet />
-                        )}
-                    </main>
+                        </DesktopPrototype>
+                    ) : (
+                        <Outlet />
+                    )}
+                </main>
             </div>
         </div>
     );

@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE } from './constants';
+import { DEFAULT_TIMEZONE } from './constants.js';
 
 /** @returns {Record<string, string>} */
 const partsOf = (date, timeZone) =>

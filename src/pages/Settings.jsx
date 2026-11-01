@@ -18,7 +18,6 @@ import {
     SquaresFour,
     CaretDown,
     Translate,
-    ShieldCheck,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';

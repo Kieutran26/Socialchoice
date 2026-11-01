@@ -1,7 +1,7 @@
 import LoadError from '@/components/common/load-error';
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useCallback, useEffect, useState, useRef } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import {
     ChartBar,
     Stack,
@@ -15,18 +15,22 @@ import {
     SlidersHorizontal,
     ArrowSquareOut,
     Info,
+    Sparkle,
+    IdentificationCard,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
+import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import StatCard from '@/components/common/StatCard';
 import DistributionBar from '@/components/strategy/DistributionBar';
 import StrategyFilters from '@/components/strategy/StrategyFilters';
 import DistributionOverTime from '@/components/strategy/DistributionOverTime';
+import AIContentStrategist from '@/components/strategy/AIContentStrategist';
+import BrandKnowledgeBase from '@/components/strategy/BrandKnowledgeBase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { percent, formatNumber } from '@/lib/format';
-import { PLATFORM_LABEL } from '@/lib/constants';
+import { percent } from '@/lib/format';
 
 const RANGE_DAYS = { past30: -30, past90: -90, next30: 30 };
 
@@ -46,7 +50,13 @@ const buildQuery = (scope, filters) => {
 
 export default function ContentStrategy() {
     const { t } = useTranslation();
-    const { scope } = useWorkspace();
+    const { scope, brands, selectedBrandId, reload: reloadWorkspace } = useWorkspace();
+    const { toast } = useToast();
+    const navigate = useNavigate();
+
+    // Tabs: 'strategist' | 'knowledge' | 'analytics'
+    const [activeTab, setActiveTab] = useState('strategist');
+
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
     const [filters, setFilters] = useState({
@@ -59,7 +69,32 @@ export default function ContentStrategy() {
     const [unit, setUnit] = useState('posts');
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
+    const [assets, setAssets] = useState([]);
     const [rows, setRows] = useState({ pillar: [], angle: [], total: 0 });
+
+    const currentBrand = brands.find((b) => b.id === selectedBrandId) || null;
+    const [assetError, setAssetError] = useState('');
+    const assetVersion = useRef(0);
+
+    const loadAssets = useCallback(async () => {
+        const version = ++assetVersion.current;
+        setAssets([]); setAssetError('');
+        if (!currentBrand?.id) return;
+        try {
+            const media = await appClient.entities.MediaAsset.filter({brand_id:currentBrand.id,is_demo:!!currentBrand.is_demo},{limit:200});
+            const catalog = [];
+            let offset = 0;
+            if (!currentBrand.is_demo) do {
+                const page = await appClient.autopilot.call('list',{brand_id:currentBrand.id,offset});
+                const connected = new Set(page.sources.filter(s=>s.status==='connected').map(s=>s.id));
+                catalog.push(...page.assets.filter(a=>connected.has(a.source_id)&&a.size<=3*1024*1024&&a.availability==='available'&&a.analysis_status==='analyzed'&&a.review==='approved'&&['image/png','image/jpeg','image/webp'].includes(a.mime)).map(a=>({
+                    id:a.id,brand_id:a.brand_id,name:a.name,file_url:'',file_type:'image',notes:[a.analysis?.summary,...(a.analysis?.tags||[])].filter(Boolean).join(' · '),is_autopilot:true,
+                })));
+                offset = page.nextOffset;
+            } while(offset!==null);
+            if(version===assetVersion.current) setAssets([...media.items.filter(a=>a.file_type==='image'&&a.storage_id),...catalog]);
+        } catch(error) { if(version===assetVersion.current) setAssetError(error.message); }
+    }, [currentBrand?.id, currentBrand?.is_demo]);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -176,7 +211,8 @@ export default function ContentStrategy() {
 
     useEffect(() => {
         load();
-    }, [load]);
+        loadAssets();
+    }, [load, loadAssets]);
 
     const pillarStats = pillars.map((pillar) => {
         const count = rows.pillar.find((row) => row.pillar_id === pillar.id)?.count || 0;
@@ -198,565 +234,358 @@ export default function ContentStrategy() {
     const balanceRate =
         pillars.length > 0 ? Math.round((balancedCount / pillars.length) * 100) : 100;
 
-    const angleName = (id) => angles.find((a) => a.id === id)?.name || t('Unassigned angle');
-
     if (loadError) return <LoadError message={loadError} onRetry={load} />;
 
     return (
         <div className="space-y-6">
             <PageHeader
-                title={t('Content Strategy')}
+                title={t('Chiến lược nội dung (Content Strategy)')}
                 description={t(
-                    'How your content is actually distributed against the targets you set for each pillar.'
+                    'AI Content Strategist tự động đề xuất content pillars, angles, chủ đề và lịch 30 ngày dựa trên Brand Context & Asset Library.'
                 )}
                 actions={
-                    <span className="label-xs rounded-xl bg-muted/60 px-3 py-1.5 font-medium text-muted-foreground border border-border/60">
-                        {filters.platform === 'all'
-                            ? t('All platforms')
-                            : t('{value1} only', {
-                                  value1: PLATFORM_LABEL[filters.platform] || filters.platform,
-                              })}{' '}
-                        · <strong className="text-foreground">{formatNumber(rows.total)}</strong>{' '}
-                        {t('total')}
-                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="label-xs rounded-xl bg-muted/60 px-3 py-1.5 font-medium text-muted-foreground border border-border/60">
+                            {currentBrand?.name || t('Brand')} · <strong className="text-foreground">{assets.length}</strong> {t('assets')}
+                        </span>
+                    </div>
                 }
             />
 
-            {/* KPI Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                <StatCard
-                    label={t('Total content')}
-                    value={rows.total}
-                    hint={
-                        unit === 'posts'
-                            ? t('Unique content posts')
-                            : t('Publishing jobs')
-                    }
-                    icon={Article}
-                    iconBg="bg-blue-50"
-                    iconColor="text-blue-600"
-                />
-                <StatCard
-                    label={t('Content Pillars')}
-                    value={pillars.length}
-                    hint={
-                        pillars.length
-                            ? t('{count} configured', { count: pillars.length })
-                            : t('Not set up')
-                    }
-                    icon={Stack}
-                    iconBg="bg-amber-50"
-                    iconColor="text-amber-600"
-                />
-                <StatCard
-                    label={t('Content Angles')}
-                    value={angles.length}
-                    hint={
-                        angles.length
-                            ? t('{count} configured', { count: angles.length })
-                            : t('Not set up')
-                    }
-                    icon={TreeStructure}
-                    iconBg="bg-purple-50"
-                    iconColor="text-purple-600"
-                />
-                <StatCard
-                    label={t('Target alignment')}
-                    value={pillars.length > 0 ? `${balanceRate}%` : '—'}
-                    hint={
-                        pillars.length > 0
-                            ? overrepresented.length + underrepresented.length === 0
-                                ? t('All pillars balanced')
-                                : t('{count} pillars off target', {
-                                      count: overrepresented.length + underrepresented.length,
-                                  })
-                            : t('Create pillars to set targets')
-                    }
-                    icon={Target}
-                    iconBg="bg-emerald-50"
-                    iconColor="text-emerald-600"
-                />
+            {/* Strategic Navigation Tabs */}
+            <div className="flex items-center gap-2 border-b border-border/80 pb-3 overflow-x-auto">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('strategist')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                        activeTab === 'strategist'
+                            ? 'bg-foreground text-background shadow-xs'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                >
+                    <Sparkle size={16} weight={activeTab === 'strategist' ? 'fill' : 'regular'} className={activeTab === 'strategist' ? 'text-brand' : ''} />
+                    <span>{t('AI Content Strategist (Phase 2)')}</span>
+                    <span className="rounded-md bg-brand/20 text-brand-ink px-1.5 py-0.2 text-[10px] font-bold">
+                        AI
+                    </span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('knowledge')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                        activeTab === 'knowledge'
+                            ? 'bg-foreground text-background shadow-xs'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                >
+                    <IdentificationCard size={16} weight={activeTab === 'knowledge' ? 'bold' : 'regular'} />
+                    <span>{t('Brand Knowledge Base')}</span>
+                </button>
+
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('analytics')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                        activeTab === 'analytics'
+                            ? 'bg-foreground text-background shadow-xs'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                >
+                    <ChartBar size={16} weight={activeTab === 'analytics' ? 'bold' : 'regular'} />
+                    <span>{t('Phân bổ & Mục tiêu (Analytics)')}</span>
+                </button>
             </div>
 
-            {/* Unified Filter Bar */}
-            <StrategyFilters
-                filters={filters}
-                setFilters={setFilters}
-                pillars={pillars}
-                angles={angles}
-                unit={unit}
-                setUnit={setUnit}
-            />
-
-            {loading ? (
-                <div className="grid gap-5 xl:grid-cols-2">
-                    <Skeleton className="h-[360px] rounded-2xl" />
-                    <Skeleton className="h-[360px] rounded-2xl" />
-                </div>
-            ) : rows.total === 0 ? (
-                <EmptyState
-                    icon={ChartBar}
-                    title={t('No content matches these filters')}
-                    description={t(
-                        'Adjust the filters above, or create posts with a pillar and angle assigned to see distribution here.'
-                    )}
+            {/* TAB 1: AI Content Strategist (Phase 2 Flagship) */}
+            {activeTab === 'strategist' && !currentBrand && <EmptyState icon={IdentificationCard} title={t('Choose a brand first')} description={t('Select one brand in the sidebar to create its content plan.')} />}
+            {assetError && <p role="alert" className="panel p-4 text-dangerFg">{t(assetError)}</p>}
+            {activeTab === 'strategist' && currentBrand && (
+                <AIContentStrategist
+                    key={currentBrand.id + JSON.stringify([currentBrand.products,currentBrand.target_audience,currentBrand.tone_of_voice,currentBrand.goals,currentBrand.posting_frequency,currentBrand.timezone])}
+                    brand={currentBrand}
+                    pillars={pillars}
+                    angles={angles}
+                    assets={assets}
+                    appClient={appClient}
+                    onPlanApplied={(posts) => {
+                        load();
+                        toast({
+                            title: t('Đã áp dụng thành công {count} bài viết!', { count: posts.length }),
+                            description: t('Xem các bài nháp đã tạo trên Lịch nội dung.'),
+                        });
+                        navigate('/calendar');
+                    }}
                 />
-            ) : (
+            )}
+
+            {/* TAB 2: Brand Knowledge Base */}
+            {activeTab === 'knowledge' && !currentBrand && <EmptyState icon={IdentificationCard} title={t('Choose a brand first')} description={t('Select one brand in the sidebar to edit its knowledge base.')} />}
+            {activeTab === 'knowledge' && currentBrand && (
+                <BrandKnowledgeBase
+                    brand={currentBrand}
+                    assetsCount={assets.length}
+                    onUpdated={() => {
+                        reloadWorkspace();
+                        loadAssets();
+                    }}
+                />
+            )}
+
+            {/* TAB 3: Strategy Analytics & Mix */}
+            {activeTab === 'analytics' && (
                 <div className="space-y-6">
-                    {/* Section 1: Pillar targets vs actual mix */}
-                    <div className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
-                        <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                                        <Target size={18} weight="duotone" />
-                                    </span>
-                                    <h2 className="text-[15px] font-semibold text-foreground">
-                                        {t('Pillar targets vs actual mix')}
-                                    </h2>
-                                </div>
-                                <p className="label-xs text-muted-foreground mt-1.5">
-                                    {t(
-                                        'The marker on each bar is the target share you defined for that pillar.'
-                                    )}
-                                </p>
-                            </div>
-                            <Link
-                                to="/strategy/pillars"
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/30 text-xs font-medium text-foreground transition-all"
-                            >
-                                <SlidersHorizontal size={14} />
-                                <span>{t('Manage pillars')}</span>
-                                <ArrowSquareOut size={13} className="text-muted-foreground" />
-                            </Link>
-                        </div>
-
-                        {pillars.length === 0 ? (
-                            <div className="py-10 text-center flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-6">
-                                <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
-                                    <Stack size={24} weight="duotone" />
-                                </div>
-                                <h3 className="text-sm font-semibold text-foreground">
-                                    {t('No pillars set up yet')}
-                                </h3>
-                                <p className="text-xs text-muted-foreground max-w-md mt-1 mb-4">
-                                    {t(
-                                        'Set up content pillars and target percentages to track your topic distribution effectively.'
-                                    )}
-                                </p>
-                                <Link
-                                    to="/strategy/pillars"
-                                    className="btn-skew inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold"
-                                >
-                                    <Plus size={15} weight="bold" />
-                                    <span>{t('Create first pillar')}</span>
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className="divide-y divide-border/60">
-                                {pillarStats.map((pillar) => (
-                                    <DistributionBar
-                                        key={pillar.id}
-                                        label={pillar.name}
-                                        color={pillar.color}
-                                        target={pillar.target_percentage || 0}
-                                        actual={pillar.actual}
-                                        count={pillar.count}
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        {unassignedPillarCount > 0 && (
-                            <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
-                                <Info size={15} className="text-amber-500 shrink-0" />
-                                <span>
-                                    {unassignedPillarCount}{' '}
-                                    {t('posts')} {t('Unassigned')} ({percent(unassignedPillarCount, rows.total)}%)
-                                </span>
-                            </div>
-                        )}
+                    {/* KPI Stat Cards */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                        <StatCard
+                            label={t('Total content')}
+                            value={rows.total}
+                            hint={
+                                unit === 'posts'
+                                    ? t('Unique content posts')
+                                    : t('Publishing jobs')
+                            }
+                            icon={Article}
+                            iconBg="bg-blue-50"
+                            iconColor="text-blue-600"
+                        />
+                        <StatCard
+                            label={t('Content Pillars')}
+                            value={pillars.length}
+                            hint={
+                                pillars.length
+                                    ? t('{count} configured', { count: pillars.length })
+                                    : t('Not set up')
+                            }
+                            icon={Stack}
+                            iconBg="bg-amber-50"
+                            iconColor="text-amber-600"
+                        />
+                        <StatCard
+                            label={t('Content Angles')}
+                            value={angles.length}
+                            hint={
+                                angles.length
+                                    ? t('{count} configured', { count: angles.length })
+                                    : t('Not set up')
+                            }
+                            icon={TreeStructure}
+                            iconBg="bg-purple-50"
+                            iconColor="text-purple-600"
+                        />
+                        <StatCard
+                            label={t('Target alignment')}
+                            value={pillars.length > 0 ? `${balanceRate}%` : '—'}
+                            hint={
+                                pillars.length > 0
+                                    ? overrepresented.length + underrepresented.length === 0
+                                        ? t('All pillars balanced')
+                                        : t('{count} pillars off target', {
+                                              count: overrepresented.length + underrepresented.length,
+                                          })
+                                    : t('Create pillars to set targets')
+                            }
+                            icon={Target}
+                            iconBg="bg-emerald-50"
+                            iconColor="text-emerald-600"
+                        />
                     </div>
 
-                    {/* Section 2: 3 Cards Grid */}
-                    <div className="grid gap-5 xl:grid-cols-3">
-                        <DistributionOverTime scope={scope} filters={filters} />
+                    {/* Unified Filter Bar */}
+                    <StrategyFilters
+                        filters={filters}
+                        setFilters={setFilters}
+                        pillars={pillars}
+                        angles={angles}
+                        unit={unit}
+                        setUnit={setUnit}
+                    />
 
-                        {/* Overrepresented pillars card */}
-                        <div className="panel p-5 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                                            <TrendUp size={16} weight="duotone" />
-                                        </span>
-                                        <h2 className="text-[15px] font-semibold text-foreground">
-                                            {t('Overrepresented pillars')}
-                                        </h2>
-                                    </div>
-                                    {overrepresented.length > 0 && (
-                                        <span className="rounded-lg bg-amber-50 border border-amber-200/60 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                                            {overrepresented.length}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="label-xs text-muted-foreground mt-1.5">
-                                    {t('Pillars that exceed their target by more than 5%.')}
-                                </p>
-
-                                {overrepresented.length ? (
-                                    <ul className="mt-4 space-y-2.5">
-                                        {overrepresented.map((pillar) => (
-                                            <li
-                                                key={pillar.id}
-                                                className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-muted/30 border border-border/50 text-[13px]"
-                                            >
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <span
-                                                        className="h-2.5 w-2.5 rounded-full shrink-0"
-                                                        style={{
-                                                            backgroundColor: pillar.color || '#ffd631',
-                                                        }}
-                                                    />
-                                                    <span className="font-medium text-foreground truncate">
-                                                        {pillar.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <span className="text-xs text-muted-foreground font-mono">
-                                                        {pillar.actual}% / {pillar.target_percentage || 0}%
-                                                    </span>
-                                                    <span className="px-2 py-0.5 rounded-md bg-amber-50 border border-amber-200/60 text-xs font-semibold text-amber-700 font-mono">
-                                                        +{pillar.actual - pillar.target_percentage}{' '}
-                                                        {t('pts')}
-                                                    </span>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="py-8 text-center flex flex-col items-center justify-center">
-                                        <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
-                                            <CheckCircle size={20} weight="duotone" />
-                                        </div>
-                                        <p className="text-xs font-medium text-foreground">
-                                            {t('All balanced')}
-                                        </p>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            {t('Every pillar is within 5 points of its target.')}
-                                        </p>
-                                    </div>
-                                )}
-                            </div>
+                    {loading ? (
+                        <div className="grid gap-5 xl:grid-cols-2">
+                            <Skeleton className="h-[360px] rounded-2xl" />
+                            <Skeleton className="h-[360px] rounded-2xl" />
                         </div>
-
-                        {/* Underrepresented pillars card */}
-                        <div className="panel p-5 flex flex-col justify-between">
-                            <div>
-                                <div className="flex items-center justify-between gap-2">
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-                                            <TrendDown size={16} weight="duotone" />
-                                        </span>
-                                        <h2 className="text-[15px] font-semibold text-foreground">
-                                            {t('Underrepresented pillars')}
-                                        </h2>
-                                    </div>
-                                    {underrepresented.length > 0 && (
-                                        <span className="rounded-lg bg-rose-50 border border-rose-200/60 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
-                                            {underrepresented.length}
-                                        </span>
-                                    )}
-                                </div>
-                                <p className="label-xs text-muted-foreground mt-1.5">
-                                    {t('Pillars lagging behind their target by more than 5%.')}
-                                </p>
-
-                                {underrepresented.length ? (
-                                    <ul className="mt-4 space-y-2.5">
-                                        {underrepresented.map((pillar) => (
-                                            <li
-                                                key={pillar.id}
-                                                className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-muted/30 border border-border/50 text-[13px]"
-                                            >
-                                                <div className="flex items-center gap-2 min-w-0">
-                                                    <span
-                                                        className="h-2.5 w-2.5 rounded-full shrink-0"
-                                                        style={{
-                                                            backgroundColor: pillar.color || '#ffd631',
-                                                        }}
-                                                    />
-                                                    <span className="font-medium text-foreground truncate">
-                                                        {pillar.name}
-                                                    </span>
-                                                </div>
-                                                <div className="flex items-center gap-2 shrink-0">
-                                                    <span className="text-xs text-muted-foreground font-mono">
-                                                        {pillar.actual}% / {pillar.target_percentage || 0}%
-                                                    </span>
-                                                    <span className="px-2 py-0.5 rounded-md bg-rose-50 border border-rose-200/60 text-xs font-semibold text-rose-700 font-mono">
-                                                        −{pillar.target_percentage - pillar.actual}{' '}
-                                                        {t('pts')}
-                                                    </span>
-                                                </div>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                ) : (
-                                    <div className="py-8 text-center flex flex-col items-center justify-center">
-                                        <div className="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-2">
-                                            <CheckCircle size={20} weight="duotone" />
+                    ) : rows.total === 0 ? (
+                        <EmptyState
+                            icon={ChartBar}
+                            title={t('No content matches these filters')}
+                            description={t(
+                                'Adjust the filters above, or create posts with a pillar and angle assigned to see distribution here.'
+                            )}
+                        />
+                    ) : (
+                        <div className="space-y-6">
+                            {/* Section 1: Pillar targets vs actual mix */}
+                            <div className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
+                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                                    <div>
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                                                <Target size={18} weight="duotone" />
+                                            </span>
+                                            <h2 className="text-[15px] font-semibold text-foreground">
+                                                {t('Pillar targets vs actual mix')}
+                                            </h2>
                                         </div>
-                                        <p className="text-xs font-medium text-foreground">
-                                            {t('No underrepresented pillars.')}
-                                        </p>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            {t('Every pillar is within 5 points of its target.')}
+                                        <p className="label-xs text-muted-foreground mt-1.5">
+                                            {t(
+                                                'The marker on each bar is the target share you defined for that pillar.'
+                                            )}
                                         </p>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Section 3: 2 Tables Grid */}
-                    <div className="grid gap-5 xl:grid-cols-2">
-                        {/* Posts per pillar table */}
-                        <div className="panel p-5">
-                            <div className="flex items-center justify-between gap-2 mb-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                                        <Stack size={16} weight="duotone" />
-                                    </span>
-                                    <h2 className="text-[15px] font-semibold text-foreground">
-                                        {t('Posts per pillar')}
-                                    </h2>
-                                </div>
-                                <span className="rounded-lg bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
-                                    {pillarStats.length} {t('pillars')}
-                                </span>
-                            </div>
-
-                            {pillarStats.length === 0 && unassignedPillarCount === 0 ? (
-                                <div className="py-8 text-center text-xs text-muted-foreground">
-                                    <p>{t('No pillars set up yet')}</p>
                                     <Link
                                         to="/strategy/pillars"
-                                        className="text-primary hover:underline font-medium mt-1 inline-block"
+                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/30 text-xs font-medium text-foreground transition-all"
                                     >
-                                        {t('Create first pillar')} →
+                                        <SlidersHorizontal size={14} />
+                                        <span>{t('Manage pillars')}</span>
+                                        <ArrowSquareOut size={13} className="text-muted-foreground" />
                                     </Link>
                                 </div>
-                            ) : (
-                                <div className="overflow-x-auto">
-                                    <table className="w-full text-[13px]">
-                                        <thead>
-                                            <tr className="bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                                <th className="py-2.5 px-3 rounded-l-lg text-left">
-                                                    {t('Pillar')}
-                                                </th>
-                                                <th className="py-2.5 px-3 text-right">
-                                                    {t('Posts')}
-                                                </th>
-                                                <th className="py-2.5 px-3 rounded-r-lg text-right">
-                                                    {t('Share')}
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="divide-y divide-border/60">
-                                            {pillarStats.map((pillar) => (
-                                                <tr
-                                                    key={pillar.id}
-                                                    className="hover:bg-muted/20 transition-colors"
-                                                >
-                                                    <td className="py-2.5 px-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <span
-                                                                className="h-2.5 w-2.5 rounded-full shrink-0"
-                                                                style={{
-                                                                    backgroundColor:
-                                                                        pillar.color || '#ffd631',
-                                                                }}
-                                                            />
-                                                            <span className="font-medium text-foreground">
-                                                                {pillar.name}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-2.5 px-3 text-right font-mono font-medium">
-                                                        {formatNumber(pillar.count)}
-                                                    </td>
-                                                    <td className="py-2.5 px-3 text-right">
-                                                        <div className="inline-flex items-center gap-2">
-                                                            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                                                <div
-                                                                    className="h-full rounded-full"
-                                                                    style={{
-                                                                        width: `${Math.max(
-                                                                            0,
-                                                                            Math.min(100, pillar.actual)
-                                                                        )}%`,
-                                                                        backgroundColor:
-                                                                            pillar.color || '#ffd631',
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <span className="font-mono font-semibold text-xs min-w-[32px] text-right">
-                                                                {pillar.actual}%
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                            {unassignedPillarCount > 0 && (
-                                                <tr className="hover:bg-muted/20 transition-colors">
-                                                    <td className="py-2.5 px-3">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="h-2.5 w-2.5 rounded-full shrink-0 bg-muted-foreground/30" />
-                                                            <span className="font-medium text-muted-foreground italic">
-                                                                {t('Unassigned')}
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                    <td className="py-2.5 px-3 text-right font-mono font-medium text-muted-foreground">
-                                                        {formatNumber(unassignedPillarCount)}
-                                                    </td>
-                                                    <td className="py-2.5 px-3 text-right">
-                                                        <div className="inline-flex items-center gap-2">
-                                                            <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                                                <div
-                                                                    className="h-full rounded-full bg-muted-foreground/40"
-                                                                    style={{
-                                                                        width: `${Math.max(
-                                                                            0,
-                                                                            Math.min(
-                                                                                100,
-                                                                                percent(
-                                                                                    unassignedPillarCount,
-                                                                                    rows.total
-                                                                                )
-                                                                            )
-                                                                        )}%`,
-                                                                    }}
-                                                                />
-                                                            </div>
-                                                            <span className="font-mono font-semibold text-xs min-w-[32px] text-right text-muted-foreground">
-                                                                {percent(
-                                                                    unassignedPillarCount,
-                                                                    rows.total
-                                                                )}
-                                                                %
-                                                            </span>
-                                                        </div>
-                                                    </td>
-                                                </tr>
+
+                                {pillars.length === 0 ? (
+                                    <div className="py-10 text-center flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-6">
+                                        <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
+                                            <Stack size={24} weight="duotone" />
+                                        </div>
+                                        <h3 className="text-sm font-semibold text-foreground">
+                                            {t('No pillars set up yet')}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground max-w-md mt-1 mb-4">
+                                            {t(
+                                                'Set up content pillars and target percentages to track your topic distribution effectively.'
                                             )}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            )}
-                        </div>
+                                        </p>
+                                        <Link
+                                            to="/strategy/pillars"
+                                            className="btn-skew inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold"
+                                        >
+                                            <Plus size={15} weight="bold" />
+                                            <span>{t('Create first pillar')}</span>
+                                        </Link>
+                                    </div>
+                                ) : (
+                                    <div className="divide-y divide-border/60">
+                                        {pillarStats.map((pillar) => (
+                                            <DistributionBar
+                                                key={pillar.id}
+                                                label={pillar.name}
+                                                color={pillar.color}
+                                                target={pillar.target_percentage || 0}
+                                                actual={pillar.actual}
+                                                count={pillar.count}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
 
-                        {/* Posts per angle table */}
-                        <div className="panel p-5">
-                            <div className="flex items-center justify-between gap-2 mb-4">
-                                <div className="flex items-center gap-2">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                                        <TreeStructure size={16} weight="duotone" />
-                                    </span>
-                                    <h2 className="text-[15px] font-semibold text-foreground">
-                                        {t('Posts per angle')}
-                                    </h2>
-                                </div>
-                                <Link
-                                    to="/strategy/angles"
-                                    className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium"
-                                >
-                                    <span>{t('Manage angles')}</span>
-                                    <ArrowSquareOut size={13} />
-                                </Link>
+                                {unassignedPillarCount > 0 && (
+                                    <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
+                                        <Info size={15} className="text-amber-500 shrink-0" />
+                                        <span>
+                                            {unassignedPillarCount} {t('posts')} {t('Unassigned')} ({percent(unassignedPillarCount, rows.total)}%)
+                                        </span>
+                                    </div>
+                                )}
                             </div>
 
-                            <div className="overflow-x-auto">
-                                <table className="w-full text-[13px]">
-                                    <thead>
-                                        <tr className="bg-muted/40 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                                            <th className="py-2.5 px-3 rounded-l-lg text-left">
-                                                {t('Angle')}
-                                            </th>
-                                            <th className="py-2.5 px-3 text-right">
-                                                {t('Posts')}
-                                            </th>
-                                            <th className="py-2.5 px-3 rounded-r-lg text-right">
-                                                {t('Share')}
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-border/60">
-                                        {[...rows.angle]
-                                            .sort((a, b) => b.count - a.count)
-                                            .slice(0, 12)
-                                            .map((row) => {
-                                                const share = percent(row.count, rows.total);
-                                                const isUnassigned = !row.angle_id;
-                                                return (
-                                                    <tr
-                                                        key={row.angle_id || 'unassigned'}
-                                                        className="hover:bg-muted/20 transition-colors"
-                                                    >
-                                                        <td className="py-2.5 px-3">
-                                                            <div className="flex items-center gap-2">
-                                                                <span
-                                                                    className={`h-2.5 w-2.5 rounded-full shrink-0 ${
-                                                                        isUnassigned
-                                                                            ? 'bg-muted-foreground/40'
-                                                                            : 'bg-purple-500'
-                                                                    }`}
-                                                                />
-                                                                <span
-                                                                    className={`font-medium ${
-                                                                        isUnassigned
-                                                                            ? 'text-muted-foreground italic'
-                                                                            : 'text-foreground'
-                                                                    }`}
-                                                                >
-                                                                    {angleName(row.angle_id)}
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                        <td className="py-2.5 px-3 text-right font-mono font-medium">
-                                                            {formatNumber(row.count)}
-                                                        </td>
-                                                        <td className="py-2.5 px-3 text-right">
-                                                            <div className="inline-flex items-center gap-2">
-                                                                <div className="w-16 h-1.5 bg-muted rounded-full overflow-hidden">
-                                                                    <div
-                                                                        className={`h-full rounded-full ${
-                                                                            isUnassigned
-                                                                                ? 'bg-muted-foreground/40'
-                                                                                : 'bg-purple-500'
-                                                                        }`}
-                                                                        style={{
-                                                                            width: `${Math.max(
-                                                                                0,
-                                                                                Math.min(100, share)
-                                                                            )}%`,
-                                                                        }}
-                                                                    />
-                                                                </div>
-                                                                <span className="font-mono font-semibold text-xs min-w-[32px] text-right">
-                                                                    {share}%
-                                                                </span>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                );
-                                            })}
-                                    </tbody>
-                                </table>
+                            {/* Section 2: 3 Cards Grid */}
+                            <div className="grid gap-5 xl:grid-cols-3">
+                                <DistributionOverTime scope={scope} filters={filters} />
+
+                                {/* Overrepresented pillars card */}
+                                <div className="panel p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                                                    <TrendUp size={16} weight="duotone" />
+                                                </span>
+                                                <h2 className="text-[15px] font-semibold text-foreground">
+                                                    {t('Overrepresented pillars')}
+                                                </h2>
+                                            </div>
+                                            {overrepresented.length > 0 && (
+                                                <span className="rounded-lg bg-amber-50 border border-amber-200/60 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
+                                                    {overrepresented.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="label-xs text-muted-foreground mt-1 mb-4">
+                                            {t('Pillars receiving more than +5% above their target share.')}
+                                        </p>
+
+                                        {overrepresented.length === 0 ? (
+                                            <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center">
+                                                <CheckCircle size={28} className="text-emerald-500 mb-1" weight="duotone" />
+                                                <span>{t('No pillars are overrepresented')}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {overrepresented.map((p) => (
+                                                    <div key={p.id} className="flex items-center justify-between text-xs">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                                                            <span className="font-medium text-foreground">{p.name}</span>
+                                                        </div>
+                                                        <span className="font-semibold text-amber-600">
+                                                            +{Math.round(p.actual - (p.target_percentage || 0))}%
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Underrepresented pillars card */}
+                                <div className="panel p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                                                    <TrendDown size={16} weight="duotone" />
+                                                </span>
+                                                <h2 className="text-[15px] font-semibold text-foreground">
+                                                    {t('Underrepresented pillars')}
+                                                </h2>
+                                            </div>
+                                            {underrepresented.length > 0 && (
+                                                <span className="rounded-lg bg-rose-50 border border-rose-200/60 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                                                    {underrepresented.length}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="label-xs text-muted-foreground mt-1 mb-4">
+                                            {t('Pillars falling behind their target share by more than 5%.')}
+                                        </p>
+
+                                        {underrepresented.length === 0 ? (
+                                            <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center">
+                                                <CheckCircle size={28} className="text-emerald-500 mb-1" weight="duotone" />
+                                                <span>{t('All pillars are on or near target')}</span>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-3">
+                                                {underrepresented.map((p) => (
+                                                    <div key={p.id} className="flex items-center justify-between text-xs">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
+                                                            <span className="font-medium text-foreground">{p.name}</span>
+                                                        </div>
+                                                        <span className="font-semibold text-rose-600">
+                                                            -{Math.round((p.target_percentage || 0) - p.actual)}%
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             )}
         </div>

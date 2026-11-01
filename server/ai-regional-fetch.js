@@ -1,4 +1,5 @@
-import { aiError, relayError } from './ai-errors.js';
+import { aiError, relayError, safeAiIoStep } from './ai-errors.js';
+import { awaitAiIo } from './ai-io-deadline.js';
 
 // Gemini runs through a private US-jurisdiction actor; workspace storage stays in place.
 export function isGeminiEndpoint(value) {
@@ -29,13 +30,15 @@ export function createRegionalAiFetch(namespace, directFetch = fetch) {
             }
             const headers = new Headers(options.headers);
             headers.set('x-socialchoice-ai-deadline', String(deadline));
-            response = await actor.fetch(new Request(url, { ...options, headers }));
+            const signal = AbortSignal.any([...(options.signal ? [options.signal] : []), AbortSignal.timeout(Math.max(1,deadline-Date.now()))]);
+            signal.throwIfAborted();
+            response = await awaitAiIo(actor.fetch(new Request(url, { ...options, headers, signal })),signal,value=>value.body?.cancel());
         }
-        catch (error) { throw relayError(['TimeoutError', 'AbortError'].includes(error.name)); }
+        catch (error) { throw relayError(['TimeoutError', 'AbortError'].includes(error.name),'actor_request'); }
         const failure = response.headers.get('x-socialchoice-ai-failure');
         if (failure === 'AI_RELAY_TIMEOUT' || failure === 'AI_RELAY_UNREACHABLE') {
             await response.body?.cancel();
-            throw relayError(failure === 'AI_RELAY_TIMEOUT');
+            throw relayError(failure === 'AI_RELAY_TIMEOUT',safeAiIoStep(response.headers.get('x-socialchoice-ai-io-step')));
         }
         if (response.headers.get('x-socialchoice-ai-response') !== 'provider') {
             await response.body?.cancel();
@@ -68,39 +71,42 @@ export async function forwardGeminiRequest(request, fetcher = fetch) {
     const body = new Uint8Array(size); let offset = 0;
     for (const chunk of chunks) { body.set(chunk, offset); offset += chunk.byteLength; }
     // Credentials exist only for this call. Never persist, log, or forward client cookies.
+    let ioStep = 'provider_headers';
     try {
         const remaining = deadline === undefined ? 45000 : Math.min(45000, deadline - Date.now());
         if (remaining <= 0) throw new DOMException('AI deadline expired', 'TimeoutError');
         const signal = AbortSignal.any([request.signal, AbortSignal.timeout(remaining)]);
         signal.throwIfAborted();
-        const response = await fetcher(request.url, {
+        const response = await awaitAiIo(fetcher(request.url, {
             method: 'POST', redirect: 'manual', signal,
             headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key }, body,
-        });
+        }),signal,value=>value.body?.cancel());
         // Distinguish a real Google reply from an actor/platform-generated HTTP error.
         const headers = new Headers(response.headers);
         headers.delete('x-socialchoice-ai-failure');
+        headers.delete('x-socialchoice-ai-io-step');
         headers.set('x-socialchoice-ai-response', 'provider');
         // Finish bounded provider I/O inside the regional actor before crossing its response boundary.
+        ioStep = 'provider_body';
         const responseReader = response.body?.getReader(), chunks = []; let bytes = 0;
         if (responseReader) {
             try {
                 while (true) {
                     signal.throwIfAborted();
-                    const next = await responseReader.read(); if (next.done) break;
+                    const next = await awaitAiIo(responseReader.read(),signal); if (next.done) break;
                     bytes += next.value.byteLength;
                     if (bytes > 1024 * 1024) throw new Error('AI response exceeds limit');
                     chunks.push(next.value);
                 }
-            } catch (error) { await responseReader.cancel().catch(() => {}); throw error; }
+            } catch (error) { void responseReader.cancel().catch(() => {}); throw error; }
         }
         const payload = new Uint8Array(bytes); let offset = 0;
         for (const value of chunks) { payload.set(value, offset); offset += value.byteLength; }
         headers.delete('content-length'); headers.delete('content-encoding'); headers.delete('transfer-encoding');
         return new Response(response.body ? payload : null, { status: response.status, statusText: response.statusText, headers });
     } catch (error) {
-        const safe = relayError(['TimeoutError', 'AbortError'].includes(error.name));
+        const safe = relayError(['TimeoutError', 'AbortError'].includes(error.name),ioStep);
         return Response.json({ message: safe.message }, { status: safe.status,
-            headers: { 'Cache-Control': 'no-store', 'x-socialchoice-ai-failure': safe.code } });
+            headers: { 'Cache-Control': 'no-store', 'x-socialchoice-ai-failure': safe.code, 'x-socialchoice-ai-io-step': ioStep } });
     }
 }

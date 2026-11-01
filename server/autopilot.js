@@ -1,4 +1,6 @@
 import { createAssetDrafts } from './autopilot-drafts.js';
+import { createContentStrategist } from './content-strategist.js';
+import { createAiWriting } from './ai-writing.js';
 import { randomBytes, randomUUID, createHash } from 'node:crypto';
 import { createMetaVault } from './meta-vault.js';
 import { createDriveProvider, createR2Provider, DRIVE_SCOPE, IMAGE_LIMIT } from './autopilot-providers.js';
@@ -29,6 +31,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
         catch { return { ...job, backgroundQueued: false }; }
     };
     const drafts = createAssetDrafts({ store, key, aiFetch, sourceFor, authorize, readImage: (source, asset) => (source.kind === 'drive' ? drive : r2).image(source, asset) });
+    const strategist = createContentStrategist({ store, write: createAiWriting(store, key, aiFetch), sourceFor, authorize, readImage: (source, asset) => (source.kind === 'drive' ? drive : r2).image(source, asset) });
     let busy = false;
     return {
         pendingAt() {
@@ -68,6 +71,7 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
             if (operation === 'status') return { enabled, ready, driveReady, publicDriveReady: !!(ready && config.apiKey), storageReady: !!bucket && ready, backgroundReady: !!wake && ready, storagePrefix: ready && bucket ? storageRoot : null };
             requireReady(); await authorize?.();
             if (!input || typeof input !== 'object' || Array.isArray(input)) fail('Autopilot input required');
+            if (['strategyGenerate', 'strategyRegenerate', 'strategyApply'].includes(operation)) return strategist(operation, input);
             if (['generateDraft', 'saveAssetDraft'].includes(operation)) return drafts(operation, input);
             if (operation === 'list') {
                 if (input.brand_id) store.get('Brand', input.brand_id);
