@@ -1,5 +1,7 @@
 # Socialchoice Autopilot Phase 1
 
+Current acceptance (2026-11-01): see [real staging evidence and remaining gates](../plans/261031-autopilot-phase-1/acceptance-20261101.md). Public Drive ingestion, one real OpenRouter/Gemini image with exact OCR and approved persistence, access-revocation sync recovery, removed-file restoration and synthetic dead-letter recovery pass. Local runtime/customer/source/AI gate tests pass 27/27. Cloud cross-customer isolation, real binary-version invalidation, resource-key protected folders and large-folder pagination remain open. Phase 1 is not accepted for production.
+
 ## Public Drive link sources — 2026-10-31 update
 
 New Drive sources use a public folder link instead of Google OAuth. Choose Public Google Drive folder, paste an HTTPS drive.google.com/drive/folders/... link (including resourcekey when present), add the source, check public access, then queue sync.
