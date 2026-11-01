@@ -1,8 +1,22 @@
 # Autopilot follow-up: public-image recovery and safe diagnostics
 
-Latest result: the authenticated real AI follow-up at the end of this report passes for one synthetic image. Historical blockers below describe the first run.
+Latest result: user accepted Phase 1 on staging for ordinary public Drive folders on 2026-11-01. Real resource-key-required folders are explicitly deferred and unverified; production release is not authorized. Earlier results below are historical.
 
 Date: 2026-11-01 (Asia/Ho_Chi_Minh)
+
+## User acceptance — 2026-11-01 (Asia/Ho_Chi_Minh)
+
+**Status: Phase 1 CLOSED for the agreed ordinary public-Drive-folder workflow on staging.**
+
+After the scope and remaining limitation were explained, the user reported: “tôi thấy oke rồi”. This records user acceptance of the staging workflow, together with the technical evidence below; it does not invent additional user test steps.
+
+Accepted scope: ordinary public folder link ingestion, private workspace Asset Library/R2 metadata, Queue processing and sync recovery/deduplication, confirmed OpenRouter/Gemini image analysis, cache/version handling and human review. Refer to the closing-gate follow-up for the 242/242 server checks, 23/23 separate-cloud customer-isolation checks, real version restoration and 101-file pagination evidence.
+
+Explicit scope exception: real resource-key-required folders remain **UNVERIFIED**. This case is deferred from the accepted Phase 1 scope, not marked passed. Existing synthetic coverage is retained. OAuth is outside the selected public-link workflow.
+
+This scoped acceptance supersedes earlier statements that Phase 1 cannot close solely because the resource-key fixture is unavailable. Historical failed runs and limitations below remain evidence and are not erased.
+
+No production release, main change or merge is authorized. Current accepted staging version: `4bffc1a5-3daf-4cd6-971d-bbf336be407d`. This acceptance update changes documentation only; no new tests or deployment were performed.
 
 ## Outcome of first run (before authenticated follow-up)
 
