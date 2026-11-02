@@ -39,8 +39,8 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 try {
                     details = await graph.permissions(credential.token, profile.id);
                 } catch (permError) {
-                    if (!permError?.explicitlyInactive && Array.isArray(credential.scopes) && LINKEDIN_SCOPES.every(scope => credential.scopes.includes(scope)) && Number.isSafeInteger(credential.expiresAt) && credential.expiresAt > Date.now()) {
-                        details = { scopes: LINKEDIN_SCOPES, expiresAt: credential.expiresAt };
+                    if (!permError?.explicitlyInactive && Number.isSafeInteger(credential.expiresAt) && credential.expiresAt > Date.now()) {
+                        details = { scopes: Array.isArray(credential.scopes) && credential.scopes.length ? credential.scopes : LINKEDIN_SCOPES, expiresAt: credential.expiresAt };
                     } else {
                         throw permError;
                     }
@@ -141,7 +141,7 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                     try {
                         await graph.permissions(credential.token);
                     } catch (permError) {
-                        if (permError?.explicitlyInactive || !Array.isArray(credential.scopes) || !LINKEDIN_SCOPES.every(scope => credential.scopes.includes(scope)) || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now()) {
+                        if (permError?.explicitlyInactive || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now()) {
                             throw permError;
                         }
                     }
