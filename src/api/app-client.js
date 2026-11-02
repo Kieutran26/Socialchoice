@@ -93,6 +93,11 @@ import { desktopRequest } from './desktop/request';
             start: brandId => request('threads/start', [brandId]), importProfile: id => request('threads/import', [id]),
             check: id => request('threads/check', [id]), disconnect: id => request('threads/disconnect', [id]),
         },
+        x: {
+            status: () => request('x/status'), profile: () => request('x/profile'),
+            start: brandId => request('x/start', [brandId]), importProfile: id => request('x/import', [id]),
+            check: id => request('x/check', [id]), disconnect: id => request('x/disconnect', [id]),
+        },
         posts: { save: (plan) => request('posts/save', [plan]), cancelPlans: ids => request('posts/cancel', [ids]) },
         integrations: {
             Core: {

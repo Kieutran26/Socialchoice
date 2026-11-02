@@ -1,6 +1,8 @@
 import { createPostizDelivery, postizDestination } from './postiz-delivery.js';
 import { createLinkedinGraph, linkedinMemberId } from './linkedin-graph.js';
 import { createLinkedinDelivery } from './linkedin-delivery.js';
+import { createXGraph } from './x-graph.js';
+import { createXDelivery } from './x-delivery.js';
 import { createTiktokGraph } from './tiktok-graph.js';
 import { createTiktokTokens } from './tiktok-tokens.js';
 import { createTiktokDelivery } from './tiktok-delivery.js';
@@ -44,6 +46,9 @@ export function createFacebookPublisher(store, config, options = {}) {
     const tiktokConfig = options.tiktokConfig || {}, creators = options.tiktokCreators || new Map();
     const tiktokGraph = licensedGraph(options.tiktokGraph || (tiktokConfig.ready ? createTiktokGraph(tiktokConfig) : null), options.authorize);
     const tiktokTokens = options.tiktokTokens || createTiktokTokens(store, tiktokConfig, tiktokGraph);
+    const xConfig = options.xConfig || {};
+    const xVault = xConfig.ready ? createMetaVault(store, xConfig.key) : null;
+    const xGraph = licensedGraph(options.xGraph || (xConfig.ready ? createXGraph(xConfig) : null), options.authorize);
     const vault = config.ready || threadsConfig.ready ? createMetaVault(store, config.key || threadsConfig.key) : null;
     const threadsVault = threadsConfig.ready ? createMetaVault(store, threadsConfig.key) : null;
     const threadsGraph = licensedGraph(threadsConfig.ready ? createThreadsGraph(threadsConfig) : null, options.authorize);
@@ -70,7 +75,7 @@ export function createFacebookPublisher(store, config, options = {}) {
     });
 
     function destination(post, scheduled = false, accountId, execution = false) {
-        if (!options.postizConfig?.ready && !config.ready && !threadsConfig.ready && !tiktokConfig.ready && !linkedinConfig.ready) fail('Configure the destination integration before publishing', 409);
+        if (!options.postizConfig?.ready && !config.ready && !threadsConfig.ready && !tiktokConfig.ready && !linkedinConfig.ready && !xConfig.ready) fail('Configure the destination integration before publishing', 409);
 
         if (post.is_demo || (!execution && post.status !== (scheduled ? 'scheduled' : 'draft'))) fail('Publish now requires a live draft', 409);
         const brand = store.get('Brand', post.brand_id);
@@ -133,13 +138,17 @@ export function createFacebookPublisher(store, config, options = {}) {
             const dest = postizDestination(store, options.postizConfig || {}, account, post, media);
             return { ...dest, comments };
         }
-        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'].includes(account.platform) || !(account.platform === 'linkedin' ? ['profile', 'page'].includes(account.account_type) : account.account_type === (account.platform !== 'facebook' ? 'profile' : 'page')) || account.connection_status !== 'connected' || !account.credential_id || !(account.platform === 'linkedin' ? linkedinMemberId(account.external_id) : (account.platform === 'tiktok' ? /^[\w.-]{1,256}$/ : /^\d+$/).test(account.external_id))) fail(account.platform === 'facebook' ? 'Connect a Facebook Page before publishing' : 'Connect the selected publishing accounts before publishing', 409);
-        if (!(account.platform === 'linkedin' ? linkedinConfig.ready : account.platform === 'tiktok' ? tiktokConfig.ready : account.platform === 'threads' ? threadsConfig.ready : config.ready)) fail('Configure the destination integration before publishing', 409);
-        const credential = account.platform === 'tiktok' ? tiktokTokens.peek(account) : (account.platform === 'linkedin' ? linkedinVault : account.platform === 'threads' ? threadsVault : vault).read(account.credential_id);
+        if (account.is_demo || account.brand_id !== post.brand_id || !['facebook', 'instagram', 'threads', 'tiktok', 'linkedin', 'x'].includes(account.platform) || !(account.platform === 'linkedin' ? ['profile', 'page'].includes(account.account_type) : account.account_type === (account.platform !== 'facebook' ? 'profile' : 'page')) || account.connection_status !== 'connected' || !account.credential_id || !(account.platform === 'linkedin' ? linkedinMemberId(account.external_id) : (account.platform === 'tiktok' ? /^[\w.-]{1,256}$/ : account.platform === 'x' ? /^\w+$/ : /^\d+$/).test(account.external_id))) fail(account.platform === 'facebook' ? 'Connect a Facebook Page before publishing' : 'Connect the selected publishing accounts before publishing', 409);
+        if (!(account.platform === 'linkedin' ? linkedinConfig.ready : account.platform === 'tiktok' ? tiktokConfig.ready : account.platform === 'threads' ? threadsConfig.ready : account.platform === 'x' ? xConfig.ready : config.ready)) fail('Configure the destination integration before publishing', 409);
+        const credential = account.platform === 'tiktok' ? tiktokTokens.peek(account) : (account.platform === 'linkedin' ? linkedinVault : account.platform === 'threads' ? threadsVault : account.platform === 'x' ? xVault : vault).read(account.credential_id);
         if (account.platform === 'facebook' && (!account.scopes?.includes('pages_manage_posts') || !credential.scopes?.includes('pages_manage_posts'))) fail('Reconnect Facebook and grant pages_manage_posts before publishing', 409);
-        if (!['threads', 'tiktok', 'linkedin'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task)) && !hasVerifiedPagePublishGrant(credential, account, config)) fail('Reconnect a Page with permission to create content', 409);
+        if (!['threads', 'tiktok', 'linkedin', 'x'].includes(account.platform) && !credential.tasks?.some(task => ['CREATE_CONTENT', 'PROFILE_PLUS_CREATE_CONTENT'].includes(task)) && !hasVerifiedPagePublishGrant(credential, account, config)) fail('Reconnect a Page with permission to create content', 409);
         if (typeof credential.token !== 'string' || !credential.token) fail(account.platform === 'facebook' ? 'Reconnect Facebook before publishing' : 'Reconnect the selected account before publishing', 409);
         const caption = resolveCaption(post, account);
+        if (account.platform === 'x') {
+            if (credential.platform !== 'x' || !credential.token) fail('Reconnect X and grant publishing permissions', 409);
+            if (typeof caption !== 'string' || !caption.trim() || Array.from(caption).length > 280) fail('X tweet must contain between 1 and 280 characters');
+        }
         if (account.platform === 'linkedin') {
             const expectedLinkedinId = account.account_type === 'page' ? (credential.organizationId || credential.profileId) : credential.profileId;
             if (credential.platform !== 'linkedin' || expectedLinkedinId !== account.external_id || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now() || !['openid', 'profile', 'w_member_social'].every(scope => account.scopes?.includes(scope) && credential.scopes?.includes(scope))) fail('Reconnect LinkedIn and grant publishing permissions', 409);
@@ -198,7 +207,7 @@ export function createFacebookPublisher(store, config, options = {}) {
             store.publishingWrite('PostVariant', { status }, current.variantId);
             if (current.multi) syncDeliveryState(store, current.postId);
             else store.publishingWrite('Post', { status, ...(result ? { published_at: now } : {}) }, current.postId);
-            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: current.platform || 'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || (current.platform === 'linkedin' ? 'LinkedIn confirmed the publication ID.' : current.platform === 'tiktok' ? 'TikTok confirmed private publication completion. The reference is a publish ID, not a public post link.' : current.platform === 'threads' ? 'Threads confirmed the media ID and profile.' : current.platform === 'instagram' ? 'Instagram confirmed the media ID and profile.' : 'Facebook confirmed the post ID.'), occurred_at: now, is_demo: false });
+            store.publishingWrite('PublishingLog', { post_id: current.postId, publish_job_id: current.jobId, account_name: current.pageName, platform: current.platform || 'facebook', level: status === 'published' ? 'success' : status === 'failed' ? 'error' : 'warning', message: message || (current.platform === 'x' ? 'X confirmed the tweet ID.' : current.platform === 'linkedin' ? 'LinkedIn confirmed the publication ID.' : current.platform === 'tiktok' ? 'TikTok confirmed private publication completion. The reference is a publish ID, not a public post link.' : current.platform === 'threads' ? 'Threads confirmed the media ID and profile.' : current.platform === 'instagram' ? 'Instagram confirmed the media ID and profile.' : 'Facebook confirmed the post ID.'), occurred_at: now, is_demo: false });
             return summary(next);
         });
     }
@@ -215,6 +224,7 @@ export function createFacebookPublisher(store, config, options = {}) {
     const runVideos = createVideoDelivery(store, vault, graph, finish, wake);
     const runInstagram = createInstagramDelivery(store, vault, instagramGraph, instagramMedia, finish, wake);
     const runLinkedin = createLinkedinDelivery(store, linkedinVault, linkedinGraph, finish, wake);
+    const runX = createXDelivery(store, xVault, xGraph, finish);
     const runThreads = createThreadsDelivery(store, threadsVault, threadsGraph, instagramMedia, finish, wake);
     const runTiktok = createTiktokDelivery(store, tiktokTokens, tiktokGraph, instagramMedia, finish, wake);
     const runComments = createCommentDelivery(
@@ -225,7 +235,7 @@ export function createFacebookPublisher(store, config, options = {}) {
         wake
     );
     async function runMedia() {
-        try { for (const attempt of store.pendingAttempts().filter(value => value.backend !== 'postiz' && (value.platform || 'facebook') === 'facebook' && !value.media?.length && Date.now() - value.startedAt > 60000)) finish(attempt, 'unknown', uncertainMessage); await scheduling.runDue(); await runPostiz(); await runPhotos(); await runVideos(); await runInstagram(); await runThreads(); await runTiktok(); await runLinkedin(); await runComments(); }
+        try { for (const attempt of store.pendingAttempts().filter(value => value.backend !== 'postiz' && (value.platform || 'facebook') === 'facebook' && !value.media?.length && Date.now() - value.startedAt > 60000)) finish(attempt, 'unknown', uncertainMessage); await scheduling.runDue(); await runPostiz(); await runPhotos(); await runVideos(); await runInstagram(); await runThreads(); await runTiktok(); await runLinkedin(); await runX(); await runComments(); }
         finally { await resume(); }
     }
     async function resume() {
@@ -290,7 +300,7 @@ export function createFacebookPublisher(store, config, options = {}) {
                 return claimed;
             });
             if (!credential) return this.status(attempt.id);
-            if (attempt.backend === 'postiz' || attempt.media?.length || ['threads', 'tiktok', 'linkedin'].includes(attempt.platform)) { await wake(Date.now() + 100); return summary(attempt); }
+            if (attempt.backend === 'postiz' || attempt.media?.length || ['threads', 'tiktok', 'linkedin', 'x'].includes(attempt.platform)) { await wake(Date.now() + 100); return summary(attempt); }
             await wake(attempt.startedAt + 61000);
             let result;
             try { result = await graph.publishText(attempt.pageId, attempt.caption, credential.token); }

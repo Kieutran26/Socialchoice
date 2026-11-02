@@ -140,7 +140,7 @@ export default function DesktopAiWriter({ form, disabled, onApply, onApplyPlatfo
                                 {t(
                                     isDesktop()
                                         ? 'Generate sends your brief, title, current caption and selected brand/strategy text directly to {provider}. Media and other posts are not sent. Your API account is billed by the provider.'
-                                        : 'Generate sends your brief, title, caption and selected brand/strategy through PostChoice to {provider}. Media and other posts are not sent. Your API account is billed by the provider.',
+                                        : 'Generate sends your brief, title, caption and selected brand/strategy through Socialchoice to {provider}. Media and other posts are not sent. Your API account is billed by the provider.',
                                     { provider: providerName }
                                 )}
                             </p>

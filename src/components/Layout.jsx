@@ -82,12 +82,15 @@ function Shell() {
                     }`}
             >
                 <div className="flex items-center justify-between mb-5">
-                    <NavLink to="/" className="flex items-center py-0.5">
+                    <NavLink to="/" className="flex items-center gap-2.5 py-0.5">
                         <img
-                            src="/postchoice-logo.png"
-                            alt="PostChoice"
-                            className="h-9 w-auto max-h-9 max-w-[185px] object-contain"
+                            src="/socialchoice-icon.png"
+                            alt="Socialchoice"
+                            className="h-8 w-auto object-contain"
                         />
+                        <span className="font-heading font-bold text-xl tracking-tight text-foreground">
+                            Socialchoice<span className="text-brand">.</span>
+                        </span>
                     </NavLink>
                     <Button
                         size="icon"
@@ -232,7 +235,7 @@ function Shell() {
                                 to="/"
                                 className="font-medium text-muted-foreground hover:text-foreground transition-colors truncate"
                             >
-                                PostChoice
+                                Socialchoice
                             </NavLink>
                             <CaretRight size={12} weight="bold" className="text-muted-foreground/60 shrink-0" />
                             <span className="font-semibold text-foreground truncate">

@@ -11,12 +11,13 @@ import { savePostPlan } from './post-plans.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
-export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
+
+export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, x, xSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const autopilot = createAutopilot({ store, auth, key: aiKey || metaSettings.key, aiFetch, ...autopilotOptions });
-    const notifications=createPublishingNotifications(store);
-    const metrics=createFacebookMetrics(store,metaSettings);
-    const instagramMedia=createInstagramMediaAccess(store,metaSettings,threadsSettings,tiktokSettings);
+    const notifications = createPublishingNotifications(store);
+    const metrics = createFacebookMetrics(store, metaSettings);
+    const instagramMedia = createInstagramMediaAccess(store, metaSettings, threadsSettings, tiktokSettings);
     const handler = async (req, res) => {
         const send = (status, value) => {
             res.writeHead(status, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' });
@@ -28,12 +29,13 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             if (!allowedHosts.has(host)) fail('Allowed host required', 403);
             const origins = publicOrigin ? [publicOrigin] : [`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`, `http://127.0.0.1:${req.socket.localPort}`, `http://localhost:${req.socket.localPort}`];
             if (req.method === 'GET' && req.url?.startsWith('/api/meta/callback?')) return await meta.callback(req, res);
-            if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req,res);
-            if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req,res);
-            if (req.method==='GET'&&req.url?.startsWith('/api/tiktok/callback?')&&tiktok)return await tiktok.callback(req,res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req, res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req, res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/tiktok/callback?') && tiktok) return await tiktok.callback(req, res);
+            if (req.method === 'GET' && req.url?.startsWith('/api/x/callback?') && x) return await x.callback(req, res);
             if (req.method === 'GET' && req.url?.startsWith('/api/drive/callback?')) return await autopilot.callback(req, res);
             // Signed GET/HEAD capabilities authorize only their exact delivery media, independently of browser origin.
-            if (instagramMedia.serve(req,res)) return;
+            if (instagramMedia.serve(req, res)) return;
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
             if (!req.url.startsWith('/api/')) {
@@ -46,7 +48,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 auth.require(req);
                 const asset = store.all('MediaAsset').find(asset => asset.storage_id === imageRead[1]);
                 if (!asset) fail('Stored image not found', 404);
-                return serveMedia(req,res,store,asset);
+                return serveMedia(req, res, store, asset);
             }
             if (req.headers['x-socialchoice-client'] !== 'local-ui') fail('Application request header required', 403);
             if (req.url === '/api/auth/login' && req.method === 'POST') {
@@ -76,7 +78,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 return send(200, await ai(req.url.slice('/api/ai/'.length), input));
             }
             if (await adminLicenseRequest(req, auth, licenseAdmin, send)) return;
-            if(await videoUploadRequest(req,store,send)) return;
+            if (await videoUploadRequest(req, store, send)) return;
             if (req.url === '/api/media/upload' && req.method === 'POST') {
                 const chunks = []; let length = 0;
                 for await (const chunk of req) { const bytes = Buffer.from(chunk); length += bytes.length; if (length > MAX_IMAGE_BYTES) fail('Images must be at most 3 MiB', 413); chunks.push(bytes); }
@@ -95,13 +97,15 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 return send(200, await postiz.execute(postizRoute[1], req, res, input.args));
             }
             const metaRoute = req.url?.match(/^\/api\/meta\/(status|start|pages|import|disconnect|check)$/);
-            const threadsRoute=req.url?.match(/^\/api\/threads\/(status|start|profile|import|disconnect|check)$/);
-            const tiktokRoute=req.url?.match(/^\/api\/tiktok\/(status|start|profile|import|disconnect|check|creator)$/);
-            const linkedinRoute=req.url?.match(/^\/api\/linkedin\/(status|start|profile|import|disconnect|check|company)$/);
-            if (metaRoute || threadsRoute || tiktokRoute || linkedinRoute) {
-                const service=linkedinRoute?linkedin:tiktokRoute?tiktok:threadsRoute?threads:meta,operation=(linkedinRoute||tiktokRoute||threadsRoute||metaRoute)[1];
-                if(!service)fail('Threads is not configured',409);
-                if (req.method === 'GET' && ['status', 'pages','profile'].includes(operation)) return send(200, await service.execute(operation, req, res));
+            const threadsRoute = req.url?.match(/^\/api\/threads\/(status|start|profile|import|disconnect|check)$/);
+            const tiktokRoute = req.url?.match(/^\/api\/tiktok\/(status|start|profile|import|disconnect|check|creator)$/);
+            const linkedinRoute = req.url?.match(/^\/api\/linkedin\/(status|start|profile|import|disconnect|check|company)$/);
+            const xRoute = req.url?.match(/^\/api\/x\/(status|start|profile|import|disconnect|check)$/);
+            if (metaRoute || threadsRoute || tiktokRoute || linkedinRoute || xRoute) {
+                const service = xRoute ? x : linkedinRoute ? linkedin : tiktokRoute ? tiktok : threadsRoute ? threads : meta;
+                const operation = (xRoute || linkedinRoute || tiktokRoute || threadsRoute || metaRoute)[1];
+                if (!service) fail('Service is not configured', 409);
+                if (req.method === 'GET' && ['status', 'pages', 'profile'].includes(operation)) return send(200, await service.execute(operation, req, res));
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';
                 for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
@@ -111,11 +115,11 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             }
             if (req.url === '/api/auth/logout' && req.method === 'POST') { auth.logout(req, res); return send(200, { ok: true }); }
             if (req.url === '/api/session' && req.method === 'GET') return send(200, auth.identity ? auth.identity(req) : { id: 'local-owner', full_name: 'Workspace owner', role: 'admin', mode: auth.enabled ? 'admin-session' : 'local-only', storage: hosted ? 'hosted' : 'local' });
-            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: !metaSettings.ready, queued: store.queuedAttempts().length, nextDue: store.queuedAttempts().length ? new Date(Math.min(...store.queuedAttempts().map(attempt=>attempt.scheduledFor))).toISOString() : null, message: metaSettings.ready ? 'Confirmed Facebook schedules run automatically. Uncertain deliveries are not resent.' : 'Configure Meta before publishing' });
+            if (req.url === '/api/publishing/check' && req.method === 'POST') return send(200, { unavailable: !metaSettings.ready, queued: store.queuedAttempts().length, nextDue: store.queuedAttempts().length ? new Date(Math.min(...store.queuedAttempts().map(attempt => attempt.scheduledFor))).toISOString() : null, message: metaSettings.ready ? 'Confirmed Facebook schedules run automatically. Uncertain deliveries are not resent.' : 'Configure Meta before publishing' });
             const publishingRoute = req.url?.match(/^\/api\/publishing\/(prepare|publish|status|prepareSchedule|schedule|cancelSchedule|prepareBatch|confirmBatch|batchStatus|prepareRetry|cancelPage)$/);
             if (req.url?.startsWith('/api/collaboration/')) fail('Facebook collaboration is unavailable', 410);
-            const notificationRoute=req.url?.match(/^\/api\/notifications\/(list|read|readAll)$/);
-            const metricsRoute=req.url?.match(/^\/api\/metrics\/(list|refresh)$/);
+            const notificationRoute = req.url?.match(/^\/api\/notifications\/(list|read|readAll)$/);
+            const metricsRoute = req.url?.match(/^\/api\/metrics\/(list|refresh)$/);
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const templateRoute = req.url?.match(/^\/api\/templates\/(save|createDraft)$/);
             const savingPost = req.url === '/api/posts/save';
@@ -129,14 +133,14 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             let input;
             try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
             if (!Array.isArray(input.args)) fail('Arguments array required');
-            if(metricsRoute){if(input.args.length!==1)fail('Metrics filters required');return send(200,await metrics[metricsRoute[1]](input.args[0]));}
-            if(notificationRoute){const operation=notificationRoute[1];if(input.args.length!==(operation==='read'?1:0))fail('Invalid notification request');return send(200,notifications[operation](...input.args));}
+            if (metricsRoute) { if (input.args.length !== 1) fail('Metrics filters required'); return send(200, await metrics[metricsRoute[1]](input.args[0])); }
+            if (notificationRoute) { const operation = notificationRoute[1]; if (input.args.length !== (operation === 'read' ? 1 : 0)) fail('Invalid notification request'); return send(200, notifications[operation](...input.args)); }
             if (publishingRoute) {
-                if(publishingRoute[1]==='prepareBatch'){if(!publisher||input.args.length!==1)fail('Batch entries required');return send(200,publisher.prepareBatch(input.args[0]));}
-                if (!publisher || !(publishingRoute[1] === 'prepareSchedule' ? [2,3] : publishingRoute[1] === 'prepareRetry' ? [2] : [1]).includes(input.args.length) || input.args.some(arg=>typeof arg !== 'string')) fail('Publishing request ID required');
-                if(tiktok&&['prepare','prepareSchedule','prepareRetry'].includes(publishingRoute[1])) {
-                    const post=store.get('Post',input.args[0]);
-                    for(const id of post.account_ids||[])if(store.get('SocialAccount',id).platform==='tiktok')await tiktok.execute('creator',req,res,[id]);
+                if (publishingRoute[1] === 'prepareBatch') { if (!publisher || input.args.length !== 1) fail('Batch entries required'); return send(200, publisher.prepareBatch(input.args[0])); }
+                if (!publisher || !(publishingRoute[1] === 'prepareSchedule' ? [2, 3] : publishingRoute[1] === 'prepareRetry' ? [2] : [1]).includes(input.args.length) || input.args.some(arg => typeof arg !== 'string')) fail('Publishing request ID required');
+                if (tiktok && ['prepare', 'prepareSchedule', 'prepareRetry'].includes(publishingRoute[1])) {
+                    const post = store.get('Post', input.args[0]);
+                    for (const id of post.account_ids || []) if (store.get('SocialAccount', id).platform === 'tiktok') await tiktok.execute('creator', req, res, [id]);
                 }
                 return send(200, await publisher[publishingRoute[1]](...input.args));
             }

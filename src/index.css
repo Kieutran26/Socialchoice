@@ -170,7 +170,7 @@
         scrollbar-width: thin;
     }
 
-    /* PostChoice Brand overrides */
+    /* Socialchoice Brand overrides */
     .bg-brand {
         background-color: var(--brand-yellow) !important;
     }

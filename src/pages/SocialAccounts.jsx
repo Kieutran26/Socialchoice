@@ -169,6 +169,8 @@ export default function SocialAccounts() {
                 ? appClient.tiktok
                 : account.platform === 'threads'
                 ? appClient.threads
+                : account.platform === 'x'
+                ? appClient.x
                 : appClient.meta
             ).disconnect(account.id);
         } else {
@@ -208,12 +210,16 @@ export default function SocialAccounts() {
                 ? appClient.tiktok
                 : account.platform === 'threads'
                 ? appClient.threads
+                : account.platform === 'x'
+                ? appClient.x
                 : appClient.meta
             ).check(account.id);
             if (result.connected === false) throw new Error('Postiz channel is disconnected');
             toast({
                 title: t(
-                    account.platform === 'linkedin'
+                    account.platform === 'x'
+                        ? 'X access verified'
+                        : account.platform === 'linkedin'
                         ? 'LinkedIn access verified'
                         : account.platform === 'tiktok'
                         ? 'TikTok access verified'
@@ -246,6 +252,8 @@ export default function SocialAccounts() {
             ? appClient.tiktok.start(account.brand_id)
             : account.platform === 'threads'
             ? appClient.threads.start(account.brand_id)
+            : account.platform === 'x'
+            ? appClient.x.start(account.brand_id)
             : appClient.meta.start(account.brand_id, account.platform)
         )
             .then((result) => window.location.assign(result.url))
