@@ -1,6 +1,6 @@
 export function linkedinConfig(env = process.env) {
     const trim = value => typeof value === 'string' ? value.trim() : value;
-    const values = { appId: trim(env.LINKEDIN_CLIENT_ID), appSecret: trim(env.LINKEDIN_CLIENT_SECRET), redirectUri: trim(env.LINKEDIN_REDIRECT_URI), key: trim(env.META_TOKEN_ENCRYPTION_KEY) };
+    const values = { appId: trim(env.LINKEDIN_CLIENT_ID), appSecret: trim(env.LINKEDIN_CLIENT_SECRET), redirectUri: trim(env.LINKEDIN_REDIRECT_URI) || (env.SOCIALCHOICE_PUBLIC_ORIGIN ? `${trim(env.SOCIALCHOICE_PUBLIC_ORIGIN)}/api/linkedin/callback` : undefined), key: trim(env.META_TOKEN_ENCRYPTION_KEY || env.SOCIALCHOICE_STORAGE_KEY) };
     const missing = Object.entries(values).filter(([, value]) => !value).map(([name]) => name);
     if (missing.length) return { ready: false, missing };
     let redirect;

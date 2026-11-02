@@ -25,6 +25,10 @@ try {
         for (const name of ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET', 'LINKEDIN_REDIRECT_URI']) if (linkedin[name]) secrets[name] = linkedin[name].trim();
         if (linkedin.META_TOKEN_ENCRYPTION_KEY && !secrets.META_TOKEN_ENCRYPTION_KEY) secrets.META_TOKEN_ENCRYPTION_KEY = linkedin.META_TOKEN_ENCRYPTION_KEY.trim();
     }
+    if (existsSync('.env.x')) {
+        const x = parseEnv(readFileSync('.env.x', 'utf8'));
+        for (const name of ['X_CLIENT_ID', 'X_CLIENT_SECRET', 'X_REDIRECT_URI']) if (x[name]) secrets[name] = x[name].trim();
+    }
     const result = spawnSync(process.execPath, [resolve('node_modules/wrangler/bin/wrangler.js'), 'secret', 'bulk'], {
         input: JSON.stringify(secrets), encoding: 'utf8', stdio: ['pipe', 'inherit', 'inherit'],
         env: { ...process.env, XDG_CONFIG_HOME: resolve('.wrangler/config'), WRANGLER_SEND_METRICS: 'false' },

@@ -57,6 +57,9 @@
     "THREADS_APP_ID": "1880622033307199",
     "THREADS_REDIRECT_URI": "https://socialchoice.site/api/threads/callback",
     "META_REDIRECT_URI": "https://socialchoice.site/api/meta/callback",
+    "LINKEDIN_CLIENT_ID": "86aryvxxw7a5q8",
+    "LINKEDIN_REDIRECT_URI": "https://socialchoice.site/api/linkedin/callback",
+    "X_REDIRECT_URI": "https://socialchoice.site/api/x/callback",
     "SOCIALCHOICE_AUTOPILOT_ENABLED": "true"
   },
   "observability": {
