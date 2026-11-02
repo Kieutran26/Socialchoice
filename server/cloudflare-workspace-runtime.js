@@ -49,7 +49,13 @@ export function createCloudWorkspaceRuntime(ctx, env, customerId) {
     const xGraph = xSettings.ready ? createXGraph(xSettings) : null;
     const x = createXConnection(store, auth, xSettings, { graph: xGraph, states: privateMap('x-oauth'), pending: privateMap('x-profile') });
     const publisher = createFacebookPublisher(store, metaSettings, { linkedinConfig: linkedinSettings, threadsConfig: threadsSettings, tiktokConfig: tiktokSettings, tiktokTokens, tiktokCreators, tiktokGraph, xConfig: xSettings, xGraph, authorize, wake: async time => { const alarm = await ctx.storage.getAlarm(); if (!alarm || time < alarm) await ctx.storage.setAlarm(time); } });
-    const allowedHosts = new Set([new URL(publicOrigin).hostname, new URL(backendOrigin).hostname]);
+    const allowedHosts = new Set([
+        new URL(publicOrigin).hostname,
+        new URL(backendOrigin).hostname,
+        'socialchoice.site',
+        'www.socialchoice.site',
+        'socialchoice.vercel.app',
+    ]);
     const licenseAdmin = customerId ? undefined : createAdminWebLicenses(store, privateMap('issued-web-licenses'), env, authority);
     const handler = createHttpHandler({ autopilotOptions: { env, wake: env.AUTOPILOT_QUEUE ? () => env.AUTOPILOT_QUEUE.send({ v: 1, workspace: customerId || 'owner' }) : undefined, bucket: env.AUTOPILOT_ASSETS, storageRoot: customerId ? `customers/${customerId}/` : 'owner/', authorize }, store, auth, meta, linkedin, threads, tiktok, tiktokSettings, x, xSettings, publisher, metaSettings, threadsSettings, publicOrigin, allowedHosts, licenseAdmin, hosted: true, aiKey: env.SOCIALCHOICE_STORAGE_KEY, aiFetch: createRegionalAiFetch(env.AI_EGRESS), aiDiagnosticSink: event => console.warn('AI_FAILURE', JSON.stringify(event)) });
     return { store, auth, publisher, handler, authorize, autopilot: handler.autopilot };

@@ -15,7 +15,8 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
     return async request => {
         try {
             const url = new URL(request.url), path = url.pathname;
-            if (![env.SOCIALCHOICE_PUBLIC_ORIGIN, env.SOCIALCHOICE_BACKEND_ORIGIN].includes(url.origin)) return json({ message: 'Allowed host required' }, 403);
+            const validOrigins = [env.SOCIALCHOICE_PUBLIC_ORIGIN, env.SOCIALCHOICE_BACKEND_ORIGIN, 'https://socialchoice.site', 'https://www.socialchoice.site', 'https://socialchoice.vercel.app'].filter(Boolean);
+            if (!validOrigins.includes(url.origin)) return json({ message: 'Allowed host required' }, 403);
             const media = path.match(/^\/api\/workspaces\/([a-f0-9-]{36})(\/api\/instagram-media\/[a-f0-9-]{36}\/[a-f0-9-]{36})$/);
             if (media) {
                 if (!accountId(media[1]) || !['GET', 'HEAD'].includes(request.method)) return json({ message: 'Media fetch requires GET or HEAD' }, 405);
@@ -23,7 +24,8 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 return forwardCustomer(media[1], new Request(url, { method: request.method, headers }));
             }
             const callback = request.method === 'GET' && /^\/api\/(meta|threads|linkedin|tiktok|drive)\/callback$/.test(path);
-            if (!callback && (request.headers.get('origin') && request.headers.get('origin') !== env.SOCIALCHOICE_PUBLIC_ORIGIN || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
+            const allowedAppOrigins = [env.SOCIALCHOICE_PUBLIC_ORIGIN, 'https://socialchoice.site', 'https://www.socialchoice.site', 'https://socialchoice.vercel.app'].filter(Boolean);
+            if (!callback && (request.headers.get('origin') && !allowedAppOrigins.includes(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
             if (path === '/api/customer/config' && request.method === 'GET') return json({ ready: true, multipleDevices: true, purchase: 'one-time' });
             if (/^\/api\/customer\/(register|login|recover)$/.test(path)) {
                 if (request.method !== 'POST' || request.headers.get('x-socialchoice-client') !== 'local-ui' || request.headers.get('content-type') !== 'application/json') return json({ message: 'JSON application POST required' }, 415);

@@ -26,8 +26,18 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
         try {
             // Accept only configured hosts; public access retains session and browser-origin checks.
             const host = req.headers.host?.split(':')[0];
-            if (!allowedHosts.has(host)) fail('Allowed host required', 403);
-            const origins = publicOrigin ? [publicOrigin] : [`http://127.0.0.1:${frontendPort}`, `http://localhost:${frontendPort}`, `http://127.0.0.1:${req.socket.localPort}`, `http://localhost:${req.socket.localPort}`];
+            const hosts = new Set([...allowedHosts, 'socialchoice.site', 'www.socialchoice.site', 'socialchoice.vercel.app']);
+            if (!hosts.has(host)) fail('Allowed host required', 403);
+            const origins = [
+                ...(publicOrigin ? [publicOrigin] : []),
+                'https://socialchoice.site',
+                'https://www.socialchoice.site',
+                'https://socialchoice.vercel.app',
+                `http://127.0.0.1:${frontendPort}`,
+                `http://localhost:${frontendPort}`,
+                `http://127.0.0.1:${req.socket?.localPort}`,
+                `http://localhost:${req.socket?.localPort}`
+            ].filter(Boolean);
             if (req.method === 'GET' && req.url?.startsWith('/api/meta/callback?')) return await meta.callback(req, res);
             if (req.method === 'GET' && req.url?.startsWith('/api/linkedin/callback?') && linkedin) return await linkedin.callback(req, res);
             if (req.method === 'GET' && req.url?.startsWith('/api/threads/callback?') && threads) return await threads.callback(req, res);

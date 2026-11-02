@@ -50,13 +50,13 @@
     }
   ],
   "vars": {
-    "SOCIALCHOICE_PUBLIC_ORIGIN": "https://socialchoice.vercel.app",
+    "SOCIALCHOICE_PUBLIC_ORIGIN": "https://socialchoice.site",
     "SOCIALCHOICE_BACKEND_ORIGIN": "https://socialchoice-api.nguyenngockieutran.workers.dev",
     "META_APP_ID": "1115808334255427",
-    "TIKTOK_REDIRECT_URI": "https://socialchoice.vercel.app/api/tiktok/callback",
+    "TIKTOK_REDIRECT_URI": "https://socialchoice.site/api/tiktok/callback",
     "THREADS_APP_ID": "1880622033307199",
-    "THREADS_REDIRECT_URI": "https://socialchoice.vercel.app/api/threads/callback",
-    "META_REDIRECT_URI": "https://socialchoice.vercel.app/api/meta/callback",
+    "THREADS_REDIRECT_URI": "https://socialchoice.site/api/threads/callback",
+    "META_REDIRECT_URI": "https://socialchoice.site/api/meta/callback",
     "SOCIALCHOICE_AUTOPILOT_ENABLED": "true"
   },
   "observability": {
