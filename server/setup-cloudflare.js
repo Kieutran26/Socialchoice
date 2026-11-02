@@ -29,6 +29,10 @@ try {
         const x = parseEnv(readFileSync('.env.x', 'utf8'));
         for (const name of ['X_CLIENT_ID', 'X_CLIENT_SECRET', 'X_REDIRECT_URI']) if (x[name]) secrets[name] = x[name].trim();
     }
+    if (existsSync('.env.threads')) {
+        const threads = parseEnv(readFileSync('.env.threads', 'utf8'));
+        if (threads.THREADS_APP_SECRET) secrets.THREADS_APP_SECRET = threads.THREADS_APP_SECRET.trim();
+    }
     const result = spawnSync(process.execPath, [resolve('node_modules/wrangler/bin/wrangler.js'), 'secret', 'bulk'], {
         input: JSON.stringify(secrets), encoding: 'utf8', stdio: ['pipe', 'inherit', 'inherit'],
         env: { ...process.env, XDG_CONFIG_HOME: resolve('.wrangler/config'), WRANGLER_SEND_METRICS: 'false' },

@@ -1,5 +1,5 @@
 export function threadsConfig(env = process.env) {
-    const values = { appId: env.THREADS_APP_ID, appSecret: env.THREADS_APP_SECRET, redirectUri: env.THREADS_REDIRECT_URI, key: env.META_TOKEN_ENCRYPTION_KEY };
+    const values = { appId: env.THREADS_APP_ID, appSecret: env.THREADS_APP_SECRET, redirectUri: env.THREADS_REDIRECT_URI || (env.SOCIALCHOICE_PUBLIC_ORIGIN ? `${env.SOCIALCHOICE_PUBLIC_ORIGIN}/api/threads/callback` : undefined), key: env.META_TOKEN_ENCRYPTION_KEY || env.SOCIALCHOICE_STORAGE_KEY };
     const missing = Object.entries(values).filter(([, value]) => !value).map(([name]) => name);
     if (missing.length) return { ready: false, missing };
     let redirect;

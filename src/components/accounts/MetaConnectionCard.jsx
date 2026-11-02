@@ -18,7 +18,14 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
     const [busy, setBusy] = useState(false);
     const [platform, setPlatform] = useState(initialPlatform);
     useEffect(() => { onBusyChange(busy); return () => onBusyChange(false); }, [busy, onBusyChange]);
-    useEffect(() => { setBrandId(defaultBrandId); }, [defaultBrandId]);
+    useEffect(() => {
+        if (defaultBrandId) {
+            setBrandId(defaultBrandId);
+        } else {
+            const activeReal = brands.filter(b => !b.is_demo && b.status === 'active');
+            if (activeReal.length === 1) setBrandId(activeReal[0].id);
+        }
+    }, [defaultBrandId, brands]);
     useEffect(() => {
         let active = true;
         Promise.all([appClient.meta.status(), appClient.meta.pages(),appClient.threads.status(),appClient.threads.profile()]).then(([health, pages,threadsHealth,profile]) => {
@@ -39,6 +46,14 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
         const threadsResult=new URLSearchParams(window.location.search).get('threads');
         if(threadsResult==='failed')setError('Threads connection failed. Check app configuration and permissions.');
         if(threadsResult==='cancelled')setError('Threads connection cancelled.');
+        if (result || threadsResult) {
+            try {
+                const url = new URL(window.location.href);
+                url.searchParams.delete('meta');
+                url.searchParams.delete('threads');
+                window.history.replaceState(window.history.state, '', url);
+            } catch {}
+        }
         return () => { active = false; };
     }, []);
     async function connect() {
@@ -65,7 +80,7 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
             {!lockPlatform && <select aria-label={t('Connection platform')} value={platform} onChange={e => setPlatform(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="facebook">Facebook</option><option value="instagram">Instagram</option><option value="threads">Threads</option>
             </select>}
-            <select aria-label={t(lockPlatform ? 'Channel brand' : 'Brand for Facebook Pages')} value={brandId} onChange={e => setBrandId(e.target.value)} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
+            <select aria-label={t(lockPlatform ? 'Channel brand' : 'Brand for Facebook Pages')} value={brandId} onChange={e => { setBrandId(e.target.value); setError(''); }} className="border rounded-lg p-2 text-sm" disabled={busy || demoMode}>
                 <option value="">{t('Choose brand')}</option>{brands.filter(b => !b.is_demo && b.status === 'active').map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
             {selection?.pending ? <Button variant="outline" type="button" onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</Button> : <button className="btn-skew" type="button" onClick={connect} disabled={busy || !(platform==='threads'?threadsStatus?.ready:status?.ready) || !brandId || demoMode}>{t(platform === 'threads'?'Connect / reconnect Threads':platform === 'instagram' ? 'Connect / reconnect Instagram' : 'Connect / reconnect Facebook')}</button>}
