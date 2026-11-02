@@ -18,7 +18,12 @@ try {
         const cloud = JSON.parse(readFileSync('wrangler.jsonc', 'utf8')).vars;
         if (meta.META_APP_ID !== cloud.META_APP_ID) throw new Error('Local Meta app does not match the cloud app; no secrets uploaded');
         // The cloud manifest owns the public callback; the local callback may remain loopback.
-        for (const name of ['META_APP_SECRET', 'META_TOKEN_ENCRYPTION_KEY', 'META_GRAPH_VERSION', 'META_LOGIN_CONFIG_ID']) if (meta[name]) secrets[name] = meta[name];
+        for (const name of ['META_APP_SECRET', 'META_TOKEN_ENCRYPTION_KEY', 'META_GRAPH_VERSION', 'META_LOGIN_CONFIG_ID']) if (meta[name]) secrets[name] = meta[name].trim();
+    }
+    if (existsSync('.env.linkedin')) {
+        const linkedin = parseEnv(readFileSync('.env.linkedin', 'utf8'));
+        for (const name of ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET', 'LINKEDIN_REDIRECT_URI']) if (linkedin[name]) secrets[name] = linkedin[name].trim();
+        if (linkedin.META_TOKEN_ENCRYPTION_KEY && !secrets.META_TOKEN_ENCRYPTION_KEY) secrets.META_TOKEN_ENCRYPTION_KEY = linkedin.META_TOKEN_ENCRYPTION_KEY.trim();
     }
     const result = spawnSync(process.execPath, [resolve('node_modules/wrangler/bin/wrangler.js'), 'secret', 'bulk'], {
         input: JSON.stringify(secrets), encoding: 'utf8', stdio: ['pipe', 'inherit', 'inherit'],

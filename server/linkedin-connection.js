@@ -35,7 +35,16 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 const credential = await graph.exchange(code);
                 const profile = await graph.profile(credential.token);
                 credential.profileId = profile.id;
-                const details = await graph.permissions(credential.token, profile.id);
+                let details;
+                try {
+                    details = await graph.permissions(credential.token, profile.id);
+                } catch (permError) {
+                    if (!permError?.explicitlyInactive && Array.isArray(credential.scopes) && LINKEDIN_SCOPES.every(scope => credential.scopes.includes(scope)) && Number.isSafeInteger(credential.expiresAt) && credential.expiresAt > Date.now()) {
+                        details = { scopes: LINKEDIN_SCOPES, expiresAt: credential.expiresAt };
+                    } else {
+                        throw permError;
+                    }
+                }
                 const organizations = typeof graph.organizations === 'function' ? await graph.organizations(credential.token) : [];
                 if (!auth.sessionActive(ticket.session) || ticket.expires <= Date.now() || pending.get(ticket.session)?.flowId !== state) fail('Linkedin connection request expired', 401);
                 requireBrand(ticket.brandId);
@@ -44,7 +53,7 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
             } catch (error) {
                 if (pending.get(ticket.session)?.flowId === state) {
                     pending.delete(ticket.session);
-                    if (auth.sessionActive(ticket.session) && ticket.expires > Date.now()) pending.set(ticket.session, { session: ticket.session, failure: safeConnectionFailure(error), expires: Date.now() + ttl });
+                    if (auth.sessionActive(ticket.session) && ticket.expires > Date.now()) pending.set(ticket.session, { session: ticket.session, brandId: ticket.brandId, failure: safeConnectionFailure(error), expires: Date.now() + ttl });
                 }
                 return finish('failed');
             }
@@ -81,7 +90,7 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
             if (operation === 'profile') {
                 const result = pending.get(session);
                 if (!result || result.processing) return { profile: null, pending: false };
-                if (result.failure) return { profile: null, pending: false, failure: result.failure };
+                if (result.failure) return { profile: null, pending: false, ...(result.brandId ? { brandId: result.brandId } : {}), failure: result.failure };
                 return { pending: true, platform: 'linkedin', brandId: result.brandId, profile: result.profile, ...(result.organizations?.length ? { organizations: result.organizations } : {}), scopes: result.credential.scopes, expiresAt: result.credential.expiresAt };
             }
             if (operation === 'import') {
@@ -116,7 +125,13 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 try {
                     const credential = vault.read(account.credential_id); validCredential(credential, account);
                     const profile = await graph.profile(credential.token);
-                    await graph.permissions(credential.token);
+                    try {
+                        await graph.permissions(credential.token);
+                    } catch (permError) {
+                        if (permError?.explicitlyInactive || !Array.isArray(credential.scopes) || !LINKEDIN_SCOPES.every(scope => credential.scopes.includes(scope)) || !Number.isSafeInteger(credential.expiresAt) || credential.expiresAt <= Date.now()) {
+                            throw permError;
+                        }
+                    }
                     if (profile.id !== credential.profileId) fail('Linkedin profile identity changed. Reconnect Linkedin.', 409);
                     if (store.get('SocialAccount', account.id).credential_id !== account.credential_id) fail('Linkedin connection changed. Check again.', 409);
                     const patch = account.account_type === 'page'

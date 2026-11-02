@@ -5,8 +5,10 @@ import { createLinkedinGraph, linkedinProfile, linkedinTokenDetails, linkedinPub
 test('LinkedIn rejects wrong app, missing scopes, expired token and malformed identities', () => {
     const data = { active: true, client_id: 'abc123', auth_type: '3L', scope: 'openid,profile,w_member_social', expires_at: Math.floor(Date.now()/1000)+3600 };
     assert.equal(linkedinTokenDetails(data,'abc123').scopes.length,3);
+    assert.equal(linkedinTokenDetails({ ...data, auth_type: 'AUTHORIZED_USER' }, 'abc123').scopes.length, 3);
     for (const patch of [{active:false},{client_id:'other'},{scope:'openid profile'},{expires_at:1},{auth_type:'2L'}]) assert.throws(()=>linkedinTokenDetails({...data,...patch},'abc123'));
     assert.equal(linkedinProfile({sub:'member_123',name:'Test Member'}).id,'member_123');
+    assert.equal(linkedinProfile({sub:'member_123',given_name:'Test',family_name:'Member'}).username,'Test Member');
     assert.throws(()=>linkedinProfile({sub:'../person',name:'Test'}));
     assert.throws(()=>linkedinPublishedId('123'));
     assert.equal(linkedinPublishedId('urn:li:ugcPost:123').id,'urn:li:ugcPost:123');
