@@ -32,6 +32,8 @@ Media uses the existing signed backend capability endpoint with a distinct Threa
 
 ## Verification boundaries
 
+Callback repair 2026-11-02: the live Socialchoice site starts Threads OAuth with `https://socialchoice.site/api/threads/callback`, while Meta had only the older Vercel callback registered. With owner action-time approval, added the site callback to the Threads use-case settings inside Meta app `1115808334255427` (Threads product app ID `1880622033307199`). Reload confirmed both callbacks persisted; the Vercel callback remains. No secret, scope, code or deployment changed. The browser reached official Threads sign-in; owner login and subsequent authorization/import are still required to verify the complete connection. The Threads product ID is not a separate top-level app in the Meta app list.
+
 Local contract/state/security tests are not proof of live Threads token exchange or publication. Meta use case, permission availability and callback were verified in the dashboard; on 2026-10-15 the owner authorized reading the product secret and saving it to the existing Cloudflare Worker. The private stdin upload of THREADS_APP_SECRET succeeded; other keys were preserved. No real Threads grant, account import, publication or schedule execution is claimed. The Socialchoice admin session expired; owner sign-in is required before authenticated readiness and OAuth verification. Subsequent account consent and reviewed live content still require owner authorization.
 
 Primary API reference: [Meta Threads collection](https://www.postman.com/meta/threads/documentation/dht3nzz/threads-api). Graph requests are pinned to graph.threads.net; token endpoints use their documented unversioned paths and resource requests v1.0.
