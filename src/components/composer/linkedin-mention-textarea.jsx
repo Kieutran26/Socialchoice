@@ -1,14 +1,86 @@
-import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useImperativeHandle, useRef, useState } from 'react';
 import { Buildings, User } from '@phosphor-icons/react';
-import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
-import {
-    insertMention,
-    mentionRange,
-    mentionSuggestions,
-} from '@/lib/linkedin-mention-input';
+import { mentionSuggestions } from '@/lib/linkedin-mention-input';
 import { linkedinCompanyQuery } from '@/lib/linkedin-company-query';
 import { companyAvatarForNameOrVanity, saveCustomLinkedinOrganization } from '@/lib/linkedin-company-directory';
+
+const TOKEN_REGEX = /@\[([^\]]{1,200})\]\(urn:li:(organization|person):([a-zA-Z0-9_-]{1,128})\)/g;
+
+function escapeHtml(text = '') {
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+function rawToHtml(rawText = '') {
+    if (!rawText) return '';
+    const lines = rawText.split('\n');
+    return lines
+        .map(line => {
+            let html = '';
+            let lastIndex = 0;
+            const regex = new RegExp(TOKEN_REGEX.source, 'g');
+            let match;
+            while ((match = regex.exec(line)) !== null) {
+                html += escapeHtml(line.slice(lastIndex, match.index));
+                const label = escapeHtml(match[1]);
+                const type = escapeHtml(match[2]);
+                const id = escapeHtml(match[3]);
+                html += `<span class="linkedin-mention font-bold text-[#0a66c2] bg-[#0a66c2]/10 px-1.5 py-0.5 rounded cursor-default select-none inline-flex items-center gap-0.5" contenteditable="false" data-mention-label="${label}" data-mention-type="${type}" data-mention-id="${id}">@${label}</span>\u200B`;
+                lastIndex = match.index + match[0].length;
+            }
+            html += escapeHtml(line.slice(lastIndex));
+            return html || '<br>';
+        })
+        .join('<br>');
+}
+
+function domToRaw(root) {
+    if (!root) return '';
+    let result = '';
+
+    function traverse(node) {
+        if (!node) return;
+        if (node.nodeType === Node.TEXT_NODE) {
+            // Filter zero-width space after mention pill
+            result += (node.nodeValue || '').replace(/\u200B/g, '');
+            return;
+        }
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = /** @type {HTMLElement} */ (node);
+            if (el.classList.contains('linkedin-mention') || el.dataset?.mentionLabel) {
+                const label = el.dataset.mentionLabel || el.textContent.replace(/^@/, '');
+                const type = el.dataset.mentionType || 'organization';
+                const id = el.dataset.mentionId || '';
+                result += `@[${label}](urn:li:${type}:${id})`;
+                return;
+            }
+            const tag = el.tagName.toLowerCase();
+            if (tag === 'br') {
+                result += '\n';
+                return;
+            }
+            const isBlock = ['div', 'p'].includes(tag);
+            if (isBlock && result && !result.endsWith('\n')) {
+                result += '\n';
+            }
+            for (let i = 0; i < el.childNodes.length; i++) {
+                traverse(el.childNodes[i]);
+            }
+            if (isBlock && result && !result.endsWith('\n')) {
+                result += '\n';
+            }
+        }
+    }
+
+    for (let i = 0; i < root.childNodes.length; i++) {
+        traverse(root.childNodes[i]);
+    }
+    return result;
+}
 
 function MentionAvatar({ candidate }) {
     const [failed, setFailed] = useState(false);
@@ -30,37 +102,59 @@ function MentionAvatar({ candidate }) {
     );
 }
 
-/** @typedef {import('react').ComponentPropsWithoutRef<'textarea'> & { enabled?: boolean, linkedinAccounts?: any[] }} MentionProps */
+/** @typedef {import('react').ComponentPropsWithoutRef<'div'> & { name?: string, enabled?: boolean, linkedinAccounts?: any[], value?: string, onChange?: (e: any) => void, rows?: number, placeholder?: string, disabled?: boolean }} MentionEditorProps */
 export const LinkedinMentionTextarea = forwardRef(function LinkedinMentionTextarea(
-    /** @type {MentionProps} */ {
+    /** @type {MentionEditorProps} */ {
         enabled = false,
         linkedinAccounts = [],
         value = '',
         className = '',
+        placeholder = '',
+        disabled = false,
+        rows = 5,
         onChange,
         onKeyDown,
-        onSelect,
         onBlur,
-        onCompositionStart,
-        onCompositionEnd,
         ...props
     },
-    /** @type {import('react').ForwardedRef<HTMLTextAreaElement>} */ forwardedRef
+    /** @type {import('react').ForwardedRef<any>} */ forwardedRef
 ) {
     const { t } = useTranslation();
-    const input = useRef(null);
+    const editorRef = useRef(null);
     const composing = useRef(false);
-    const dismissed = useRef(null);
-    const [range, setRange] = useState(null);
+    const lastEmittedValue = useRef(value);
+    const [mentionState, setMentionState] = useState(null); // { query: string, range: Range }
     const [active, setActive] = useState(0);
     const [remoteCompanies, setRemoteCompanies] = useState([]);
     const listId = useId();
 
-    const rawText = String(value ?? '');
+    useImperativeHandle(forwardedRef, () => ({
+        focus: () => editorRef.current?.focus(),
+        get value() {
+            return editorRef.current ? domToRaw(editorRef.current) : '';
+        },
+    }));
 
-    // Silently fetch live LinkedIn companies in the background when typing @query (never triggers error toasts)
+    // Synchronize content from outside only if changed remotely
     useEffect(() => {
-        if (!enabled || !range?.query || range.query.trim().length < 2) {
+            if (!editorRef.current) return;
+            const currentRaw = domToRaw(editorRef.current);
+            if (value !== currentRaw && value !== lastEmittedValue.current) {
+                editorRef.current.innerHTML = rawToHtml(value);
+                lastEmittedValue.current = value;
+            }
+        }, [value]);
+
+    // Initial mount HTML
+    useEffect(() => {
+        if (editorRef.current && !editorRef.current.innerHTML) {
+            editorRef.current.innerHTML = rawToHtml(value);
+        }
+    }, []);
+
+    // Silently fetch live LinkedIn companies in the background when typing @query
+    useEffect(() => {
+        if (!enabled || !mentionState?.query || mentionState.query.trim().length < 2) {
             setRemoteCompanies([]);
             return;
         }
@@ -70,7 +164,7 @@ export const LinkedinMentionTextarea = forwardRef(function LinkedinMentionTextar
         if (!connected) return;
         let normalized;
         try {
-            normalized = linkedinCompanyQuery(range.query);
+            normalized = linkedinCompanyQuery(mentionState.query);
         } catch {
             return;
         }
@@ -97,168 +191,215 @@ export const LinkedinMentionTextarea = forwardRef(function LinkedinMentionTextar
                     );
                 }
             } catch {
-                // Silent background lookup
+                // Silent
             }
         }, 300);
         return () => {
             cancelled = true;
             clearTimeout(timer);
         };
-    }, [enabled, range?.query, linkedinAccounts]);
+}, [enabled, mentionState?.query, linkedinAccounts]);
 
-    const suggestions =
-        enabled && range
-            ? mentionSuggestions(linkedinAccounts, rawText, range.query, {
-                extraCandidates: remoteCompanies,
-            })
-            : [];
-    const open = enabled && !!range && suggestions.length > 0 && !props.disabled && !props.readOnly;
+const suggestions =
+        enabled && mentionState
+    ? mentionSuggestions(linkedinAccounts, domToRaw(editorRef.current), mentionState.query, {
+        extraCandidates: remoteCompanies,
+    })
+    : [];
+const open = enabled && !!mentionState && suggestions.length > 0 && !disabled;
 
-    function updateRange(target) {
-        if (dismissed.current?.value === target.value && dismissed.current?.caret === target.selectionStart) return;
-        dismissed.current = null;
-        if (!enabled || composing.current) {
-            setRange(null);
-            return;
+        function detectMentionTrigger() {
+            if (!enabled || composing.current || disabled) {
+                setMentionState(null);
+                return;
+            }
+            const sel = window.getSelection();
+            if (!sel || !sel.isCollapsed || !sel.anchorNode) {
+                setMentionState(null);
+                return;
+            }
+            const node = sel.anchorNode;
+            if (node.nodeType !== Node.TEXT_NODE) {
+                setMentionState(null);
+                return;
+            }
+            const offset = sel.anchorOffset;
+            const textBefore = node.nodeValue?.slice(0, offset) || '';
+            const match = /(?:^|[\s(])@([^@\n\[\]]{0,80})$/.exec(textBefore);
+            if (!match) {
+                setMentionState(null);
+                return;
+            }
+            const query = match[1];
+            const matchStart = offset - query.length - 1;
+            try {
+                const range = document.createRange();
+                range.setStart(node, matchStart);
+                range.setEnd(node, offset);
+                setMentionState({ query, range });
+                setActive(0);
+            } catch {
+                setMentionState(null);
+            }
         }
-        setRange(mentionRange(target.value, target.selectionStart, target.selectionEnd));
-        setActive(0);
-    }
 
-    function choose(candidate) {
-        const current = input.current;
-        if (!current || composing.current || !candidate?.token) return;
-        if (candidate.type === 'organization' && candidate.id && candidate.name) {
-            saveCustomLinkedinOrganization({
-                id: candidate.id,
-                name: candidate.name,
-                vanity: candidate.vanity || '',
-                avatar: candidate.avatar || '',
-            });
+        function emitChange() {
+            if (!editorRef.current) return;
+            const raw = domToRaw(editorRef.current);
+            lastEmittedValue.current = raw;
+            const syntheticEvent = {
+                target: { value: raw, name: props.name || 'caption' },
+                currentTarget: { value: raw, name: props.name || 'caption' },
+            };
+            onChange?.(syntheticEvent);
         }
-        const fresh = mentionRange(current.value, current.selectionStart, current.selectionEnd);
-        const result = insertMention(current.value, fresh, candidate.token);
-        if (!result) return;
-        setRange(null);
 
-        // Native value setter ensures 100% standard React event flow with zero caret displacement
-        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
-        setter.call(current, result.value);
-        current.dispatchEvent(new Event('input', { bubbles: true }));
-        requestAnimationFrame(() => {
-            current.focus();
-            current.setSelectionRange(result.caret, result.caret);
-        });
-    }
+        function choose(candidate) {
+            if (!candidate || !mentionState?.range || !editorRef.current) return;
+            if (candidate.type === 'organization' && candidate.id && candidate.name) {
+                saveCustomLinkedinOrganization({
+                    id: candidate.id,
+                    name: candidate.name,
+                    vanity: candidate.vanity || '',
+                    avatar: candidate.avatar || '',
+                });
+            }
 
-    return (
-        <div
-            className="relative min-w-0"
-            onBlur={event => {
-                if (!event.currentTarget.contains(event.relatedTarget)) {
-                    dismissed.current = null;
-                    setRange(null);
-                }
-            }}
-        >
-                            <Textarea
-                                {...props}
-                                className={className}
-                                value={value}
-                                ref={node => {
-                                    input.current = node;
-                                    if (typeof forwardedRef === 'function') forwardedRef(node);
-                                    else if (forwardedRef) forwardedRef.current = node;
+            const sel = window.getSelection();
+            const r = mentionState.range;
+            r.deleteContents();
+
+            const span = document.createElement('span');
+            span.className =
+                'linkedin-mention font-bold text-[#0a66c2] bg-[#0a66c2]/10 px-1.5 py-0.5 rounded cursor-default select-none inline-flex items-center gap-0.5';
+            span.contentEditable = 'false';
+            span.dataset.mentionLabel = candidate.name;
+            span.dataset.mentionType = candidate.type || 'organization';
+            span.dataset.mentionId = candidate.id;
+            span.textContent = `@${candidate.name}`;
+
+            r.insertNode(span);
+
+            // Insert non-breaking space after mention so cursor moves naturally past it
+            const spaceNode = document.createTextNode('\u00A0');
+            span.after(spaceNode);
+
+            if (sel) {
+                sel.removeAllRanges();
+                const nextRange = document.createRange();
+                nextRange.setStart(spaceNode, 1);
+                nextRange.collapse(true);
+                sel.addRange(nextRange);
+            }
+
+            setMentionState(null);
+            emitChange();
+            editorRef.current.focus();
+        }
+
+        const minHeightClass = rows ? `min-h-[${rows * 1.5}rem]` : 'min-h-[6.5rem]';
+
+        return (
+            <div
+                className="relative min-w-0"
+                onBlur={event => {
+                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                        setMentionState(null);
+                    }
+                    onBlur?.(event);
+                }}
+            >
+                            <div
+                                ref={editorRef}
+                                contentEditable={!disabled}
+                                suppressContentEditableWarning
+                                role="textbox"
+                                aria-multiline="true"
+                                aria-placeholder={placeholder}
+                                data-placeholder={placeholder}
+                                className={`w-full rounded-xl border border-input bg-white px-3 py-2 text-xs leading-relaxed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 whitespace-pre-wrap break-words empty:before:content-[attr(data-placeholder)] empty:before:text-muted-foreground ${minHeightClass} ${className}`}
+                                onInput={() => {
+                                    emitChange();
+                                    detectMentionTrigger();
                                 }}
-                                role={enabled ? 'combobox' : props.role}
-                                aria-autocomplete={enabled ? 'list' : undefined}
-                                aria-controls={open ? listId : undefined}
-                                aria-expanded={enabled ? open : undefined}
-                                aria-activedescendant={open && suggestions[active] ? `${listId}-${active}` : undefined}
-                                onChange={event => {
-                                    dismissed.current = null;
-                                    onChange?.(event);
-                                    updateRange(event.currentTarget);
+                                onKeyUp={e => {
+                                    if (!['ArrowUp', 'ArrowDown', 'Enter', 'Escape'].includes(e.key)) {
+                                        detectMentionTrigger();
+                                    }
                                 }}
-                                onSelect={event => {
-                                    onSelect?.(event);
-                                    updateRange(event.currentTarget);
-                                }}
-                                onBlur={onBlur}
-                                onCompositionStart={event => {
+                                onMouseUp={() => detectMentionTrigger()}
+                                onCompositionStart={() => {
                                     composing.current = true;
-                                    setRange(null);
-                                    onCompositionStart?.(event);
+                                    setMentionState(null);
                                 }}
-                                onCompositionEnd={event => {
+                                onCompositionEnd={() => {
                                     composing.current = false;
-                                    updateRange(event.currentTarget);
-                                    onCompositionEnd?.(event);
+                                    detectMentionTrigger();
                                 }}
-                                onKeyDown={event => {
-                                    if (open && !composing.current && !event.nativeEvent.isComposing) {
-                                        if (event.key === 'Escape') {
-                                            event.preventDefault();
-                                            event.stopPropagation();
-                                            dismissed.current = {
-                                                value: event.currentTarget.value,
-                                                caret: event.currentTarget.selectionStart,
-                                            };
-                                            setRange(null);
+                                onKeyDown={e => {
+                                    if (open && !composing.current) {
+                                        if (e.key === 'Escape') {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            setMentionState(null);
                                             return;
                                         }
-                                        if (suggestions.length && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
-                                            event.preventDefault();
+                                        if (suggestions.length && ['ArrowDown', 'ArrowUp'].includes(e.key)) {
+                                            e.preventDefault();
                                             setActive(
                                                 index =>
-                                                    (index + (event.key === 'ArrowDown' ? 1 : -1) + suggestions.length) %
+                                                    (index + (e.key === 'ArrowDown' ? 1 : -1) + suggestions.length) %
                                                     suggestions.length
                                             );
                                             return;
                                         }
-                                            if (suggestions.length && event.key === 'Enter') {
-                                                event.preventDefault();
-                                                choose(suggestions[active] || suggestions[0]);
-                                                return;
-                                            }
-                    }
-            onKeyDown?.(event);
-                }}
-            />
-            {open && (
-                <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
-                    <div
-                        id={listId}
-                        role="listbox"
-                        aria-label={t('LinkedIn mention suggestions')}
-                        className="max-h-60 overflow-y-auto space-y-0.5"
-                    >
-                        {suggestions.map((candidate, index) => (
-                            <button
-                                key={candidate.urn}
-                                id={`${listId}-${index}`}
-                                type="button"
-                                role="option"
-                                aria-selected={index === active}
+                                        if (suggestions.length && e.key === 'Enter') {
+                                            e.preventDefault();
+                                            choose(suggestions[active] || suggestions[0]);
+                                            return;
+                                        }
+                                    }
+                                    onKeyDown?.(e);
+                                }}
+                                {...props}
+                            />
+
+                            {
+                                open && (
+                                    <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
+                                        <div
+                                            id={listId}
+                                            role="listbox"
+                                            aria-label={t('LinkedIn mention suggestions')}
+                                            className="max-h-60 overflow-y-auto space-y-0.5"
+                                        >
+                                            {suggestions.map((candidate, index) => (
+                                                <button
+                                                    key={candidate.urn}
+                                                    id={`${listId}-${index}`}
+                                                    type="button"
+                                                    role="option"
+                                                    aria-selected={index === active}
                                 className={`flex items-center justify-between gap-2.5 w-full rounded-md px-2.5 py-1.5 text-left text-xs break-words transition-colors ${index === active
-                                        ? 'bg-[#0a66c2]/10 text-[#0a66c2] font-semibold'
-                                        : 'hover:bg-muted text-foreground'
-                                    }`}
-                                onMouseDown={event => event.preventDefault()}
-                                onClick={() => choose(candidate)}
+                                                            ? 'bg-[#0a66c2]/10 text-[#0a66c2] font-semibold'
+                                                            : 'hover:bg-muted text-foreground'
+                                }`}
+                                            onMouseDown={event => event.preventDefault()}
+                                            onClick={() => choose(candidate)}
                             >
-                                <span className="flex items-center gap-2 min-w-0">
-                                    <MentionAvatar candidate={candidate} />
-                                    <span className="truncate font-semibold">@{candidate.name}</span>
-                                </span>
-                                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
-                                    {candidate.type === 'organization' ? t('Company') : t('Member')}
-                                </span>
-                            </button>
+                                            <span className="flex items-center gap-2 min-w-0">
+                                                <MentionAvatar candidate={candidate} />
+                                                <span className="truncate font-semibold">@{candidate.name}</span>
+                                            </span>
+                                            <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                                                {candidate.type === 'organization' ? t('Company') : t('Member')}
+                                            </span>
+                                        </button>
                         ))}
-                    </div>
+                                    </div>
                 </div>
-            )}
-        </div>
+        )
+    }
+        </div >
     );
 });
