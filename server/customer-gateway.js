@@ -23,7 +23,7 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 const headers = new Headers(request.headers); headers.delete(CONTEXT_HEADER); url.pathname = media[2];
                 return forwardCustomer(media[1], new Request(url, { method: request.method, headers }));
             }
-            const callback = request.method === 'GET' && /^\/api\/(meta|threads|linkedin|tiktok|drive)\/callback$/.test(path);
+            const callback = request.method === 'GET' && /^\/api\/(meta|threads|linkedin|tiktok|x|drive)\/callback$/.test(path);
             const allowedAppOrigins = [env.SOCIALCHOICE_PUBLIC_ORIGIN, 'https://socialchoice.site', 'https://www.socialchoice.site', 'https://socialchoice.vercel.app'].filter(Boolean);
             if (!callback && (request.headers.get('origin') && !allowedAppOrigins.includes(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
             if (path === '/api/customer/config' && request.method === 'GET') return json({ ready: true, multipleDevices: true, purchase: 'one-time' });
