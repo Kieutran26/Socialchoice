@@ -1,6 +1,6 @@
 import { useTranslation } from '@/lib/i18n';
 import { Input } from '../ui/input';
-import { Textarea } from '../ui/textarea';
+import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linkedin-mention-textarea';
 import { PLATFORM_LABEL } from '@/lib/constants';
 import MediaUploader from './MediaUploader';
 import CommentChainEditor from './CommentChainEditor';
@@ -60,7 +60,7 @@ import LinkedinMentionBar from './LinkedinMentionBar';
                                                 <div className="block text-xs">
                                                     <label className="block">
                                                         <span>{t('Account caption (optional)')}</span>
-                                                        <Textarea
+                                                        <Textarea enabled={account.platform === 'linkedin'} linkedinAccounts={linkedinAccounts}
                                                             aria-label={t('Caption for {account}', { account: account.name })}
                                                             className="mt-2"
                                                             rows={3}

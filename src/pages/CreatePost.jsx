@@ -30,7 +30,7 @@ import DestinationChecks from '@/components/composer/DestinationChecks';
 import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linkedin-mention-textarea';
 import { Button } from '@/components/ui/button';
 import DesktopAiWriter from '@/components/composer/desktop-ai-writer';
 import { applyAiSuggestion, applyAiPlatformSuggestion } from '@/lib/ai-draft';
@@ -625,7 +625,7 @@ return (
                                     {form.caption.length} {t('characters')}
                                 </span>
                             </div>
-                            <Textarea
+                            <Textarea enabled={platforms.includes('linkedin')} linkedinAccounts={linkedinAccounts}
                                 id="post-caption"
                                 rows={5}
                                 value={form.caption}

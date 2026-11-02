@@ -1,4 +1,5 @@
 import { fail } from './validation.js';
+import { linkedinCompanyQuery } from '../src/lib/linkedin-company-query.js';
 import { parseLinkedinMentions } from '../src/lib/publishing-content.js';
 
 export const LINKEDIN_SCOPES = ['openid', 'profile', 'w_member_social'];
@@ -30,6 +31,23 @@ export function createLinkedinGraph(config) {
         }
         const json = async (url, token, body, form = false, step = 'connection') => { try { return await (await request(url, token, body, form, step)).json(); } catch (error) { if (error.status) throw error; throw Object.assign(new Error('LinkedIn returned an invalid response'), { status: 502, metaStep: step, metaReason: 'response_format' }); } };
         return {
+            async company(token, query) {
+                let vanity;
+                try { vanity = linkedinCompanyQuery(query); } catch (error) { fail(error.message, 400); }
+                let value;
+                try { value = await json(`https://api.linkedin.com/v2/organizations?q=vanityName&vanityName=${encodeURIComponent(vanity)}&projection=(elements*(id,localizedName))`, token); }
+                catch (error) {
+                    if (error.linkedinStatus === 403) fail('LinkedIn has not granted this connection permission to look up companies. Company lookup requires approved LinkedIn organization API access.', 403);
+                    if (error.linkedinStatus === 401) fail('LinkedIn authorization expired. Reconnect LinkedIn.', 409);
+                    throw error;
+                }
+                if (!Array.isArray(value?.elements) || value.elements.length > 10) fail('LinkedIn returned an invalid company response', 502);
+                return value.elements.map(entry => {
+                    const id = String(entry?.id ?? ''), name = entry?.localizedName;
+                    if (!/^\d{1,30}$/.test(id) || typeof name !== 'string' || !name.trim() || name.length > 200 || /[\[\]\r\n\x00-\x1f]/.test(name)) fail('LinkedIn returned an invalid company', 502);
+                    return { id, name: name.trim(), urn: `urn:li:organization:${id}`, token: `@[${name.trim()}](urn:li:organization:${id})` };
+                });
+            },
             async exchange(code) {
                 const value = await json('https://www.linkedin.com/oauth/v2/accessToken', null, { grant_type: 'authorization_code', code, client_id: config.appId, client_secret: config.appSecret, redirect_uri: config.redirectUri }, true, 'token_exchange');
                 const expiresIn = typeof value.expires_in === 'number' ? value.expires_in : Number(value.expires_in);

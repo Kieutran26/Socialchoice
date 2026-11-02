@@ -19,6 +19,8 @@ test('Linkedin HTTP routes require admin session and expose truthful unconfigure
     const headers={'X-Socialchoice-Client':'local-ui',Cookie:cookie,'Content-Type':'application/json'};
     try {
         assert.equal((await call('status',{headers:{'X-Socialchoice-Client':'local-ui'}})).status,401);
+        assert.equal((await call('company',{method:'POST',headers:{'X-Socialchoice-Client':'local-ui'},body:JSON.stringify({args:['account','microsoft']})})).status,401);
+        assert.equal((await call('company',{method:'POST',headers,body:JSON.stringify({args:['account','microsoft']})})).status,409);
         const status=await call('status',{headers});assert.equal(status.status,200);assert.equal((await status.json()).ready,false);
         const profile=await call('profile',{headers});assert.deepEqual(await profile.json(),{profile:null,pending:false});
         assert.equal((await call('start',{method:'POST',headers,body:JSON.stringify({args:['synthetic-brand']})})).status,409);
@@ -26,4 +28,3 @@ test('Linkedin HTTP routes require admin session and expose truthful unconfigure
         assert.equal((await call('import',{method:'POST',headers,body:JSON.stringify({args:['789']})})).status,409);
     }finally{store.close();}
 });
-

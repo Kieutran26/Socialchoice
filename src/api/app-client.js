@@ -84,7 +84,7 @@ export const appClient = {
         importPages: (ids) => request('meta/import', [ids]),
         disconnect: (id) => request('meta/disconnect', [id]), check: (id) => request('meta/check', [id]),
     },
-    linkedin: {status:()=>request('linkedin/status'),profile:()=>request('linkedin/profile'),start:id=>request('linkedin/start',[id]),importProfile:id=>request('linkedin/import',[id]),check:id=>request('linkedin/check',[id]),disconnect:id=>request('linkedin/disconnect',[id])},
+    linkedin: {company:(id,query)=>request('linkedin/company',[id,query]),status:()=>request('linkedin/status'),profile:()=>request('linkedin/profile'),start:id=>request('linkedin/start',[id]),importProfile:id=>request('linkedin/import',[id]),check:id=>request('linkedin/check',[id]),disconnect:id=>request('linkedin/disconnect',[id])},
     tiktok: {status:()=>request('tiktok/status'),profile:()=>request('tiktok/profile'),start:id=>request('tiktok/start',[id]),importProfile:id=>request('tiktok/import',[id]),check:id=>request('tiktok/check',[id]),disconnect:id=>request('tiktok/disconnect',[id]),creator:id=>request('tiktok/creator',[id])},
     threads: {
         status:()=>request('threads/status'),profile:()=>request('threads/profile'),

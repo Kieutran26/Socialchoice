@@ -25,7 +25,7 @@ import { templateDataFromForm } from '@/lib/post-templates';
 import { referencedMediaIds, PUBLISHING_PLATFORMS } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linkedin-mention-textarea';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -469,7 +469,7 @@ export default function CreateTemplate() {
                             <Label className="text-xs font-medium text-foreground">
                                 {t('Main caption')}
                             </Label>
-                            <Textarea
+                            <Textarea enabled={platforms.includes('linkedin')} linkedinAccounts={linkedinAccounts}
                                 rows={6}
                                 value={form.caption}
                                 onChange={(e) => setForm({ ...form, caption: e.target.value })}

@@ -24,6 +24,8 @@ Local OAuth cancellation/replay/session/expiry, explicit import/encryption, toke
 
 ## Sources
 
+Company tagging uses authenticated `POST /api/linkedin/company` with `{args: [socialAccountId, companyVanityNameOrLink]}`. The selected connection must belong to an active real brand and have a valid matching stored credential. Lookup calls only `https://api.linkedin.com/v2/organizations?q=vanityName&vanityName=...`; company IDs and labels are validated before returning mention tokens. No access token reaches the browser. Authorization is checked again after lookup to reject disconnect/session races. A provider403 reports missing organization API access without expiring an otherwise usable personal posting connection. Empty results mean no exact match; malformed responses and provider failures remain errors. No extra OAuth scope is silently requested.
+
 - https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/share-on-linkedin
 - https://learn.microsoft.com/en-us/linkedin/consumer/integrations/self-serve/sign-in-with-linkedin-v2
 - https://learn.microsoft.com/en-us/linkedin/shared/authentication/token-introspection

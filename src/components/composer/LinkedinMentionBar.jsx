@@ -3,6 +3,8 @@ import { At, Buildings, User, Plus } from '@phosphor-icons/react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useTranslation } from '@/lib/i18n';
+import { LinkedinCompanyLookup } from './linkedin-company-lookup';
+import { saveCustomLinkedinOrganization } from '@/lib/linkedin-company-directory';
 
 export default function LinkedinMentionBar({ onInsert, linkedinAccounts = [] }) {
     const { t } = useTranslation();
@@ -17,7 +19,11 @@ export default function LinkedinMentionBar({ onInsert, linkedinAccounts = [] }) 
     const handleInsertCustom = () => {
         if (!canInsert) return;
         const urn = `urn:li:${entityType}:${cleanId}`;
-        onInsert(`@[${displayName.trim()}](${urn})`);
+        const name = displayName.trim();
+        if (entityType === 'organization') {
+            saveCustomLinkedinOrganization({ id: cleanId, name });
+        }
+        onInsert(`@[${name}](${urn})`);
         setDisplayName('');
         setEntityId('');
         setOpen(false);
@@ -68,17 +74,17 @@ export default function LinkedinMentionBar({ onInsert, linkedinAccounts = [] }) 
                 </Button>
             </div>
 
+            {open && <LinkedinCompanyLookup linkedinAccounts={linkedinAccounts} onChoose={company => { onInsert(company.token); setOpen(false); }} />}
             {open && (
                 <div className="mt-2.5 grid gap-2 border-t border-[#0a66c2]/15 pt-2.5 sm:grid-cols-[auto_1fr_1fr_auto] items-center">
                     <div className="inline-flex rounded-md border border-border bg-card p-0.5">
                         <button
                             type="button"
                             onClick={() => setEntityType('organization')}
-                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium ${
-                                entityType === 'organization'
+                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium ${entityType === 'organization'
                                     ? 'bg-[#0a66c2] text-white'
                                     : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                                }`}
                         >
                             <Buildings size={12} />
                             {t('Company')}
@@ -86,11 +92,10 @@ export default function LinkedinMentionBar({ onInsert, linkedinAccounts = [] }) 
                         <button
                             type="button"
                             onClick={() => setEntityType('person')}
-                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium ${
-                                entityType === 'person'
+                            className={`inline-flex items-center gap-1 rounded px-2 py-1 text-[11px] font-medium ${entityType === 'person'
                                     ? 'bg-[#0a66c2] text-white'
                                     : 'text-muted-foreground hover:text-foreground'
-                            }`}
+                                }`}
                         >
                             <User size={12} />
                             {t('Member')}
@@ -128,4 +133,3 @@ export default function LinkedinMentionBar({ onInsert, linkedinAccounts = [] }) 
         </div>
     );
 }
-

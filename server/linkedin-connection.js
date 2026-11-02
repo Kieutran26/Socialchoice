@@ -73,6 +73,19 @@ export function createLinkedinConnection(store, auth, config = linkedinConfig(),
                 return { disconnected: true };
             }
             requireConfig(); const session = auth.sessionKey(req);
+            if (operation === 'company') {
+                auth.require(req);
+                if (args.length !== 2) fail('LinkedIn account and company name required');
+                const account = accountFor(args[0]);
+                requireBrand(account.brand_id);
+                if (account.connection_status !== 'connected') fail('Reconnect LinkedIn before looking up companies.', 409);
+                const credential = vault.read(account.credential_id); validCredential(credential, account);
+                const companies = await graph.company(credential.token, args[1]);
+                auth.require(req); requireBrand(account.brand_id);
+                const current = accountFor(account.id);
+                if (current.credential_id !== account.credential_id || current.external_id !== account.external_id || current.connection_status !== 'connected') fail('LinkedIn connection changed. Try again.', 409);
+                return { companies };
+            }
             if (operation === 'start') {
                 if (args.length !== 1) fail('Linkedin brand required');
                 if (req.headers.origin && req.headers.origin !== config.origin) fail('Open Socialchoice at the configured Linkedin callback origin', 409);

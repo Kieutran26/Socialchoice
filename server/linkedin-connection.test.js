@@ -9,6 +9,22 @@ import { createLinkedinConnection } from './linkedin-connection.js';
 import { createLinkedinGraph, linkedinProfile, linkedinPublishedId, linkedinTokenDetails } from './linkedin-graph.js';
 
 const configuration = () => linkedinConfig({ LINKEDIN_CLIENT_ID: 'abc123', LINKEDIN_CLIENT_SECRET: 'synthetic-secret', LINKEDIN_REDIRECT_URI: 'http://127.0.0.1:3001/api/linkedin/callback', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex') });
+test('company lookup requires a live session and matching connected credential, and rejects disconnect races', async () => {
+    let calls = 0, race;
+    const f = fixture({ async company(token, query) { calls++; assert.equal(token, 'private-fixture-token'); assert.equal(query, 'microsoft'); race?.(); return [{ id: '1035', name: 'Microsoft' }]; } });
+    try {
+        const credentialId = randomBytes(16).toString('hex');
+        createMetaVault(f.store, f.config.key).save(credentialId, { platform: 'linkedin', profileId: 'member1', token: 'private-fixture-token', expiresAt: Date.now() + 60000, scopes: ['openid', 'profile', 'w_member_social'] });
+        const account = f.store.verifiedAccount({ platform: 'linkedin', account_type: 'profile', external_id: 'member1', name: 'Fixture', brand_id: f.brand.id, credential_id: credentialId, is_demo: false, connection_status: 'connected' });
+        await assert.rejects(() => f.connection.execute('company', { headers: {} }, f.res, [account.id, 'microsoft']), { status: 401 });
+        assert.equal(calls, 0);
+        assert.deepEqual(await f.connection.execute('company', f.req, f.res, [account.id, 'microsoft']), { companies: [{ id: '1035', name: 'Microsoft' }] });
+        race = () => f.store.verifiedAccount({ connection_status: 'disconnected' }, account.id);
+        await assert.rejects(() => f.connection.execute('company', f.req, f.res, [account.id, 'microsoft']), { status: 409 });
+        await assert.rejects(() => f.connection.execute('company', f.req, f.res, [account.id, 'microsoft']), { status: 409 });
+        assert.equal(calls, 2);
+    } finally { f.store.close(); }
+});
 function fixture(graph) {
     const store = createStore(':memory:'), sessions = new Map(), states = new Map(), pending = new Map();
     const auth = createAdminAuth(hashPassword('synthetic linkedin test password'), false, { sessions });
@@ -102,4 +118,3 @@ test('LinkedIn connection discovers and imports administered Company Pages along
         f.store.close();
     }
 });
-

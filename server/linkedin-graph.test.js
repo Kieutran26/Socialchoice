@@ -1,5 +1,25 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+
+test('token introspection uses the official OAuth host with private form credentials', async () => {
+    const original = globalThis.fetch;
+    try {
+        globalThis.fetch = async (url, options) => {
+            assert.equal(url, 'https://www.linkedin.com/oauth/v2/introspectToken');
+            assert.equal(options.method, 'POST');
+            assert.equal(options.redirect, 'manual');
+            assert.equal(options.headers['Content-Type'], 'application/x-www-form-urlencoded');
+            const form = new URLSearchParams(options.body);
+            assert.equal(form.get('client_id'), 'fixture-app');
+            assert.equal(form.get('client_secret'), 'fixture-secret');
+            assert.equal(form.get('token'), 'fixture-token');
+            return Response.json({ active: true, client_id: 'fixture-app', auth_type: '3L', scope: 'openid,profile,w_member_social', expires_at: Math.floor(Date.now() / 1000) + 3600 });
+        };
+        const graph = createLinkedinGraph({ appId: 'fixture-app', appSecret: 'fixture-secret' });
+        const details = await graph.permissions('fixture-token');
+        assert.deepEqual(details.scopes, ['openid', 'profile', 'w_member_social']);
+    } finally { globalThis.fetch = original; }
+});
 import { createLinkedinGraph, linkedinProfile, linkedinTokenDetails, linkedinPublishedId } from './linkedin-graph.js';
 
 test('LinkedIn rejects wrong app, missing scopes, expired token and malformed identities', () => {

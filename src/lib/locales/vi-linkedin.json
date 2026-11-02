@@ -50,5 +50,19 @@
   "Comment as": "Bình luận dưới tên",
   "Posting account (default)": "Tài khoản đăng bài (mặc định)",
   "LinkedIn comment actor for comment #{number}": "Tài khoản bình luận LinkedIn cho bình luận #{number}",
-  "Connect the selected LinkedIn comment account before publishing": "Kết nối tài khoản LinkedIn dùng để bình luận trước khi đăng"
+  "Connect the selected LinkedIn comment account before publishing": "Kết nối tài khoản LinkedIn dùng để bình luận trước khi đăng",
+  "Choose a LinkedIn mention": "Chọn thẻ LinkedIn",
+  "LinkedIn mention suggestions": "Gợi ý gắn thẻ LinkedIn",
+  "No matching known LinkedIn account. Add another mention by name and ID below.": "Không tìm thấy tài khoản LinkedIn phù hợp. Thêm thẻ khác bằng tên và ID ở bên dưới.",
+  "Suggestions use connected accounts and mentions in this text. LinkedIn-wide search is unavailable.": "Gợi ý từ tài khoản đã kết nối và thẻ trong nội dung này. Chưa hỗ trợ tìm kiếm toàn LinkedIn.",
+  "Suggestions use connected accounts, verified directory, and mentions in this text.": "Gợi ý từ tài khoản đã kết nối, danh bạ tổ chức và thẻ đã dùng trong bài viết.",
+  "Find a company using its LinkedIn page name, for example microsoft.": "Tìm công ty bằng tên trong link LinkedIn, ví dụ microsoft.",
+  "LinkedIn company name or link": "Tên hoặc link công ty LinkedIn",
+  "LinkedIn lookup account": "Tài khoản dùng tra cứu LinkedIn",
+  "Searching…": "Đang tìm…",
+  "Find LinkedIn company": "Tìm công ty LinkedIn",
+  "Select a connected LinkedIn account to look up companies.": "Chọn tài khoản LinkedIn đã kết nối để tra cứu.",
+  "No company found. Check the name in the LinkedIn company page link.": "Không tìm thấy công ty. Kiểm tra tên trong link trang công ty LinkedIn.",
+  "LinkedIn has not granted this connection permission to look up companies. Company lookup requires approved LinkedIn organization API access.": "LinkedIn chưa cấp quyền tra cứu công ty cho kết nối này. Ứng dụng cần quyền API tổ chức được LinkedIn phê duyệt.",
+  "Use the exact company name from linkedin.com/company/name (for example microsoft).": "Nhập đúng tên trong link linkedin.com/company/tên, ví dụ microsoft."
 }

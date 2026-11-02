@@ -2,7 +2,7 @@ import { Plus, Trash, Clock, ChatCircleText, LinkedinLogo } from '@phosphor-icon
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linkedin-mention-textarea';
 import MediaUploader from './MediaUploader';
 import LinkedinMentionBar from './LinkedinMentionBar';
 
@@ -154,7 +154,7 @@ export default function CommentChainEditor({
                                         </div>
 
                                         <div>
-                                            <Textarea
+                                            <Textarea enabled={hasLinkedin} linkedinAccounts={linkedinAccounts}
                                                 rows={2}
                                                 disabled={disabled}
                                                 aria-label={t('Message for comment #{number}', { number: index + 1 })}

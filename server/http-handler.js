@@ -97,7 +97,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             const metaRoute = req.url?.match(/^\/api\/meta\/(status|start|pages|import|disconnect|check)$/);
             const threadsRoute=req.url?.match(/^\/api\/threads\/(status|start|profile|import|disconnect|check)$/);
             const tiktokRoute=req.url?.match(/^\/api\/tiktok\/(status|start|profile|import|disconnect|check|creator)$/);
-            const linkedinRoute=req.url?.match(/^\/api\/linkedin\/(status|start|profile|import|disconnect|check)$/);
+            const linkedinRoute=req.url?.match(/^\/api\/linkedin\/(status|start|profile|import|disconnect|check|company)$/);
             if (metaRoute || threadsRoute || tiktokRoute || linkedinRoute) {
                 const service=linkedinRoute?linkedin:tiktokRoute?tiktok:threadsRoute?threads:meta,operation=(linkedinRoute||tiktokRoute||threadsRoute||metaRoute)[1];
                 if(!service)fail('Threads is not configured',409);
