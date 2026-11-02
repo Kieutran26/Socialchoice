@@ -82,15 +82,12 @@ function Shell() {
                     }`}
             >
                 <div className="flex items-center justify-between mb-5">
-                    <NavLink to="/" className="flex items-center gap-2.5 py-0.5">
+                    <NavLink to="/" className="flex items-center py-0.5" aria-label="Socialchoice">
                         <img
-                            src="/socialchoice-icon.png"
+                            src="/socialchoice-logo.png"
                             alt="Socialchoice"
-                            className="h-8 w-auto object-contain"
+                            className="h-8 w-auto max-w-[170px] object-contain"
                         />
-                        <span className="font-heading font-bold text-xl tracking-tight text-foreground">
-                            Socialchoice<span className="text-brand">.</span>
-                        </span>
                     </NavLink>
                     <Button
                         size="icon"
