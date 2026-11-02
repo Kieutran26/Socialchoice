@@ -1,71 +1,397 @@
-import { forwardRef, useId, useRef, useState } from 'react';
+import { forwardRef, useEffect, useId, useRef, useState } from 'react';
+import { Buildings, User } from '@phosphor-icons/react';
 import { Textarea } from '@/components/ui/textarea';
 import { useTranslation } from '@/lib/i18n';
-import { insertMention, mentionRange, mentionSuggestions } from '@/lib/linkedin-mention-input';
-import { LinkedinCompanyLookup } from './linkedin-company-lookup';
+import {
+    fromLinkedinDisplayValue,
+    insertMention,
+    mentionRange,
+    mentionSuggestions,
+    toLinkedinDisplayCaret,
+    toLinkedinDisplayValue,
+} from '@/lib/linkedin-mention-input';
+import { linkedinCompanyQuery } from '@/lib/linkedin-company-query';
+import { companyAvatarForNameOrVanity, saveCustomLinkedinOrganization } from '@/lib/linkedin-company-directory';
+
+function MentionAvatar({ candidate }) {
+    const [failed, setFailed] = useState(false);
+    const isOrg = candidate.type === 'organization';
+    if (candidate.avatar && !failed) {
+        return (
+            <img
+                src={candidate.avatar}
+                alt={candidate.name}
+                onError={() => setFailed(true)}
+                className="h-6 w-6 shrink-0 rounded-full border border-border bg-white object-contain p-0.5"
+            />
+        );
+    }
+    return (
+        <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#0a66c2]/15 text-[#0a66c2]">
+            {isOrg ? <Buildings size={14} weight="fill" /> : <User size={14} weight="fill" />}
+        </span>
+    );
+}
+
+function renderHighlightedDisplay(displayText, mentionMap) {
+    if (!displayText || !mentionMap || mentionMap.size === 0) return displayText;
+    const names = [...mentionMap.keys()].filter(Boolean).sort((a, b) => b.length - a.length);
+    if (!names.length) return displayText;
+
+    const parts = [];
+    let buffer = '';
+    let i = 0;
+
+    while (i < displayText.length) {
+        const prevChar = i === 0 ? '' : displayText[i - 1];
+        const validStart = i === 0 || /[\s([{"']/.test(prevChar);
+        if (validStart && displayText[i] === '@') {
+            let matchedName = null;
+            for (const name of names) {
+                if (displayText.startsWith(`@${name}`, i)) {
+                    const afterIdx = i + 1 + name.length;
+                    const nextChar = afterIdx < displayText.length ? displayText[afterIdx] : '';
+                    const validEnd = !nextChar || /[\s.,!?;:)\]}"']/.test(nextChar);
+                    if (validEnd) {
+                        matchedName = name;
+                        break;
+                    }
+                }
+            }
+            if (matchedName) {
+                if (buffer) {
+                    parts.push({ type: 'text', text: buffer });
+                    buffer = '';
+                }
+                parts.push({ type: 'mention', text: `@${matchedName}` });
+                i += 1 + matchedName.length;
+                continue;
+            }
+        }
+        buffer += displayText[i];
+        i += 1;
+    }
+    if (buffer) parts.push({ type: 'text', text: buffer });
+
+    return parts.map((part, idx) =>
+        part.type === 'mention' ? (
+            <strong key={idx} className="font-bold text-[#0a66c2] tracking-[-0.015em]">
+                {part.text}
+            </strong>
+        ) : (
+            <span key={idx}>{part.text}</span>
+        )
+    );
+}
 
 /** @typedef {import('react').ComponentPropsWithoutRef<'textarea'> & { enabled?: boolean, linkedinAccounts?: any[] }} MentionProps */
 export const LinkedinMentionTextarea = forwardRef(function LinkedinMentionTextarea(
-    /** @type {MentionProps} */ { enabled = false, linkedinAccounts = [], value = '', onChange, onKeyDown, onSelect, onBlur, onCompositionStart, onCompositionEnd, ...props },
-    /** @type {import('react').ForwardedRef<HTMLTextAreaElement>} */ forwardedRef,
+    /** @type {MentionProps} */ {
+        enabled = false,
+        linkedinAccounts = [],
+        value = '',
+        className = '',
+        onChange,
+        onKeyDown,
+        onSelect,
+        onBlur,
+        onCompositionStart,
+        onCompositionEnd,
+        ...props
+    },
+    /** @type {import('react').ForwardedRef<HTMLTextAreaElement>} */ forwardedRef
 ) {
     const { t } = useTranslation();
-    const input = useRef(null), composing = useRef(false), dismissed = useRef(null);
-    const [range, setRange] = useState(null), [active, setActive] = useState(0);
+    const input = useRef(null);
+    const backdrop = useRef(null);
+    const composing = useRef(false);
+    const dismissed = useRef(null);
+    const mentionMap = useRef(new Map());
+    const [range, setRange] = useState(null);
+    const [active, setActive] = useState(0);
+    const [remoteCompanies, setRemoteCompanies] = useState([]);
     const listId = useId();
-    const text = String(value);
-    const suggestions = enabled && range ? mentionSuggestions(linkedinAccounts, text, range.query) : [];
-    const open = enabled && !!range && !props.disabled && !props.readOnly;
+
+    const rawText = String(value ?? '');
+    const displayText = enabled ? toLinkedinDisplayValue(rawText, mentionMap.current) : rawText;
+    const hasFormattedMentions =
+        enabled &&
+        mentionMap.current.size > 0 &&
+        [...mentionMap.current.keys()].some(name => displayText.includes(`@${name}`));
+
+    // Silently fetch live LinkedIn companies in the background when typing @query (never triggers error toasts)
+    useEffect(() => {
+        if (!enabled || !range?.query || range.query.trim().length < 2) {
+            setRemoteCompanies([]);
+            return;
+        }
+        const connected = (linkedinAccounts || []).find(
+            acc => !acc.is_demo && acc.connection_status === 'connected' && acc.id
+        );
+        if (!connected) return;
+        let normalized;
+        try {
+            normalized = linkedinCompanyQuery(range.query);
+        } catch {
+            return;
+        }
+        let cancelled = false;
+        const timer = setTimeout(async () => {
+            try {
+                const res = await fetch('/api/linkedin/company', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Socialchoice-Client': 'local-ui' },
+                    body: JSON.stringify({ args: [connected.id, normalized] }),
+                });
+                if (!res.ok || cancelled) return;
+                const data = await res.json();
+                if (!cancelled && Array.isArray(data?.companies)) {
+                    setRemoteCompanies(
+                        data.companies.map(c => ({
+                            id: c.id,
+                            name: c.name,
+                            type: 'organization',
+                            urn: c.urn,
+                            token: c.token,
+                            avatar: c.avatar || companyAvatarForNameOrVanity(c.name, normalized),
+                        }))
+                    );
+                }
+            } catch {
+                // Silent background lookup; never show error toast
+            }
+        }, 300);
+        return () => {
+            cancelled = true;
+            clearTimeout(timer);
+        };
+    }, [enabled, range?.query, linkedinAccounts]);
+
+    const suggestions =
+        enabled && range
+            ? mentionSuggestions(linkedinAccounts, rawText, range.query, {
+                  extraCandidates: remoteCompanies,
+              })
+            : [];
+    const open = enabled && !!range && suggestions.length > 0 && !props.disabled && !props.readOnly;
+
     function updateRange(target) {
         if (dismissed.current?.value === target.value && dismissed.current?.caret === target.selectionStart) return;
         dismissed.current = null;
-        setRange(enabled && !composing.current ? mentionRange(target.value, target.selectionStart, target.selectionEnd) : null);
+        if (!enabled || composing.current) {
+            setRange(null);
+            return;
+        }
+        const { rawValue, rawCaret } = fromLinkedinDisplayValue(
+            target.value,
+            target.selectionStart,
+            mentionMap.current
+        );
+        const selEnd =
+            target.selectionEnd === target.selectionStart
+                ? rawCaret
+                : fromLinkedinDisplayValue(target.value, target.selectionEnd, mentionMap.current).rawCaret;
+        setRange(mentionRange(rawValue, rawCaret, selEnd));
         setActive(0);
     }
+
+    function emitRawValue(target, nextRawValue, nextRawCaret) {
+        const nextDisplay = toLinkedinDisplayValue(nextRawValue, mentionMap.current);
+        const nextDisplayCaret = toLinkedinDisplayCaret(nextRawValue, nextRawCaret);
+        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
+        setter.call(target, nextRawValue);
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+        requestAnimationFrame(() => {
+            if (!input.current) return;
+            setter.call(input.current, nextDisplay);
+            input.current.focus();
+            input.current.setSelectionRange(nextDisplayCaret, nextDisplayCaret);
+        });
+    }
+
     function choose(candidate) {
         const current = input.current;
-        if (!current || composing.current) return;
-        const fresh = mentionRange(current.value, current.selectionStart, current.selectionEnd);
-        const result = insertMention(current.value, fresh, candidate.token);
+        if (!current || composing.current || !candidate?.token) return;
+        if (candidate.type === 'organization' && candidate.id && candidate.name) {
+            saveCustomLinkedinOrganization({
+                id: candidate.id,
+                name: candidate.name,
+                vanity: candidate.vanity || '',
+                avatar: candidate.avatar || '',
+            });
+        }
+        const { rawValue, rawCaret } = fromLinkedinDisplayValue(
+            current.value,
+            current.selectionStart,
+            mentionMap.current
+        );
+        const fresh = mentionRange(rawValue, rawCaret, rawCaret);
+        const result = insertMention(rawValue, fresh, candidate.token);
         if (!result) return;
-        // Use the native textarea setter so the parent's existing change/autosave flow receives the edit.
-        const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set;
-        setter.call(current, result.value);
-        current.dispatchEvent(new Event('input', { bubbles: true }));
         setRange(null);
-        requestAnimationFrame(() => { current.focus(); current.setSelectionRange(result.caret, result.caret); });
+        emitRawValue(current, result.value, result.caret);
     }
-    return <div className="relative min-w-0" onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) { dismissed.current = null; setRange(null); } }}>
-        <Textarea {...props} value={value} ref={node => { input.current = node; if (typeof forwardedRef === 'function') forwardedRef(node); else if (forwardedRef) forwardedRef.current = node; }}
-            role={enabled ? 'combobox' : props.role}
-            aria-autocomplete={enabled ? 'list' : undefined} aria-controls={open ? listId : undefined} aria-expanded={enabled ? open : undefined}
-            aria-activedescendant={open && suggestions[active] ? `${listId}-${active}` : undefined}
-            onChange={event => { dismissed.current = null; onChange?.(event); updateRange(event.currentTarget); }}
-            onSelect={event => { onSelect?.(event); updateRange(event.currentTarget); }}
-            onBlur={onBlur}
-            onCompositionStart={event => { composing.current = true; setRange(null); onCompositionStart?.(event); }}
-            onCompositionEnd={event => { composing.current = false; updateRange(event.currentTarget); onCompositionEnd?.(event); }}
-            onKeyDown={event => {
-                if (open && !composing.current && !event.nativeEvent.isComposing) {
-                    if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); dismissed.current = { value: event.currentTarget.value, caret: event.currentTarget.selectionStart }; setRange(null); return; }
-                    if (suggestions.length && ['ArrowDown', 'ArrowUp'].includes(event.key)) { event.preventDefault(); setActive(index => (index + (event.key === 'ArrowDown' ? 1 : -1) + suggestions.length) % suggestions.length); return; }
-                    if (suggestions.length && event.key === 'Enter') { event.preventDefault(); choose(suggestions[active] || suggestions[0]); return; }
+
+    return (
+        <div
+            className="relative min-w-0"
+            onBlur={event => {
+                if (!event.currentTarget.contains(event.relatedTarget)) {
+                    dismissed.current = null;
+                    setRange(null);
                 }
-                onKeyDown?.(event);
-            }} />
-            {open && <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-lg border border-border bg-card p-2 shadow-lg">
-                <p className="label-xs px-2 pb-1">{t('Choose a LinkedIn mention')}</p>
-                    <div id={listId} role="listbox" aria-label={t('LinkedIn mention suggestions')} className="max-h-60 overflow-y-auto">
-                        {suggestions.map((candidate, index) => <button key={candidate.urn} id={`${listId}-${index}`} type="button" role="option" aria-selected={index === active}
-                        className={`flex items-center justify-between w-full rounded-md px-2.5 py-1.5 text-left text-xs break-words ${index === active ? 'bg-[#0a66c2]/10 text-[#0a66c2] font-medium' : 'hover:bg-muted text-foreground'}`}
-                        onMouseDown={event => event.preventDefault()} onClick={() => choose(candidate)}>
-                        <span>@{candidate.name}</span>
-                        <span className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">{candidate.type === 'organization' ? t('Company') : t('Member')}</span>
-                    </button>)}
+            }}
+        >
+            <div className="relative grid grid-cols-1 grid-rows-1">
+                {hasFormattedMentions && (
+                    <div
+                        ref={backdrop}
+                        aria-hidden="true"
+                        className={`pointer-events-none col-start-1 row-start-1 z-0 w-full overflow-hidden rounded-md border border-transparent px-3 py-2 text-base md:text-sm whitespace-pre-wrap break-words text-foreground ${className}`}
+                    >
+                        {renderHighlightedDisplay(displayText, mentionMap.current)}
+                        {displayText.endsWith('\n') ? '\n' : ''}
+                    </div>
+                )}
+                <Textarea
+                    {...props}
+                    className={`col-start-1 row-start-1 z-10 ${
+                        hasFormattedMentions
+                            ? '!bg-transparent !text-transparent caret-foreground selection:bg-[#0a66c2]/20'
+                            : ''
+                    } ${className}`}
+                    value={displayText}
+                    ref={node => {
+                        input.current = node;
+                        if (typeof forwardedRef === 'function') forwardedRef(node);
+                        else if (forwardedRef) forwardedRef.current = node;
+                    }}
+                    role={enabled ? 'combobox' : props.role}
+                    aria-autocomplete={enabled ? 'list' : undefined}
+                    aria-controls={open ? listId : undefined}
+                    aria-expanded={enabled ? open : undefined}
+                    aria-activedescendant={open && suggestions[active] ? `${listId}-${active}` : undefined}
+                    onScroll={event => {
+                        if (backdrop.current) {
+                            backdrop.current.scrollTop = event.currentTarget.scrollTop;
+                            backdrop.current.scrollLeft = event.currentTarget.scrollLeft;
+                        }
+                    }}
+                    onChange={event => {
+                        dismissed.current = null;
+                        if (!enabled) {
+                            onChange?.(event);
+                            return;
+                        }
+                        const currentVal = event.currentTarget.value;
+                        if (/@\[[^\]]{1,200}\]\(urn:li:(?:organization|person):[a-zA-Z0-9_-]{1,128}\)/.test(currentVal)) {
+                            onChange?.(event);
+                            updateRange(event.currentTarget);
+                            return;
+                        }
+                        const { rawValue } = fromLinkedinDisplayValue(
+                            currentVal,
+                            event.currentTarget.selectionStart,
+                            mentionMap.current
+                        );
+                        if (rawValue !== currentVal) {
+                            const syntheticEvent = Object.create(event);
+                            const proxyTarget = new Proxy(event.currentTarget, {
+                                get(target, prop) {
+                                    if (prop === 'value') return rawValue;
+                                    const val = target[prop];
+                                    return typeof val === 'function' ? val.bind(target) : val;
+                                },
+                            });
+                            Object.defineProperty(syntheticEvent, 'target', { value: proxyTarget });
+                            Object.defineProperty(syntheticEvent, 'currentTarget', { value: proxyTarget });
+                            onChange?.(syntheticEvent);
+                        } else {
+                            onChange?.(event);
+                        }
+                        updateRange(event.currentTarget);
+                    }}
+                    onSelect={event => {
+                        onSelect?.(event);
+                        updateRange(event.currentTarget);
+                    }}
+                    onBlur={onBlur}
+                    onCompositionStart={event => {
+                        composing.current = true;
+                        setRange(null);
+                        onCompositionStart?.(event);
+                    }}
+                    onCompositionEnd={event => {
+                        composing.current = false;
+                        updateRange(event.currentTarget);
+                        onCompositionEnd?.(event);
+                    }}
+                    onKeyDown={event => {
+                        if (open && !composing.current && !event.nativeEvent.isComposing) {
+                            if (event.key === 'Escape') {
+                                event.preventDefault();
+                                event.stopPropagation();
+                                dismissed.current = {
+                                    value: event.currentTarget.value,
+                                    caret: event.currentTarget.selectionStart,
+                                };
+                                setRange(null);
+                                return;
+                            }
+                            if (suggestions.length && ['ArrowDown', 'ArrowUp'].includes(event.key)) {
+                                event.preventDefault();
+                                setActive(
+                                    index =>
+                                        (index + (event.key === 'ArrowDown' ? 1 : -1) + suggestions.length) %
+                                        suggestions.length
+                                );
+                                return;
+                            }
+                            if (suggestions.length && event.key === 'Enter') {
+                                event.preventDefault();
+                                choose(suggestions[active] || suggestions[0]);
+                                return;
+                            }
+                        }
+                        onKeyDown?.(event);
+                    }}
+                />
+            </div>
+            {open && (
+                <div className="absolute left-0 right-0 top-full z-30 mt-1 rounded-lg border border-border bg-card p-1.5 shadow-lg">
+                    <div
+                        id={listId}
+                        role="listbox"
+                        aria-label={t('LinkedIn mention suggestions')}
+                        className="max-h-60 overflow-y-auto space-y-0.5"
+                    >
+                        {suggestions.map((candidate, index) => (
+                            <button
+                                key={candidate.urn}
+                                id={`${listId}-${index}`}
+                                type="button"
+                                role="option"
+                                aria-selected={index === active}
+                                className={`flex items-center justify-between gap-2.5 w-full rounded-md px-2.5 py-1.5 text-left text-xs break-words transition-colors ${
+                                    index === active
+                                        ? 'bg-[#0a66c2]/10 text-[#0a66c2] font-semibold'
+                                        : 'hover:bg-muted text-foreground'
+                                }`}
+                                onMouseDown={event => event.preventDefault()}
+                                onClick={() => choose(candidate)}
+                            >
+                                <span className="flex items-center gap-2 min-w-0">
+                                    <MentionAvatar candidate={candidate} />
+                                    <span className="truncate font-semibold">@{candidate.name}</span>
+                                </span>
+                                <span className="shrink-0 rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                                    {candidate.type === 'organization' ? t('Company') : t('Member')}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                {!suggestions.length && <p role="status" className="px-2 py-1 text-xs text-muted-foreground">{t('No matching known LinkedIn account. Add another mention by name and ID below.')}</p>}
-                <LinkedinCompanyLookup linkedinAccounts={linkedinAccounts} query={range.query} onChoose={choose} />
-                <p className="px-2 pt-1 text-[11px] text-muted-foreground">{t('Suggestions use connected accounts, verified directory, and mentions in this text.')}</p>
-            </div>}
-        </div>;
+            )}
+        </div>
+    );
 });
