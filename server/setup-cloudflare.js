@@ -22,7 +22,7 @@ try {
     }
     if (existsSync('.env.linkedin')) {
         const linkedin = parseEnv(readFileSync('.env.linkedin', 'utf8'));
-        for (const name of ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET', 'LINKEDIN_REDIRECT_URI']) if (linkedin[name]) secrets[name] = linkedin[name].trim();
+        for (const name of ['LINKEDIN_CLIENT_ID', 'LINKEDIN_CLIENT_SECRET', 'LINKEDIN_PAGE_CLIENT_ID', 'LINKEDIN_PAGE_CLIENT_SECRET', 'LINKEDIN_REDIRECT_URI']) if (linkedin[name]) secrets[name] = linkedin[name].trim();
         if (linkedin.META_TOKEN_ENCRYPTION_KEY && !secrets.META_TOKEN_ENCRYPTION_KEY) secrets.META_TOKEN_ENCRYPTION_KEY = linkedin.META_TOKEN_ENCRYPTION_KEY.trim();
     }
     if (existsSync('.env.x')) {
