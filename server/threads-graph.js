@@ -23,27 +23,34 @@ export function threadsTokenDetails(value, appId, profileId, now = Date.now()) {
 }
 export function createThreadsGraph(config) {
     async function request(path, params = {}, token, method = 'GET', unversioned = false) {
+        const step = path === 'oauth/access_token' ? 'code_exchange' : path === 'access_token' ? 'token_exchange' : path === 'me' ? 'profile' : path === 'debug_token' ? 'permissions' : 'connection';
         const url = new URL(`https://graph.threads.net/${unversioned ? '' : 'v1.0/'}${path}`);
         const fields = new URLSearchParams(params);
         if (method === 'GET') url.search = fields.toString();
         let response, data;
         try { response = await fetch(url, { method, redirect: 'manual', signal: AbortSignal.timeout(20000), headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}), ...(method === 'POST' ? { 'Content-Type': 'application/x-www-form-urlencoded' } : {}) }, ...(method === 'POST' ? { body: fields } : {}) }); }
-        catch { fail('Threads request unavailable or unconfirmed', 502); }
-        if (response.status >= 300 && response.status < 400) fail('Threads returned an unexpected redirect', 502);
-        try { data = await response.json(); } catch { fail('Threads returned an invalid response', 502); }
+        catch { throw Object.assign(new Error('Threads request unavailable or unconfirmed'), { status: 502, metaStep: step, metaReason: 'network' }); }
+        if (response.status >= 300 && response.status < 400) throw Object.assign(new Error('Threads returned an unexpected redirect'), { status: 502, metaStep: step, metaReason: 'redirect', metaHttpStatus: response.status });
+        try {
+            data = JSON.parse(await response.text(), (key, value, context) => {
+                // Preserve numeric provider IDs from their original JSON digits, before Number can round them.
+                if (['id', 'user_id'].includes(key) && typeof value === 'number' && /^\d+$/.test(context?.source || '')) return context.source;
+                return value;
+            });
+        } catch { throw Object.assign(new Error('Threads returned an invalid response'), { status: 502, metaStep: step, metaReason: 'response_format', metaHttpStatus: response.status }); }
         if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Threads returned an invalid response', 502);
-        if (!response.ok || data.error) throw Object.assign(new Error(data.error?.code === 190 ? 'Threads authorization expired. Reconnect Threads.' : 'Threads denied or could not confirm this request'), { status: data.error?.code === 190 ? 409 : 502, metaCode: data.error?.code, metaHttpStatus: response.status });
+        if (!response.ok || data.error) throw Object.assign(new Error(data.error?.code === 190 ? 'Threads authorization expired. Reconnect Threads.' : 'Threads denied or could not confirm this request'), { status: data.error?.code === 190 ? 409 : 502, metaCode: data.error?.code, metaSubcode: data.error?.error_subcode, metaStep: step, metaHttpStatus: response.status });
         return data;
     }
     const confirmedId = value => { if (!numericId(value.id)) fail('Threads returned no confirmed ID', 502); return value.id; };
     return {
         async exchange(code) {
             const short = await request('oauth/access_token', { client_id: config.appId, client_secret: config.appSecret, redirect_uri: config.redirectUri, code, grant_type: 'authorization_code' }, undefined, 'POST', true);
-            if (typeof short.access_token !== 'string' || !short.access_token || !numericId(String(short.user_id))) fail('Threads returned an invalid access token', 502);
+            if (typeof short.access_token !== 'string' || !short.access_token || !numericId(String(short.user_id))) throw Object.assign(new Error('Threads returned an invalid access token'), { status: 502, metaStep: 'code_exchange', metaReason: 'response_format' });
             // Reject unsafe JSON numbers rather than silently rounding an account identity.
-            if (typeof short.user_id === 'number' && !Number.isSafeInteger(short.user_id)) fail('Threads returned an unsafe profile identity', 502);
+            if (typeof short.user_id === 'number' && !Number.isSafeInteger(short.user_id)) throw Object.assign(new Error('Threads returned an unsafe profile identity'), { status: 502, metaStep: 'code_exchange', metaReason: 'response_format' });
             const long = await request('access_token', { grant_type: 'th_exchange_token', client_secret: config.appSecret, access_token: short.access_token }, undefined, 'GET', true);
-            if (typeof long.access_token !== 'string' || !long.access_token || long.token_type?.toLowerCase() !== 'bearer' || !Number.isSafeInteger(long.expires_in) || long.expires_in <= 0 || long.expires_in > 90 * 86400) fail('Threads returned an invalid token lifetime', 502);
+            if (typeof long.access_token !== 'string' || !long.access_token || long.token_type?.toLowerCase() !== 'bearer' || !Number.isSafeInteger(long.expires_in) || long.expires_in <= 0 || long.expires_in > 90 * 86400) throw Object.assign(new Error('Threads returned an invalid token lifetime'), { status: 502, metaStep: 'token_exchange', metaReason: 'response_format' });
             return { token: long.access_token, profileId: String(short.user_id), expiresAt: Date.now() + long.expires_in * 1000 };
         },
         async profile(token) { return threadsProfile(await request('me', { fields: 'id,username' }, token)); },

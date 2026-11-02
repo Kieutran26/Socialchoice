@@ -9,6 +9,25 @@ import { createThreadsConnection } from './threads-connection.js';
 import { createThreadsGraph, threadsContainerState, threadsPublishedMedia, threadsTokenDetails } from './threads-graph.js';
 
 const configuration = () => threadsConfig({ THREADS_APP_ID: '123', THREADS_APP_SECRET: 'synthetic-secret', THREADS_REDIRECT_URI: 'http://127.0.0.1:3001/api/threads/callback', META_TOKEN_ENCRYPTION_KEY: randomBytes(32).toString('hex') });
+test('Threads token exchange preserves large numeric account identities without rounding', async () => {
+    const previous = globalThis.fetch;
+    const responses = ['{"access_token":"fixture-short","user_id":17841463248476439}', '{"access_token":"fixture-long","token_type":"bearer","expires_in":600}', '{"id":17841463248476439,"username":"fixture"}'];
+    globalThis.fetch = async () => new Response(responses.shift());
+    try {
+        const graph = createThreadsGraph(configuration());
+        const credential = await graph.exchange('fixture-code');
+        assert.equal(credential.profileId, '17841463248476439');
+        assert.equal((await graph.profile(credential.token)).id, credential.profileId);
+    } finally { globalThis.fetch = previous; }
+});
+test('Threads callback failure keeps its platform and safe diagnostic for the locked channel dialog', async () => {
+    const f = fixture({ async exchange() { throw Object.assign(new Error('private provider body'), { metaStep: 'code_exchange', metaCode: 100, metaHttpStatus: 400 }); } });
+    try {
+        const start = await f.connection.execute('start', f.req, f.res, [f.brand.id]);
+        await f.connection.callback({ url: `/api/threads/callback?state=${new URL(start.url).searchParams.get('state')}&code=fixture-code`, headers: { cookie: f.cookie() } }, f.res);
+        assert.deepEqual(await f.connection.execute('profile', f.req, f.res), { platform: 'threads', profile: null, pending: false, failure: { step: 'code_exchange', code: 100, httpStatus: 400 } });
+    } finally { f.store.close(); }
+});
 function fixture(graph) {
     const store = createStore(':memory:'), sessions = new Map(), states = new Map(), pending = new Map();
     const auth = createAdminAuth(hashPassword('synthetic threads test password'), false, { sessions });

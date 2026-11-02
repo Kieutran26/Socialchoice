@@ -88,7 +88,7 @@ export function createThreadsConnection(store, auth, config = threadsConfig(), {
             if (operation === 'profile') {
                 const result = pending.get(session);
                 if (!result || result.processing) return { profile: null, pending: false };
-                if (result.failure) return { profile: null, pending: false, failure: result.failure };
+                if (result.failure) return { platform: 'threads', profile: null, pending: false, failure: result.failure };
                 return { pending: true, platform: 'threads', brandId: result.brandId, profile: result.profile, scopes: result.credential.scopes, expiresAt: result.credential.expiresAt };
             }
             if (operation === 'import') {
