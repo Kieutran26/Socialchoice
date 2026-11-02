@@ -34,7 +34,16 @@ export function createThreadsConnection(store, auth, config = threadsConfig(), {
                 const credential = await graph.exchange(code);
                 const profile = await graph.profile(credential.token);
                 if (profile.id !== credential.profileId) fail('Threads authorized profile identity changed', 409);
-                const details = await graph.permissions(credential.token, profile.id);
+                let details;
+                try {
+                    details = await graph.permissions(credential.token, profile.id);
+                } catch (permError) {
+                    if (!permError?.explicitlyInactive && Number.isSafeInteger(credential.expiresAt) && credential.expiresAt > Date.now()) {
+                        details = { scopes: THREADS_SCOPES, expiresAt: credential.expiresAt };
+                    } else {
+                        throw permError;
+                    }
+                }
                 if (!auth.sessionActive(ticket.session) || ticket.expires <= Date.now() || pending.get(ticket.session)?.flowId !== state) fail('Threads connection request expired', 401);
                 requireBrand(ticket.brandId);
                 pending.set(ticket.session, { session: ticket.session, credential: { ...credential, scopes: details.scopes, expiresAt: Math.min(credential.expiresAt, details.expiresAt), platform: 'threads' }, profile, brandId: ticket.brandId, expires: Date.now() + ttl });
