@@ -8,6 +8,7 @@ import { fail } from './validation.js';
 import { Buffer } from 'node:buffer';
 import { saveTemplate, createTemplateDraft } from './post-templates.js';
 import { savePostPlan } from './post-plans.js';
+import { importPostDrafts } from './bulk-post-import.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
@@ -133,7 +134,8 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             const match = req.url?.match(/^\/api\/entities\/([A-Za-z]+)\/([A-Za-z]+)$/);
             const templateRoute = req.url?.match(/^\/api\/templates\/(save|createDraft)$/);
             const savingPost = req.url === '/api/posts/save';
-            if ((!match && !savingPost && !publishingRoute && !notificationRoute && !metricsRoute && !templateRoute) || req.method !== 'POST') fail('Endpoint not found', 404);
+            const importingPosts = req.url === '/api/posts/import';
+            if ((!match && !savingPost && !importingPosts && !publishingRoute && !notificationRoute && !metricsRoute && !templateRoute) || req.method !== 'POST') fail('Endpoint not found', 404);
             if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
             let body = '';
             for await (const chunk of req) {
@@ -158,6 +160,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 if (input.args.length !== 1) fail('Template request requires one argument');
                 return send(200, templateRoute[1] === 'save' ? saveTemplate(store, input.args[0]) : createTemplateDraft(store, input.args[0]));
             }
+            if (importingPosts) { if (input.args.length !== 1) fail('Import request requires one argument'); return send(200, importPostDrafts(store, input.args[0])); }
             if (savingPost) return send(200, savePostPlan(store, input.args[0]));
             send(200, store.execute(match[1], match[2], input.args));
         } catch (error) {

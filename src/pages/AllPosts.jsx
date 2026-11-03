@@ -1,5 +1,6 @@
 import LoadError from '@/components/common/load-error';
 import BulkScheduleDialog from '@/components/posts/BulkScheduleDialog';
+import BulkUploadDialog from '@/components/posts/bulk-upload-dialog';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -44,6 +45,7 @@ export default function AllPosts() {
     const [selected, setSelected] = useState([]);
     const [openPost, setOpenPost] = useState(null);
     const [scheduleOpen, setScheduleOpen] = useState(false);
+    const [importOpen, setImportOpen] = useState(false);
     const [bulkAction, setBulkAction] = useState(null);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
@@ -295,9 +297,12 @@ export default function AllPosts() {
                         : 'Every draft, scheduled and published post with its pillar, angle, destinations and status.'
                 )}
                 actions={
+                    <div className="flex flex-wrap items-center gap-3">
+                    {!isDesktop() && <Button variant="outline" onClick={() => setImportOpen(true)}>{t('Import Excel / CSV')}</Button>}
                     <Link to="/create" className="btn-skew">
                         <Plus size={16} weight="bold" /> {t('Create Post')}
                     </Link>
+                    </div>
                 }
             />
 
@@ -483,6 +488,8 @@ export default function AllPosts() {
                 />
             ) : null}
 
+            {importOpen && <BulkUploadDialog key={`${scope.is_demo}:${scope.brand_id || 'all'}`} brands={brands} accounts={accounts} pillars={pillars} angles={angles} scope={scope} timezone={timezone}
+                onClose={() => setImportOpen(false)} onImported={count => { setImportOpen(false); setSearch(''); setFilters({ search: '', status: 'draft', pillar_id: 'all', angle_id: 'all', account_id: 'all', platform: 'all' }); toast({ title: `${t('Imported drafts')}: ${count}` }); loadStatusCounts(); }} />}
             {scheduleOpen && (
                 <BulkScheduleDialog
                     posts={eligible(['draft'])}

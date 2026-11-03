@@ -71,6 +71,8 @@ This editor runs entirely in the browser tab and does not upload screenshots. Do
 
 ## Data and backup
 
+Bulk upload is available under **All Posts → Import Excel / CSV** in the web runtime. Preview and map up to 200 spreadsheet rows, then save the entire batch as drafts. Proposed times never start automatic publishing. See [formats, references and retry behavior](docs/bulk-post-upload.md).
+
 Persistent data: data/socialchoice.sqlite. Refreshing or restarting the server preserves it. Data and .env files are ignored by Git. With the API stopped cleanly, copy the data folder to a safe backup location. Restore that folder only while the API is stopped. Do not remove it to fix frontend problems. Tests use separate temporary/in-memory databases.
 
 The original source snapshot is plans/261012-0943-phase-a/source-before-phase-a.zip. The original base44/ configuration and schemas remain for reference, but the standalone runtime does not read them or contact Base44. Its owned schemas are in server/entity-schemas.json. No existing hosted Base44 records have been exported, changed or migrated automatically.

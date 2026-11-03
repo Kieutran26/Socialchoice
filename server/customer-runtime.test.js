@@ -67,6 +67,13 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await (await request('/api/entities/Brand/list', [], b.cookie)).json()).items.length, 0);
         assert.equal((await request('/api/entities/Brand/update', [brand.id, { name: 'Cross-tenant overwrite' }], b.cookie)).status, 404);
         assert.equal((await request('/api/entities/Post/create', [{ brand_id: brand.id, title: 'Cross-tenant reference' }], b.cookie)).status, 404);
+        const bulkInput = { request_id: crypto.randomUUID(), brand_id: brand.id, rows: [{ rowNumber: 2, values: { title: 'Private imported draft', caption: 'Only customer A' } }] };
+        const bulkResponse = await request('/api/posts/import', [bulkInput], a.cookie);
+        assert.equal(bulkResponse.status, 200, await bulkResponse.clone().text());
+        const bulkResult = await bulkResponse.json();
+        assert.equal((await request('/api/posts/import', [bulkInput], b.cookie)).status, 404);
+        assert.equal((await request('/api/entities/Post/get', [bulkResult.post_ids[0]], b.cookie)).status, 404);
+        assert.deepEqual(await (await request('/api/posts/import', [bulkInput], a.cookie)).json(), bulkResult);
         const sourceResponse = await request('/api/autopilot/createSource', [{ name: 'Private Drive A', brand_id: brand.id, kind: 'drive', folder: 'fixture-folder' }], a.cookie);
         assert.equal(sourceResponse.status, 200, await sourceResponse.clone().text()); const source = await sourceResponse.json();
         assert.equal((await (await request('/api/autopilot/list', [{}], b.cookie)).json()).sources.length, 0);

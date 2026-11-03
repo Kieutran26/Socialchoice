@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 import { mkdtempSync, rmSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { randomBytes } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { hashPassword } from './admin-auth.js';
 
@@ -69,6 +69,17 @@ test('Worker authentication and Vietnamese content survive runtime restart', asy
         assert.equal((await request('/api/publishing/publish', ['nonexistent'], cookie)).status, 404);
         const history = await request('/api/entities/PublishJob/list', [], cookie);
         assert.equal((await history.json()).items.length, 0);
+        const bulkInput = { request_id: randomUUID(), brand_id: brand.id, rows: [{ rowNumber: 2, values: { title: 'Nhập hàng loạt', caption: 'Bản nháp từ Excel/CSV' } }] };
+        assert.equal((await request('/api/posts/import', [bulkInput])).status, 401);
+        const bulkResponse = await request('/api/posts/import', [bulkInput], cookie);
+        assert.equal(bulkResponse.status, 200, await bulkResponse.clone().text());
+        const bulkResult = await bulkResponse.json();
+        await runtime.dispose(); runtime = new Miniflare(options);
+        const replay = await request('/api/posts/import', [bulkInput], cookie);
+        assert.equal(replay.status, 200, await replay.clone().text());
+        assert.deepEqual(await replay.json(), bulkResult);
+        const imported = await request('/api/entities/Post/get', [bulkResult.post_ids[0]], cookie);
+        assert.equal((await imported.json()).status, 'draft');
         await request('/api/auth/logout', [], cookie);
         assert.equal((await request('/api/session', undefined, cookie)).status, 401);
         for (let n = 0; n < 5; n++) assert.equal((await request('/api/auth/login', ['incorrect'])).status, 401);

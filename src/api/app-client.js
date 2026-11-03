@@ -98,7 +98,7 @@ import { desktopRequest } from './desktop/request';
             start: brandId => request('x/start', [brandId]), importProfile: id => request('x/import', [id]),
             check: id => request('x/check', [id]), disconnect: id => request('x/disconnect', [id]),
         },
-        posts: { save: (plan) => request('posts/save', [plan]), cancelPlans: ids => request('posts/cancel', [ids]) },
+        posts: { importDrafts: input => request('posts/import', [input]), save: (plan) => request('posts/save', [plan]), cancelPlans: ids => request('posts/cancel', [ids]) },
         integrations: {
             Core: {
                 /** @returns {Promise<{file_url: string}>} */

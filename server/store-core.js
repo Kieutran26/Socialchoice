@@ -33,9 +33,12 @@ export function createStoreCore(db, transactionSync) {
     db.exec('CREATE TABLE IF NOT EXISTS publishing_reviews (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
     db.exec('CREATE TABLE IF NOT EXISTS collaboration_invites (id TEXT PRIMARY KEY, post_id TEXT NOT NULL, target_id TEXT NOT NULL, data TEXT NOT NULL, UNIQUE(post_id,target_id));');
     db.exec('CREATE TABLE IF NOT EXISTS schedule_batches (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
+    db.exec('CREATE TABLE IF NOT EXISTS bulk_post_imports (id TEXT PRIMARY KEY, data TEXT NOT NULL);');
     db.exec('CREATE TABLE IF NOT EXISTS notification_reads (id TEXT PRIMARY KEY, read_at INTEGER NOT NULL);');
     db.exec("CREATE INDEX IF NOT EXISTS publishing_problem_recent ON publish_attempts(COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) DESC) WHERE json_extract(data,'$.status') IN ('failed','unknown');");
     const store = {
+        bulkImport: id => { const row = db.prepare('SELECT data FROM bulk_post_imports WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
+        saveBulkImport: value => db.prepare('INSERT INTO bulk_post_imports VALUES (?,?)').run(value.id, JSON.stringify(value)),
         savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),
         publishingReview: id => { const row = db.prepare('SELECT data FROM publishing_reviews WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
         attemptsForPost: id => typeof id === 'string' ? db.prepare('SELECT data FROM publish_attempts WHERE post_id=? ORDER BY rowid').all(id).map(row => JSON.parse(row.data)) : [],
