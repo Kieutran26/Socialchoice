@@ -2,6 +2,16 @@
 
 Status2026-11-02: NOT PUBLIC. Owner connection works; non-tester access is not approved. Meta review draft1135750035594590 belongs to app1115808334255427 and includes threads_basic and threads_content_publish, alongside existing Facebook/Instagram requests. Do not submit or remove unrelated requests without reviewing their impact.
 
+## Latest continuation — 2 November 2026
+
+The current draft now lists only the two Threads permissions; unrelated requests were removed outside this continuation. App settings, data handling and reviewer instructions show100%; verification and allowed use remain0%. The owner supplied NextChoice as responsible entity, Vietnam, no national-security data disclosures in the last12months, and authorized selecting None of the above for existing public-authority-request procedures. Conflicting prefilled procedure selections were cleared. Completion percentages mean form completion, not independent validation of legal status or processor disclosures.
+
+Owner entered reviewer credentials directly into Meta. The agent checked only that the field had content, saved the step, and did not read, log or copy the credentials. Reviewer login has not independently been tested. A video was already uploaded and permitted-use confirmation already selected by the owner when inspected; neither was fabricated by the agent.
+
+Owner explicitly approved one public Threads test with the exact caption “Kiểm thử kết nối Threads của Socialchoice phục vụ xét duyệt ứng dụng Meta.” Only @_ticrn was selected. Socialchoice confirmed Published for post885d7b96-832e-46f7-b943-16760bcbca03, and the actual public post was opened and its content verified at https://www.threads.com/@_ticrn/post/DfPbhFgk8SE . Screenshot data/threads-review-live-publication.png. Publication description updated with this real receipt. Meta's publication test counter still showed0/1 before the call; its UI states up to24hours to update. No automatic duplicate publication or deletion is authorized.
+
+The verified-business selector remains empty. No final review submission occurred. Historical preparation notes below describe earlier states; this continuation supersedes their claims that live publication/video/reviewer information are entirely absent. Remaining work includes genuine verified-business ownership, counter/allowed-use completion, review of processor disclosures and reviewer access before submitting.
+
 ## Completed in Meta
 
 Owner explicitly authorized the irreversible Technology Provider conversion after reading Meta's warning. Continued; the Review/Verification navigation and application review draft became available. No legal terms checkbox was accepted by the agent.

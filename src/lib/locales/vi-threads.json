@@ -30,5 +30,8 @@
   "Scheduled publishing could not start. Check destination access, then duplicate as a draft to try again.": "Không bắt đầu được lần đăng theo lịch. Kiểm tra quyền tài khoản, rồi nhân bản thành bản nháp để thử lại.",
   "Threads authorization changed. Reconnect and review again.": "Quyền truy cập Threads đã thay đổi. Kết nối lại và xem lại bài.",
   "Threads denied publishing or the linked profile changed. Reconnect and check permissions.": "Threads từ chối đăng hoặc tài khoản đã thay đổi. Kết nối lại và kiểm tra quyền.",
-  "Threads could not process the media. Check its format and profile access.": "Threads không xử lý được ảnh/video. Kiểm tra định dạng và quyền truy cập tài khoản."
+  "Threads could not process the media. Check its format and profile access.": "Threads không xử lý được ảnh/video. Kiểm tra định dạng và quyền truy cập tài khoản.",
+  "Beta": "Thử nghiệm (Beta)",
+  "Threads connection is currently in active development": "Tính năng kết nối Threads đang được phát triển",
+  "Please contact the Admin to add your Threads account to the allowed list before connecting.": "Tính năng kết nối đang được phát triển, hãy liên hệ admin để được kết nối account threads."
 }

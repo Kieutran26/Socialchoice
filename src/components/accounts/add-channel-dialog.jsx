@@ -173,8 +173,8 @@ export default function AddChannelDialog({ open, onOpenChange, brands, defaultBr
                                         aria-label={t('Connect {platform}', { platform: label })}
                                         className={`h-auto group relative flex min-h-[142px] flex-col items-center justify-center rounded-xl border p-3 pt-8 pb-3 text-center transition-colors focus-visible:outline-offset-2 ${!service ? 'bg-surface text-muted-foreground cursor-not-allowed opacity-60' : 'bg-white hover:border-brand-dark hover:bg-successBg/30'}`}
                                     >
-                                        <span className={`absolute right-2 top-2 rounded-md px-1.5 py-0.5 text-[9.5px] font-medium ${available ? 'bg-successBg text-successFg' : 'bg-muted text-muted-foreground'}`}>
-                                            {t(state)}
+                                        <span className={`absolute right-2 top-2 rounded-md px-1.5 py-0.5 text-[9.5px] font-medium ${id === 'threads' ? 'bg-amber-100 text-amber-800 border border-amber-200' : available ? 'bg-successBg text-successFg' : 'bg-muted text-muted-foreground'}`}>
+                                            {id === 'threads' ? t('Beta') : t(state)}
                                         </span>
                                         <span className="flex h-10 w-10 items-center justify-center rounded-xl border bg-white shadow-2xs" style={{ color }}>
                                             <Icon size={24} weight={['instagram', 'instagram-standalone', 'threads', 'x', 'bluesky'].includes(id) ? 'regular' : 'fill'} />

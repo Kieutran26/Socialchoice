@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ArrowClockwise, WarningCircle } from '@phosphor-icons/react';
+import { ArrowClockwise, Info, WarningCircle } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { appClient } from '@/api/app-client';
 import { Button } from '@/components/ui/button';
@@ -72,7 +72,13 @@ export default function MetaConnectionCard({ onAddManually = null, brands = [], 
         {!embedded && <p className="label-xs mt-2">{t('Choose a platform and authorize it on its official sign-in page. Instagram requires a professional account linked to a Facebook Page.')}</p>}
         {embedded && platform==='instagram' && <p className="label-xs">{t('Instagram requires a Business or Creator account linked to a Facebook Page.')}</p>}
         {!(platform==='threads'?threadsStatus?.ready:status?.ready) && <p className="label-xs mt-2">{t('Configure the Meta App on the server first. Never enter a Facebook password here.')}</p>}
-        {platform==='threads' && <p className="label-xs mt-2">{t(threadsStatus?.ready?'Threads uses its own sign-in and permission grant. Select only the profile you want to connect.':'Threads setup is required on the server before connecting. Its app credentials are separate from Facebook and Instagram.')}</p>}
+        {platform==='threads' && <div className="mt-3 flex items-start gap-2.5 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs text-amber-900">
+            <Info size={16} className="shrink-0 mt-0.5 text-amber-600" />
+            <div className="space-y-0.5">
+                <p className="font-semibold text-amber-950">{t('Threads connection is currently in active development')}</p>
+                <p className="text-amber-900/90 leading-relaxed">{t('Please contact the Admin to add your Threads account to the allowed list before connecting.')}</p>
+            </div>
+        </div>}
         {error && <p role="alert" className="text-sm text-dangerFg mt-3">{t(error)}</p>}
         {selection?.failure && <p role="alert" className="text-sm text-dangerFg mt-2">{t('Connection diagnostic')}: {t(connectionSteps[selection.failure.step] || connectionSteps.connection)} · {selection.failure.code ?? '—'}{selection.failure.subcode !== undefined ? ` / ${selection.failure.subcode}` : ''}</p>}
         {selection?.failure?.reason && <p className="text-sm text-dangerFg mt-1">{t(connectionReasons[selection.failure.reason])} · HTTP {selection.failure.httpStatus ?? '—'}</p>}
