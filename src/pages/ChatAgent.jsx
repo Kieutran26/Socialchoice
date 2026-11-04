@@ -15,6 +15,7 @@ import {
     PlugsConnected,
     Lightning,
     CaretDown,
+    LinkSimple,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { aiRequest } from '@/api/ai';
@@ -24,6 +25,7 @@ import { useTranslation } from '@/lib/i18n';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { toUtcIso, toZonedParts, todayInZone, addDays, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE } from '@/lib/constants';
+import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 
 // Smart natural language schedule time extractor
 function parseScheduleTime(input = '', timezone = DEFAULT_TIMEZONE) {
@@ -291,7 +293,27 @@ export default function ChatAgent() {
             if (!generatedTitle) generatedTitle = `[AI] ${userText.slice(0, 40) || 'Kế hoạch đăng bài'}`;
 
             // 4. Build platform adaptations
-            const platformCaptions = generatePlatformContent(generatedCaption, userText);
+            let platformCaptions = generatePlatformContent(generatedCaption, userText);
+
+            // Auto-shorten links in caption if preference is 'always'
+            const currentPref = getShortlinkPreference();
+            if (currentPref === 'always' && /https?:\/\/[^\s]+/i.test(generatedCaption) && !/\/api\/links\/go\//i.test(generatedCaption)) {
+                try {
+                    const linkRes = await appClient.links.build({
+                        brand_id: currentBrand.id,
+                        form: { caption: generatedCaption, platform_captions: platformCaptions },
+                        options: { medium: 'social', campaign: generatedTitle || 'agent-post', tracking: true },
+                    });
+                    if (linkRes?.caption) {
+                        generatedCaption = linkRes.caption;
+                        if (linkRes.platform_captions) {
+                            platformCaptions = { ...platformCaptions, ...linkRes.platform_captions };
+                        }
+                    }
+                } catch (linkErr) {
+                    console.warn('Agent auto-shorten warning:', linkErr);
+                }
+            }
 
             // 5. Create Draft Post object
             const postDraft = {
@@ -349,12 +371,31 @@ export default function ChatAgent() {
             const scheduledAtIso = toUtcIso(draft.scheduledDate, draft.scheduledTime, draft.timezone);
             if (!scheduledAtIso) throw new Error('Ngày hoặc giờ lên lịch không hợp lệ.');
 
+            let effectiveCaption = draft.caption;
+            let effectivePlatformCaptions = draft.platformCaptions || {};
+            const pref = getShortlinkPreference();
+            if (pref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/\/api\/links\/go\//i.test(effectiveCaption)) {
+                try {
+                    const linkRes = await appClient.links.build({
+                        brand_id: currentBrand.id,
+                        form: { caption: effectiveCaption, platform_captions: effectivePlatformCaptions },
+                        options: { medium: 'social', campaign: draft.title || 'agent-post', tracking: true },
+                    });
+                    if (linkRes?.caption) {
+                        effectiveCaption = linkRes.caption;
+                        effectivePlatformCaptions = linkRes.platform_captions || effectivePlatformCaptions;
+                    }
+                } catch (linkErr) {
+                    console.warn('Agent confirm auto-shorten warning:', linkErr);
+                }
+            }
+
             const payload = {
                 brand_id: currentBrand.id,
                 title: draft.title.trim(),
-                caption: draft.caption,
+                caption: effectiveCaption,
                 platform_captions: Object.fromEntries(
-                    Object.entries(draft.platformCaptions || {}).filter(([, c]) => c && c.trim())
+                    Object.entries(effectivePlatformCaptions).filter(([, c]) => c && c.trim())
                 ),
                 destination_settings: {},
                 media_ids: (draft.media || []).map((m) => m.id),
@@ -605,6 +646,63 @@ export default function ChatAgent() {
                                                 onChange={(e) => updateDraftField(msg.id, 'caption', e.target.value)}
                                                 className="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#ffd631] disabled:opacity-75 resize-none"
                                             />
+
+                                            {/* Shortlink Prompt if preference is 'ask' and contains URL */}
+                                            {getShortlinkPreference() === 'ask' &&
+                                                !msg.postDraft.shortlinkDismissed &&
+                                                !msg.postDraft.isScheduled &&
+                                                /https?:\/\/[^\s]+/i.test(msg.postDraft.caption) &&
+                                                !/\/api\/links\/go\//i.test(msg.postDraft.caption) && (
+                                                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-[#ffd631]/40 bg-[#ffd631]/10 p-2.5 text-xs text-foreground">
+                                                        <span className="flex items-center gap-1.5 font-medium">
+                                                            <LinkSimple size={15} className="text-[#806400] shrink-0" weight="bold" />
+                                                            {t('Phát hiện liên kết URL. Bạn có muốn rút gọn sang Shortlink để theo dõi nhấp chuột?')}
+                                                        </span>
+                                                        <div className="flex items-center gap-2 shrink-0">
+                                                            <button
+                                                                type="button"
+                                                                onClick={async () => {
+                                                                    try {
+                                                                        const res = await appClient.links.build({
+                                                                            brand_id: currentBrand.id,
+                                                                            form: { caption: msg.postDraft.caption, platform_captions: msg.postDraft.platformCaptions },
+                                                                            options: { medium: 'social', campaign: msg.postDraft.title || 'agent-post', tracking: true },
+                                                                        });
+                                                                        if (res?.caption) {
+                                                                            setMessages((prev) =>
+                                                                                prev.map((m) =>
+                                                                                    m.id === msg.id
+                                                                                        ? {
+                                                                                              ...m,
+                                                                                              postDraft: {
+                                                                                                  ...m.postDraft,
+                                                                                                  caption: res.caption,
+                                                                                                  platformCaptions: res.platform_captions || m.postDraft.platformCaptions,
+                                                                                              },
+                                                                                          }
+                                                                                        : m
+                                                                                )
+                                                                            );
+                                                                            toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                                                        }
+                                                                    } catch (e) {
+                                                                        toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
+                                                                    }
+                                                                }}
+                                                                className="btn-skew text-xs py-1 px-3 shadow-2xs cursor-pointer"
+                                                            >
+                                                                {t('Rút gọn ngay')}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => updateDraftField(msg.id, 'shortlinkDismissed', true)}
+                                                                className="rounded-lg border border-border bg-background px-2 py-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                                            >
+                                                                {t('Bỏ qua')}
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                )}
                                         </div>
 
                                         {/* Media Preview inside card */}

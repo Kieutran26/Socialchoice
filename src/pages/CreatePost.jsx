@@ -40,6 +40,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Skeleton } from '@/components/ui/skeleton';
 import PlatformLogo from '@/components/composer/PlatformLogo';
 import { aiRequest } from '@/api/ai';
+import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
@@ -114,6 +115,45 @@ export default function CreatePost() {
     const [sourceLoading, setSourceLoading] = useState(!!sourceId);
     const [aiOpen, setAiOpen] = useState(false);
     const [aiConfig, setAiConfig] = useState(null);
+    const [shortlinkPref, setShortlinkPref] = useState(getShortlinkPreference);
+    const [shortlinkDismissed, setShortlinkDismissed] = useState(false);
+
+    useEffect(() => {
+        const handleSync = () => setShortlinkPref(getShortlinkPreference());
+        window.addEventListener('storage', handleSync);
+        return () => window.removeEventListener('storage', handleSync);
+    }, []);
+
+    // Auto-shorten links in caption if preference is 'always'
+    useEffect(() => {
+        if (shortlinkPref !== 'always' || !form.brand_id || !form.caption) return;
+        if (!/https?:\/\/[^\s]+/i.test(form.caption) || /\/api\/links\/go\//i.test(form.caption)) return;
+
+        const timer = setTimeout(async () => {
+            try {
+                const res = await appClient.links.build({
+                    brand_id: form.brand_id,
+                    form,
+                    options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                });
+                if (res?.caption && res.caption !== form.caption) {
+                    setForm((curr) => ({
+                        ...curr,
+                        caption: res.caption,
+                        platform_captions: res.platform_captions || curr.platform_captions,
+                    }));
+                    toast({
+                        title: t('Đã tự động rút gọn liên kết!'),
+                        description: t('Đã chuyển đổi sang Shortlink theo cài đặt "Always shorten".'),
+                    });
+                }
+            } catch (err) {
+                console.warn('Auto-shorten debounce warning:', err);
+            }
+        }, 1200);
+
+        return () => clearTimeout(timer);
+    }, [form.caption, form.brand_id, form.title, shortlinkPref, t, toast]);
 
     useEffect(() => {
         let active = true;
@@ -342,11 +382,30 @@ export default function CreatePost() {
         }
         setSaving(true);
         try {
+            let effectiveCaption = form.caption;
+            let effectivePlatformCaptions = form.platform_captions;
+            if (shortlinkPref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/\/api\/links\/go\//i.test(effectiveCaption) && form.brand_id) {
+                try {
+                    const linkRes = await appClient.links.build({
+                        brand_id: form.brand_id,
+                        form,
+                        options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                    });
+                    if (linkRes?.caption) {
+                        effectiveCaption = linkRes.caption;
+                        effectivePlatformCaptions = linkRes.platform_captions || effectivePlatformCaptions;
+                        setForm((curr) => ({ ...curr, caption: effectiveCaption, platform_captions: effectivePlatformCaptions }));
+                    }
+                } catch (linkErr) {
+                    console.warn('Auto-shorten on submit warning:', linkErr);
+                }
+            }
+
             const payload = {
                 brand_id: form.brand_id,
                 title: form.title.trim(),
-                caption: form.caption,
-                platform_captions: Object.fromEntries(Object.entries(form.platform_captions).filter(([, caption]) => caption.trim())),
+                caption: effectiveCaption,
+                platform_captions: Object.fromEntries(Object.entries(effectivePlatformCaptions).filter(([, caption]) => caption.trim())),
                 destination_settings: Object.fromEntries(
                     form.account_ids.map((id) => {
                         const setting = form.destination_settings[id] || {};
@@ -647,38 +706,47 @@ export default function CreatePost() {
                                 />
                             )}
 
-                            {/* Quick Shortlink detector */}
-                            {/https?:\/\/[^\s]+/i.test(form.caption) && !/\/api\/links\/go\//i.test(form.caption) && (
-                                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-[#ffd631]/10 border border-[#ffd631]/40 text-xs">
-                                    <span className="flex items-center gap-1.5 text-foreground font-medium">
-                                        <LinkSimple size={15} className="text-[#806400]" weight="bold" />
-                                        {t('Phát hiện liên kết URL. Bạn có muốn rút gọn thành Shortlink để theo dõi lượt click?')}
+                            {/* Quick Shortlink detector based on Shortlink Preference */}
+                            {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(form.caption) && !/\/api\/links\/go\//i.test(form.caption) && (
+                                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/60 text-xs shadow-2xs">
+                                    <span className="flex items-center gap-2 text-foreground font-semibold">
+                                        <LinkSimple size={16} className="text-[#806400]" weight="bold" />
+                                        {t('Phát hiện liên kết URL. Bạn có muốn chuyển thành Shortlink để theo dõi số lượt nhấp không?')}
                                     </span>
-                                    <button
-                                        type="button"
-                                        onClick={async () => {
-                                            try {
-                                                const res = await appClient.links.build({
-                                                    brand_id: form.brand_id,
-                                                    form,
-                                                    options: { medium: 'social', campaign: form.title || 'post', tracking: true },
-                                                });
-                                                if (res?.caption) {
-                                                    setForm((curr) => ({
-                                                        ...curr,
-                                                        caption: res.caption,
-                                                        platform_captions: res.platform_captions || curr.platform_captions,
-                                                    }));
-                                                    toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                    <div className="flex items-center gap-2 shrink-0">
+                                        <button
+                                            type="button"
+                                            onClick={async () => {
+                                                try {
+                                                    const res = await appClient.links.build({
+                                                        brand_id: form.brand_id,
+                                                        form,
+                                                        options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                                                    });
+                                                    if (res?.caption) {
+                                                        setForm((curr) => ({
+                                                            ...curr,
+                                                            caption: res.caption,
+                                                            platform_captions: res.platform_captions || curr.platform_captions,
+                                                        }));
+                                                        toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                                    }
+                                                } catch (e) {
+                                                    toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
                                                 }
-                                            } catch (e) {
-                                                toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
-                                            }
-                                        }}
-                                        className="rounded-lg bg-[#ffd631] text-[#2b2100] px-2.5 py-1 text-xs font-bold hover:bg-[#ffe059] transition-all cursor-pointer shadow-2xs shrink-0"
-                                    >
-                                        {t('Rút gọn ngay')}
-                                    </button>
+                                            }}
+                                            className="btn-skew text-xs py-1 px-3 shadow-2xs cursor-pointer"
+                                        >
+                                            {t('Rút gọn ngay')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShortlinkDismissed(true)}
+                                            className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                        >
+                                            {t('Bỏ qua')}
+                                        </button>
+                                    </div>
                                 </div>
                             )}
                         </div>
