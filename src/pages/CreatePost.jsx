@@ -4,7 +4,7 @@ import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import CommentChainEditor from '@/components/composer/CommentChainEditor';
 import LinkedinMentionBar from '@/components/composer/LinkedinMentionBar';
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FloppyDisk,
@@ -14,23 +14,6 @@ import {
     CalendarBlank,
     Sparkle,
     LinkSimple,
-    ImageSquare,
-    Palette,
-    PenNib,
-    Smiley,
-    TextB,
-    TextUnderline,
-    Warning,
-    Gear,
-    CaretDown,
-    CaretUp,
-    Tag,
-    Repeat,
-    X,
-    Plus,
-    Check,
-    Globe,
-    CheckCircle,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -38,15 +21,19 @@ import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import PlatformMedia from '@/components/composer/platform-media';
+import MediaUploader from '@/components/composer/MediaUploader';
+import PillarAngleFields from '@/components/composer/PillarAngleFields';
+import ScheduleFields from '@/components/composer/ScheduleFields';
 import PostPreview from '@/components/composer/PostPreview';
 import PageSettings from '@/components/composer/PageSettings';
 import UtmLinkBuilder from '@/components/composer/utm-link-builder';
 import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import DestinationChecks from '@/components/composer/DestinationChecks';
-import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds, CAPTION_LIMITS } from '@/lib/publishing-content';
+import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds } from '@/lib/publishing-content';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linkedin-mention-textarea';
+import { Button } from '@/components/ui/button';
 import DesktopAiWriter from '@/components/composer/desktop-ai-writer';
 import { applyAiSuggestion, applyAiPlatformSuggestion } from '@/lib/ai-draft';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -57,7 +44,7 @@ import { aiRequest } from '@/api/ai';
 import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
-import { DEFAULT_TIMEZONE, PLATFORM_LABEL, TIMEZONES } from '@/lib/constants';
+import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
 
 const serializeCommentForApi = (item = {}) => {
     const mediaIds = Array.isArray(item.media)
@@ -103,24 +90,6 @@ const emptyForm = (brandId) => ({
     comments: [],
 });
 
-function formatScheduleTime(date, time) {
-    if (!date || !time) return 'Select date & time';
-    try {
-        const [y, m, d] = date.split('-');
-        let [hours, mins] = time.split(':');
-        let h = parseInt(hours, 10);
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        h = h % 12;
-        h = h ? h : 12;
-        const hStr = h < 10 ? `0${h}` : `${h}`;
-        return `${m}/${d}/${y} ${hStr}:${mins} ${ampm}`;
-    } catch {
-        return `${date} ${time}`;
-    }
-}
-
-const EMOJI_LIST = ['🔥', '🚀', '💡', '✨', '🌟', '🎉', '💯', '❤️', '👍', '👏', '👉', '👇', '📌', '🎯', '🛒', '📞', '🌐', '💬', '✉️', '🔔', '😊', '😎', '🤔', '🥳', '🙌', '🤝', '⚡', '🏆', '💎', '📈'];
-
 export default function CreatePost() {
     const desktop = isDesktop();
     const { t } = useTranslation();
@@ -148,59 +117,12 @@ export default function CreatePost() {
     const [aiOpen, setAiOpen] = useState(false);
     const [aiConfig, setAiConfig] = useState(null);
     const [shortlinkPref, setShortlinkPref] = useState(getShortlinkPreference);
-    const [previewPlatform, setPreviewPlatform] = useState('threads');
     const [shortlinkDismissed, setShortlinkDismissed] = useState(false);
 
-    // Modern Postiz-style UI states
-    const [activeChannelTab, setActiveChannelTab] = useState('all'); // 'all' or account.id
-    const [showComments, setShowComments] = useState(false);
-    const [settingsOpen, setSettingsOpen] = useState(false);
-    const [showPreview, setShowPreview] = useState(true);
-    const [tagDropdownOpen, setTagDropdownOpen] = useState(false);
-    const [repeatDropdownOpen, setRepeatDropdownOpen] = useState(false);
-    const [repeatFrequency, setRepeatFrequency] = useState('none');
-    const [schedulePickerOpen, setSchedulePickerOpen] = useState(false);
-    const [publishDropdownOpen, setPublishDropdownOpen] = useState(false);
-    const [emojiPickerOpen, setEmojiPickerOpen] = useState(false);
-    const [mediaLibraryOpen, setMediaLibraryOpen] = useState(false);
-    const [brandMediaAssets, setBrandMediaAssets] = useState([]);
-
-    const fileInputRef = useRef(null);
-    const textareaRef = useRef(null);
-    const schedulePickerRef = useRef(null);
-    const publishDropdownRef = useRef(null);
-    const tagDropdownRef = useRef(null);
-    const repeatDropdownRef = useRef(null);
-    const emojiPickerRef = useRef(null);
-
-    // Sync shortlink preference from localStorage
     useEffect(() => {
         const handleSync = () => setShortlinkPref(getShortlinkPreference());
         window.addEventListener('storage', handleSync);
         return () => window.removeEventListener('storage', handleSync);
-    }, []);
-
-    // Close click-outside dropdowns
-    useEffect(() => {
-        const handleClickOutside = (e) => {
-            if (schedulePickerRef.current && !schedulePickerRef.current.contains(e.target)) {
-                setSchedulePickerOpen(false);
-            }
-            if (publishDropdownRef.current && !publishDropdownRef.current.contains(e.target)) {
-                setPublishDropdownOpen(false);
-            }
-            if (tagDropdownRef.current && !tagDropdownRef.current.contains(e.target)) {
-                setTagDropdownOpen(false);
-            }
-            if (repeatDropdownRef.current && !repeatDropdownRef.current.contains(e.target)) {
-                setRepeatDropdownOpen(false);
-            }
-            if (emojiPickerRef.current && !emojiPickerRef.current.contains(e.target)) {
-                setEmojiPickerOpen(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     // Auto-shorten links in caption if preference is 'always'
@@ -234,72 +156,110 @@ export default function CreatePost() {
         return () => clearTimeout(timer);
     }, [form.caption, form.brand_id, form.title, shortlinkPref, t, toast]);
 
-    // Load initial accounts, pillars, angles
     useEffect(() => {
         let active = true;
-        setLoading(true);
-        Promise.all([
-            appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
-            appClient.entities.ContentPillar.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
-            appClient.entities.ContentAngle.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
-            aiRequest('status').catch(() => null),
-        ])
-            .then(([accountsPage, pillarsPage, anglesPage, config]) => {
-                if (!active) return;
-                setAccounts(accountsPage.items || []);
-                setPillars(pillarsPage.items || []);
-                setAngles(anglesPage.items || []);
-                setAiConfig(config);
+        aiRequest('status')
+            .then((cfg) => {
+                if (active && cfg?.configured) {
+                    setAiConfig(cfg);
+                }
             })
-            .catch((error) => {
-                if (active) setLoadError(error.message);
-            })
-            .finally(() => {
-                if (active) setLoading(false);
-            });
+            .catch(() => { });
         return () => {
             active = false;
         };
-    }, [demoMode]);
+    }, []);
 
-    // Load source post if editing or duplicating
     useEffect(() => {
-        if (!sourceId) return;
+        let active = true;
+        (async () => {
+            try {
+                const [accountPage, pillarPage, anglePage] = await Promise.all([
+                    appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 300 }),
+                    appClient.entities.ContentPillar.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }),
+                    appClient.entities.ContentAngle.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 500 }),
+                ]);
+                if (!active) return;
+                setAccounts(accountPage.items);
+                setPillars(pillarPage.items);
+                setAngles(anglePage.items);
+                setLoading(false);
+            } catch (error) {
+                if (active) {
+                    setLoadError(error.message);
+                    setLoading(false);
+                }
+            }
+        })();
+        return () => {
+            active = false;
+        };
+    }, [demoMode, desktop]);
+
+    const applyBrand = useCallback(
+        (brandId) => {
+            const preset = localInputDefault(brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE);
+            setForm((prev) => ({
+                ...prev,
+                brand_id: brandId,
+                account_ids: [],
+                pillar_id: '',
+                angle_id: '',
+                media: [],
+                platform_media: {},
+                destination_settings: {},
+                platform_captions: {},
+                comments: [],
+                timezone: brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE,
+                date: prev.date || preset.date,
+                time: prev.time || preset.time,
+            }));
+        },
+        [brands]
+    );
+
+    useEffect(() => {
+        if (sourceId || form.brand_id || !brands.length) return;
+        applyBrand(selectedBrandId === 'all' ? brands[0].id : selectedBrandId);
+    }, [brands, selectedBrandId, form.brand_id, sourceId, applyBrand]);
+
+    useEffect(() => {
+        if (loading) return;
+        if (!sourceId) {
+            setExisting(null);
+            setSourceLoading(false);
+            setForm(emptyForm(selectedBrandId === 'all' ? '' : selectedBrandId));
+            return;
+        }
         let active = true;
         setSourceLoading(true);
-        appClient.entities.Post.get(sourceId)
-            .then(async (post) => {
+        setLoadError('');
+        (async () => {
+            try {
+                const post = await appClient.entities.Post.get(sourceId);
+                const [media, jobs] = await Promise.all([
+                    referencedMediaIds(post).length
+                        ? appClient.entities.MediaAsset.filter({ id: { $in: referencedMediaIds(post) } }, { limit: 60 })
+                        : Promise.resolve({ items: [] }),
+                    appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }),
+                ]);
+                const parts = toZonedParts(post.scheduled_at, post.timezone || DEFAULT_TIMEZONE);
                 if (!active) return;
-                const mediaItems = post.media_ids?.length
-                    ? (await appClient.entities.MediaAsset.filter({ is_demo: demoMode }, { limit: 1000 })).items.filter((item) => post.media_ids.includes(item.id))
-                    : [];
-                const platformMedia = {};
-                for (const [platform, ids] of Object.entries(post.platform_media_ids || {})) {
-                    platformMedia[platform] = (await appClient.entities.MediaAsset.filter({ is_demo: demoMode }, { limit: 1000 })).items.filter((item) => ids.includes(item.id));
-                }
-
-                const brandTimezone = brands.find((brand) => brand.id === post.brand_id)?.timezone || DEFAULT_TIMEZONE;
-                const parts = toZonedParts(post.scheduled_at, brandTimezone);
-                const isDupe = !!duplicateId;
-
-                setExisting(isDupe ? null : post);
+                setExisting(editId ? post : null);
                 setForm({
                     brand_id: post.brand_id,
-                    title: isDupe ? `${post.title} (Copy)` : post.title,
-                    caption: post.caption,
+                    title: editId ? post.title : `${post.title} (copy)`,
+                    caption: post.caption || '',
                     platform_captions: post.platform_captions || {},
-                    account_ids: post.account_ids || [],
-                    pillar_id: post.pillar_id || '',
-                    angle_id: post.angle_id || '',
-                    date: parts.date,
-                    time: parts.time,
-                    timezone: post.timezone || brandTimezone,
-                    status: isDupe ? 'draft' : post.status,
-                    media: mediaItems,
-                    platform_media: platformMedia,
+                    platform_media: Object.fromEntries(
+                        Object.entries(post.platform_media_ids || {}).map(([platform, ids]) => [
+                            platform,
+                            ids.map((id) => media.items.find((asset) => asset.id === id)).filter(Boolean),
+                        ])
+                    ),
                     destination_settings: Object.fromEntries(
                         Object.entries(post.destination_settings || {}).map(([id, setting]) => {
-                            const settingParts = toZonedParts(setting.scheduled_at, post.timezone || brandTimezone);
+                            const settingParts = toZonedParts(setting.scheduled_at, post.timezone || DEFAULT_TIMEZONE);
                             return [
                                 id,
                                 {
@@ -309,233 +269,112 @@ export default function CreatePost() {
                                     ...(Object.hasOwn(setting, 'media_ids')
                                         ? {
                                             media: (setting.media_ids || [])
-                                                .map((assetId) => mediaItems.find((item) => item.id === assetId))
+                                                .map((mediaId) => media.items.find((asset) => asset.id === mediaId))
                                                 .filter(Boolean),
+                                        }
+                                        : {}),
+                                    ...(Object.hasOwn(setting, 'comments')
+                                        ? {
+                                            comments: (setting.comments || []).map((c) =>
+                                                hydrateCommentFromApi(c, media.items)
+                                            ),
                                         }
                                         : {}),
                                 },
                             ];
                         })
                     ),
-                    comments: (post.comments || []).map((c) => hydrateCommentFromApi(c, mediaItems)),
+                    comments: (post.comments || []).map((c) => hydrateCommentFromApi(c, media.items)),
+                    account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
+                    pillar_id: duplicateId && !pillars.some((item) => item.id === post.pillar_id && item.status === 'active') ? '' : post.pillar_id || '',
+                    angle_id: duplicateId && (!pillars.some((item) => item.id === post.pillar_id && item.status === 'active') || !angles.some((item) => item.id === post.angle_id && item.status === 'active')) ? '' : post.angle_id || '',
+                    date: parts.date,
+                    time: parts.time,
+                    timezone: post.timezone || DEFAULT_TIMEZONE,
+                    status: duplicateId ? 'draft' : ['draft', 'scheduled'].includes(post.status) ? post.status : 'draft',
+                    media: (post.media_ids || []).map((id) => media.items.find((image) => image.id === id)).filter(Boolean),
                 });
-            })
-            .catch((error) => {
+            } catch (error) {
                 if (active) setLoadError(error.message);
-            })
-            .finally(() => {
+            } finally {
                 if (active) setSourceLoading(false);
-            });
+            }
+        })();
         return () => {
             active = false;
         };
-    }, [sourceId, duplicateId, demoMode, brands]);
+    }, [sourceId, loading, editId, duplicateId, pillars, angles, selectedBrandId]);
 
-    // Active brand selection
-    useEffect(() => {
-        if (form.brand_id) return;
-        const fallback = selectedBrandId !== 'all' ? selectedBrandId : brands[0]?.id;
-        if (!fallback) return;
-        const brand = brands.find((b) => b.id === fallback);
-        const preset = localInputDefault(brand?.timezone || DEFAULT_TIMEZONE);
-        setForm((prev) => ({
-            ...prev,
-            brand_id: fallback,
-            timezone: brand?.timezone || DEFAULT_TIMEZONE,
-            date: prev.date || preset.date,
-            time: prev.time || preset.time,
-        }));
-    }, [brands, selectedBrandId, form.brand_id]);
+    const brandAccounts = useMemo(() => accounts.filter((a) => a.brand_id === form.brand_id), [accounts, form.brand_id]);
+    const brandPillars = useMemo(() => pillars.filter((p) => p.brand_id === form.brand_id && (p.status === 'active' || p.id === existing?.pillar_id)), [pillars, form.brand_id, existing]);
+    const brandAngles = useMemo(() => angles.filter((a) => a.brand_id === form.brand_id && (a.status === 'active' || a.id === existing?.angle_id)), [angles, form.brand_id, existing]);
+    const selectedAccounts = useMemo(() => accounts.filter((a) => form.account_ids.includes(a.id)), [accounts, form.account_ids]);
+    const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
+    const platforms = [...new Set(selectedAccounts.map((account) => account.platform))].filter((platform) => PUBLISHING_PLATFORMS.includes(platform));
+    const linkedinAccounts = useMemo(
+        () => brandAccounts.filter((a) => a.platform === 'linkedin' && (a.connection_status === 'connected' || a.connection_status === 'demo')),
+        [brandAccounts]
+    );
+    const checks = selectedAccounts.map((account) => ({
+        account,
+        issues: destinationIssues(form, account, resolveMedia(form, account), demoMode, tiktokCreators[account.id]),
+    }));
 
-    const activeBrandName = useMemo(() => {
-        return brands.find((b) => b.id === form.brand_id)?.name || 'Socialchoice';
-    }, [brands, form.brand_id]);
+    const connectedAccounts = useMemo(() => {
+        return brandAccounts.filter((a) => {
+            if (!PUBLISHING_PLATFORMS.includes(a.platform)) return false;
+            if (desktop || demoMode) {
+                return a.connection_status !== 'disconnected' && a.connection_status !== 'archived';
+            }
+            return a.connection_status === 'connected' || a.connection_status === 'demo';
+        });
+    }, [brandAccounts, desktop, demoMode]);
 
-    const brandAccounts = useMemo(() => {
-        return accounts.filter((account) => !account.brand_id || account.brand_id === form.brand_id);
-    }, [accounts, form.brand_id]);
-
-    const personalAccounts = useMemo(() => {
-        const list = brandAccounts.filter((acc) => ['threads', 'x', 'instagram'].includes(acc.platform) || (!acc.is_page && !acc.is_business && acc.platform === 'facebook'));
-        return list.length > 0 ? list : brandAccounts.slice(0, Math.ceil(brandAccounts.length / 2));
-    }, [brandAccounts]);
-
-    const businessAccounts = useMemo(() => {
-        const list = brandAccounts.filter((acc) => ['linkedin', 'tiktok'].includes(acc.platform) || acc.is_page || acc.is_business || (acc.platform === 'facebook' && (acc.is_page || acc.is_business)));
-        return list.length > 0 ? list : brandAccounts.slice(Math.ceil(brandAccounts.length / 2));
-    }, [brandAccounts]);
-
-    const selectedAccounts = useMemo(() => {
-        return accounts.filter((account) => form.account_ids.includes(account.id));
-    }, [accounts, form.account_ids]);
-
-    const brandPillars = useMemo(() => {
-        return pillars.filter((pillar) => pillar.brand_id === form.brand_id && pillar.status === 'active');
-    }, [pillars, form.brand_id]);
-
-    const brandAngles = useMemo(() => {
-        return angles.filter((angle) => angle.pillar_id === form.pillar_id && angle.status === 'active');
-    }, [angles, form.pillar_id]);
-
-    const platforms = useMemo(() => {
-        return Array.from(new Set(selectedAccounts.map((account) => account.platform)));
-    }, [selectedAccounts]);
-
-    const linkedinAccounts = useMemo(() => {
-        return selectedAccounts.filter((account) => account.platform === 'linkedin');
-    }, [selectedAccounts]);
-
-    // Current platform context & limits
-    const currentActivePlatform = useMemo(() => {
-        if (activeChannelTab === 'all') {
-            const first = selectedAccounts[0];
-            return first ? first.platform : 'facebook';
-        }
-        const acc = accounts.find((a) => a.id === activeChannelTab);
-        return acc ? acc.platform : 'facebook';
-    }, [activeChannelTab, selectedAccounts, accounts]);
-
-    const currentActiveCaption = useMemo(() => {
-        if (activeChannelTab === 'all') return form.caption;
-        return form.destination_settings[activeChannelTab]?.caption ?? form.caption;
-    }, [activeChannelTab, form.caption, form.destination_settings]);
-
-    const prePublishChecks = useMemo(() => {
-        const hasAccount = selectedAccounts.length > 0;
-        const hasContent = !!(form.caption && form.caption.trim().length > 0);
-        const withinLimit = (currentActiveCaption?.length || 0) <= (CAPTION_LIMITS[currentActivePlatform] || 63206);
-        const validSchedule = !form.date || !form.time || true;
-        const activeAccounts = selectedAccounts.length > 0 && selectedAccounts.every((a) => a.status !== 'disconnected');
-
-        return [
-            { id: 'account', label: t('Chọn ít nhất một kênh đăng bài'), passed: hasAccount },
-            { id: 'content', label: t('Nội dung không để trống'), passed: hasContent },
-            { id: 'limit', label: t('Không vượt quá giới hạn ký tự'), passed: withinLimit },
-            { id: 'schedule', label: t('Thời gian đăng hợp lệ'), passed: validSchedule },
-            { id: 'connected', label: t('Tài khoản kết nối hoạt động'), passed: activeAccounts },
-        ];
-    }, [selectedAccounts, form.caption, form.date, form.time, currentActiveCaption, currentActivePlatform, t]);
-
-    const passedChecksCount = prePublishChecks.filter((c) => c.passed).length;
-
-    const maxLimit = CAPTION_LIMITS[currentActivePlatform] || 63206;
-    const currentCount = (currentActiveCaption || '').length;
-
-    // Toggle account selection
-    const toggleAccount = (account) => {
-        setForm((current) => {
-            const exists = current.account_ids.includes(account.id);
-            const next = exists
-                ? current.account_ids.filter((id) => id !== account.id)
-                : [...current.account_ids, account.id];
-            return { ...current, account_ids: next };
+    // Toggle destination account selection
+    const toggleAccount = (accountId) => {
+        setForm((prev) => {
+            const isSelected = prev.account_ids.includes(accountId);
+            return {
+                ...prev,
+                account_ids: isSelected
+                    ? prev.account_ids.filter((id) => id !== accountId)
+                    : [...prev.account_ids, accountId],
+            };
         });
     };
 
-    // Apply caption change for active tab
-    const handleActiveCaptionChange = (val) => {
-        if (activeChannelTab === 'all') {
-            setForm((curr) => ({ ...curr, caption: val }));
-        } else {
-            setForm((curr) => ({
-                ...curr,
-                destination_settings: {
-                    ...curr.destination_settings,
-                    [activeChannelTab]: {
-                        ...(curr.destination_settings[activeChannelTab] || {}),
-                        caption: val,
-                    },
-                },
-            }));
-        }
-    };
-
-    // Upload files directly from toolbar
-    const handleDirectUpload = async (e) => {
-        const files = Array.from(e.target.files || []);
-        if (!files.length || !form.brand_id) return;
-        setUploading(true);
-        const added = [...form.media];
-        try {
-            for (const file of files) {
-                if (file.type === 'video/mp4' || /\.mp4$/i.test(file.name)) {
-                    if (file.size > 100 * 1024 * 1024) throw new Error('Video MP4 tối đa 100MB');
-                    const asset = await appClient.media.uploadVideo(file, form.brand_id, () => { });
-                    added.push(asset);
-                } else {
-                    if (file.size > 5 * 1024 * 1024) throw new Error('Ảnh tối đa 5MB');
-                    const asset = await appClient.media.upload(file, form.brand_id, () => { });
-                    added.push(asset);
-                }
-            }
-            setForm((curr) => ({ ...curr, media: added }));
-            toast({ title: t('Tải lên tệp thành công!') });
-        } catch (err) {
-            toast({ variant: 'destructive', title: t('Lỗi tải tệp'), description: err.message });
-        } finally {
-            setUploading(false);
-            if (fileInputRef.current) fileInputRef.current.value = '';
-        }
-    };
-
-    const handleRemoveMedia = (index) => {
-        setForm((curr) => ({
-            ...curr,
-            media: curr.media.filter((_, i) => i !== index),
-        }));
-    };
-
-    // Text formatting helpers
-    const formatSelection = (prefix, suffix) => {
-        const el = textareaRef.current;
-        const current = currentActiveCaption || '';
-        if (!el) {
-            handleActiveCaptionChange(`${current} ${prefix}văn bản${suffix}`);
-            return;
-        }
-        const start = el.selectionStart ?? current.length;
-        const end = el.selectionEnd ?? current.length;
-        const selected = current.slice(start, end) || 'văn bản';
-        const next = current.slice(0, start) + prefix + selected + suffix + current.slice(end);
-        handleActiveCaptionChange(next);
-        setTimeout(() => {
-            el.focus();
-            el.setSelectionRange(start + prefix.length, start + prefix.length + selected.length);
-        }, 50);
-    };
-
-    const insertEmoji = (emoji) => {
-        const current = currentActiveCaption || '';
-        const el = textareaRef.current;
-        if (!el) {
-            handleActiveCaptionChange(`${current} ${emoji} `);
-            return;
-        }
-        const start = el.selectionStart ?? current.length;
-        const next = current.slice(0, start) + emoji + current.slice(start);
-        handleActiveCaptionChange(next);
-        setEmojiPickerOpen(false);
-    };
-
-    // Validation logic
     const validate = (action) => {
-        if (!form.brand_id) return t('Choose a brand');
-        if (!form.title.trim()) return t('Enter a post title');
-        if (form.title.length > 200) return t('Title must be 200 characters or fewer');
-        if (!form.account_ids.length) return t('Choose at least one publishing account');
-
-        const scheduledAt = toUtcIso(form.date, form.time, form.timezone);
-        if (action === 'schedule') {
-            if (!scheduledAt) return t('Choose a valid publishing time');
-            if (Date.parse(scheduledAt) < Date.now() + 60000) return t('Choose a publishing time at least one minute in the future');
+        if (!form.brand_id) return t('Choose the brand this post belongs to.');
+        if (!form.title.trim()) return t('Add an internal title so the post is easy to find later.');
+        if (!form.caption.trim() && (!desktop || (action !== 'draft' && !form.media.length))) return t(desktop ? 'Add a caption or media before scheduling' : 'The main caption cannot be empty.');
+        if (desktop) {
+            if (action === 'publish') return t('Publishing is not included in this desktop prototype. No posts are sent.');
+            if (action === 'schedule') {
+                if (!scheduledAt) return t('Set the publishing date and time.');
+                const local = toZonedParts(scheduledAt, form.timezone);
+                if (local.date !== form.date || local.time !== form.time) return t('Choose a valid local time in this timezone.');
+            }
+            return null;
         }
-
-        const issues = destinationIssues(form, selectedAccounts);
-        if (issues.length) return issues[0];
+        if (action !== 'draft' && !form.account_ids.length) return t('Select at least one destination to publish to.');
+        if (['publish', 'schedule'].includes(action) && (form.account_ids.length > 30 || form.media.length > 10)) return t('Choose between 1 and 30 different publishing accounts');
+        if (['publish', 'schedule'].includes(action) && !demoMode) {
+            const failed = checks.find((check) => check.issues.length);
+            if (failed) return `${failed.account.name}: ${t(failed.issues[0])}`;
+        }
+        if (action === 'schedule' && existing?.status === 'scheduled' && !demoMode) return t('Open the post details to confirm or cancel its existing schedule.');
+        if (action === 'schedule' && !scheduledAt) return t('Set the publishing date and time.');
+        if (action === 'schedule') {
+            for (const account of selectedAccounts) {
+                const localTime = form.destination_settings[account.id]?.localTime;
+                const [date, time] = localTime?.split('T') || [];
+                const instant = localTime ? toUtcIso(date, time, form.timezone) : scheduledAt;
+                if (!instant || Date.parse(instant) < Date.now() + 60000) return `${account.name}: ${t('Choose a publishing time at least one minute in the future')}`;
+            }
+        }
         return null;
     };
 
-    // Submit handler
     const submit = async (action) => {
         const error = validate(action);
         if (error) {
@@ -546,8 +385,6 @@ export default function CreatePost() {
         try {
             let effectiveCaption = form.caption;
             let effectivePlatformCaptions = form.platform_captions;
-
-            // Auto-shorten links on submit if 'always' preference
             if (shortlinkPref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(effectiveCaption) && form.brand_id) {
                 try {
                     const linkRes = await appClient.links.build({
@@ -583,1028 +420,656 @@ export default function CreatePost() {
                                 ...(Object.hasOwn(setting, 'media')
                                     ? { media_ids: (setting.media || []).map((asset) => asset.id) }
                                     : {}),
+                                ...(Object.hasOwn(setting, 'comments')
+                                    ? { comments: (setting.comments || []).map(serializeCommentForApi) }
+                                    : {}),
                             },
                         ];
                     })
                 ),
+                ...(form.comments?.length || existing?.comments?.length
+                    ? { comments: (form.comments || []).map(serializeCommentForApi) }
+                    : {}),
                 media_ids: form.media.map((asset) => asset.id),
-                platform_media_ids: Object.fromEntries(
-                    Object.entries(form.platform_media || {}).map(([platform, items]) => [
-                        platform,
-                        (items || []).map((asset) => asset.id),
-                    ])
-                ),
+                platform_media_ids: Object.fromEntries(Object.entries(form.platform_media).map(([platform, assets]) => [platform, assets.map((asset) => asset.id)])),
                 account_ids: form.account_ids,
-                pillar_id: form.pillar_id,
-                angle_id: form.angle_id,
+                pillar_id: form.pillar_id || '',
+                angle_id: form.angle_id || '',
                 timezone: form.timezone,
-                status: action === 'draft' ? 'draft' : 'scheduled',
-                scheduled_at: action === 'draft' ? null : toUtcIso(form.date, form.time, form.timezone),
+                scheduled_at: action === 'publish' || (desktop && action === 'draft') ? null : scheduledAt,
+                status: action === 'schedule' && (demoMode || desktop) ? 'scheduled' : 'draft',
                 is_demo: demoMode,
-                comments: (form.comments || []).map(serializeCommentForApi),
             };
 
-            const saved = await appClient.posts.save({
-                id: existing?.id,
-                data: payload,
-            });
-
-            if (action === 'publish' && !demoMode) {
-                const review = await appClient.publishing.prepare(saved.id);
-                setPublishReview(review);
+            const saved = await appClient.posts.save({ id: existing?.id, data: payload });
+            setExisting(saved);
+            if (!desktop && (action === 'publish' || (action === 'schedule' && !demoMode))) {
+                setPublishReview(action === 'schedule' ? await appClient.publishing.prepareSchedule(saved.id, scheduledAt, form.timezone) : await appClient.publishing.prepare(saved.id));
                 return;
             }
-
-            if (action === 'schedule' && !demoMode) {
-                try {
-                    const review = await appClient.publishing.prepareSchedule(
-                        saved.id,
-                        toUtcIso(form.date, form.time, form.timezone),
-                        form.timezone
-                    );
-                    if (review?.attemptId) {
-                        await appClient.publishing.schedule(review.attemptId);
-                    }
-                } catch (scheduleError) {
-                    console.warn('Queue review error:', scheduleError);
-                }
-            }
-
             toast({
-                title: action === 'draft' ? t('Đã lưu bản nháp thành công!') : t('Đã lên lịch bài đăng thành công!'),
-                description: t('Bài viết đã được đồng bộ vào hệ thống Socialchoice.'),
+                title: action === 'draft' ? t('Draft saved') : t('Calendar plan saved'),
+                description:
+                    action === 'draft'
+                        ? t('Find it again from All Posts.')
+                        : t('Calendar plan saved for {value1} {value2} ({value3}). Automatic publishing is not configured.', {
+                            value1: form.date,
+                            value2: form.time,
+                            value3: form.timezone,
+                        }),
             });
-
-            navigate('/posts');
+            navigate(`/posts?post=${saved.id}`);
         } catch (error) {
-            toast({
-                variant: 'destructive',
-                title: t('Save failed'),
-                description: error.message,
-            });
+            toast({ variant: 'destructive', title: t('Could not save post'), description: t(error.message) });
         } finally {
             setSaving(false);
         }
     };
 
-    const handleDelete = async () => {
-        if (!existing?.id) return;
-        if (existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')) {
-            throw new Error(t('Chỉ có thể xóa bản nháp.'));
-        }
-        try {
-            await appClient.entities.Post.delete(existing.id);
-            toast({ title: t('Đã xóa bài viết thành công!') });
-            navigate('/posts');
-        } catch (err) {
-            toast({ variant: 'destructive', title: t('Lỗi khi xóa bài viết'), description: err.message });
-        }
+    const remove = async () => {
+        if (existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')) throw new Error(t('Only drafts can be deleted. Cancel calendar plans instead.'));
+        await appClient.entities.Post.delete(existing.id);
+        toast({ title: t('Post deleted') });
+        navigate('/posts');
     };
-    const remove = handleDelete;
+
+    if (loadError)
+        return (
+            <div role="alert" className="panel p-5">
+                <p>{t(loadError)}</p>
+                <Button variant="outline" className="mt-3" onClick={() => window.location.reload()}>
+                    {t('Retry')}
+                </Button>
+            </div>
+        );
 
     if (loading || sourceLoading) {
         return (
-            <div className="min-h-[400px] flex items-center justify-center p-8 bg-white rounded-2xl border border-slate-200 shadow-xs">
-                <div className="text-center space-y-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#ffd631] border-t-transparent mx-auto" />
-                    <p className="text-xs text-slate-500 font-medium">{t('Đang tải trình soạn thảo bài viết…')}</p>
+            <div className="space-y-6">
+                <Skeleton className="h-10 w-48 rounded-xl" />
+                <div className="composer-shell">
+                    <div className="composer-columns grid gap-6">
+                        <Skeleton className="h-[520px] rounded-2xl" />
+                        <Skeleton className="h-[420px] rounded-2xl" />
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="composer-shell w-full pb-16 space-y-6">
-            {/* Top Page Header */}
-            <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                    <h1 className="font-heading text-2xl font-bold text-slate-900">
-                        {existing ? t('Edit post') : t('Tạo bài viết')}
-                    </h1>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                        {t('Soạn thảo một lần, chọn nền tảng, lên lịch — tất cả trong một chế độ xem.')}
-                    </p>
+        <div className="composer-shell w-full pb-16">
+            {/* Top Breadcrumbs & Page Header */}
+            <div className="mb-6">
+                <div className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">
+                    {t('CONTENT')} / {t('CREATE POST')}
                 </div>
-                {!showPreview && (
-                    <button
-                        type="button"
-                        onClick={() => setShowPreview(true)}
-                        className="text-xs font-semibold text-slate-600 hover:text-slate-900 underline cursor-pointer"
-                    >
-                        {t('Hiện xem trước')}
-                    </button>
-                )}
+                <div className="flex flex-wrap items-center justify-between gap-4">
+                    <div>
+                        <h1 className="font-heading text-2xl font-bold text-foreground">
+                            {existing ? t('Edit post') : t('Create Post')}
+                        </h1>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            {t('Compose once, choose platforms, schedule — all in one view.')}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5">
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground bg-muted/60 px-2.5 py-1 rounded-full border border-border/50">
+                            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            {t('Auto-saved')}
+                        </span>
+
+                        {existing && (
+                            <>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-8 rounded-xl text-xs gap-1"
+                                    onClick={() => navigate(`/create?duplicate=${existing.id}`)}
+                                >
+                                    <Copy size={13} />
+                                    <span>{t('Duplicate')}</span>
+                                </Button>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-8 rounded-xl text-xs text-dangerFg hover:text-dangerFg gap-1"
+                                    disabled={existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')}
+                                    onClick={() => setDeleteOpen(true)}
+                                >
+                                    <Trash size={13} />
+                                    <span>{t('Delete')}</span>
+                                </Button>
+                            </>
+                        )}
+
+                        <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+                    </div>
+                </div>
             </div>
 
-            {/* Split Screen 2-Column Grid */}
+            {/* Main 2-Column Composer */}
             <div className="composer-columns grid gap-6 items-start">
-                
-                {/* LEFT COLUMN: Composer */}
-                <div className="space-y-4 min-w-0">
-                    
-                    {/* CARD 1: TÀI KHOẢN NHẬN BÀI */}
-                    <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
-                        {/* Header */}
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-                                    {t('TÀI KHOẢN NHẬN BÀI')}
-                                </span>
-                                <span className="text-xs text-slate-400 font-medium">
-                                    {brandAccounts.length} {t('tài khoản')}
-                                </span>
+                {/* LEFT COLUMN: 4 Numbered Cards */}
+                <div className="min-w-0 space-y-5">
+                    {/* CARD 01: Đích đăng (Destinations) */}
+                    <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                        <div className="flex items-start justify-between gap-3">
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs sm:text-[13px] font-bold text-muted-foreground/75">01</span>
+                                    <h2 className="text-sm sm:text-[15px] font-bold text-foreground">{t('Destinations')}</h2>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-0.5">
+                                    {t('Choose which platforms you want your post to appear on.')}
+                                </p>
                             </div>
-                            <span className="text-xs font-medium text-slate-500">
-                                {selectedAccounts.length} {t('đã chọn')}
+                            <span className="text-[11px] font-semibold text-muted-foreground bg-muted/70 px-2.5 py-1 rounded-full border border-border/60 shrink-0">
+                                {selectedAccounts.length} {t('destinations')}
                             </span>
                         </div>
 
-                        {/* Group 1: TRANG CÁ NHÂN */}
-                        <div className="space-y-2">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                                {t('TRANG CÁ NHÂN')}
-                            </span>
-                            <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-                                {/* Globe all channels toggle icon */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (selectedAccounts.length === brandAccounts.length) {
-                                            setForm((curr) => ({ ...curr, account_ids: [] }));
-                                        } else {
-                                            setForm((curr) => ({ ...curr, account_ids: brandAccounts.map((a) => a.id) }));
-                                        }
-                                    }}
-                                    className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all cursor-pointer ${
-                                        selectedAccounts.length === brandAccounts.length && brandAccounts.length > 0
-                                            ? 'border-2 border-[#ffd631] bg-[#ffd631]/20 text-[#2b2100] shadow-xs'
-                                            : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200'
-                                    }`}
-                                    title={t('Chọn tất cả tài khoản')}
+                        {/* Connected Destinations Cards */}
+                        {connectedAccounts.length === 0 ? (
+                            <div className="rounded-2xl border border-dashed border-border/80 p-6 text-center bg-muted/10 space-y-2">
+                                <p className="text-xs text-muted-foreground">
+                                    {t('No connected publishing destinations for this brand.')}
+                                </p>
+                                <Link
+                                    to="/accounts"
+                                    className="inline-flex items-center gap-1.5 text-xs font-semibold text-foreground hover:underline"
                                 >
-                                    <Globe size={18} weight="bold" />
-                                </button>
-
-                                {personalAccounts.map((account) => {
+                                    <span>{t('Connect accounts in Social Accounts')}</span>
+                                    <span>→</span>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 pt-1">
+                                {connectedAccounts.map((account) => {
                                     const isSelected = form.account_ids.includes(account.id);
+                                    const platformName = PLATFORM_LABEL[account.platform] || account.platform;
+
                                     return (
-                                        <button
+                                        <div
                                             key={account.id}
-                                            type="button"
-                                            onClick={() => toggleAccount(account)}
-                                            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
-                                                isSelected
-                                                    ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-white opacity-100 scale-105 shadow-xs'
-                                                    : 'opacity-40 hover:opacity-80 border border-slate-200 bg-slate-100'
-                                            }`}
-                                            title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
+                                            onClick={() => toggleAccount(account.id)}
+                                            className={`group relative rounded-2xl border p-3.5 flex flex-col justify-between cursor-pointer transition-all select-none ${isSelected
+                                                ? 'border-[#ffd631] bg-[#ffd631]/8 ring-1 ring-[#ffd631] shadow-2xs'
+                                                : 'border-border/80 bg-card hover:bg-muted/30 hover:border-border'
+                                                }`}
                                         >
-                                            {account.avatar_url ? (
-                                                <img
-                                                    src={account.avatar_url}
-                                                    alt={account.name}
-                                                    className="h-full w-full rounded-full object-cover"
-                                                />
-                                            ) : (
-                                                <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
-                                                    {account.name.slice(0, 2)}
+                                            <div className="flex items-center justify-between mb-3">
+                                                <div className={`transition - transform ${isSelected ? 'scale-105' : 'opacity-85 group-hover:opacity-100'}`}>
+                                                    <PlatformLogo platform={account.platform} size={32} />
                                                 </div>
-                                            )}
-                                            <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/60">
-                                                <PlatformLogo platform={account.platform} size={13} />
+                                                {isSelected && (
+                                                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-background text-[9px] font-bold">
+                                                        ✓
+                                                    </span>
+                                                )}
                                             </div>
-                                        </button>
+
+                                            <div>
+                                                <div className="font-heading font-semibold text-xs text-foreground truncate">
+                                                    {platformName}
+                                                </div>
+                                                <div className="text-[11px] text-muted-foreground flex items-center gap-1 mt-0.5 truncate">
+                                                    <span className="h-1.5 w-1.5 rounded-full shrink-0 bg-emerald-500" />
+                                                    <span className="truncate">{account.name}</span>
+                                                </div>
+                                            </div>
+                                        </div>
                                     );
                                 })}
                             </div>
+                        )}
+                    </section>
+
+                    {/* CARD 02: Thông tin cơ bản (Basic Info & Caption) */}
+                    <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs sm:text-[13px] font-bold text-muted-foreground/75">02</span>
+                                <h2 className="text-sm sm:text-[15px] font-bold text-foreground">{t('Basic information')}</h2>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('This content will be used for all selected platforms.')}
+                            </p>
                         </div>
 
-                        {/* Group 2: TRANG DOANH NGHIỆP */}
-                        {businessAccounts.length > 0 && (
-                            <div className="space-y-2 pt-2 border-t border-slate-100">
-                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
-                                    {t('TRANG DOANH NGHIỆP')}
-                                </span>
-                                <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-                                    {businessAccounts.map((account) => {
-                                        const isSelected = form.account_ids.includes(account.id);
-                                        return (
-                                            <button
-                                                key={account.id}
-                                                type="button"
-                                                onClick={() => toggleAccount(account)}
-                                                className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
-                                                    isSelected
-                                                        ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-white opacity-100 scale-105 shadow-xs'
-                                                        : 'opacity-40 hover:opacity-80 border border-slate-200 bg-slate-100'
-                                                }`}
-                                                title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
-                                            >
-                                                {account.avatar_url ? (
-                                                    <img
-                                                        src={account.avatar_url}
-                                                        alt={account.name}
-                                                        className="h-full w-full rounded-full object-cover"
-                                                    />
-                                                ) : (
-                                                    <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
-                                                        {account.name.slice(0, 2)}
-                                                    </div>
-                                                )}
-                                                <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/60">
-                                                    <PlatformLogo platform={account.platform} size={13} />
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
+                        {/* Row 1: Brand & Internal Title */}
+                        <div className="grid gap-4 sm:grid-cols-2 pt-1">
+                            <div>
+                                <Label htmlFor="post-brand" className="text-xs font-medium text-foreground mb-1.5 block">
+                                    {t('Brand')} *
+                                </Label>
+                                <Select value={form.brand_id} onValueChange={applyBrand} disabled={uploading}>
+                                    <SelectTrigger id="post-brand" className="rounded-xl h-10 text-xs">
+                                        <SelectValue placeholder={t('Select brand')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {brands.map((item) => (
+                                            <SelectItem key={item.id} value={item.id} className="text-xs">
+                                                {item.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            <div>
+                                <div className="flex items-center justify-between mb-1.5">
+                                    <Label htmlFor="post-title" className="text-xs font-medium text-foreground block">
+                                        {t('Internal title')}
+                                    </Label>
+                                    <span className="text-[11px] text-muted-foreground">
+                                        {t('Only you see this')}
+                                    </span>
+                                </div>
+                                <Input
+                                    id="post-title"
+                                    value={form.title}
+                                    onChange={(event) => setForm({ ...form, title: event.target.value })}
+                                    placeholder={t('e.g. 5-post series about creative content')}
+                                    className="rounded-xl h-10 text-xs"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Row 2: Main Caption */}
+                        <div>
+                            <div className="flex items-center justify-between mb-1.5">
+                                <Label htmlFor="post-caption" className="text-xs font-medium text-foreground block">
+                                    {t('Main content')}
+                                </Label>
+                                <div className="flex items-center gap-2">
+                                    <SignatureSelector
+                                        brandId={form.brand_id}
+                                        currentCaption={form.caption}
+                                        onApply={(newCaption) => setForm({ ...form, caption: newCaption })}
+                                        disabled={uploading || saving}
+                                    />
+                                    <span className="text-[11px] text-muted-foreground font-mono">
+                                        {form.caption.replace(/@\[([^\]]{1,200})\]\(urn:li:(?:organization|person):[a-zA-Z0-9_-]{1,128}\)/g, '@$1').length} {t('characters')}
+                                    </span>
                                 </div>
                             </div>
-                        )}
-                    </div>
-
-                    {/* CARD 2: NỘI DUNG DÙNG CHUNG (ALL CHANNELS) */}
-                    <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
-                        {/* Header */}
-                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
-                                {activeChannelTab === 'all'
-                                    ? t('NỘI DUNG DÙNG CHUNG (ALL CHANNELS)')
-                                    : t('TÙY CHỈNH RIÊNG CHO {account}', { account: accounts.find((a) => a.id === activeChannelTab)?.name || '' })}
-                            </span>
-                            <div className="flex items-center gap-1 text-slate-400">
-                                <CaretUp size={14} className="hover:text-slate-800 cursor-pointer" />
-                                <CaretDown size={14} className="hover:text-slate-800 cursor-pointer" />
-                            </div>
-                        </div>
-
-                        {/* Textarea */}
-                        <textarea
-                            ref={textareaRef}
-                            rows={7}
-                            value={currentActiveCaption}
-                            onChange={(e) => handleActiveCaptionChange(e.target.value)}
-                            placeholder={t('Viết nội dung bài đăng ở đây…')}
-                            className="w-full bg-transparent text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 resize-none outline-none focus:ring-0 min-h-[160px]"
-                        />
-
-                        {/* LinkedIn mention helper */}
-                        {platforms.includes('linkedin') && (
-                            <LinkedinMentionBar
-                                linkedinAccounts={linkedinAccounts}
-                                onInsert={(token) => {
-                                    const sep = currentActiveCaption && !/s$/.test(currentActiveCaption) ? ' ' : '';
-                                    handleActiveCaptionChange(`${currentActiveCaption}${sep}${token} `);
-                                }}
+                            <Textarea enabled={platforms.includes('linkedin')} linkedinAccounts={linkedinAccounts}
+                                id="post-caption"
+                                rows={5}
+                                value={form.caption}
+                                onChange={(event) => setForm({ ...form, caption: event.target.value })}
+                                placeholder={t('Write the content you want to share…')}
+                                className="rounded-xl resize-none text-xs leading-relaxed bg-white"
                             />
-                        )}
+                            {platforms.includes('linkedin') && (
+                                <LinkedinMentionBar
+                                    linkedinAccounts={linkedinAccounts}
+                                    onInsert={(token) =>
+                                        setForm((current) => {
+                                            const sep = current.caption && !/\s$/.test(current.caption) ? ' ' : '';
+                                            return { ...current, caption: `${current.caption}${sep}${token} ` };
+                                        })
+                                    }
+                                />
+                            )}
 
-                        {/* Attached Media Thumbnails inside Editor Box */}
-                        {form.media?.length > 0 && (
-                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-slate-100">
-                                {form.media.map((img, i) => (
-                                    <div
-                                        key={img.id || i}
-                                        className="group relative h-16 w-16 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
-                                    >
-                                        {img.file_type === 'video' ? (
-                                            <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xs text-slate-500 font-medium">
-                                                MP4
-                                            </div>
-                                        ) : (
-                                            <img
-                                                src={img.file_url || img.url}
-                                                alt={img.name || 'image'}
-                                                className="h-full w-full object-cover"
-                                            />
-                                        )}
+                            {/* Quick Shortlink detector based on Shortlink Preference */}
+                            {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(form.caption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(form.caption) && (
+                                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/60 text-xs shadow-2xs">
+                                    <span className="flex items-center gap-2 text-foreground font-semibold">
+                                        <LinkSimple size={16} className="text-[#806400]" weight="bold" />
+                                        {t('Phát hiện liên kết URL. Bạn có muốn chuyển thành Shortlink để theo dõi số lượt nhấp không?')}
+                                    </span>
+                                    <div className="flex items-center gap-2 shrink-0">
                                         <button
                                             type="button"
-                                            onClick={() => handleRemoveMedia(i)}
-                                            className="absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
+                                            onClick={async () => {
+                                                try {
+                                                    const res = await appClient.links.build({
+                                                        brand_id: form.brand_id,
+                                                        form,
+                                                        options: { medium: 'social', campaign: form.title || 'post', tracking: true, short: true },
+                                                    });
+                                                    if (res?.caption) {
+                                                        setForm((curr) => ({
+                                                            ...curr,
+                                                            caption: res.caption,
+                                                            platform_captions: res.platform_captions || curr.platform_captions,
+                                                        }));
+                                                        toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                                    }
+                                                } catch (e) {
+                                                    toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
+                                                }
+                                            }}
+                                            className="btn-skew text-xs py-1 px-3 shadow-2xs cursor-pointer"
                                         >
-                                            <X size={10} />
+                                            {t('Rút gọn ngay')}
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setShortlinkDismissed(true)}
+                                            className="rounded-lg border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
+                                        >
+                                            {t('Bỏ qua')}
                                         </button>
                                     </div>
-                                ))}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Row 3: Bottom AI Assistant Bar */}
+                        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-border/50">
+                            <div className="flex items-center gap-2 shrink-0">
+                                <Sparkle size={15} weight="duotone" className="text-amber-500 shrink-0" />
+                                <span className="text-xs font-medium text-foreground whitespace-nowrap shrink-0">{t('AI assistant')}</span>
+                                {aiConfig?.configured ? (
+                                    <div className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-semibold bg-muted/60 text-foreground border border-border/60">
+                                        <span className="text-blue-500">✦</span>
+                                        <span>{aiConfig.provider === 'gemini' ? 'Google Gemini' : aiConfig.provider === 'openrouter' ? 'OpenRouter' : 'OpenAI'}</span>
+                                        <span className="text-[11px] font-mono text-muted-foreground font-normal">({aiConfig.model})</span>
+                                    </div>
+                                ) : (
+                                    <Link
+                                        to="/settings"
+                                        className="inline-flex items-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium text-amber-600 bg-amber-50/70 border border-amber-200/60 hover:underline"
+                                    >
+                                        <span>{t('Configure your AI key in Settings')}</span>
+                                        <span>→</span>
+                                    </Link>
+                                )}
+                            </div>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                className="h-8 px-3 rounded-lg text-xs font-medium gap-1.5 cursor-pointer"
+                                disabled={!aiConfig?.configured}
+                                onClick={() => setAiOpen((prev) => !prev)}
+                            >
+                                <Sparkle size={13} weight="bold" />
+                                <span>{t('Suggest outline')}</span>
+                            </Button>
+                        </div>
+
+                        {/* Collapsible Full AI Writing Workspace */}
+                        {aiOpen && (
+                            <div className="pt-2 animate-in fade-in duration-200">
+                                <DesktopAiWriter
+                                    key={`${form.brand_id}:${sourceId || 'new'}`}
+                                    form={form}
+                                    disabled={saving || uploading}
+                                    onApply={(origin, text) => setForm((current) => applyAiSuggestion(current, origin, text))}
+                                    onApplyPlatform={(origin, platform, previous, text) =>
+                                        setForm((current) => applyAiPlatformSuggestion(current, origin, platform, previous, text))
+                                    }
+                                />
                             </div>
                         )}
 
-                        {/* Hidden file input */}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            multiple
-                            accept="image/jpeg,image/png,image/webp,video/mp4"
-                            className="hidden"
-                            onChange={handleDirectUpload}
-                        />
-
-                        {/* Bottom Toolbar */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
-                            <div className="flex items-center gap-2 flex-wrap">
-                                <button
-                                    type="button"
-                                    disabled={uploading}
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-                                >
-                                    <ImageSquare size={15} />
-                                    <span>{uploading ? t('Đang tải…') : t('Chèn media')}</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setAiOpen(true)}
-                                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-                                >
-                                    <Sparkle size={15} className="text-amber-500" />
-                                    <span>{t('AI image')}</span>
-                                </button>
-
-                                {/* Signature Selector */}
-                                <SignatureSelector
-                                    brandId={form.brand_id}
-                                    platform={currentActivePlatform}
-                                    accountId={activeChannelTab !== 'all' ? activeChannelTab : ''}
-                                    currentCaption={currentActiveCaption}
-                                    onApply={(newCap) => handleActiveCaptionChange(newCap)}
-                                />
-
-                                <div className="h-4 w-px bg-slate-200 mx-0.5" />
-
-                                {/* Format Tools */}
-                                <button
-                                    type="button"
-                                    onClick={() => formatSelection('**', '**')}
-                                    className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors font-bold text-xs"
-                                    title={t('Bold')}
-                                >
-                                    B
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => formatSelection('<u>', '</u>')}
-                                    className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors underline text-xs"
-                                    title={t('Underline')}
-                                >
-                                    U
-                                </button>
-
-                                {/* Emoji Popover */}
-                                <div className="relative" ref={emojiPickerRef}>
-                                    <button
-                                        type="button"
-                                        onClick={() => setEmojiPickerOpen(!emojiPickerOpen)}
-                                        className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
-                                        title={t('Emoji')}
-                                    >
-                                        <Smiley size={16} />
-                                    </button>
-
-                                    {emojiPickerOpen && (
-                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl animate-in fade-in zoom-in-95">
-                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
-                                                <span className="text-[11px] font-semibold text-slate-500">Chọn Emoji</span>
-                                                <button type="button" onClick={() => setEmojiPickerOpen(false)} className="text-slate-400 hover:text-slate-800">
-                                                    <X size={12} />
-                                                </button>
-                                            </div>
-                                            <div className="grid grid-cols-6 gap-1 max-h-48 overflow-y-auto">
-                                                {EMOJI_LIST.map((emoji) => (
-                                                    <button
-                                                        key={emoji}
-                                                        type="button"
-                                                        onClick={() => insertEmoji(emoji)}
-                                                        className="p-1.5 rounded-lg hover:bg-slate-100 text-lg transition-transform active:scale-90"
-                                                    >
-                                                        {emoji}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Counter badge */}
-                            <div className="text-xs font-mono text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">
-                                {currentCount}/{maxLimit}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Shortlink Prompt if 'ask' preference and has URL */}
-                    {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(currentActiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(currentActiveCaption) && (
-                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/60 text-xs shadow-2xs">
-                            <span className="flex items-center gap-2 text-slate-800 font-medium">
-                                <LinkSimple size={16} className="text-[#d8b216]" weight="bold" />
-                                {t('Phát hiện liên kết URL. Bạn có muốn chuyển thành Shortlink để theo dõi nhấp chuột?')}
-                            </span>
-                            <div className="flex items-center gap-2 shrink-0">
-                                <button
-                                    type="button"
-                                    onClick={async () => {
-                                        try {
-                                            const res = await appClient.links.build({
-                                                brand_id: form.brand_id,
-                                                form,
-                                                options: { medium: 'social', campaign: form.title || 'post', tracking: true, short: true },
-                                            });
-                                            if (res?.caption) {
-                                                handleActiveCaptionChange(res.caption);
-                                                toast({ title: t('Đã rút gọn liên kết thành công!') });
-                                            }
-                                        } catch (e) {
-                                            toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
-                                        }
-                                    }}
-                                    className="btn-skew text-xs py-1 px-3 shadow-2xs cursor-pointer"
-                                >
-                                    {t('Rút gọn ngay')}
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setShortlinkDismissed(true)}
-                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800 cursor-pointer shadow-2xs"
-                                >
-                                    {t('Bỏ qua')}
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Button + Thêm bình luận / bài viết */}
-                    <div>
-                        <button
-                            type="button"
-                            onClick={() => setShowComments(!showComments)}
-                            className="inline-flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white hover:bg-slate-50 text-slate-800 px-4 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
-                        >
-                            <Plus size={14} weight="bold" />
-                            <span>{t('+ Thêm bình luận / bài viết')}</span>
-                            {form.comments?.length > 0 && (
-                                <span className="rounded-full bg-slate-200 text-slate-800 px-1.5 text-[10px]">
-                                    {form.comments.length}
-                                </span>
-                            )}
-                        </button>
-
-                        {/* Collapsible Follow-up Comment Editor */}
-                        {showComments && (
-                            <div className="mt-3 panel p-4 bg-slate-50/60 border border-slate-200 rounded-2xl animate-in fade-in duration-150">
+                        {/* Shared Follow-up Comment Chain */}
+                        {!desktop && platforms.some((p) => p !== 'tiktok') && (
+                            <div className="pt-3 border-t border-border/50">
                                 <CommentChainEditor
-                                    comments={form.comments}
-                                    onChange={(comments) => setForm({ ...form, comments })}
+                                    comments={form.comments || []}
+                                    onChange={(comments) => setForm((current) => ({ ...current, comments }))}
                                     brandId={form.brand_id}
                                     demoMode={demoMode}
-                                    disabled={saving || uploading}
+                                    disabled={uploading || saving}
                                     onBusyChange={setUploading}
-                                    accounts={selectedAccounts}
+                                    platforms={platforms}
                                     linkedinAccounts={linkedinAccounts}
                                 />
                             </div>
                         )}
-                    </div>
 
-                    {/* CARD 3: Cài đặt (Yellow Brand Accordion) */}
-                    <div className="space-y-2">
-                        <div
-                            onClick={() => setSettingsOpen(!settingsOpen)}
-                            className="flex items-center justify-between rounded-2xl bg-[#ffd631] hover:bg-[#ffe059] text-[#2b2100] font-bold px-5 py-3.5 text-sm cursor-pointer shadow-xs transition-all select-none"
-                        >
-                            <div className="flex items-center gap-2">
-                                <Gear size={18} weight="bold" />
-                                <span>{t('Cài đặt')}</span>
-                            </div>
-                            <CaretDown
-                                size={16}
-                                weight="bold"
-                                className={`transition-transform duration-200 ${settingsOpen ? 'rotate-180' : ''}`}
-                            />
-                        </div>
-
-                        {/* Collapsible Settings Panel */}
-                        {settingsOpen && (
-                            <div className="panel p-5 bg-white border border-slate-200 rounded-2xl space-y-4 shadow-xs animate-in fade-in duration-150">
-                                {/* Title and Brand Grid */}
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                                            {t('Tiêu đề nội bộ')} *
-                                        </label>
-                                        <input
-                                            type="text"
-                                            value={form.title}
-                                            onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                            placeholder={t('Ví dụ: Bài đăng ra mắt sản phẩm')}
-                                            className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
-                                            {t('Thương hiệu')}
-                                        </label>
-                                        <select
-                                            value={form.brand_id}
-                                            onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                                            className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
-                                        >
-                                            {brands.map((b) => (
-                                                <option key={b.id} value={b.id}>
-                                                    {b.name}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* UTM Link Builder */}
-                                <div className="pt-2 border-t border-slate-100">
-                                    <UtmLinkBuilder form={form} accounts={selectedAccounts} setForm={setForm} disabled={uploading || saving} />
-                                </div>
-
-                                {/* Per-Account Settings */}
-                                {selectedAccounts.length > 0 && (
-                                    <div className="pt-2 border-t border-slate-100">
-                                        <PageSettings
-                                            accounts={selectedAccounts}
-                                            settings={form.destination_settings}
-                                            brandId={form.brand_id}
-                                            demoMode={demoMode}
-                                            disabled={uploading || saving}
-                                            onBusyChange={setUploading}
-                                            linkedinAccounts={linkedinAccounts}
-                                            onChange={(destination_settings) => setForm({ ...form, destination_settings })}
-                                        />
-                                    </div>
-                                )}
+                        {/* Per-platform custom captions */}
+                        {!desktop && platforms.length > 1 && (
+                            <div className="pt-3 border-t border-border/50">
+                                <PlatformCaptions
+                                    platforms={platforms}
+                                    brandId={form.brand_id}
+                                    captions={form.platform_captions}
+                                    mainCaption={form.caption}
+                                    linkedinAccounts={linkedinAccounts}
+                                    onChange={(platform_captions) => setForm((current) => ({ ...current, platform_captions }))}
+                                />
                             </div>
                         )}
-                    </div>
 
-                    {/* Bottom Action Footer Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/80">
-                        {/* Left Side: Tag and Repeat Dropdowns */}
-                        <div className="flex items-center gap-2 flex-wrap">
-                            {/* Add New Tag Dropdown */}
-                            <div className="relative" ref={tagDropdownRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => setTagDropdownOpen(!tagDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-                                >
-                                    <Tag size={15} />
-                                    <span>
-                                        {form.pillar_id
-                                            ? brandPillars.find((p) => p.id === form.pillar_id)?.name || t('Tag')
-                                            : t('Thêm thẻ')}
-                                    </span>
-                                    <CaretDown size={11} className="opacity-70" />
-                                </button>
+                        {/* TikTok creator and privacy settings */}
+                        {!desktop &&
+                            selectedAccounts
+                                .filter((a) => a.platform === 'tiktok')
+                                .map((account) => (
+                                    <TiktokSettings
+                                        key={account.id}
+                                        account={account}
+                                        value={form.destination_settings[account.id]?.tiktok}
+                                        onCreatorChange={(creator) =>
+                                            setTiktokCreators((current) => ({ ...current, [account.id]: creator }))
+                                        }
+                                        onChange={(tiktok) =>
+                                            setForm((current) => ({
+                                                ...current,
+                                                destination_settings: {
+                                                    ...current.destination_settings,
+                                                    [account.id]: {
+                                                        ...current.destination_settings[account.id],
+                                                        tiktok,
+                                                    },
+                                                },
+                                            }))
+                                        }
+                                    />
+                                ))}
 
-                                {tagDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl space-y-1">
-                                        <span className="block px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                            {t('Pillar / Chủ đề')}
-                                        </span>
-                                        {brandPillars.length === 0 ? (
-                                            <p className="px-2 py-1 text-xs text-slate-400 italic">{t('Chưa có Pillar nào')}</p>
-                                        ) : (
-                                            brandPillars.map((p) => (
-                                                <button
-                                                    key={p.id}
-                                                    type="button"
-                                                    onClick={() => {
-                                                        setForm((curr) => ({ ...curr, pillar_id: curr.pillar_id === p.id ? '' : p.id }));
-                                                        setTagDropdownOpen(false);
-                                                    }}
-                                                    className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2 cursor-pointer ${
-                                                        form.pillar_id === p.id
-                                                            ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
-                                                            : 'text-slate-700 hover:bg-slate-100'
-                                                    }`}
-                                                >
-                                                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: p.color || '#ffd631' }} />
-                                                    <span className="truncate">{p.name}</span>
-                                                    {form.pillar_id === p.id && <Check size={12} className="ml-auto" />}
-                                                </button>
-                                            ))
-                                        )}
-                                    </div>
-                                )}
+                        {/* Per-page settings */}
+                        {!desktop && (
+                            <PageSettings
+                                accounts={selectedAccounts}
+                                settings={form.destination_settings}
+                                brandId={form.brand_id}
+                                demoMode={demoMode}
+                                disabled={uploading || saving}
+                                onBusyChange={setUploading}
+                                linkedinAccounts={linkedinAccounts}
+                                onChange={(destination_settings) => setForm({ ...form, destination_settings })}
+                            />
+                        )}
+                    </section>
+
+                    {!desktop && <UtmLinkBuilder form={form} accounts={selectedAccounts} setForm={setForm} disabled={uploading || saving} />}
+
+                    {/* CARD 03: Media chung (Attachments & Dropzone) */}
+                    <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs sm:text-[13px] font-bold text-muted-foreground/75">03</span>
+                                <h2 className="text-sm sm:text-[15px] font-bold text-foreground">{t('General media')}</h2>
                             </div>
-
-                            {/* Repeat Post Every... Dropdown */}
-                            <div className="relative" ref={repeatDropdownRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => setRepeatDropdownOpen(!repeatDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-                                >
-                                    <Repeat size={15} />
-                                    <span>
-                                        {repeatFrequency === 'none'
-                                            ? t('Lặp lại bài viết…')
-                                            : t('Lặp lại: {freq}', { freq: repeatFrequency })}
-                                    </span>
-                                    <CaretDown size={11} className="opacity-70" />
-                                </button>
-
-                                {repeatDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl space-y-0.5">
-                                        {[
-                                            { value: 'none', label: t('Không lặp lại') },
-                                            { value: 'daily', label: t('Mỗi ngày') },
-                                            { value: 'weekly', label: t('Mỗi tuần') },
-                                            { value: 'biweekly', label: t('Mỗi 2 tuần') },
-                                            { value: 'monthly', label: t('Mỗi tháng') },
-                                        ].map((opt) => (
-                                            <button
-                                                key={opt.value}
-                                                type="button"
-                                                onClick={() => {
-                                                    setRepeatFrequency(opt.value);
-                                                    setRepeatDropdownOpen(false);
-                                                }}
-                                                className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
-                                                    repeatFrequency === opt.value
-                                                        ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
-                                                        : 'text-slate-700 hover:bg-slate-100'
-                                                }`}
-                                            >
-                                                <span>{opt.label}</span>
-                                                {repeatFrequency === opt.value && <Check size={13} weight="bold" />}
-                                            </button>
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('Photos or video attached to the post.')}
+                            </p>
                         </div>
 
-                        {/* Right Side: Schedule Datetime & Primary Action Buttons */}
-                        <div className="flex items-center gap-2.5 flex-wrap">
-                            {/* Schedule Date & Time Trigger */}
-                            <div className="relative" ref={schedulePickerRef}>
-                                <button
-                                    type="button"
-                                    onClick={() => setSchedulePickerOpen(!schedulePickerOpen)}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors cursor-pointer shadow-2xs"
-                                >
-                                    <CalendarBlank size={14} className="text-slate-400" />
-                                    <span>{formatScheduleTime(form.date, form.time)}</span>
-                                </button>
+                        <fieldset disabled={uploading || saving}>
+                            <MediaUploader
+                                assets={form.media}
+                                onChange={(media) =>
+                                    setForm((prev) =>
+                                        media.every((image) => !image.brand_id || image.brand_id === prev.brand_id)
+                                            ? { ...prev, media }
+                                            : prev
+                                    )
+                                }
+                                brandId={form.brand_id}
+                                demoMode={desktop ? false : demoMode}
+                                onBusyChange={setUploading}
+                            />
+                        </fieldset>
 
-                                {schedulePickerOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-72 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xl space-y-3 animate-in fade-in zoom-in-95">
-                                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                                            <span className="text-xs font-bold text-slate-900">Thời gian đăng bài</span>
-                                            <button type="button" onClick={() => setSchedulePickerOpen(false)} className="text-slate-400 hover:text-slate-800">
-                                                <X size={14} />
-                                            </button>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-2">
-                                            <div>
-                                                <label className="text-[10px] text-slate-500 font-semibold block mb-1">Ngày</label>
-                                                <input
-                                                    type="date"
-                                                    value={form.date}
-                                                    onChange={(e) => setForm({ ...form, date: e.target.value })}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
-                                                />
-                                            </div>
-                                            <div>
-                                                <label className="text-[10px] text-slate-500 font-semibold block mb-1">Giờ</label>
-                                                <input
-                                                    type="time"
-                                                    value={form.time}
-                                                    onChange={(e) => setForm({ ...form, time: e.target.value })}
-                                                    className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
-                                                />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="text-[10px] text-slate-500 font-semibold block mb-1">Múi giờ</label>
-                                            <select
-                                                value={form.timezone}
-                                                onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-                                                className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
-                                            >
-                                                {TIMEZONES.map((z) => (
-                                                    <option key={z} value={z}>
-                                                        {z}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                )}
+                        {/* Platform-specific media overrides if needed */}
+                        {!desktop && platforms.length > 0 && form.media.length > 0 && (
+                            <PlatformMedia
+                                platforms={platforms}
+                                media={form.platform_media}
+                                brandId={form.brand_id}
+                                demoMode={demoMode}
+                                disabled={uploading || saving}
+                                onBusyChange={setUploading}
+                                onChange={(platform_media) =>
+                                    setForm((current) =>
+                                        Object.values(platform_media)
+                                            .flat()
+                                            .every((asset) => !asset.brand_id || asset.brand_id === current.brand_id)
+                                            ? { ...current, platform_media }
+                                            : current
+                                    )
+                                }
+                            />
+                        )}
+                    </section>
+
+                    {/* CARD 04: Chiến lược & lịch đăng (Strategy & Schedule) */}
+                    <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                        <div>
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs sm:text-[13px] font-bold text-muted-foreground/75">04</span>
+                                <h2 className="text-sm sm:text-[15px] font-bold text-foreground">{t('Strategy & scheduling')}</h2>
                             </div>
-
-                            {/* Save as draft button */}
-                            <button
-                                type="button"
-                                disabled={saving || uploading}
-                                onClick={() => submit('draft')}
-                                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
-                            >
-                                {t('Save as draft')}
-                            </button>
-
-                            {/* Add to Calendar ▾ primary button */}
-                            <div className="relative inline-flex items-center" ref={publishDropdownRef}>
-                                <button
-                                    type="button"
-                                    disabled={saving || uploading}
-                                    onClick={() => submit('schedule')}
-                                    className="btn-skew inline-flex items-center gap-1.5 rounded-l-xl text-xs font-semibold px-4 py-2 shadow-2xs cursor-pointer disabled:opacity-60"
-                                >
-                                    <span>{saving ? t('Đang lưu…') : t('Lên lịch')}</span>
-                                </button>
-                                <button
-                                    type="button"
-                                    disabled={saving || uploading}
-                                    onClick={() => setPublishDropdownOpen(!publishDropdownOpen)}
-                                    className="rounded-r-xl border border-l-0 border-[#d8b216] bg-[#ffd631] hover:bg-[#ffe059] text-[#2b2100] px-2 py-2 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
-                                >
-                                    <CaretDown size={14} weight="bold" />
-                                </button>
-
-                                {publishDropdownOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl space-y-0.5 animate-in fade-in zoom-in-95">
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setPublishDropdownOpen(false);
-                                                submit('schedule');
-                                            }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <CalendarBlank size={14} className="text-amber-600" />
-                                            <span>{t('Lên lịch đăng')}</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setPublishDropdownOpen(false);
-                                                submit('publish');
-                                            }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer font-semibold"
-                                        >
-                                            <PaperPlaneTilt size={14} className="text-emerald-600" />
-                                            <span>{t('Đăng ngay')}</span>
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setPublishDropdownOpen(false);
-                                                submit('draft');
-                                            }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
-                                        >
-                                            <FloppyDisk size={14} className="text-slate-500" />
-                                            <span>{t('Lưu bản nháp')}</span>
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                {/* RIGHT COLUMN: Post Preview & Checklist */}
-                {showPreview && (
-                    <div className="composer-preview space-y-5 w-full">
-                        {/* CARD 1: Post preview */}
-                        <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
-                            {/* Header */}
-                            <div className="flex items-center justify-between pb-1">
-                                <h3 className="font-heading font-bold text-sm text-slate-900 tracking-wide">
-                                    {t('Post preview')}
-                                </h3>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPreview(false)}
-                                    className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 cursor-pointer transition-colors"
-                                    title={t('Close preview')}
-                                >
-                                    <X size={16} />
-                                </button>
-                            </div>
-
-                            {/* Platform switch tabs */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
-                                {['threads', 'facebook', 'instagram', 'x', 'linkedin', 'tiktok'].map((plat) => {
-                                    const isActive = previewPlatform === plat;
-                                    return (
-                                        <button
-                                            key={plat}
-                                            type="button"
-                                            onClick={() => setPreviewPlatform(plat)}
-                                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer capitalize shrink-0 ${
-                                                isActive
-                                                    ? 'bg-[#ffd631] text-[#2b2100] font-bold shadow-xs'
-                                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
-                                            }`}
-                                        >
-                                            {plat === 'threads' ? 'Threads' : plat === 'facebook' ? 'Facebook' : plat === 'instagram' ? 'Instagram' : plat === 'x' ? 'X' : plat === 'linkedin' ? 'LinkedIn' : 'TikTok'}
-                                        </button>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Realistic Social Post Mockup Card */}
-                            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3 shadow-2xs">
-                                {/* Author */}
-                                <div className="flex items-center gap-2.5">
-                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ffd631] text-xs font-bold text-[#2b2100] shadow-xs">
-                                        {activeBrandName.slice(0, 2).toUpperCase() || 'SC'}
-                                    </div>
-                                    <div>
-                                        <h4 className="text-xs font-bold text-slate-900 leading-tight">
-                                            {activeBrandName || 'Socialchoice'}
-                                        </h4>
-                                        <p className="text-[11px] text-slate-400">
-                                            @{activeBrandName ? activeBrandName.toLowerCase().replace(/\s+/g, '') : 'socialchoice.vn'}
-                                        </p>
-                                    </div>
-                                </div>
-
-                                {/* Post text */}
-                                <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-line min-h-[60px]">
-                                    {currentActiveCaption || (
-                                        <span className="text-slate-400 italic">
-                                            {t('Nội dung bài viết sẽ hiển thị ở đây…')}
-                                        </span>
-                                    )}
-                                </div>
-
-                                {/* Media Box */}
-                                {form.media?.length > 0 ? (
-                                    <div className="overflow-hidden rounded-xl border border-slate-200 max-h-60 bg-black/5">
-                                        {form.media[0]?.file_type === 'video' ? (
-                                            <video src={form.media[0]?.file_url} controls className="w-full h-auto max-h-60 object-cover" />
-                                        ) : (
-                                            <img src={form.media[0]?.file_url || form.media[0]?.url} alt="media" className="w-full h-auto max-h-60 object-cover" />
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-100/70 py-12 flex items-center justify-center text-xs text-slate-400 font-medium">
-                                        {t('Chưa có media')}
-                                    </div>
-                                )}
-
-                                {/* Reactions Bar */}
-                                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-slate-400 text-xs">
-                                    <div className="flex items-center gap-3">
-                                        <span className="hover:text-rose-500 cursor-pointer">♡</span>
-                                        <span className="hover:text-slate-700 cursor-pointer">💬</span>
-                                        <span className="hover:text-slate-700 cursor-pointer">↗</span>
-                                    </div>
-                                    <span className="hover:text-slate-700 cursor-pointer">🔖</span>
-                                </div>
-                            </div>
-
-                            {/* Footer limit */}
-                            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
-                                <span>{t('Giới hạn {limit}', { limit: CAPTION_LIMITS[previewPlatform] || 500 })}</span>
-                                <span>{currentCount} / {CAPTION_LIMITS[previewPlatform] || 500}</span>
-                            </div>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('Assign post to the right pillar, then choose publishing time.')}
+                            </p>
                         </div>
 
-                        {/* CARD 2: Trước khi đăng (Pre-publish checks) */}
-                        <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3">
-                            <div className="flex items-center justify-between">
-                                <h4 className="font-heading font-bold text-sm text-slate-900">
-                                    {t('Trước khi đăng')}
-                                </h4>
-                                <span className="text-xs font-bold text-slate-600 font-mono">
-                                    {passedChecksCount}/{prePublishChecks.length}
-                                </span>
-                            </div>
-
-                            {/* Yellow Progress Bar */}
-                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                    className="h-full bg-[#ffd631] transition-all duration-300 rounded-full"
-                                    style={{ width: `${(passedChecksCount / prePublishChecks.length) * 100}%` }}
+                        <div className="grid gap-5 md:grid-cols-2 pt-1">
+                            {/* Left: Content Strategy Fields */}
+                            <div className="space-y-4">
+                                <PillarAngleFields
+                                    pillars={brandPillars}
+                                    angles={brandAngles}
+                                    value={form}
+                                    onChange={(patch) => setForm({ ...form, ...patch })}
                                 />
                             </div>
 
-                            {/* Checklist */}
-                            <div className="space-y-2 pt-1 text-xs">
-                                {prePublishChecks.map((chk) => (
-                                    <div key={chk.id} className="flex items-center gap-2">
-                                        <span
-                                            className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
-                                                chk.passed
-                                                    ? 'bg-[#ffd631] text-[#2b2100]'
-                                                    : 'bg-slate-100 text-slate-400'
-                                            }`}
-                                        >
-                                            ✓
-                                        </span>
-                                        <span className={chk.passed ? 'text-slate-700 font-medium' : 'text-slate-400'}>
-                                            {chk.label}
-                                        </span>
-                                    </div>
-                                ))}
+                            {/* Right: Schedule Date/Time/Timezone Fields */}
+                            <div className="space-y-4">
+                                <ScheduleFields value={form} onChange={(patch) => setForm({ ...form, ...patch })} />
                             </div>
                         </div>
-                    </div>
-                )}
-            </div>
+                    </section>
+                </div>
 
-            {/* AI Assistant Modal */}
-            <DesktopAiWriter
-                open={aiOpen}
-                onOpenChange={setAiOpen}
-                form={form}
-                brand={brands.find((b) => b.id === form.brand_id)}
-                pillars={pillars}
-                angles={angles}
-                onApply={(suggestion) => {
-                    const next = applyAiSuggestion(form, suggestion);
-                    setForm(next);
-                    toast({ title: t('Đã áp dụng gợi ý từ AI thành công!') });
-                }}
-            />
+                {/* RIGHT COLUMN: Live Social Preview & Action Panel */}
+                <div className="space-y-5 composer-preview">
+                    {/* Live Post Preview */}
+                    <PostPreview
+                        planning={desktop}
+                        caption={form.caption}
+                        media={form.media}
+                        comments={form.comments}
+                        accounts={selectedAccounts}
+                        linkedinAccounts={linkedinAccounts}
+                        scheduledAt={scheduledAt}
+                        timezone={form.timezone}
+                        pageSettings={form.destination_settings}
+                        platformCaptions={form.platform_captions}
+                        platformMedia={form.platform_media}
+                    />
 
-            {/* Design Media Library Picker Modal */}
-            {mediaLibraryOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
-                    <div className="relative w-full max-w-2xl rounded-2xl bg-white border border-border p-5 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between border-b border-border pb-3">
-                            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
-                                <Palette size={16} className="text-purple-600" />
-                                <span>{t('Thư viện tệp phương tiện (Design Media)')}</span>
-                            </h3>
+                    {/* Pre-Publish Checklist */}
+                    <DestinationChecks checks={checks} post={form} />
+
+                    {/* Action Buttons Box */}
+                    <div className="panel p-4 sm:p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3">
+                        {!desktop && (
                             <button
                                 type="button"
-                                onClick={() => setMediaLibraryOpen(false)}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="btn-skew w-full h-11 text-xs font-bold gap-2 justify-center cursor-pointer shadow-sm hover:shadow transition-all"
+                                disabled={saving || uploading || demoMode}
+                                onClick={() => submit('publish')}
                             >
-                                <X size={16} />
+                                <PaperPlaneTilt size={16} weight="bold" />
+                                <span>{t('Publish now')}</span>
                             </button>
+                        )}
+
+                        {/* Secondary Actions: Schedule & Save Draft side-by-side on 1 row */}
+                        <div className="grid grid-cols-2 gap-2.5">
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-10 rounded-xl border border-border bg-white text-foreground hover:bg-muted/50 text-xs font-semibold gap-1.5 justify-center transition-all cursor-pointer px-2"
+                                disabled={saving || uploading}
+                                onClick={() => submit('schedule')}
+                            >
+                                <CalendarBlank size={15} weight="bold" className="shrink-0" />
+                                <span className="truncate">{t(desktop ? 'Save calendar plan' : 'Schedule post')}</span>
+                            </Button>
+
+                            <Button
+                                type="button"
+                                variant="outline"
+                                className="w-full h-10 rounded-xl border border-border bg-muted/30 text-foreground hover:bg-muted/60 text-xs font-medium gap-1.5 justify-center transition-all cursor-pointer px-2"
+                                disabled={saving || uploading}
+                                onClick={() => submit('draft')}
+                            >
+                                <FloppyDisk size={15} className="shrink-0" />
+                                <span className="truncate">{t('Save draft')}</span>
+                            </Button>
                         </div>
 
-                        {brandMediaAssets.length === 0 ? (
-                            <div className="text-center py-10 text-xs text-muted-foreground">
-                                {t('Chưa có tệp nào trong thư viện.')}
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-80 overflow-y-auto p-1">
-                                {brandMediaAssets.map((asset) => {
-                                    const isChosen = form.media.some((m) => m.id === asset.id);
-                                    return (
-                                        <div
-                                            key={asset.id}
-                                            onClick={() => {
-                                                if (isChosen) {
-                                                    setForm((curr) => ({ ...curr, media: curr.media.filter((m) => m.id !== asset.id) }));
-                                                } else {
-                                                    setForm((curr) => ({ ...curr, media: [...curr.media, asset] }));
-                                                }
-                                            }}
-                                            className={`relative aspect-square rounded-xl overflow-hidden border cursor-pointer transition-all ${
-                                                isChosen ? 'border-[#ffd631] ring-2 ring-[#ffd631]' : 'border-border hover:border-muted-foreground/50'
-                                            }`}
-                                        >
-                                            <img src={asset.file_url} alt={asset.name} className="h-full w-full object-cover" />
-                                            {isChosen && (
-                                                <div className="absolute top-1 right-1 rounded-full bg-[#ffd631] text-[#2b2100] p-0.5 shadow-xs">
-                                                    <CheckCircle size={14} weight="fill" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        )}
+                        <p className="text-[11px] text-muted-foreground leading-relaxed pt-2 border-t border-border/50 text-center">
+                            {t('Timezone {timezone} · drafts are saved locally in this browser', {
+                                timezone: form.timezone,
+                            })}
+                        </p>
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* Delete Draft Confirm Dialog */}
-            <ConfirmDialog
-                open={deleteOpen}
-                onOpenChange={setDeleteOpen}
-                title={t('Xóa bài viết')}
-                description={t('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')}
-                onConfirm={handleDelete}
-            />
-
-            {/* Publishing Confirmation Dialog */}
             {publishReview && (
                 <PublishConfirmation
                     review={publishReview}
                     onClose={() => setPublishReview(null)}
-                    onResult={() => {
+                    onResult={(result) => {
                         setPublishReview(null);
-                        navigate('/posts');
+                        toast({
+                            title: t(
+                                result.status === 'queued'
+                                    ? 'Automatic schedule confirmed'
+                                    : result.status === 'published'
+                                        ? 'Post published'
+                                        : result.status === 'processing'
+                                            ? 'Publishing is still processing'
+                                            : 'Delivery needs attention'
+                            ),
+                            description: t(result.message || 'Open publishing history for the result.'),
+                            ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}),
+                        });
+                        navigate('/posts?post=' + result.postId);
                     }}
                 />
             )}
+
+            <ConfirmDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                title={t('Delete this post?')}
+                description={t(
+                    desktop
+                        ? 'This draft is removed from this computer.'
+                        : 'The post and its queued destination jobs are removed. Published history stays in the activity log.'
+                )}
+                confirmLabel={t('Delete post')}
+                destructive
+                onConfirm={remove}
+            />
         </div>
     );
 }
