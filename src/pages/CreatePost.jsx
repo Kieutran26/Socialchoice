@@ -395,6 +395,11 @@ export default function CreatePost() {
         return acc ? acc.platform : 'facebook';
     }, [activeChannelTab, selectedAccounts, accounts]);
 
+    const currentActiveCaption = useMemo(() => {
+        if (activeChannelTab === 'all') return form.caption;
+        return form.destination_settings[activeChannelTab]?.caption ?? form.caption;
+    }, [activeChannelTab, form.caption, form.destination_settings]);
+
     const prePublishChecks = useMemo(() => {
         const hasAccount = selectedAccounts.length > 0;
         const hasContent = !!(form.caption && form.caption.trim().length > 0);
@@ -412,11 +417,6 @@ export default function CreatePost() {
     }, [selectedAccounts, form.caption, form.date, form.time, currentActiveCaption, currentActivePlatform, t]);
 
     const passedChecksCount = prePublishChecks.filter((c) => c.passed).length;
-
-    const currentActiveCaption = useMemo(() => {
-        if (activeChannelTab === 'all') return form.caption;
-        return form.destination_settings[activeChannelTab]?.caption ?? form.caption;
-    }, [activeChannelTab, form.caption, form.destination_settings]);
 
     const maxLimit = CAPTION_LIMITS[currentActivePlatform] || 63206;
     const currentCount = (currentActiveCaption || '').length;
