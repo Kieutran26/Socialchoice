@@ -626,23 +626,28 @@ export default function CreatePost() {
     }
 
     return (
-        <div className="min-h-screen bg-[#121214] text-white p-4 sm:p-6 lg:p-7 rounded-3xl border border-neutral-800/80 shadow-2xl space-y-6">
-            {/* Split Screen 2-Column Grid matching Screenshot */}
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_420px] xl:grid-cols-[1fr_460px] gap-6 items-start">
+        <div className="composer-shell w-full pb-16 space-y-6">
+            {/* Split Screen 2-Column Grid */}
+            <div className="composer-columns grid gap-6 items-start">
                 
                 {/* LEFT COLUMN: Post Composer */}
                 <div className="space-y-4 min-w-0">
                     
                     {/* Header */}
                     <div className="flex items-center justify-between">
-                        <h1 className="text-lg sm:text-xl font-bold font-heading text-white tracking-wide">
-                            {t('Create Post')}
-                        </h1>
+                        <div>
+                            <h1 className="font-heading text-2xl font-bold text-foreground">
+                                {existing ? t('Edit post') : t('Create Post')}
+                            </h1>
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                                {t('Compose once, choose platforms, schedule — all in one view.')}
+                            </p>
+                        </div>
                         {!showPreview && (
                             <button
                                 type="button"
                                 onClick={() => setShowPreview(true)}
-                                className="text-xs text-neutral-400 hover:text-white underline cursor-pointer"
+                                className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
                             >
                                 {t('Show Preview')}
                             </button>
@@ -668,8 +673,8 @@ export default function CreatePost() {
                                         onClick={() => toggleAccount(account)}
                                         className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
                                             isSelected
-                                                ? 'ring-2 ring-purple-500 ring-offset-2 ring-offset-[#121214] opacity-100 scale-105'
-                                                : 'opacity-40 hover:opacity-80 border border-neutral-700 bg-neutral-800'
+                                                ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-background opacity-100 scale-105 shadow-xs'
+                                                : 'opacity-40 hover:opacity-80 border border-border bg-muted/40'
                                         }`}
                                         title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
                                     >
@@ -684,7 +689,7 @@ export default function CreatePost() {
                                                 {account.name.slice(0, 2)}
                                             </div>
                                         )}
-                                        <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-[#121214] p-0.5 shadow-sm">
+                                        <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-border/50">
                                             <PlatformLogo platform={account.platform} size={14} />
                                         </div>
                                     </button>
@@ -701,14 +706,14 @@ export default function CreatePost() {
                             onClick={() => setActiveChannelTab('all')}
                             className={`relative flex items-center justify-center h-9 w-9 rounded-xl border transition-all cursor-pointer shrink-0 ${
                                 activeChannelTab === 'all'
-                                    ? 'bg-purple-600/30 border-purple-500 text-purple-300 shadow-sm'
-                                    : 'bg-[#1a1a1e] border-neutral-800 text-neutral-400 hover:text-white hover:border-neutral-700'
+                                    ? 'bg-[#ffd631]/20 border-[#ffd631] text-[#2b2100] shadow-2xs font-semibold'
+                                    : 'bg-white border-border text-muted-foreground hover:text-foreground hover:bg-muted/40'
                             }`}
                             title={t('Tất cả kênh (Nội dung dùng chung)')}
                         >
                             <Globe size={18} weight={activeChannelTab === 'all' ? 'bold' : 'regular'} />
                             {activeChannelTab === 'all' && (
-                                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-pink-500 ring-2 ring-[#121214]" />
+                                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-background" />
                             )}
                         </button>
 
@@ -723,19 +728,19 @@ export default function CreatePost() {
                                     onClick={() => setActiveChannelTab(acc.id)}
                                     className={`relative flex items-center justify-center h-9 w-9 rounded-xl border transition-all cursor-pointer overflow-hidden shrink-0 ${
                                         isTabActive
-                                            ? 'ring-2 ring-purple-500 border-purple-500 shadow-sm'
-                                            : 'border-neutral-800 hover:border-neutral-700 bg-[#1a1a1e]'
+                                            ? 'ring-2 ring-[#ffd631] border-[#ffd631] shadow-2xs'
+                                            : 'border-border hover:border-muted-foreground/40 bg-white'
                                     }`}
                                     title={acc.name}
                                 >
                                     {acc.avatar_url ? (
                                         <img src={acc.avatar_url} alt={acc.name} className="h-full w-full object-cover" />
                                     ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-neutral-800 text-[10px] font-bold text-white uppercase">
+                                        <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-bold text-foreground uppercase">
                                             {acc.name.slice(0, 2)}
                                         </div>
                                     )}
-                                    <div className="absolute bottom-0 right-0 p-0.5 bg-neutral-900/90 rounded-tl">
+                                    <div className="absolute bottom-0 right-0 p-0.5 bg-white/95 rounded-tl shadow-xs border-t border-l border-border/40">
                                         <PlatformLogo platform={acc.platform} size={10} />
                                     </div>
                                     {hasCustomCaption && (
@@ -747,17 +752,17 @@ export default function CreatePost() {
                     </div>
 
                     {/* ROW 3: Main Text Area / Editor Box */}
-                    <div className="rounded-2xl border border-neutral-800 bg-[#1a1a1e] p-4 space-y-3 focus-within:border-neutral-700 transition-all shadow-inner">
+                    <div className="panel p-4 bg-white border border-border rounded-2xl shadow-2xs space-y-3 focus-within:border-primary/50 transition-all">
                         {/* Caret Arrows on top right */}
                         <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-semibold text-neutral-400 uppercase tracking-wider">
+                            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
                                 {activeChannelTab === 'all'
                                     ? t('Nội dung dùng chung (All Channels)')
                                     : t('Tùy chỉnh riêng cho {account}', { account: accounts.find((a) => a.id === activeChannelTab)?.name || '' })}
                             </span>
-                            <div className="flex items-center gap-1 text-neutral-500">
-                                <CaretUp size={14} className="hover:text-white cursor-pointer" />
-                                <CaretDown size={14} className="hover:text-white cursor-pointer" />
+                            <div className="flex items-center gap-1 text-muted-foreground/70">
+                                <CaretUp size={14} className="hover:text-foreground cursor-pointer" />
+                                <CaretDown size={14} className="hover:text-foreground cursor-pointer" />
                             </div>
                         </div>
 
@@ -768,7 +773,7 @@ export default function CreatePost() {
                             value={currentActiveCaption}
                             onChange={(e) => handleActiveCaptionChange(e.target.value)}
                             placeholder={t('Write something …')}
-                            className="w-full bg-transparent text-sm leading-relaxed text-white placeholder:text-neutral-500 resize-none outline-none focus:ring-0 min-h-[140px]"
+                            className="w-full bg-transparent text-sm leading-relaxed text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-0 min-h-[140px]"
                         />
 
                         {/* LinkedIn mention helper */}
@@ -784,14 +789,14 @@ export default function CreatePost() {
 
                         {/* Attached Media Thumbnails inside Editor Box */}
                         {form.media?.length > 0 && (
-                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-neutral-800/60">
+                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border/60">
                                 {form.media.map((img, i) => (
                                     <div
                                         key={img.id || i}
-                                        className="group relative h-16 w-16 overflow-hidden rounded-xl border border-neutral-700 bg-neutral-900"
+                                        className="group relative h-16 w-16 overflow-hidden rounded-xl border border-border bg-muted/30"
                                     >
                                         {img.file_type === 'video' ? (
-                                            <div className="flex h-full w-full items-center justify-center bg-neutral-900 text-xs text-neutral-400">
+                                            <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
                                                 MP4
                                             </div>
                                         ) : (
@@ -824,14 +829,14 @@ export default function CreatePost() {
                         />
 
                         {/* Bottom Toolbar inside Editor Box */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-neutral-800/60">
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
                             {/* Left actions */}
                             <div className="flex items-center gap-1.5 flex-wrap">
                                 <button
                                     type="button"
                                     disabled={uploading}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-white px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <ImageSquare size={16} />
                                     <span>{uploading ? t('Đang tải…') : t('Insert Media')}</span>
@@ -844,7 +849,7 @@ export default function CreatePost() {
                                             .then((res) => setBrandMediaAssets(res.items || []));
                                         setMediaLibraryOpen(true);
                                     }}
-                                    className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-white px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <Palette size={16} />
                                     <span>{t('Design Media')}</span>
@@ -853,9 +858,9 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setAiOpen(true)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl bg-neutral-800/80 hover:bg-neutral-700 text-neutral-300 hover:text-white px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
-                                    <Sparkle size={16} className="text-amber-400" />
+                                    <Sparkle size={16} className="text-amber-500" />
                                     <span>{t('AI Image')}</span>
                                 </button>
 
@@ -872,7 +877,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => formatSelection('<u>', '</u>')}
-                                    className="h-8 w-8 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-colors"
+                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
                                     title={t('Underline')}
                                 >
                                     <TextUnderline size={16} />
@@ -880,7 +885,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => formatSelection('**', '**')}
-                                    className="h-8 w-8 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-colors"
+                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
                                     title={t('Bold')}
                                 >
                                     <TextB size={16} weight="bold" />
@@ -891,17 +896,17 @@ export default function CreatePost() {
                                     <button
                                         type="button"
                                         onClick={() => setEmojiPickerOpen(!emojiPickerOpen)}
-                                        className="h-8 w-8 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 flex items-center justify-center cursor-pointer transition-colors"
+                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
                                         title={t('Emoji')}
                                     >
                                         <Smiley size={16} />
                                     </button>
 
                                     {emojiPickerOpen && (
-                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-neutral-800 bg-[#1e1e24] p-3 shadow-2xl animate-in fade-in zoom-in-95">
-                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-neutral-800">
-                                                <span className="text-[11px] font-semibold text-neutral-400">Chọn Emoji</span>
-                                                <button type="button" onClick={() => setEmojiPickerOpen(false)} className="text-neutral-500 hover:text-white">
+                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-border bg-white p-3 shadow-xl animate-in fade-in zoom-in-95">
+                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
+                                                <span className="text-[11px] font-semibold text-muted-foreground">Chọn Emoji</span>
+                                                <button type="button" onClick={() => setEmojiPickerOpen(false)} className="text-muted-foreground hover:text-foreground">
                                                     <X size={12} />
                                                 </button>
                                             </div>
@@ -911,7 +916,7 @@ export default function CreatePost() {
                                                         key={emoji}
                                                         type="button"
                                                         onClick={() => insertEmoji(emoji)}
-                                                        className="p-1.5 rounded-lg hover:bg-neutral-700/60 text-lg transition-transform active:scale-90"
+                                                        className="p-1.5 rounded-lg hover:bg-muted text-lg transition-transform active:scale-90"
                                                     >
                                                         {emoji}
                                                     </button>
@@ -924,7 +929,7 @@ export default function CreatePost() {
 
                             {/* Right warning character counter badge */}
                             <div className="flex items-center gap-1.5">
-                                <div className="inline-flex items-center gap-1.5 rounded-xl bg-red-500/15 border border-red-500/30 text-red-400 px-2.5 py-1 text-xs font-mono font-medium">
+                                <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 px-2.5 py-1 text-xs font-mono font-medium">
                                     <Warning size={14} weight="bold" />
                                     <span>
                                         {currentCount}/{maxLimit}
@@ -938,7 +943,7 @@ export default function CreatePost() {
                     {/* Shortlink Prompt if 'ask' preference and has URL */}
                     {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(currentActiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(currentActiveCaption) && (
                         <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/50 text-xs shadow-2xs">
-                            <span className="flex items-center gap-2 text-white font-medium">
+                            <span className="flex items-center gap-2 text-foreground font-medium">
                                 <LinkSimple size={16} className="text-[#ffd631]" weight="bold" />
                                 {t('Phát hiện liên kết URL. Bạn có muốn chuyển thành Shortlink để theo dõi nhấp chuột?')}
                             </span>
@@ -967,7 +972,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setShortlinkDismissed(true)}
-                                    className="rounded-lg border border-neutral-700 bg-neutral-800 px-2.5 py-1 text-xs text-neutral-300 hover:text-white cursor-pointer"
+                                    className="rounded-lg border border-border bg-white px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer shadow-2xs"
                                 >
                                     {t('Bỏ qua')}
                                 </button>
@@ -993,7 +998,7 @@ export default function CreatePost() {
 
                         {/* Collapsible Follow-up Comment Editor */}
                         {showComments && (
-                            <div className="mt-3 rounded-2xl border border-neutral-800 bg-[#1a1a1e] p-4 animate-in fade-in duration-150">
+                            <div className="mt-3 panel p-4 bg-muted/20 border border-border rounded-2xl animate-in fade-in duration-150">
                                 <CommentChainEditor
                                     comments={form.comments}
                                     onChange={(comments) => setForm({ ...form, comments })}
@@ -1027,11 +1032,11 @@ export default function CreatePost() {
 
                         {/* Collapsible Settings Panel */}
                         {settingsOpen && (
-                            <div className="rounded-2xl border border-neutral-800 bg-[#1a1a1e] p-4.5 space-y-4 animate-in fade-in duration-150">
+                            <div className="panel p-4.5 bg-muted/20 border border-border rounded-2xl space-y-4 animate-in fade-in duration-150">
                                 {/* Title and Brand Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                                             {t('Tiêu đề nội bộ')} *
                                         </label>
                                         <input
@@ -1039,18 +1044,18 @@ export default function CreatePost() {
                                             value={form.title}
                                             onChange={(e) => setForm({ ...form, title: e.target.value })}
                                             placeholder={t('Ví dụ: Bài đăng ra mắt sản phẩm')}
-                                            className="w-full h-9 rounded-xl border border-neutral-800 bg-neutral-900 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                            className="w-full h-9 rounded-xl border border-border bg-white px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 block mb-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
                                             {t('Thương hiệu')}
                                         </label>
                                         <select
                                             value={form.brand_id}
                                             onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                                            className="w-full h-9 rounded-xl border border-neutral-800 bg-neutral-900 px-3 text-xs text-white focus:outline-none focus:ring-1 focus:ring-purple-500"
+                                            className="w-full h-9 rounded-xl border border-border bg-white px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                         >
                                             {brands.map((b) => (
                                                 <option key={b.id} value={b.id}>
@@ -1062,7 +1067,7 @@ export default function CreatePost() {
                                 </div>
 
                                 {/* UTM Link Builder */}
-                                <div className="pt-2 border-t border-neutral-800/60">
+                                <div className="pt-2 border-t border-border/60">
                                     <UtmLinkBuilder form={form} accounts={selectedAccounts} setForm={setForm} disabled={uploading || saving} />
                                 </div>
 
@@ -1086,7 +1091,7 @@ export default function CreatePost() {
                     </div>
 
                     {/* ROW 6: Bottom Action Footer Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-neutral-800/80">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/80">
                         {/* Left Side: Tag and Repeat Dropdowns */}
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* Add New Tag Dropdown */}
@@ -1094,7 +1099,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setTagDropdownOpen(!tagDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-[#1c1c20] hover:bg-neutral-800 text-neutral-300 hover:text-white px-3 py-2 text-xs font-medium cursor-pointer transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white hover:bg-muted text-foreground px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <Tag size={15} />
                                     <span>
@@ -1106,12 +1111,12 @@ export default function CreatePost() {
                                 </button>
 
                                 {tagDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-56 rounded-2xl border border-neutral-800 bg-[#1e1e24] p-2 shadow-2xl space-y-1">
-                                        <span className="block px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400">
+                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-56 rounded-2xl border border-border bg-white p-2 shadow-xl space-y-1">
+                                        <span className="block px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
                                             {t('Pillar / Chủ đề')}
                                         </span>
                                         {brandPillars.length === 0 ? (
-                                            <p className="px-2 py-1 text-xs text-neutral-500 italic">{t('Chưa có Pillar nào')}</p>
+                                            <p className="px-2 py-1 text-xs text-muted-foreground italic">{t('Chưa có Pillar nào')}</p>
                                         ) : (
                                             brandPillars.map((p) => (
                                                 <button
@@ -1123,8 +1128,8 @@ export default function CreatePost() {
                                                     }}
                                                     className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2 cursor-pointer ${
                                                         form.pillar_id === p.id
-                                                            ? 'bg-purple-600/20 text-purple-400 font-semibold'
-                                                            : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
+                                                            ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
+                                                            : 'text-foreground hover:bg-muted'
                                                     }`}
                                                 >
                                                     <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: p.color || '#79D94B' }} />
@@ -1142,7 +1147,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setRepeatDropdownOpen(!repeatDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-neutral-800 bg-[#1c1c20] hover:bg-neutral-800 text-neutral-300 hover:text-white px-3 py-2 text-xs font-medium cursor-pointer transition-colors"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white hover:bg-muted text-foreground px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <Repeat size={15} />
                                     <span>
@@ -1154,7 +1159,7 @@ export default function CreatePost() {
                                 </button>
 
                                 {repeatDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-48 rounded-2xl border border-neutral-800 bg-[#1e1e24] p-1.5 shadow-2xl space-y-0.5">
+                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-48 rounded-2xl border border-border bg-white p-1.5 shadow-xl space-y-0.5">
                                         {[
                                             { value: 'none', label: t('Không lặp lại') },
                                             { value: 'daily', label: t('Mỗi ngày') },
@@ -1171,8 +1176,8 @@ export default function CreatePost() {
                                                 }}
                                                 className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                                                     repeatFrequency === opt.value
-                                                        ? 'bg-purple-600/20 text-purple-400 font-semibold'
-                                                        : 'text-neutral-300 hover:bg-neutral-800 hover:text-white'
+                                                        ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
+                                                        : 'text-foreground hover:bg-muted'
                                                 }`}
                                             >
                                                 <span>{opt.label}</span>
@@ -1191,46 +1196,46 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setSchedulePickerOpen(!schedulePickerOpen)}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-neutral-800 bg-[#1c1c20] hover:bg-neutral-800 px-3 py-2 text-xs font-semibold text-neutral-200 hover:text-white transition-colors cursor-pointer shadow-sm"
+                                    className="inline-flex items-center gap-2 rounded-xl border border-border bg-white hover:bg-muted px-3 py-2 text-xs font-semibold text-foreground transition-colors cursor-pointer shadow-2xs"
                                 >
-                                    <CalendarBlank size={14} className="text-neutral-400" />
+                                    <CalendarBlank size={14} className="text-muted-foreground" />
                                     <span>{formatScheduleTime(form.date, form.time)}</span>
                                 </button>
 
                                 {schedulePickerOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-72 rounded-2xl border border-neutral-800 bg-[#1e1e24] p-3.5 shadow-2xl space-y-3 animate-in fade-in zoom-in-95">
-                                        <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
-                                            <span className="text-xs font-bold text-white">Thời gian đăng bài</span>
-                                            <button type="button" onClick={() => setSchedulePickerOpen(false)} className="text-neutral-400 hover:text-white">
+                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-72 rounded-2xl border border-border bg-white p-3.5 shadow-xl space-y-3 animate-in fade-in zoom-in-95">
+                                        <div className="flex items-center justify-between pb-2 border-b border-border">
+                                            <span className="text-xs font-bold text-foreground">Thời gian đăng bài</span>
+                                            <button type="button" onClick={() => setSchedulePickerOpen(false)} className="text-muted-foreground hover:text-foreground">
                                                 <X size={14} />
                                             </button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label className="text-[10px] text-neutral-400 font-semibold block mb-1">Ngày</label>
+                                                <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Ngày</label>
                                                 <input
                                                     type="date"
                                                     value={form.date}
                                                     onChange={(e) => setForm({ ...form, date: e.target.value })}
-                                                    className="w-full bg-[#141416] border border-neutral-800 rounded-xl px-2.5 py-1.5 text-xs text-white"
+                                                    className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-[10px] text-neutral-400 font-semibold block mb-1">Giờ</label>
+                                                <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Giờ</label>
                                                 <input
                                                     type="time"
                                                     value={form.time}
                                                     onChange={(e) => setForm({ ...form, time: e.target.value })}
-                                                    className="w-full bg-[#141416] border border-neutral-800 rounded-xl px-2.5 py-1.5 text-xs text-white"
+                                                    className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] text-neutral-400 font-semibold block mb-1">Múi giờ</label>
+                                            <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Múi giờ</label>
                                             <select
                                                 value={form.timezone}
                                                 onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-                                                className="w-full bg-[#141416] border border-neutral-800 rounded-xl px-2.5 py-1.5 text-xs text-white"
+                                                className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
                                             >
                                                 {TIMEZONES.map((z) => (
                                                     <option key={z} value={z}>
@@ -1248,7 +1253,7 @@ export default function CreatePost() {
                                 type="button"
                                 disabled={saving || uploading}
                                 onClick={() => submit('draft')}
-                                className="rounded-xl border border-neutral-800 bg-neutral-800 hover:bg-neutral-700 text-white font-medium text-xs px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-60"
+                                className="rounded-xl border border-border bg-white hover:bg-muted text-foreground font-medium text-xs px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
                             >
                                 {t('Save as draft')}
                             </button>
@@ -1259,7 +1264,7 @@ export default function CreatePost() {
                                     type="button"
                                     disabled={saving || uploading}
                                     onClick={() => submit('schedule')}
-                                    className="inline-flex items-center gap-1.5 rounded-l-xl bg-[#6366f1] hover:bg-[#4f46e5] text-white font-semibold text-xs px-4 py-2 shadow-md transition-all cursor-pointer disabled:opacity-60"
+                                    className="btn-skew inline-flex items-center gap-1.5 rounded-l-xl text-xs font-semibold px-4 py-2 shadow-2xs cursor-pointer disabled:opacity-60"
                                 >
                                     <span>{saving ? t('Đang lưu…') : t('Add to Calendar')}</span>
                                 </button>
@@ -1267,20 +1272,20 @@ export default function CreatePost() {
                                     type="button"
                                     disabled={saving || uploading}
                                     onClick={() => setPublishDropdownOpen(!publishDropdownOpen)}
-                                    className="rounded-r-xl bg-[#4f46e5] hover:bg-[#4338ca] text-white px-2 py-2 border-l border-white/20 transition-all cursor-pointer disabled:opacity-60"
+                                    className="rounded-r-xl border border-l-0 border-[#d8b216] bg-[#ffd631] hover:bg-[#ffe059] text-[#2b2100] px-2 py-2 transition-all cursor-pointer disabled:opacity-60 shadow-2xs"
                                 >
                                     <CaretDown size={14} weight="bold" />
                                 </button>
 
                                 {publishDropdownOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-44 rounded-2xl border border-neutral-800 bg-[#1e1e24] p-1.5 shadow-2xl space-y-0.5 animate-in fade-in zoom-in-95">
+                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-44 rounded-2xl border border-border bg-white p-1.5 shadow-xl space-y-0.5 animate-in fade-in zoom-in-95">
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 setPublishDropdownOpen(false);
                                                 submit('schedule');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
                                         >
                                             <CalendarBlank size={14} className="text-purple-400" />
                                             <span>{t('Add to Calendar')}</span>
@@ -1291,7 +1296,7 @@ export default function CreatePost() {
                                                 setPublishDropdownOpen(false);
                                                 submit('publish');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
                                         >
                                             <PaperPlaneTilt size={14} className="text-emerald-400" />
                                             <span>{t('Publish Now')}</span>
@@ -1302,7 +1307,7 @@ export default function CreatePost() {
                                                 setPublishDropdownOpen(false);
                                                 submit('draft');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-white hover:bg-neutral-800 transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
                                         >
                                             <FloppyDisk size={14} className="text-amber-400" />
                                             <span>{t('Save as Draft')}</span>
@@ -1316,31 +1321,33 @@ export default function CreatePost() {
 
                 {/* RIGHT COLUMN: Post Preview */}
                 {showPreview && (
-                    <div className="w-full lg:w-[420px] xl:w-[460px] shrink-0 border-t lg:border-t-0 lg:border-l border-neutral-800/80 pt-6 lg:pt-0 lg:pl-6 space-y-4">
+                    <div className="composer-preview space-y-4 w-full">
                         {/* Preview Header */}
                         <div className="flex items-center justify-between pb-1">
-                            <h3 className="text-sm font-bold text-white tracking-wide">
-                                {t('Post Preview')}
-                            </h3>
-                            <button
-                                type="button"
-                                onClick={() => setShowPreview(false)}
-                                className="p-1 rounded-lg text-neutral-400 hover:text-white hover:bg-neutral-800 cursor-pointer transition-colors"
-                                title={t('Close preview')}
-                            >
-                                <X size={16} />
-                            </button>
+                            <div className="flex items-center justify-between pb-1">
+                                <h3 className="text-sm font-bold text-foreground tracking-wide">
+                                    {t('Post Preview')}
+                                </h3>
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPreview(false)}
+                                    className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+                                    title={t('Close preview')}
+                                >
+                                    <X size={16} />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Empty state or Live Preview */}
                         {!currentActiveCaption && (form.media || []).length === 0 ? (
-                            <div className="flex min-h-[460px] items-center justify-center rounded-2xl border border-dashed border-neutral-800 bg-[#161619] p-8 text-center">
-                                <p className="text-xs text-neutral-400 font-medium">
+                            <div className="flex min-h-[460px] items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-8 text-center">
+                                <p className="text-xs text-muted-foreground font-medium">
                                     {t('Start writing your post for a preview')}
                                 </p>
                             </div>
                         ) : (
-                            <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-[#18181c]">
+                            <div className="overflow-hidden rounded-2xl border border-border/80 bg-muted/10 shadow-2xs">
                                 <PostPreview
                                     caption={form.caption}
                                     media={form.media}
@@ -1374,24 +1381,24 @@ export default function CreatePost() {
 
             {/* Design Media Library Picker Modal */}
             {mediaLibraryOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-                    <div className="relative w-full max-w-2xl rounded-2xl bg-[#1e1e24] border border-neutral-800 p-5 shadow-2xl space-y-4">
-                        <div className="flex items-center justify-between border-b border-neutral-800 pb-3">
-                            <h3 className="text-sm font-bold text-white flex items-center gap-2">
-                                <Palette size={16} className="text-purple-400" />
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-xs">
+                    <div className="relative w-full max-w-2xl rounded-2xl bg-white border border-border p-5 shadow-2xl space-y-4">
+                        <div className="flex items-center justify-between border-b border-border pb-3">
+                            <h3 className="text-sm font-bold text-foreground flex items-center gap-2">
+                                <Palette size={16} className="text-purple-600" />
                                 <span>{t('Thư viện tệp phương tiện (Design Media)')}</span>
                             </h3>
                             <button
                                 type="button"
                                 onClick={() => setMediaLibraryOpen(false)}
-                                className="text-neutral-400 hover:text-white"
+                                className="text-muted-foreground hover:text-foreground"
                             >
                                 <X size={16} />
                             </button>
                         </div>
 
                         {brandMediaAssets.length === 0 ? (
-                            <div className="text-center py-10 text-xs text-neutral-400">
+                            <div className="text-center py-10 text-xs text-muted-foreground">
                                 {t('Chưa có tệp nào trong thư viện.')}
                             </div>
                         ) : (
@@ -1409,12 +1416,12 @@ export default function CreatePost() {
                                                 }
                                             }}
                                             className={`relative aspect-square rounded-xl overflow-hidden border cursor-pointer transition-all ${
-                                                isChosen ? 'border-purple-500 ring-2 ring-purple-500' : 'border-neutral-800 hover:border-neutral-600'
+                                                isChosen ? 'border-[#ffd631] ring-2 ring-[#ffd631]' : 'border-border hover:border-muted-foreground/50'
                                             }`}
                                         >
                                             <img src={asset.file_url} alt={asset.name} className="h-full w-full object-cover" />
                                             {isChosen && (
-                                                <div className="absolute top-1 right-1 rounded-full bg-purple-600 text-white p-0.5">
+                                                <div className="absolute top-1 right-1 rounded-full bg-[#ffd631] text-[#2b2100] p-0.5 shadow-xs">
                                                     <CheckCircle size={14} weight="fill" />
                                                 </div>
                                             )}
