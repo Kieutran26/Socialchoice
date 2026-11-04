@@ -241,7 +241,7 @@ export default function CreatePost() {
             appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
             appClient.entities.ContentPillar.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
             appClient.entities.ContentAngle.filter({ is_demo: demoMode }, { sort: 'name', limit: 1000 }),
-            appClient.ai.config().catch(() => null),
+            aiRequest('status').catch(() => null),
         ])
             .then(([accountsPage, pillarsPage, anglesPage, config]) => {
                 if (!active) return;
