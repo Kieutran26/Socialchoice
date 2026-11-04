@@ -75,6 +75,19 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 return send(200, { ok: true });
             }
             auth.require(req);
+            const recurringRoute = req.url.match(/^\/api\/recurring\/(prepare|confirm|list|pause|stop)$/);
+            if (recurringRoute) {
+                if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
+                let body = '';
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 16384) fail('Request too large', 413); }
+                let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
+                if (!Array.isArray(input?.args) || input.args.length !== 1 || !publisher) fail('One recurring request required');
+                if (tiktok && recurringRoute[1] === 'prepare') {
+                    const post = store.get('Post', input.args[0]?.post_id);
+                    for (const id of post.account_ids || []) if (store.get('SocialAccount', id).platform === 'tiktok') await tiktok.execute('creator', req, res, [id]);
+                }
+                return send(200, await publisher.recurring.execute(recurringRoute[1], input.args[0]));
+            }
             const linkRoute = req.url.match(/^\/api\/links\/(build|list|disable)$/);
             if (linkRoute) {
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);

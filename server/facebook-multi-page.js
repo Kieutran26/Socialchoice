@@ -46,8 +46,8 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
         if (contentRevision(post) !== value.revision || checked.account.credential_id !== value.credentialId || checked.account.external_id !== value.pageId || checked.account.name !== value.pageName || checked.caption !== value.caption || JSON.stringify(checked.media) !== JSON.stringify(value.media) || JSON.stringify(checked.comments || []) !== JSON.stringify(value.comments || [])) fail('Post or Page changed. Review the post again.', 409);
         return post;
     }
-    async function confirm(id, scheduled) {
-        const result = store.transaction(() => {
+    function enqueuePages(id, scheduled = true) {
+        return store.transaction(() => {
             const review = store.publishingReview(id);
             if (!review) fail('Publishing confirmation not found', 404);
             if (review.status !== 'prepared') return reviewSummary(review);
@@ -67,6 +67,9 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
             syncDeliveryState(store, review.postId);
             const confirmed = { ...review, status: scheduled ? 'queued' : 'processing' }; store.savePublishingReview(confirmed); return reviewSummary(confirmed);
         });
+    }
+    async function confirm(id, scheduled) {
+        const result = enqueuePages(id, scheduled);
         await wake(Date.now() + 100); return result;
     }
     function cancel(value) {
@@ -77,6 +80,7 @@ export function createMultiPageDelivery(store, { prepare, destination, summary, 
     }
     return {
         preparePages,
+        enqueuePages,
         prepareRetry(postId, accountId) {
             const previous = store.currentAttempts(postId).find(value => value.accountId === accountId);
             if (!previous || previous.status !== 'failed') fail('Only a confirmed failed Page can be retried', 409);

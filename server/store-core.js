@@ -7,6 +7,7 @@ import { createImageStorage } from './image-storage.js';
 import { createVideoStorage } from './video-storage.js';
 import { createMetricsStorage } from './facebook-metrics-storage.js';
 import { createTrackingLinkStore } from './tracking-link-store.js';
+import { createRecurringPostStore } from './recurring-post-store.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -39,6 +40,7 @@ export function createStoreCore(db, transactionSync) {
     db.exec("CREATE INDEX IF NOT EXISTS publishing_problem_recent ON publish_attempts(COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) DESC) WHERE json_extract(data,'$.status') IN ('failed','unknown');");
     const store = {
         trackingLinks: createTrackingLinkStore(db),
+        recurringPosts: createRecurringPostStore(db),
         bulkImport: id => { const row = db.prepare('SELECT data FROM bulk_post_imports WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
         saveBulkImport: value => db.prepare('INSERT INTO bulk_post_imports VALUES (?,?)').run(value.id, JSON.stringify(value)),
         savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),
@@ -126,6 +128,7 @@ export function createStoreCore(db, transactionSync) {
         },
         remove(entity, id) {
             const record = store.get(entity, id);
+            if (entity === 'Post' && store.recurringPosts.list(id).some(series => series.status === 'active')) fail('Pause or stop recurrence before deleting its source post.', 409);
             const attempt = store.attemptForPost(entity === 'Post' ? id : record.post_id);
             if (attempt && attempt.status !== 'prepared') fail('Publishing history is locked; duplicate this post instead', 409);
             if (entity === 'SocialAccount' && record.credential_id) fail('Disconnect Facebook before removing this Page', 409);

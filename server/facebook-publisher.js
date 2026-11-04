@@ -26,6 +26,7 @@ import { contentRevision, syncDeliveryState } from './publishing-state.js';
 import { resolveCaption, resolveMediaIds, resolveComments, parseLinkedinMentions } from '../src/lib/publishing-content.js';
 import { licensedGraph } from './licensed-graph.js';
 import { hasVerifiedPagePublishGrant } from './meta-page-discovery.js';
+import { createRecurringPosts } from './recurring-posts.js';
 
 const uncertainMessage = 'Facebook delivery is unconfirmed. Check the Page before creating another post; this attempt will not be resent.';
 
@@ -38,6 +39,7 @@ export function canFinishPublication(current, attempt, status, confirmed) {
 
 // Claim the immutable approval in a synchronous transaction before any network I/O.
 export function createFacebookPublisher(store, config, options = {}) {
+    let approvedRecurrence = false;
     const graph = licensedGraph(config.ready ? createMetaGraph(config) : null, options.authorize);
     const linkedinConfig = options.linkedinConfig || {};
     const linkedinVault = linkedinConfig.ready ? createMetaVault(store, linkedinConfig.key) : null;
@@ -159,9 +161,9 @@ export function createFacebookPublisher(store, config, options = {}) {
         }
         if (account.platform === 'tiktok') {
             const info = creators.get(account.id);
-            if (!execution && (!info || info.credentialId !== account.credential_id || info.expires <= Date.now())) fail('Refresh TikTok creator settings before reviewing publication', 409);
+            if (!execution && !approvedRecurrence && (!info || info.credentialId !== account.credential_id || info.expires <= Date.now())) fail('Refresh TikTok creator settings before reviewing publication', 409);
             const savedInfo = post.destination_settings?.[account.id]?.tiktok;
-            validateTiktokOptions(savedInfo, execution ? { privacy: ['SELF_ONLY'], maxDuration: Infinity, commentDisabled: false, duetDisabled: false, stitchDisabled: false } : info, media);
+            validateTiktokOptions(savedInfo, execution || approvedRecurrence ? { privacy: ['SELF_ONLY'], maxDuration: Infinity, commentDisabled: false, duetDisabled: false, stitchDisabled: false } : info, media);
             if (caption.length > 2200) fail('TikTok caption must contain at most 2200 characters');
             instagramMedia.url({ id: 'validation', credentialId: account.credential_id, platform: 'tiktok' }, media[0]);
         }
@@ -235,11 +237,12 @@ export function createFacebookPublisher(store, config, options = {}) {
         wake
     );
     async function runMedia() {
-        try { for (const attempt of store.pendingAttempts().filter(value => value.backend !== 'postiz' && (value.platform || 'facebook') === 'facebook' && !value.media?.length && Date.now() - value.startedAt > 60000)) finish(attempt, 'unknown', uncertainMessage); await scheduling.runDue(); await runPostiz(); await runPhotos(); await runVideos(); await runInstagram(); await runThreads(); await runTiktok(); await runLinkedin(); await runX(); await runComments(); }
-        finally { await resume(); }
+        try { recurring.run(); for (const attempt of store.pendingAttempts().filter(value => value.backend !== 'postiz' && (value.platform || 'facebook') === 'facebook' && !value.media?.length && Date.now() - value.startedAt > 60000)) finish(attempt, 'unknown', uncertainMessage); await scheduling.runDue(); await runPostiz(); await runPhotos(); await runVideos(); await runInstagram(); await runThreads(); await runTiktok(); await runLinkedin(); await runX(); await runComments(); }
+        finally { recurring.run(); await resume(); }
     }
     async function resume() {
         const times = [
+            ...(recurring.nextWake() ? [recurring.nextWake()] : []),
             ...store.queuedAttempts().map(attempt => attempt.scheduledFor),
             ...store.pendingAttempts().map(attempt => attempt.backend === 'postiz' ? (attempt.busy ? (attempt.postizBusyAt || attempt.startedAt) + 61000 : attempt.postizNextCheck || Date.now() + 100) : (attempt.platform || 'facebook') === 'facebook' && !attempt.media?.length || attempt.busy ? attempt.startedAt + 61000 : attempt.nextVideoCheck || Date.now() + 100),
             ...store.commentAttempts().map(attempt => attempt.commentBusy ? (attempt.commentStartedAt || Date.now()) + 61000 : (attempt.commentNextAt || Date.now() + 100)),
@@ -324,5 +327,10 @@ export function createFacebookPublisher(store, config, options = {}) {
         enqueue: id => { if (store.publishingReview(id) || store.attempt(id).multi) fail('Bulk schedules currently require one Page per post', 409); return scheduling.enqueue(id); },
         prepareRetry: multi.prepareRetry, cancelPage: multi.cancelPage,
     };
-    return Object.assign(api, combined, createBulkScheduling(store, combined, wake));
+    const recurring = createRecurringPosts(store, {
+        withApproval(enabled, work) { const previous = approvedRecurrence; approvedRecurrence = enabled; try { return work(); } finally { approvedRecurrence = previous; } },
+        prepareSchedule: combined.prepareSchedule,
+        enqueueSchedule: id => store.publishingReview(id) ? multi.enqueuePages(id) : scheduling.enqueue(id),
+    }, wake);
+    return Object.assign(api, combined, createBulkScheduling(store, combined, wake), { recurring });
 }

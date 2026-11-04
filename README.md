@@ -2,6 +2,8 @@
 
 Web composer: [UTM campaign tags and link request statistics](docs/utm-link-tracking.md), with preview-before-apply and brand-scoped tracked links.
 
+Web post details: [Evergreen / recurring publication](docs/recurring-posts.md) every 2 weeks or monthly, with explicit approval, pause/stop, limits and separate occurrence history.
+
 ## Autopilot Phase 1 (feature branch)
 
 Drive/R2 metadata ingestion, an asset catalog, and reviewed image analysis are behind `SOCIALCHOICE_AUTOPILOT_ENABLED`. The flag is off by default. See [configuration, limits, recovery, and acceptance gates](docs/autopilot-phase-1.md). No production configuration or deployment is included.

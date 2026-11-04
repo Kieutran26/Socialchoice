@@ -17,6 +17,7 @@ test('admin session protects entities, rotates cookies, rejects cross-origin log
         assert.equal((await fetch(base + '/session', { headers })).status, 401);
         assert.equal((await post('/entities/Brand/create', [{ name: 'Blocked' }])).status, 401);
         for (const operation of ['build', 'list', 'disable']) assert.equal((await post(`/links/${operation}`, [{ brand_id: 'blocked' }])).status, 401);
+        for (const operation of ['prepare', 'confirm', 'list', 'pause', 'stop']) assert.equal((await post(`/recurring/${operation}`, [{ post_id: 'blocked' }])).status, 401);
         assert.equal((await post('/collaboration/prepare', ['absent','1234'])).status,401);
         assert.equal((await post('/collaboration/invite', ['absent'])).status,401);
         assert.equal((await post('/publishing/prepareSchedule',['absent',new Date(Date.now()+600000).toISOString()])).status,401);

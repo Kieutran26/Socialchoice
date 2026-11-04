@@ -1,4 +1,5 @@
 import MediaAttachments from './media-attachments';
+import RecurringPostSettings from './recurring-post-settings';
 import { referencedMediaIds } from '@/lib/publishing-content';
 import PublishConfirmation from './PublishConfirmation';
 import { useTranslation } from '@/lib/i18n';
@@ -114,6 +115,7 @@ export default function PostDetailSheet({ post, onClose, onChanged }) {
         </section>}
         {queued && <section className="border-t mt-5 pt-4"><p className="label-xs mb-3">{t('Cancel queued accounts before editing. Started deliveries cannot be cancelled.')}</p><Button variant="outline" disabled={busy} onClick={() => action(() => appClient.publishing.cancelSchedule(post.id))}>{t('Cancel automatic schedule')}</Button></section>}
         <section className="border-t mt-5 pt-4"><h3>{t('Publishing history')}</h3>{jobs.length ? jobs.map(job => <div className="border-b py-3 text-xs" key={job.id}><p>{job.account_name} · {JOB_STATUS_LABEL[job.status] || job.status}</p>{job.scheduled_for && <p className="label-xs mt-1">{formatDateTime(job.scheduled_for, post.timezone)}</p>}{variants.find(v => v.social_account_id === job.social_account_id && v.status === job.status)?.caption && <p className="whitespace-pre-wrap break-words mt-1">{variants.find(v => v.social_account_id === job.social_account_id && v.status === job.status).caption}</p>}{job.error_message && <p className="text-dangerFg mt-1">{t(job.error_message)}</p>}{job.published_url && <a href={job.published_url} target="_blank" rel="noreferrer" className="underline">{t('View published post')}</a>}</div>) : <p className="label-xs mt-2">{t('No publishing attempts recorded.')}</p>}</section>
+        {!post.is_demo && !isDesktop() && <RecurringPostSettings key={post.id} post={post} onChanged={onChanged} />}
         {review && <PublishConfirmation review={review} onClose={() => setReview(null)} onResult={async () => { setReview(null); await refresh(); }} />}
         {error && <p role="alert" className="mt-4 text-sm text-dangerFg">{t(error)}</p>}
     </DialogContent></Dialog>;

@@ -32,6 +32,20 @@ function fixture(graph={}) {
     const tokens=createTiktokTokens(store,cfg,graph),publisher=createFacebookPublisher(store,{ready:false},{tiktokConfig:cfg,tiktokTokens:tokens,tiktokGraph:graph,tiktokCreators:creators,wake:async()=>{}});
     return {store,cfg,vault,brand,account,media,post,tokens,publisher,creators,close(){publisher.close();store.close();}};
 }
+test('approved recurrence survives creator-cache expiry while ordinary reviews still require fresh creator settings', async () => {
+    const f = fixture();
+    try {
+        const first = new Date(Math.ceil((Date.now() + 3600000) / 60000) * 60000).toISOString();
+        const review = await f.publisher.recurring.execute('prepare', { post_id: f.post.id, policy: { frequency: 'biweekly', timezone: 'Asia/Ho_Chi_Minh', first_at: first, limit: 2 } });
+        const active = await f.publisher.recurring.execute('confirm', { id: review.id });
+        for (const attempt of f.store.currentAttempts(active.current_post_id)) f.store.saveAttempt({ ...attempt, status: 'published' });
+        f.store.publishingWrite('Post', { status: 'published' }, active.current_post_id);
+        f.creators.clear();
+        f.publisher.recurring.run();
+        assert.equal(f.store.recurringPosts.get(active.id).occurrences.length, 2);
+        assert.throws(() => f.publisher.prepare(f.post.id), /Refresh TikTok/);
+    } finally { f.publisher.close(); f.store.close(); }
+});
 test('TikTok independent HTTPS config and strict scope/lifetime/creator validation',()=>{
     assert.equal(tiktokConfig({META_APP_ID:'123',META_APP_SECRET:'secret'}).ready,false);
     assert.equal(config().ready,true);

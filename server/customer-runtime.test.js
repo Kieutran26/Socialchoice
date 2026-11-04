@@ -67,6 +67,8 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await (await request('/api/entities/Brand/list', [], b.cookie)).json()).items.length, 0);
         assert.equal((await request('/api/entities/Brand/update', [brand.id, { name: 'Cross-tenant overwrite' }], b.cookie)).status, 404);
         assert.equal((await request('/api/entities/Post/create', [{ brand_id: brand.id, title: 'Cross-tenant reference' }], b.cookie)).status, 404);
+        assert.equal((await request('/api/recurring/confirm', [{ id: crypto.randomUUID() }], b.cookie)).status, 404);
+        assert.equal((await request('/api/recurring/list', [{ post_id: crypto.randomUUID() }], a.cookie)).status, 404);
         const buildLink = async (brandId, cookie) => {
             const response = await request('/api/links/build', [{ brand_id: brandId, form: { caption: 'Read https://example.com/article', account_ids: [] }, options: { medium: 'social', campaign: 'isolation', tracking: true } }], cookie);
             assert.equal(response.status, 200, await response.clone().text());
