@@ -70,7 +70,7 @@ function Shell() {
     }, [openBrandDropdown]);
 
     return (
-        <div className="min-h-screen bg-white">
+        <div className="min-h-screen bg-surface">
             {open && (
                 <Button
                     variant="ghost"
@@ -217,7 +217,7 @@ function Shell() {
             </aside>
 
             <div className="lg:ml-60">
-                <header className="sticky top-0 z-30 h-14 border-b border-border bg-white/90 backdrop-blur-md flex items-center justify-between gap-3 px-5 transition-colors">
+                <header className="sticky top-0 z-30 h-14 border-b border-border bg-surface/90 backdrop-blur-md flex items-center justify-between gap-3 px-5 transition-colors">
                     <div className="flex items-center gap-3 min-w-0">
                         <Button
                             size="icon"
@@ -252,7 +252,7 @@ function Shell() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t("Search...")}
-                                className="h-9 w-52 sm:w-64 md:w-72 rounded-xl border border-border bg-card/50 pl-9 pr-11 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
+                                className="h-9 w-52 sm:w-64 md:w-72 rounded-xl border border-border bg-card pl-9 pr-11 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
                             />
                             <div className="absolute right-2.5 flex items-center pointer-events-none">
                                 <kbd className="inline-flex h-5 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">

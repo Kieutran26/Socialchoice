@@ -18,7 +18,7 @@ Tài liệu này ghi lại hệ thống đang dùng. Các quy tắc cho UI mới
 
 ## 2. Visual identity / những thứ phải giữ
 
-- Premium minimalist SaaS: phẳng, gọn, nền trắng, trung tính, border mảnh, khoảng trắng có chủ đích.
+- Premium minimalist SaaS: phẳng, gọn, nền canvas đồng bộ màu sidebar/surface (`0.985 0 0`), các card, panel, section giữ nền trắng (`1 0 0`), trung tính, border mảnh, khoảng trắng có chủ đích.
 - Brand color: Yellow (`#ffd631`) dùng cho action chính (.btn-skew, primary buttons), selection và nhận diện; không phủ vàng dashboard hoặc mọi card.
 - Typography: Mona Sans cho heading; Space Grotesk cho nội dung.
 - Icon: `@phosphor-icons/react`. Không thêm Lucide, Font Awesome, emoji hoặc icon library khác vào UI.
@@ -62,7 +62,8 @@ MUST dùng class semantic (`bg-card`, `text-foreground`, `border-border`) hoặc
 
 | Token | Giá trị | Vai trò |
 |---|---|---|
-| `--background`, `--card`, `--popover` | `1 0 0` | Nền trắng |
+| `--background` | `0.985 0 0` | Nền canvas (đồng bộ màu sidebar/surface) |
+| `--card`, `--popover` | `1 0 0` | Nền trắng cho shape, card, panel, section |
 | `--foreground`, `--card-foreground`, `--popover-foreground` | `0.269 0 0` | Chữ chính |
 | `--surface` | `0.985 0 0` | Surface phụ/sidebar thực tế |
 | `--primary`, `--ring` | `0.7457 0.1639 137.671` | Primary semantic/focus (brand green) |

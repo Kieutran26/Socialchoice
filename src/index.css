@@ -14,7 +14,7 @@
 @layer base {
     :root {
         /* canvas + surfaces */
-        --background: 1 0 0;
+        --background: 0.985 0 0;
         --foreground: 0.269 0 0;
         --card: 1 0 0;
         --card-foreground: 0.269 0 0;

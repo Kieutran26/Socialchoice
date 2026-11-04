@@ -30,7 +30,7 @@ export function createApi({ dbPath = resolve(process.env.SOCIALCHOICE_DB_PATH ||
     const auth = createAdminAuth(passwordHash, !!publicOrigin);
     const metaSettings = metaConfig();
     metaSettings.mediaOrigin = backendOrigin || publicOrigin;
-    const allowedHost = host => ['localhost', '127.0.0.1', 'socialchoice.vercel.app'].includes(host);
+    const allowedHost = host => ['localhost', '127.0.0.1', 'socialchoice.vercel.app', 'socialchoice.site', 'www.socialchoice.site'].includes(host);
     const linkedinSettings = linkedinConfig();
     if (linkedinSettings.ready && (publicOrigin ? linkedinSettings.origin !== publicOrigin : !allowedHost(new URL(linkedinSettings.redirectUri).hostname))) throw new Error('LinkedIn callback origin mismatch');
     const threadsSettings = threadsConfig();
