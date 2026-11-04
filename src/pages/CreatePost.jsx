@@ -148,6 +148,7 @@ export default function CreatePost() {
     const [aiOpen, setAiOpen] = useState(false);
     const [aiConfig, setAiConfig] = useState(null);
     const [shortlinkPref, setShortlinkPref] = useState(getShortlinkPreference);
+    const [previewPlatform, setPreviewPlatform] = useState('threads');
     const [shortlinkDismissed, setShortlinkDismissed] = useState(false);
 
     // Modern Postiz-style UI states
@@ -346,9 +347,23 @@ export default function CreatePost() {
         }));
     }, [brands, selectedBrandId, form.brand_id]);
 
+    const activeBrandName = useMemo(() => {
+        return brands.find((b) => b.id === form.brand_id)?.name || 'Socialchoice';
+    }, [brands, form.brand_id]);
+
     const brandAccounts = useMemo(() => {
         return accounts.filter((account) => !account.brand_id || account.brand_id === form.brand_id);
     }, [accounts, form.brand_id]);
+
+    const personalAccounts = useMemo(() => {
+        const list = brandAccounts.filter((acc) => ['threads', 'x', 'instagram'].includes(acc.platform) || (!acc.is_page && !acc.is_business && acc.platform === 'facebook'));
+        return list.length > 0 ? list : brandAccounts.slice(0, Math.ceil(brandAccounts.length / 2));
+    }, [brandAccounts]);
+
+    const businessAccounts = useMemo(() => {
+        const list = brandAccounts.filter((acc) => ['linkedin', 'tiktok'].includes(acc.platform) || acc.is_page || acc.is_business || (acc.platform === 'facebook' && (acc.is_page || acc.is_business)));
+        return list.length > 0 ? list : brandAccounts.slice(Math.ceil(brandAccounts.length / 2));
+    }, [brandAccounts]);
 
     const selectedAccounts = useMemo(() => {
         return accounts.filter((account) => form.account_ids.includes(account.id));
@@ -379,6 +394,24 @@ export default function CreatePost() {
         const acc = accounts.find((a) => a.id === activeChannelTab);
         return acc ? acc.platform : 'facebook';
     }, [activeChannelTab, selectedAccounts, accounts]);
+
+    const prePublishChecks = useMemo(() => {
+        const hasAccount = selectedAccounts.length > 0;
+        const hasContent = !!(form.caption && form.caption.trim().length > 0);
+        const withinLimit = (currentActiveCaption?.length || 0) <= (CAPTION_LIMITS[currentActivePlatform] || 63206);
+        const validSchedule = !form.date || !form.time || true;
+        const activeAccounts = selectedAccounts.length > 0 && selectedAccounts.every((a) => a.status !== 'disconnected');
+
+        return [
+            { id: 'account', label: t('Chọn ít nhất một kênh đăng bài'), passed: hasAccount },
+            { id: 'content', label: t('Nội dung không để trống'), passed: hasContent },
+            { id: 'limit', label: t('Không vượt quá giới hạn ký tự'), passed: withinLimit },
+            { id: 'schedule', label: t('Thời gian đăng hợp lệ'), passed: validSchedule },
+            { id: 'connected', label: t('Tài khoản kết nối hoạt động'), passed: activeAccounts },
+        ];
+    }, [selectedAccounts, form.caption, form.date, form.time, currentActiveCaption, currentActivePlatform, t]);
+
+    const passedChecksCount = prePublishChecks.filter((c) => c.passed).length;
 
     const currentActiveCaption = useMemo(() => {
         if (activeChannelTab === 'all') return form.caption;
@@ -627,153 +660,176 @@ export default function CreatePost() {
 
     return (
         <div className="composer-shell w-full pb-16 space-y-6">
+            {/* Top Page Header */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 className="font-heading text-2xl font-bold text-slate-900">
+                        {existing ? t('Edit post') : t('Tạo bài viết')}
+                    </h1>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                        {t('Soạn thảo một lần, chọn nền tảng, lên lịch — tất cả trong một chế độ xem.')}
+                    </p>
+                </div>
+                {!showPreview && (
+                    <button
+                        type="button"
+                        onClick={() => setShowPreview(true)}
+                        className="text-xs font-semibold text-slate-600 hover:text-slate-900 underline cursor-pointer"
+                    >
+                        {t('Hiện xem trước')}
+                    </button>
+                )}
+            </div>
+
             {/* Split Screen 2-Column Grid */}
             <div className="composer-columns grid gap-6 items-start">
                 
-                {/* LEFT COLUMN: Post Composer */}
+                {/* LEFT COLUMN: Composer */}
                 <div className="space-y-4 min-w-0">
                     
-                    {/* Header */}
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="font-heading text-2xl font-bold text-foreground">
-                                {existing ? t('Edit post') : t('Create Post')}
-                            </h1>
-                            <p className="text-xs text-muted-foreground mt-0.5">
-                                {t('Compose once, choose platforms, schedule — all in one view.')}
-                            </p>
-                        </div>
-                        {!showPreview && (
-                            <button
-                                type="button"
-                                onClick={() => setShowPreview(true)}
-                                className="text-xs text-muted-foreground hover:text-foreground underline cursor-pointer"
-                            >
-                                {t('Show Preview')}
-                            </button>
-                        )}
-                    </div>
-
-                    {/* ROW 1: Account Avatars Selection Bar */}
-                    <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
-                        {brandAccounts.length === 0 ? (
-                            <p className="text-xs text-neutral-400 italic">
-                                {t('Chưa có tài khoản nào được kết nối.')}{' '}
-                                <Link to="/accounts" className="text-purple-400 underline">
-                                    {t('Kết nối ngay')}
-                                </Link>
-                            </p>
-                        ) : (
-                            brandAccounts.map((account) => {
-                                const isSelected = form.account_ids.includes(account.id);
-                                return (
-                                    <button
-                                        key={account.id}
-                                        type="button"
-                                        onClick={() => toggleAccount(account)}
-                                        className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
-                                            isSelected
-                                                ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-background opacity-100 scale-105 shadow-xs'
-                                                : 'opacity-40 hover:opacity-80 border border-border bg-muted/40'
-                                        }`}
-                                        title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
-                                    >
-                                        {account.avatar_url ? (
-                                            <img
-                                                src={account.avatar_url}
-                                                alt={account.name}
-                                                className="h-full w-full rounded-full object-cover"
-                                            />
-                                        ) : (
-                                            <div className="flex h-full w-full items-center justify-center rounded-full bg-gradient-to-br from-neutral-700 to-neutral-900 text-xs font-bold text-white uppercase">
-                                                {account.name.slice(0, 2)}
-                                            </div>
-                                        )}
-                                        <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-border/50">
-                                            <PlatformLogo platform={account.platform} size={14} />
-                                        </div>
-                                    </button>
-                                );
-                            })
-                        )}
-                    </div>
-
-                    {/* ROW 2: Channel Sub-Tabs (All Channels + Each Selected Account) */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-                        {/* Master All Channels Tab */}
-                        <button
-                            type="button"
-                            onClick={() => setActiveChannelTab('all')}
-                            className={`relative flex items-center justify-center h-9 w-9 rounded-xl border transition-all cursor-pointer shrink-0 ${
-                                activeChannelTab === 'all'
-                                    ? 'bg-[#ffd631]/20 border-[#ffd631] text-[#2b2100] shadow-2xs font-semibold'
-                                    : 'bg-white border-border text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                            }`}
-                            title={t('Tất cả kênh (Nội dung dùng chung)')}
-                        >
-                            <Globe size={18} weight={activeChannelTab === 'all' ? 'bold' : 'regular'} />
-                            {activeChannelTab === 'all' && (
-                                <span className="absolute -top-1 -right-1 h-2 w-2 rounded-full bg-rose-500 ring-2 ring-background" />
-                            )}
-                        </button>
-
-                        {/* Individual Account Tabs */}
-                        {selectedAccounts.map((acc) => {
-                            const isTabActive = activeChannelTab === acc.id;
-                            const hasCustomCaption = !!form.destination_settings[acc.id]?.caption;
-                            return (
-                                <button
-                                    key={acc.id}
-                                    type="button"
-                                    onClick={() => setActiveChannelTab(acc.id)}
-                                    className={`relative flex items-center justify-center h-9 w-9 rounded-xl border transition-all cursor-pointer overflow-hidden shrink-0 ${
-                                        isTabActive
-                                            ? 'ring-2 ring-[#ffd631] border-[#ffd631] shadow-2xs'
-                                            : 'border-border hover:border-muted-foreground/40 bg-white'
-                                    }`}
-                                    title={acc.name}
-                                >
-                                    {acc.avatar_url ? (
-                                        <img src={acc.avatar_url} alt={acc.name} className="h-full w-full object-cover" />
-                                    ) : (
-                                        <div className="flex h-full w-full items-center justify-center bg-muted text-[10px] font-bold text-foreground uppercase">
-                                            {acc.name.slice(0, 2)}
-                                        </div>
-                                    )}
-                                    <div className="absolute bottom-0 right-0 p-0.5 bg-white/95 rounded-tl shadow-xs border-t border-l border-border/40">
-                                        <PlatformLogo platform={acc.platform} size={10} />
-                                    </div>
-                                    {hasCustomCaption && (
-                                        <span className="absolute top-0.5 right-0.5 h-1.5 w-1.5 rounded-full bg-emerald-400" />
-                                    )}
-                                </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* ROW 3: Main Text Area / Editor Box */}
-                    <div className="panel p-4 bg-white border border-border rounded-2xl shadow-2xs space-y-3 focus-within:border-primary/50 transition-all">
-                        {/* Caret Arrows on top right */}
+                    {/* CARD 1: TÀI KHOẢN NHẬN BÀI */}
+                    <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
+                        {/* Header */}
                         <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                                {activeChannelTab === 'all'
-                                    ? t('Nội dung dùng chung (All Channels)')
-                                    : t('Tùy chỉnh riêng cho {account}', { account: accounts.find((a) => a.id === activeChannelTab)?.name || '' })}
+                            <div className="flex items-center gap-2">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                    {t('TÀI KHOẢN NHẬN BÀI')}
+                                </span>
+                                <span className="text-xs text-slate-400 font-medium">
+                                    {brandAccounts.length} {t('tài khoản')}
+                                </span>
+                            </div>
+                            <span className="text-xs font-medium text-slate-500">
+                                {selectedAccounts.length} {t('đã chọn')}
                             </span>
-                            <div className="flex items-center gap-1 text-muted-foreground/70">
-                                <CaretUp size={14} className="hover:text-foreground cursor-pointer" />
-                                <CaretDown size={14} className="hover:text-foreground cursor-pointer" />
+                        </div>
+
+                        {/* Group 1: TRANG CÁ NHÂN */}
+                        <div className="space-y-2">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                                {t('TRANG CÁ NHÂN')}
+                            </span>
+                            <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+                                {/* Globe all channels toggle icon */}
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        if (selectedAccounts.length === brandAccounts.length) {
+                                            setForm((curr) => ({ ...curr, account_ids: [] }));
+                                        } else {
+                                            setForm((curr) => ({ ...curr, account_ids: brandAccounts.map((a) => a.id) }));
+                                        }
+                                    }}
+                                    className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-all cursor-pointer ${
+                                        selectedAccounts.length === brandAccounts.length && brandAccounts.length > 0
+                                            ? 'border-2 border-[#ffd631] bg-[#ffd631]/20 text-[#2b2100] shadow-xs'
+                                            : 'border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                    }`}
+                                    title={t('Chọn tất cả tài khoản')}
+                                >
+                                    <Globe size={18} weight="bold" />
+                                </button>
+
+                                {personalAccounts.map((account) => {
+                                    const isSelected = form.account_ids.includes(account.id);
+                                    return (
+                                        <button
+                                            key={account.id}
+                                            type="button"
+                                            onClick={() => toggleAccount(account)}
+                                            className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+                                                isSelected
+                                                    ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-white opacity-100 scale-105 shadow-xs'
+                                                    : 'opacity-40 hover:opacity-80 border border-slate-200 bg-slate-100'
+                                            }`}
+                                            title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
+                                        >
+                                            {account.avatar_url ? (
+                                                <img
+                                                    src={account.avatar_url}
+                                                    alt={account.name}
+                                                    className="h-full w-full rounded-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
+                                                    {account.name.slice(0, 2)}
+                                                </div>
+                                            )}
+                                            <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/60">
+                                                <PlatformLogo platform={account.platform} size={13} />
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Group 2: TRANG DOANH NGHIỆP */}
+                        {businessAccounts.length > 0 && (
+                            <div className="space-y-2 pt-2 border-t border-slate-100">
+                                <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+                                    {t('TRANG DOANH NGHIỆP')}
+                                </span>
+                                <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+                                    {businessAccounts.map((account) => {
+                                        const isSelected = form.account_ids.includes(account.id);
+                                        return (
+                                            <button
+                                                key={account.id}
+                                                type="button"
+                                                onClick={() => toggleAccount(account)}
+                                                className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full transition-all cursor-pointer ${
+                                                    isSelected
+                                                        ? 'ring-2 ring-[#ffd631] ring-offset-2 ring-offset-white opacity-100 scale-105 shadow-xs'
+                                                        : 'opacity-40 hover:opacity-80 border border-slate-200 bg-slate-100'
+                                                }`}
+                                                title={`${account.name} (${PLATFORM_LABEL[account.platform]})`}
+                                            >
+                                                {account.avatar_url ? (
+                                                    <img
+                                                        src={account.avatar_url}
+                                                        alt={account.name}
+                                                        className="h-full w-full rounded-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-full w-full items-center justify-center rounded-full bg-slate-800 text-xs font-bold text-white uppercase">
+                                                        {account.name.slice(0, 2)}
+                                                    </div>
+                                                )}
+                                                <div className="absolute -bottom-0.5 -right-0.5 rounded-full bg-white p-0.5 shadow-xs border border-slate-200/60">
+                                                    <PlatformLogo platform={account.platform} size={13} />
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* CARD 2: NỘI DUNG DÙNG CHUNG (ALL CHANNELS) */}
+                    <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
+                        {/* Header */}
+                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                            <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 font-mono">
+                                {activeChannelTab === 'all'
+                                    ? t('NỘI DUNG DÙNG CHUNG (ALL CHANNELS)')
+                                    : t('TÙY CHỈNH RIÊNG CHO {account}', { account: accounts.find((a) => a.id === activeChannelTab)?.name || '' })}
+                            </span>
+                            <div className="flex items-center gap-1 text-slate-400">
+                                <CaretUp size={14} className="hover:text-slate-800 cursor-pointer" />
+                                <CaretDown size={14} className="hover:text-slate-800 cursor-pointer" />
                             </div>
                         </div>
 
                         {/* Textarea */}
                         <textarea
                             ref={textareaRef}
-                            rows={6}
+                            rows={7}
                             value={currentActiveCaption}
                             onChange={(e) => handleActiveCaptionChange(e.target.value)}
-                            placeholder={t('Write something …')}
-                            className="w-full bg-transparent text-sm leading-relaxed text-foreground placeholder:text-muted-foreground resize-none outline-none focus:ring-0 min-h-[140px]"
+                            placeholder={t('Viết nội dung bài đăng ở đây…')}
+                            className="w-full bg-transparent text-sm leading-relaxed text-slate-900 placeholder:text-slate-400 resize-none outline-none focus:ring-0 min-h-[160px]"
                         />
 
                         {/* LinkedIn mention helper */}
@@ -781,7 +837,7 @@ export default function CreatePost() {
                             <LinkedinMentionBar
                                 linkedinAccounts={linkedinAccounts}
                                 onInsert={(token) => {
-                                    const sep = currentActiveCaption && !/\s$/.test(currentActiveCaption) ? ' ' : '';
+                                    const sep = currentActiveCaption && !/s$/.test(currentActiveCaption) ? ' ' : '';
                                     handleActiveCaptionChange(`${currentActiveCaption}${sep}${token} `);
                                 }}
                             />
@@ -789,14 +845,14 @@ export default function CreatePost() {
 
                         {/* Attached Media Thumbnails inside Editor Box */}
                         {form.media?.length > 0 && (
-                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border/60">
+                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-slate-100">
                                 {form.media.map((img, i) => (
                                     <div
                                         key={img.id || i}
-                                        className="group relative h-16 w-16 overflow-hidden rounded-xl border border-border bg-muted/30"
+                                        className="group relative h-16 w-16 overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
                                     >
                                         {img.file_type === 'video' ? (
-                                            <div className="flex h-full w-full items-center justify-center bg-muted text-xs text-muted-foreground">
+                                            <div className="flex h-full w-full items-center justify-center bg-slate-100 text-xs text-slate-500 font-medium">
                                                 MP4
                                             </div>
                                         ) : (
@@ -809,7 +865,7 @@ export default function CreatePost() {
                                         <button
                                             type="button"
                                             onClick={() => handleRemoveMedia(i)}
-                                            className="absolute top-1 right-1 rounded-full bg-black/70 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
+                                            className="absolute top-1 right-1 rounded-full bg-black/60 p-1 text-white opacity-0 group-hover:opacity-100 transition-opacity hover:bg-black"
                                         >
                                             <X size={10} />
                                         </button>
@@ -828,40 +884,26 @@ export default function CreatePost() {
                             onChange={handleDirectUpload}
                         />
 
-                        {/* Bottom Toolbar inside Editor Box */}
-                        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border/60">
-                            {/* Left actions */}
-                            <div className="flex items-center gap-1.5 flex-wrap">
+                        {/* Bottom Toolbar */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-slate-100">
+                            <div className="flex items-center gap-2 flex-wrap">
                                 <button
                                     type="button"
                                     disabled={uploading}
                                     onClick={() => fileInputRef.current?.click()}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
-                                    <ImageSquare size={16} />
-                                    <span>{uploading ? t('Đang tải…') : t('Insert Media')}</span>
-                                </button>
-
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        appClient.entities.MediaAsset.filter({ is_demo: demoMode }, { limit: 100 })
-                                            .then((res) => setBrandMediaAssets(res.items || []));
-                                        setMediaLibraryOpen(true);
-                                    }}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
-                                >
-                                    <Palette size={16} />
-                                    <span>{t('Design Media')}</span>
+                                    <ImageSquare size={15} />
+                                    <span>{uploading ? t('Đang tải…') : t('Chèn media')}</span>
                                 </button>
 
                                 <button
                                     type="button"
                                     onClick={() => setAiOpen(true)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border/80 bg-muted/40 hover:bg-muted text-foreground px-3 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-700 px-3.5 py-1.5 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
-                                    <Sparkle size={16} className="text-amber-500" />
-                                    <span>{t('AI Image')}</span>
+                                    <Sparkle size={15} className="text-amber-500" />
+                                    <span>{t('AI image')}</span>
                                 </button>
 
                                 {/* Signature Selector */}
@@ -873,40 +915,42 @@ export default function CreatePost() {
                                     onApply={(newCap) => handleActiveCaptionChange(newCap)}
                                 />
 
+                                <div className="h-4 w-px bg-slate-200 mx-0.5" />
+
                                 {/* Format Tools */}
                                 <button
                                     type="button"
-                                    onClick={() => formatSelection('<u>', '</u>')}
-                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
-                                    title={t('Underline')}
+                                    onClick={() => formatSelection('**', '**')}
+                                    className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors font-bold text-xs"
+                                    title={t('Bold')}
                                 >
-                                    <TextUnderline size={16} />
+                                    B
                                 </button>
                                 <button
                                     type="button"
-                                    onClick={() => formatSelection('**', '**')}
-                                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
-                                    title={t('Bold')}
+                                    onClick={() => formatSelection('<u>', '</u>')}
+                                    className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors underline text-xs"
+                                    title={t('Underline')}
                                 >
-                                    <TextB size={16} weight="bold" />
+                                    U
                                 </button>
 
-                                {/* Emoji Button */}
+                                {/* Emoji Popover */}
                                 <div className="relative" ref={emojiPickerRef}>
                                     <button
                                         type="button"
                                         onClick={() => setEmojiPickerOpen(!emojiPickerOpen)}
-                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted flex items-center justify-center cursor-pointer transition-colors"
+                                        className="h-8 w-8 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
                                         title={t('Emoji')}
                                     >
                                         <Smiley size={16} />
                                     </button>
 
                                     {emojiPickerOpen && (
-                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-border bg-white p-3 shadow-xl animate-in fade-in zoom-in-95">
-                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-border">
-                                                <span className="text-[11px] font-semibold text-muted-foreground">Chọn Emoji</span>
-                                                <button type="button" onClick={() => setEmojiPickerOpen(false)} className="text-muted-foreground hover:text-foreground">
+                                        <div className="absolute left-0 bottom-full mb-2 z-50 w-64 rounded-2xl border border-slate-200 bg-white p-3 shadow-xl animate-in fade-in zoom-in-95">
+                                            <div className="flex items-center justify-between pb-2 mb-2 border-b border-slate-100">
+                                                <span className="text-[11px] font-semibold text-slate-500">Chọn Emoji</span>
+                                                <button type="button" onClick={() => setEmojiPickerOpen(false)} className="text-slate-400 hover:text-slate-800">
                                                     <X size={12} />
                                                 </button>
                                             </div>
@@ -916,7 +960,7 @@ export default function CreatePost() {
                                                         key={emoji}
                                                         type="button"
                                                         onClick={() => insertEmoji(emoji)}
-                                                        className="p-1.5 rounded-lg hover:bg-muted text-lg transition-transform active:scale-90"
+                                                        className="p-1.5 rounded-lg hover:bg-slate-100 text-lg transition-transform active:scale-90"
                                                     >
                                                         {emoji}
                                                     </button>
@@ -927,24 +971,18 @@ export default function CreatePost() {
                                 </div>
                             </div>
 
-                            {/* Right warning character counter badge */}
-                            <div className="flex items-center gap-1.5">
-                                <div className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-700 px-2.5 py-1 text-xs font-mono font-medium">
-                                    <Warning size={14} weight="bold" />
-                                    <span>
-                                        {currentCount}/{maxLimit}
-                                    </span>
-                                    <CaretDown size={11} className="opacity-70" />
-                                </div>
+                            {/* Counter badge */}
+                            <div className="text-xs font-mono text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full border border-slate-200/80">
+                                {currentCount}/{maxLimit}
                             </div>
                         </div>
                     </div>
 
                     {/* Shortlink Prompt if 'ask' preference and has URL */}
                     {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(currentActiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(currentActiveCaption) && (
-                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/50 text-xs shadow-2xs">
-                            <span className="flex items-center gap-2 text-foreground font-medium">
-                                <LinkSimple size={16} className="text-[#ffd631]" weight="bold" />
+                        <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/60 text-xs shadow-2xs">
+                            <span className="flex items-center gap-2 text-slate-800 font-medium">
+                                <LinkSimple size={16} className="text-[#d8b216]" weight="bold" />
                                 {t('Phát hiện liên kết URL. Bạn có muốn chuyển thành Shortlink để theo dõi nhấp chuột?')}
                             </span>
                             <div className="flex items-center gap-2 shrink-0">
@@ -972,7 +1010,7 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setShortlinkDismissed(true)}
-                                    className="rounded-lg border border-border bg-white px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer shadow-2xs"
+                                    className="rounded-lg border border-slate-200 bg-white px-2.5 py-1 text-xs text-slate-500 hover:text-slate-800 cursor-pointer shadow-2xs"
                                 >
                                     {t('Bỏ qua')}
                                 </button>
@@ -980,17 +1018,17 @@ export default function CreatePost() {
                         </div>
                     )}
 
-                    {/* ROW 4: + Add comment / post Button */}
+                    {/* Button + Thêm bình luận / bài viết */}
                     <div>
                         <button
                             type="button"
                             onClick={() => setShowComments(!showComments)}
-                            className="inline-flex items-center gap-1.5 rounded-full bg-[#e64980] hover:bg-[#d6336c] text-white px-4 py-1.5 text-xs font-semibold shadow-sm transition-all cursor-pointer"
+                            className="inline-flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white hover:bg-slate-50 text-slate-800 px-4 py-2 text-xs font-semibold shadow-2xs transition-all cursor-pointer"
                         >
                             <Plus size={14} weight="bold" />
-                            <span>{t('+ Add comment / post')}</span>
+                            <span>{t('+ Thêm bình luận / bài viết')}</span>
                             {form.comments?.length > 0 && (
-                                <span className="rounded-full bg-white/20 px-1.5 text-[10px]">
+                                <span className="rounded-full bg-slate-200 text-slate-800 px-1.5 text-[10px]">
                                     {form.comments.length}
                                 </span>
                             )}
@@ -998,7 +1036,7 @@ export default function CreatePost() {
 
                         {/* Collapsible Follow-up Comment Editor */}
                         {showComments && (
-                            <div className="mt-3 panel p-4 bg-muted/20 border border-border rounded-2xl animate-in fade-in duration-150">
+                            <div className="mt-3 panel p-4 bg-slate-50/60 border border-slate-200 rounded-2xl animate-in fade-in duration-150">
                                 <CommentChainEditor
                                     comments={form.comments}
                                     onChange={(comments) => setForm({ ...form, comments })}
@@ -1013,18 +1051,18 @@ export default function CreatePost() {
                         )}
                     </div>
 
-                    {/* ROW 5: ⚙️ Settings ⌄ Purple Accordion Bar */}
-                    <div className="space-y-3">
+                    {/* CARD 3: Cài đặt (Yellow Brand Accordion) */}
+                    <div className="space-y-2">
                         <div
                             onClick={() => setSettingsOpen(!settingsOpen)}
-                            className="flex items-center justify-between rounded-xl bg-[#6366f1] hover:bg-[#4f46e5] text-white px-4 py-2.5 text-xs font-semibold cursor-pointer shadow-sm transition-all"
+                            className="flex items-center justify-between rounded-2xl bg-[#ffd631] hover:bg-[#ffe059] text-[#2b2100] font-bold px-5 py-3.5 text-sm cursor-pointer shadow-xs transition-all select-none"
                         >
                             <div className="flex items-center gap-2">
-                                <Gear size={16} weight="bold" />
-                                <span>{t('Settings')}</span>
+                                <Gear size={18} weight="bold" />
+                                <span>{t('Cài đặt')}</span>
                             </div>
                             <CaretDown
-                                size={14}
+                                size={16}
                                 weight="bold"
                                 className={`transition-transform duration-200 ${settingsOpen ? 'rotate-180' : ''}`}
                             />
@@ -1032,11 +1070,11 @@ export default function CreatePost() {
 
                         {/* Collapsible Settings Panel */}
                         {settingsOpen && (
-                            <div className="panel p-4.5 bg-muted/20 border border-border rounded-2xl space-y-4 animate-in fade-in duration-150">
+                            <div className="panel p-5 bg-white border border-slate-200 rounded-2xl space-y-4 shadow-xs animate-in fade-in duration-150">
                                 {/* Title and Brand Grid */}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                     <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
                                             {t('Tiêu đề nội bộ')} *
                                         </label>
                                         <input
@@ -1044,18 +1082,18 @@ export default function CreatePost() {
                                             value={form.title}
                                             onChange={(e) => setForm({ ...form, title: e.target.value })}
                                             placeholder={t('Ví dụ: Bài đăng ra mắt sản phẩm')}
-                                            className="w-full h-9 rounded-xl border border-border bg-white px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                                            className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                         />
                                     </div>
 
                                     <div>
-                                        <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
+                                        <label className="text-[11px] font-bold uppercase tracking-wider text-slate-500 block mb-1">
                                             {t('Thương hiệu')}
                                         </label>
                                         <select
                                             value={form.brand_id}
                                             onChange={(e) => setForm({ ...form, brand_id: e.target.value })}
-                                            className="w-full h-9 rounded-xl border border-border bg-white px-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
+                                            className="w-full h-9 rounded-xl border border-slate-200 bg-white px-3 text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-primary shadow-2xs"
                                         >
                                             {brands.map((b) => (
                                                 <option key={b.id} value={b.id}>
@@ -1067,13 +1105,13 @@ export default function CreatePost() {
                                 </div>
 
                                 {/* UTM Link Builder */}
-                                <div className="pt-2 border-t border-border/60">
+                                <div className="pt-2 border-t border-slate-100">
                                     <UtmLinkBuilder form={form} accounts={selectedAccounts} setForm={setForm} disabled={uploading || saving} />
                                 </div>
 
                                 {/* Per-Account Settings */}
                                 {selectedAccounts.length > 0 && (
-                                    <div className="pt-2 border-t border-neutral-800/60">
+                                    <div className="pt-2 border-t border-slate-100">
                                         <PageSettings
                                             accounts={selectedAccounts}
                                             settings={form.destination_settings}
@@ -1090,8 +1128,8 @@ export default function CreatePost() {
                         )}
                     </div>
 
-                    {/* ROW 6: Bottom Action Footer Bar */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border/80">
+                    {/* Bottom Action Footer Bar */}
+                    <div className="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-slate-200/80">
                         {/* Left Side: Tag and Repeat Dropdowns */}
                         <div className="flex items-center gap-2 flex-wrap">
                             {/* Add New Tag Dropdown */}
@@ -1099,24 +1137,24 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setTagDropdownOpen(!tagDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white hover:bg-muted text-foreground px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <Tag size={15} />
                                     <span>
                                         {form.pillar_id
                                             ? brandPillars.find((p) => p.id === form.pillar_id)?.name || t('Tag')
-                                            : t('Add New Tag')}
+                                            : t('Thêm thẻ')}
                                     </span>
                                     <CaretDown size={11} className="opacity-70" />
                                 </button>
 
                                 {tagDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-56 rounded-2xl border border-border bg-white p-2 shadow-xl space-y-1">
-                                        <span className="block px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-56 rounded-2xl border border-slate-200 bg-white p-2 shadow-xl space-y-1">
+                                        <span className="block px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                                             {t('Pillar / Chủ đề')}
                                         </span>
                                         {brandPillars.length === 0 ? (
-                                            <p className="px-2 py-1 text-xs text-muted-foreground italic">{t('Chưa có Pillar nào')}</p>
+                                            <p className="px-2 py-1 text-xs text-slate-400 italic">{t('Chưa có Pillar nào')}</p>
                                         ) : (
                                             brandPillars.map((p) => (
                                                 <button
@@ -1129,10 +1167,10 @@ export default function CreatePost() {
                                                     className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs transition-colors flex items-center gap-2 cursor-pointer ${
                                                         form.pillar_id === p.id
                                                             ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
-                                                            : 'text-foreground hover:bg-muted'
+                                                            : 'text-slate-700 hover:bg-slate-100'
                                                     }`}
                                                 >
-                                                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: p.color || '#79D94B' }} />
+                                                    <span className="h-2 w-2 rounded-full shrink-0" style={{ backgroundColor: p.color || '#ffd631' }} />
                                                     <span className="truncate">{p.name}</span>
                                                     {form.pillar_id === p.id && <Check size={12} className="ml-auto" />}
                                                 </button>
@@ -1147,19 +1185,19 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setRepeatDropdownOpen(!repeatDropdownOpen)}
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-white hover:bg-muted text-foreground px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 px-3 py-2 text-xs font-medium cursor-pointer transition-colors shadow-2xs"
                                 >
                                     <Repeat size={15} />
                                     <span>
                                         {repeatFrequency === 'none'
-                                            ? t('Repeat Post Every...')
+                                            ? t('Lặp lại bài viết…')
                                             : t('Lặp lại: {freq}', { freq: repeatFrequency })}
                                     </span>
                                     <CaretDown size={11} className="opacity-70" />
                                 </button>
 
                                 {repeatDropdownOpen && (
-                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-48 rounded-2xl border border-border bg-white p-1.5 shadow-xl space-y-0.5">
+                                    <div className="absolute left-0 bottom-full mb-2 z-50 w-48 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl space-y-0.5">
                                         {[
                                             { value: 'none', label: t('Không lặp lại') },
                                             { value: 'daily', label: t('Mỗi ngày') },
@@ -1177,7 +1215,7 @@ export default function CreatePost() {
                                                 className={`w-full text-left px-3 py-1.5 rounded-xl text-xs transition-colors flex items-center justify-between cursor-pointer ${
                                                     repeatFrequency === opt.value
                                                         ? 'bg-[#ffd631]/20 text-[#2b2100] font-semibold'
-                                                        : 'text-foreground hover:bg-muted'
+                                                        : 'text-slate-700 hover:bg-slate-100'
                                                 }`}
                                             >
                                                 <span>{opt.label}</span>
@@ -1196,46 +1234,46 @@ export default function CreatePost() {
                                 <button
                                     type="button"
                                     onClick={() => setSchedulePickerOpen(!schedulePickerOpen)}
-                                    className="inline-flex items-center gap-2 rounded-xl border border-border bg-white hover:bg-muted px-3 py-2 text-xs font-semibold text-foreground transition-colors cursor-pointer shadow-2xs"
+                                    className="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 px-3 py-2 text-xs font-semibold text-slate-700 transition-colors cursor-pointer shadow-2xs"
                                 >
-                                    <CalendarBlank size={14} className="text-muted-foreground" />
+                                    <CalendarBlank size={14} className="text-slate-400" />
                                     <span>{formatScheduleTime(form.date, form.time)}</span>
                                 </button>
 
                                 {schedulePickerOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-72 rounded-2xl border border-border bg-white p-3.5 shadow-xl space-y-3 animate-in fade-in zoom-in-95">
-                                        <div className="flex items-center justify-between pb-2 border-b border-border">
-                                            <span className="text-xs font-bold text-foreground">Thời gian đăng bài</span>
-                                            <button type="button" onClick={() => setSchedulePickerOpen(false)} className="text-muted-foreground hover:text-foreground">
+                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-72 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xl space-y-3 animate-in fade-in zoom-in-95">
+                                        <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                                            <span className="text-xs font-bold text-slate-900">Thời gian đăng bài</span>
+                                            <button type="button" onClick={() => setSchedulePickerOpen(false)} className="text-slate-400 hover:text-slate-800">
                                                 <X size={14} />
                                             </button>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2">
                                             <div>
-                                                <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Ngày</label>
+                                                <label className="text-[10px] text-slate-500 font-semibold block mb-1">Ngày</label>
                                                 <input
                                                     type="date"
                                                     value={form.date}
                                                     onChange={(e) => setForm({ ...form, date: e.target.value })}
-                                                    className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
                                                 />
                                             </div>
                                             <div>
-                                                <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Giờ</label>
+                                                <label className="text-[10px] text-slate-500 font-semibold block mb-1">Giờ</label>
                                                 <input
                                                     type="time"
                                                     value={form.time}
                                                     onChange={(e) => setForm({ ...form, time: e.target.value })}
-                                                    className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
+                                                    className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
                                                 />
                                             </div>
                                         </div>
                                         <div>
-                                            <label className="text-[10px] text-muted-foreground font-semibold block mb-1">Múi giờ</label>
+                                            <label className="text-[10px] text-slate-500 font-semibold block mb-1">Múi giờ</label>
                                             <select
                                                 value={form.timezone}
                                                 onChange={(e) => setForm({ ...form, timezone: e.target.value })}
-                                                className="w-full bg-white border border-border rounded-xl px-2.5 py-1.5 text-xs text-foreground shadow-2xs"
+                                                className="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs text-slate-900 shadow-2xs"
                                             >
                                                 {TIMEZONES.map((z) => (
                                                     <option key={z} value={z}>
@@ -1253,7 +1291,7 @@ export default function CreatePost() {
                                 type="button"
                                 disabled={saving || uploading}
                                 onClick={() => submit('draft')}
-                                className="rounded-xl border border-border bg-white hover:bg-muted text-foreground font-medium text-xs px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
+                                className="rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 font-medium text-xs px-3.5 py-2 transition-colors cursor-pointer disabled:opacity-60 shadow-2xs"
                             >
                                 {t('Save as draft')}
                             </button>
@@ -1266,7 +1304,7 @@ export default function CreatePost() {
                                     onClick={() => submit('schedule')}
                                     className="btn-skew inline-flex items-center gap-1.5 rounded-l-xl text-xs font-semibold px-4 py-2 shadow-2xs cursor-pointer disabled:opacity-60"
                                 >
-                                    <span>{saving ? t('Đang lưu…') : t('Add to Calendar')}</span>
+                                    <span>{saving ? t('Đang lưu…') : t('Lên lịch')}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -1278,17 +1316,17 @@ export default function CreatePost() {
                                 </button>
 
                                 {publishDropdownOpen && (
-                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-44 rounded-2xl border border-border bg-white p-1.5 shadow-xl space-y-0.5 animate-in fade-in zoom-in-95">
+                                    <div className="absolute right-0 bottom-full mb-2 z-50 w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl space-y-0.5 animate-in fade-in zoom-in-95">
                                         <button
                                             type="button"
                                             onClick={() => {
                                                 setPublishDropdownOpen(false);
                                                 submit('schedule');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
                                         >
-                                            <CalendarBlank size={14} className="text-purple-400" />
-                                            <span>{t('Add to Calendar')}</span>
+                                            <CalendarBlank size={14} className="text-amber-600" />
+                                            <span>{t('Lên lịch đăng')}</span>
                                         </button>
                                         <button
                                             type="button"
@@ -1296,10 +1334,10 @@ export default function CreatePost() {
                                                 setPublishDropdownOpen(false);
                                                 submit('publish');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer font-semibold"
                                         >
-                                            <PaperPlaneTilt size={14} className="text-emerald-400" />
-                                            <span>{t('Publish Now')}</span>
+                                            <PaperPlaneTilt size={14} className="text-emerald-600" />
+                                            <span>{t('Đăng ngay')}</span>
                                         </button>
                                         <button
                                             type="button"
@@ -1307,10 +1345,10 @@ export default function CreatePost() {
                                                 setPublishDropdownOpen(false);
                                                 submit('draft');
                                             }}
-                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-foreground hover:bg-muted transition-colors flex items-center gap-2 cursor-pointer"
+                                            className="w-full text-left px-3 py-2 rounded-xl text-xs text-slate-800 hover:bg-slate-50 transition-colors flex items-center gap-2 cursor-pointer"
                                         >
-                                            <FloppyDisk size={14} className="text-amber-400" />
-                                            <span>{t('Save as Draft')}</span>
+                                            <FloppyDisk size={14} className="text-slate-500" />
+                                            <span>{t('Lưu bản nháp')}</span>
                                         </button>
                                     </div>
                                 )}
@@ -1319,47 +1357,145 @@ export default function CreatePost() {
                     </div>
                 </div>
 
-                {/* RIGHT COLUMN: Post Preview */}
+                {/* RIGHT COLUMN: Post Preview & Checklist */}
                 {showPreview && (
-                    <div className="composer-preview space-y-4 w-full">
-                        {/* Preview Header */}
-                        <div className="flex items-center justify-between pb-1">
+                    <div className="composer-preview space-y-5 w-full">
+                        {/* CARD 1: Post preview */}
+                        <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-4">
+                            {/* Header */}
                             <div className="flex items-center justify-between pb-1">
-                                <h3 className="text-sm font-bold text-foreground tracking-wide">
-                                    {t('Post Preview')}
+                                <h3 className="font-heading font-bold text-sm text-slate-900 tracking-wide">
+                                    {t('Post preview')}
                                 </h3>
                                 <button
                                     type="button"
                                     onClick={() => setShowPreview(false)}
-                                    className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted cursor-pointer transition-colors"
+                                    className="p-1 rounded-lg text-slate-400 hover:text-slate-800 hover:bg-slate-100 cursor-pointer transition-colors"
                                     title={t('Close preview')}
                                 >
                                     <X size={16} />
                                 </button>
                             </div>
+
+                            {/* Platform switch tabs */}
+                            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                                {['threads', 'facebook', 'instagram', 'x', 'linkedin', 'tiktok'].map((plat) => {
+                                    const isActive = previewPlatform === plat;
+                                    return (
+                                        <button
+                                            key={plat}
+                                            type="button"
+                                            onClick={() => setPreviewPlatform(plat)}
+                                            className={`px-3 py-1 rounded-full text-xs font-medium transition-all cursor-pointer capitalize shrink-0 ${
+                                                isActive
+                                                    ? 'bg-[#ffd631] text-[#2b2100] font-bold shadow-xs'
+                                                    : 'text-slate-500 hover:text-slate-900 hover:bg-slate-100'
+                                            }`}
+                                        >
+                                            {plat === 'threads' ? 'Threads' : plat === 'facebook' ? 'Facebook' : plat === 'instagram' ? 'Instagram' : plat === 'x' ? 'X' : plat === 'linkedin' ? 'LinkedIn' : 'TikTok'}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Realistic Social Post Mockup Card */}
+                            <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 space-y-3 shadow-2xs">
+                                {/* Author */}
+                                <div className="flex items-center gap-2.5">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#ffd631] text-xs font-bold text-[#2b2100] shadow-xs">
+                                        {activeBrandName.slice(0, 2).toUpperCase() || 'SC'}
+                                    </div>
+                                    <div>
+                                        <h4 className="text-xs font-bold text-slate-900 leading-tight">
+                                            {activeBrandName || 'Socialchoice'}
+                                        </h4>
+                                        <p className="text-[11px] text-slate-400">
+                                            @{activeBrandName ? activeBrandName.toLowerCase().replace(/\s+/g, '') : 'socialchoice.vn'}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                {/* Post text */}
+                                <div className="text-xs text-slate-800 leading-relaxed whitespace-pre-line min-h-[60px]">
+                                    {currentActiveCaption || (
+                                        <span className="text-slate-400 italic">
+                                            {t('Nội dung bài viết sẽ hiển thị ở đây…')}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Media Box */}
+                                {form.media?.length > 0 ? (
+                                    <div className="overflow-hidden rounded-xl border border-slate-200 max-h-60 bg-black/5">
+                                        {form.media[0]?.file_type === 'video' ? (
+                                            <video src={form.media[0]?.file_url} controls className="w-full h-auto max-h-60 object-cover" />
+                                        ) : (
+                                            <img src={form.media[0]?.file_url || form.media[0]?.url} alt="media" className="w-full h-auto max-h-60 object-cover" />
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div className="rounded-xl border border-dashed border-slate-200 bg-slate-100/70 py-12 flex items-center justify-center text-xs text-slate-400 font-medium">
+                                        {t('Chưa có media')}
+                                    </div>
+                                )}
+
+                                {/* Reactions Bar */}
+                                <div className="flex items-center justify-between pt-2 border-t border-slate-200/60 text-slate-400 text-xs">
+                                    <div className="flex items-center gap-3">
+                                        <span className="hover:text-rose-500 cursor-pointer">♡</span>
+                                        <span className="hover:text-slate-700 cursor-pointer">💬</span>
+                                        <span className="hover:text-slate-700 cursor-pointer">↗</span>
+                                    </div>
+                                    <span className="hover:text-slate-700 cursor-pointer">🔖</span>
+                                </div>
+                            </div>
+
+                            {/* Footer limit */}
+                            <div className="flex items-center justify-between text-[11px] text-slate-400 font-mono pt-1">
+                                <span>{t('Giới hạn {limit}', { limit: CAPTION_LIMITS[previewPlatform] || 500 })}</span>
+                                <span>{currentCount} / {CAPTION_LIMITS[previewPlatform] || 500}</span>
+                            </div>
                         </div>
 
-                        {/* Empty state or Live Preview */}
-                        {!currentActiveCaption && (form.media || []).length === 0 ? (
-                            <div className="flex min-h-[460px] items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-8 text-center">
-                                <p className="text-xs text-muted-foreground font-medium">
-                                    {t('Start writing your post for a preview')}
-                                </p>
+                        {/* CARD 2: Trước khi đăng (Pre-publish checks) */}
+                        <div className="panel p-5 bg-white border border-slate-200/90 rounded-2xl shadow-xs space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h4 className="font-heading font-bold text-sm text-slate-900">
+                                    {t('Trước khi đăng')}
+                                </h4>
+                                <span className="text-xs font-bold text-slate-600 font-mono">
+                                    {passedChecksCount}/{prePublishChecks.length}
+                                </span>
                             </div>
-                        ) : (
-                            <div className="overflow-hidden rounded-2xl border border-border/80 bg-muted/10 shadow-2xs">
-                                <PostPreview
-                                    caption={form.caption}
-                                    media={form.media}
-                                    comments={form.comments}
-                                    accounts={selectedAccounts}
-                                    pageSettings={form.destination_settings}
-                                    platformCaptions={form.platform_captions}
-                                    platformMedia={form.platform_media}
-                                    linkedinAccounts={linkedinAccounts}
+
+                            {/* Yellow Progress Bar */}
+                            <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                                <div
+                                    className="h-full bg-[#ffd631] transition-all duration-300 rounded-full"
+                                    style={{ width: `${(passedChecksCount / prePublishChecks.length) * 100}%` }}
                                 />
                             </div>
-                        )}
+
+                            {/* Checklist */}
+                            <div className="space-y-2 pt-1 text-xs">
+                                {prePublishChecks.map((chk) => (
+                                    <div key={chk.id} className="flex items-center gap-2">
+                                        <span
+                                            className={`h-4 w-4 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${
+                                                chk.passed
+                                                    ? 'bg-[#ffd631] text-[#2b2100]'
+                                                    : 'bg-slate-100 text-slate-400'
+                                            }`}
+                                        >
+                                            ✓
+                                        </span>
+                                        <span className={chk.passed ? 'text-slate-700 font-medium' : 'text-slate-400'}>
+                                            {chk.label}
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>
@@ -1430,28 +1566,25 @@ export default function CreatePost() {
                                 })}
                             </div>
                         )}
-
-                        <div className="flex justify-end pt-2 border-t border-neutral-800">
-                            <button
-                                type="button"
-                                onClick={() => setMediaLibraryOpen(false)}
-                                className="btn-skew text-xs py-1.5 px-4 cursor-pointer"
-                            >
-                                {t('Hoàn tất')}
-                            </button>
-                        </div>
                     </div>
                 </div>
             )}
 
-            {/* Publish Confirmation Modal */}
+            {/* Delete Draft Confirm Dialog */}
+            <ConfirmDialog
+                open={deleteOpen}
+                onOpenChange={setDeleteOpen}
+                title={t('Xóa bài viết')}
+                description={t('Bạn có chắc chắn muốn xóa bài viết này? Hành động này không thể hoàn tác.')}
+                onConfirm={handleDelete}
+            />
+
+            {/* Publishing Confirmation Dialog */}
             {publishReview && (
                 <PublishConfirmation
-                    open={!!publishReview}
-                    onOpenChange={(open) => !open && setPublishReview(null)}
                     review={publishReview}
-                    onConfirm={async () => {
-                        await appClient.publishing.publish(publishReview.attemptId);
+                    onClose={() => setPublishReview(null)}
+                    onResult={() => {
                         setPublishReview(null);
                         navigate('/posts');
                     }}
