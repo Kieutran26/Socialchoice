@@ -127,14 +127,14 @@ export default function CreatePost() {
     // Auto-shorten links in caption if preference is 'always'
     useEffect(() => {
         if (shortlinkPref !== 'always' || !form.brand_id || !form.caption) return;
-        if (!/https?:\/\/[^\s]+/i.test(form.caption) || /\/api\/links\/go\//i.test(form.caption)) return;
+        if (!/https?:\/\/[^\s]+/i.test(form.caption) || /(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(form.caption)) return;
 
         const timer = setTimeout(async () => {
             try {
                 const res = await appClient.links.build({
                     brand_id: form.brand_id,
                     form,
-                    options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                    options: { medium: 'social', campaign: form.title || 'post', tracking: true, short: true },
                 });
                 if (res?.caption && res.caption !== form.caption) {
                     setForm((curr) => ({
@@ -384,12 +384,12 @@ export default function CreatePost() {
         try {
             let effectiveCaption = form.caption;
             let effectivePlatformCaptions = form.platform_captions;
-            if (shortlinkPref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/\/api\/links\/go\//i.test(effectiveCaption) && form.brand_id) {
+            if (shortlinkPref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(effectiveCaption) && form.brand_id) {
                 try {
                     const linkRes = await appClient.links.build({
                         brand_id: form.brand_id,
                         form,
-                        options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                        options: { medium: 'social', campaign: form.title || 'post', tracking: true, short: true },
                     });
                     if (linkRes?.caption) {
                         effectiveCaption = linkRes.caption;
@@ -707,7 +707,7 @@ export default function CreatePost() {
                             )}
 
                             {/* Quick Shortlink detector based on Shortlink Preference */}
-                            {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(form.caption) && !/\/api\/links\/go\//i.test(form.caption) && (
+                            {shortlinkPref === 'ask' && !shortlinkDismissed && /https?:\/\/[^\s]+/i.test(form.caption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(form.caption) && (
                                 <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-3 rounded-xl bg-[#ffd631]/15 border border-[#ffd631]/60 text-xs shadow-2xs">
                                     <span className="flex items-center gap-2 text-foreground font-semibold">
                                         <LinkSimple size={16} className="text-[#806400]" weight="bold" />
@@ -721,7 +721,7 @@ export default function CreatePost() {
                                                     const res = await appClient.links.build({
                                                         brand_id: form.brand_id,
                                                         form,
-                                                        options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                                                        options: { medium: 'social', campaign: form.title || 'post', tracking: true, short: true },
                                                     });
                                                     if (res?.caption) {
                                                         setForm((curr) => ({

@@ -1,7 +1,7 @@
 import { customerCookie } from './customer-directory.js';
 import { CONTEXT_HEADER, signCustomerContext } from './customer-context.js';
 import { accountId } from './web-license.js';
-import { TRACKING_PATH } from './tracking-links.js';
+import { TRACKING_PATH, SHORT_PATH } from './tracking-links.js';
 import { boundedJson } from '../auth-broker/provider-http.mjs';
 
 const json = (value, status = 200, headers = {}) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...headers } });
@@ -27,6 +27,14 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 if (tracking[1] === 'owner') return forwardOwner(publicRequest);
                 if (!accountId(tracking[1])) return json({ message: 'Link not found' }, 404);
                 return forwardCustomer(tracking[1], publicRequest);
+            }
+            const shortTracking = path.match(SHORT_PATH);
+            if (shortTracking) {
+                if (!['GET', 'HEAD'].includes(request.method)) return json({ message: 'Link fetch requires GET or HEAD' }, 405, { Allow: 'GET, HEAD' });
+                const headers = new Headers(request.headers);
+                for (const name of [CONTEXT_HEADER, 'cookie', 'authorization', 'proxy-authorization']) headers.delete(name);
+                const publicRequest = new Request(request, { headers });
+                return forwardOwner(publicRequest);
             }
             const media = path.match(/^\/api\/workspaces\/([a-f0-9-]{36})(\/api\/instagram-media\/[a-f0-9-]{36}\/[a-f0-9-]{36})$/);
             if (media) {

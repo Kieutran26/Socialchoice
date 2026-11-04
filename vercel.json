@@ -7,6 +7,10 @@
       "destination": "https://socialchoice-api.nguyenngockieutran.workers.dev/api/:path*"
     },
     {
+      "source": "/s/:path*",
+      "destination": "https://socialchoice-api.nguyenngockieutran.workers.dev/s/:path*"
+    },
+    {
       "source": "/terms",
       "destination": "/terms.html"
     },
@@ -21,7 +25,7 @@
   ],
   "headers": [
     {
-      "source": "/api/:path*",
+      "source": "/(api|s)/:path*",
       "headers": [
         {
           "key": "Cache-Control",

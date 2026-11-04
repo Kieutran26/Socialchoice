@@ -13,7 +13,12 @@ export function publicDestination(value) {
     if (!host.includes('.') || host.endsWith('.localhost') || host.endsWith('.local') || host.startsWith('[') || /^(0|10|127|169\.254|192\.168|172\.(1[6-9]|2\d|3[01]))\./.test(host)) throw new Error('Use a public HTTP or HTTPS destination without credentials');
     return url;
 }
-function ownedTracking(url, origin) { return url.origin === origin && /^\/api\/links\/go\/(owner|[a-f0-9-]{36})\/[a-f0-9-]{36}$/.test(url.pathname); }
+function ownedTracking(url, origin) {
+    return url.origin === origin && (
+        /^\/api\/links\/go\/(owner|[a-f0-9-]{36})\/[a-f0-9-]{36}$/.test(url.pathname) ||
+        /^\/s\/[a-zA-Z0-9_-]{4,36}$/.test(url.pathname)
+    );
+}
 export function tagUrl(original, options, platform, ownedOrigin = '') {
     validateUtm(options);
     const url = publicDestination(original);

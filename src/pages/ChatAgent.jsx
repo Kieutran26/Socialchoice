@@ -297,12 +297,12 @@ export default function ChatAgent() {
 
             // Auto-shorten links in caption if preference is 'always'
             const currentPref = getShortlinkPreference();
-            if (currentPref === 'always' && /https?:\/\/[^\s]+/i.test(generatedCaption) && !/\/api\/links\/go\//i.test(generatedCaption)) {
+            if (currentPref === 'always' && /https?:\/\/[^\s]+/i.test(generatedCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(generatedCaption)) {
                 try {
                     const linkRes = await appClient.links.build({
                         brand_id: currentBrand.id,
                         form: { caption: generatedCaption, platform_captions: platformCaptions },
-                        options: { medium: 'social', campaign: generatedTitle || 'agent-post', tracking: true },
+                        options: { medium: 'social', campaign: generatedTitle || 'agent-post', tracking: true, short: true },
                     });
                     if (linkRes?.caption) {
                         generatedCaption = linkRes.caption;
@@ -374,12 +374,12 @@ export default function ChatAgent() {
             let effectiveCaption = draft.caption;
             let effectivePlatformCaptions = draft.platformCaptions || {};
             const pref = getShortlinkPreference();
-            if (pref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/\/api\/links\/go\//i.test(effectiveCaption)) {
+            if (pref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(effectiveCaption)) {
                 try {
                     const linkRes = await appClient.links.build({
                         brand_id: currentBrand.id,
                         form: { caption: effectiveCaption, platform_captions: effectivePlatformCaptions },
-                        options: { medium: 'social', campaign: draft.title || 'agent-post', tracking: true },
+                        options: { medium: 'social', campaign: draft.title || 'agent-post', tracking: true, short: true },
                     });
                     if (linkRes?.caption) {
                         effectiveCaption = linkRes.caption;
@@ -652,7 +652,7 @@ export default function ChatAgent() {
                                                 !msg.postDraft.shortlinkDismissed &&
                                                 !msg.postDraft.isScheduled &&
                                                 /https?:\/\/[^\s]+/i.test(msg.postDraft.caption) &&
-                                                !/\/api\/links\/go\//i.test(msg.postDraft.caption) && (
+                                                !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(msg.postDraft.caption) && (
                                                     <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-[#ffd631]/40 bg-[#ffd631]/10 p-2.5 text-xs text-foreground">
                                                         <span className="flex items-center gap-1.5 font-medium">
                                                             <LinkSimple size={15} className="text-[#806400] shrink-0" weight="bold" />
@@ -666,7 +666,7 @@ export default function ChatAgent() {
                                                                         const res = await appClient.links.build({
                                                                             brand_id: currentBrand.id,
                                                                             form: { caption: msg.postDraft.caption, platform_captions: msg.postDraft.platformCaptions },
-                                                                            options: { medium: 'social', campaign: msg.postDraft.title || 'agent-post', tracking: true },
+                                                                            options: { medium: 'social', campaign: msg.postDraft.title || 'agent-post', tracking: true, short: true },
                                                                         });
                                                                         if (res?.caption) {
                                                                             setMessages((prev) =>

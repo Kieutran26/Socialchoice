@@ -78,3 +78,36 @@ test('public redirect counts GET only, excludes previews, rejects wrong scope an
     } finally { await new Promise(resolve => api.server.close(resolve)); }
 });
 
+test('vanity short path /s/:code redirects and tracks clicks with clean short format', async () => {
+    const api = createApi({ dbPath: ':memory:', frontendPort: 5173 });
+    await new Promise(resolve => api.server.listen(0, '127.0.0.1', resolve));
+    const origin = `http://127.0.0.1:${api.server.address().port}`;
+    try {
+        const brand = api.store.write('Brand', { name: 'Shortlinks' });
+        const call = (op, input) => fetch(`${origin}/api/links/${op}`, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', 'x-socialchoice-client': 'local-ui' },
+            body: JSON.stringify({ args: [input] }),
+        });
+
+        // Test direct create shortlink
+        const createRes = await (await call('create', { brand_id: brand.id, url: 'https://example.com/promo' })).json();
+        assert.ok(createRes.code);
+        assert.equal(createRes.url, `${origin}/s/${createRes.code}`);
+
+        // Access via vanity short URL /s/:code
+        const redirect = await fetch(createRes.url, { redirect: 'manual' });
+        assert.equal(redirect.status, 302);
+        assert.equal(redirect.headers.get('location'), 'https://example.com/promo');
+
+        // Test build with short option
+        const buildRes = await (await call('build', {
+            brand_id: brand.id,
+            form: { caption: 'Check https://example.com/deal now!', account_ids: [] },
+            options: { medium: 'social', campaign: 'FlashSale', tracking: true, short: true },
+        })).json();
+        assert.match(buildRes.caption, new RegExp(`${origin}/s/[a-zA-Z0-9_-]+`));
+    } finally { await new Promise(resolve => api.server.close(resolve)); }
+});
+
+
