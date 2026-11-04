@@ -647,12 +647,27 @@ export default function CreatePost() {
         }
     };
 
+    const handleDelete = async () => {
+        if (!existing?.id) return;
+        if (existing.status !== 'draft' && !(desktop && existing.status === 'cancelled')) {
+            throw new Error(t('Chỉ có thể xóa bản nháp.'));
+        }
+        try {
+            await appClient.entities.Post.delete(existing.id);
+            toast({ title: t('Đã xóa bài viết thành công!') });
+            navigate('/posts');
+        } catch (err) {
+            toast({ variant: 'destructive', title: t('Lỗi khi xóa bài viết'), description: err.message });
+        }
+    };
+    const remove = handleDelete;
+
     if (loading || sourceLoading) {
         return (
-            <div className="min-h-[500px] flex items-center justify-center p-8 bg-[#121215] rounded-3xl border border-neutral-800">
+            <div className="min-h-[400px] flex items-center justify-center p-8 bg-white rounded-2xl border border-slate-200 shadow-xs">
                 <div className="text-center space-y-3">
-                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-purple-500 border-t-transparent mx-auto" />
-                    <p className="text-xs text-neutral-400 font-medium">{t('Đang tải trình soạn thảo bài viết…')}</p>
+                    <div className="h-8 w-8 animate-spin rounded-full border-2 border-[#ffd631] border-t-transparent mx-auto" />
+                    <p className="text-xs text-slate-500 font-medium">{t('Đang tải trình soạn thảo bài viết…')}</p>
                 </div>
             </div>
         );
