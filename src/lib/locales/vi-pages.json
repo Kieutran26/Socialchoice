@@ -1,4 +1,11 @@
 {
+  "Shortlinks": "Rút gọn liên kết",
+  "Shortlink Settings": "Cài đặt Shortlink",
+  "Shortlink Preference": "Tùy chọn Shortlink",
+  "Ask every time": "Hỏi mỗi lần đăng",
+  "Always shorten": "Luôn tự động rút gọn",
+  "Never shorten": "Không bao giờ rút gọn",
+  "Control how URLs in your posts are handled. Shortlinks provide click statistics.": "Kiểm soát cách xử lý liên kết trong bài viết. Shortlink cung cấp số liệu thống kê lượt nhấp.",
   "AI Agent Chat": "AI Agent Lên lịch",
   "Template details": "Chi tiết mẫu bài viết",
   "Template name": "Tên mẫu bài viết",

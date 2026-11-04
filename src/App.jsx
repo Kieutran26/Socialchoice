@@ -22,6 +22,7 @@ import SocialAccounts from '@/pages/SocialAccounts';
 import Settings from '@/pages/Settings';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
+import Shortlinks from '@/pages/Shortlinks';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import DataDeletion from '@/pages/DataDeletion';
@@ -60,6 +61,7 @@ export default function App() {
                 <Route path="/analytics" element={<Analytics />} />
                 <Route path="/media" element={<MediaLibrary />} />
                 <Route path="/interactive-images" element={<InteractiveImages />} />
+                <Route path="/shortlinks" element={<Shortlinks />} />
                 <Route path="/accounts" element={<SocialAccounts />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/admin/licenses" element={<AdminLicenses />} />

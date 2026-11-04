@@ -18,6 +18,7 @@ import {
     SquaresFour,
     CaretDown,
     Translate,
+    LinkSimple,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -38,6 +39,7 @@ import DesktopBackup from '@/components/desktop-backup';
 import DesktopAiSettings from '@/components/desktop-ai-settings';
 import DesktopLicense from '@/components/desktop-license';
 import CustomerLicense from '@/components/customer-license';
+import ShortlinkSettingsCard from '@/components/settings/ShortlinkSettingsCard';
 
 export default function Settings() {
     const { t, language, setLanguage } = useTranslation();
@@ -323,6 +325,19 @@ export default function Settings() {
 
                 <button
                     type="button"
+                    onClick={() => setActiveTab('shortlinks')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                        activeTab === 'shortlinks'
+                            ? 'bg-foreground text-background shadow-xs'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                >
+                    <LinkSimple size={16} weight={activeTab === 'shortlinks' ? 'bold' : 'regular'} />
+                    <span>{t('Shortlinks')}</span>
+                </button>
+
+                <button
+                    type="button"
                     onClick={() => setActiveTab('workspace')}
                     className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
                         activeTab === 'workspace'
@@ -500,6 +515,11 @@ export default function Settings() {
                                 </div>
                             )}
                         </section>
+                    )}
+
+                    {/* Shortlink Settings Card */}
+                    {(activeTab === 'all' || activeTab === 'publishing' || activeTab === 'shortlinks') && (
+                        <ShortlinkSettingsCard />
                     )}
 
                     {/* Workspace Demo Data */}

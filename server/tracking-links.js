@@ -25,6 +25,21 @@ export function createTrackingLinks(store, scope = 'owner') {
                 if (!link || link.brand_id !== brand.id) fail('Link not found', 404);
                 store.trackingLinks.disable(link.id); return { ok: true };
             }
+            if (operation === 'create') {
+                if (!input.url || typeof input.url !== 'string') fail('Enter a valid URL to shorten');
+                publicDestination(input.url);
+                const campaign = (input.campaign || 'shortlink').trim();
+                const key = createHash('sha256').update(JSON.stringify([brand.id, input.url, campaign, input.platform || ''])).digest('hex');
+                const link = store.trackingLinks.create(key, {
+                    brand_id: brand.id,
+                    is_demo: brand.is_demo,
+                    target: input.url,
+                    platform: input.platform || 'direct',
+                    account_id: '',
+                    campaign,
+                });
+                return { ...link, url: `${origin}/api/links/go/${scope}/${link.id}` };
+            }
             if (operation !== 'build' || brand.status === 'archived') fail('Choose an active brand');
             try { validateUtm(input.options); } catch (e) { fail(e.message); }
             const form = input.form;

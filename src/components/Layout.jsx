@@ -25,6 +25,7 @@ const ROUTE_LABELS = {
     '/strategy/angles': 'Content Angles',
     '/media': 'Media Library',
     '/interactive-images': 'Interactive Images',
+    '/shortlinks': 'Shortlinks',
     '/accounts': 'Social Accounts',
     '/settings': 'Settings',
     '/admin/licenses': 'Admin Licenses',

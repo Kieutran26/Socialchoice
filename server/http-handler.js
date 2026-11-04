@@ -88,7 +88,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 }
                 return send(200, await publisher.recurring.execute(recurringRoute[1], input.args[0]));
             }
-            const linkRoute = req.url.match(/^\/api\/links\/(build|list|disable)$/);
+            const linkRoute = req.url.match(/^\/api\/links\/(build|list|disable|create)$/);
             if (linkRoute) {
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';

@@ -13,6 +13,7 @@ import {
     Copy,
     CalendarBlank,
     Sparkle,
+    LinkSimple,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -644,6 +645,41 @@ export default function CreatePost() {
                                         })
                                     }
                                 />
+                            )}
+
+                            {/* Quick Shortlink detector */}
+                            {/https?:\/\/[^\s]+/i.test(form.caption) && !/\/api\/links\/go\//i.test(form.caption) && (
+                                <div className="mt-2.5 flex flex-wrap items-center justify-between gap-2 p-2.5 rounded-xl bg-[#ffd631]/10 border border-[#ffd631]/40 text-xs">
+                                    <span className="flex items-center gap-1.5 text-foreground font-medium">
+                                        <LinkSimple size={15} className="text-[#806400]" weight="bold" />
+                                        {t('Phát hiện liên kết URL. Bạn có muốn rút gọn thành Shortlink để theo dõi lượt click?')}
+                                    </span>
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            try {
+                                                const res = await appClient.links.build({
+                                                    brand_id: form.brand_id,
+                                                    form,
+                                                    options: { medium: 'social', campaign: form.title || 'post', tracking: true },
+                                                });
+                                                if (res?.caption) {
+                                                    setForm((curr) => ({
+                                                        ...curr,
+                                                        caption: res.caption,
+                                                        platform_captions: res.platform_captions || curr.platform_captions,
+                                                    }));
+                                                    toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                                }
+                                            } catch (e) {
+                                                toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
+                                            }
+                                        }}
+                                        className="rounded-lg bg-[#ffd631] text-[#2b2100] px-2.5 py-1 text-xs font-bold hover:bg-[#ffe059] transition-all cursor-pointer shadow-2xs shrink-0"
+                                    >
+                                        {t('Rút gọn ngay')}
+                                    </button>
+                                </div>
                             )}
                         </div>
 

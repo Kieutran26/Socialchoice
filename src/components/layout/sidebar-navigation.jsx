@@ -12,6 +12,7 @@ import {
     TreeStructure,
     Images,
     Users,
+    LinkSimple,
     GearSix,
     IdentificationCard,
 } from '@phosphor-icons/react';
@@ -47,6 +48,7 @@ const NAV_GROUPS = [
     {
         title: 'RESOURCES',
         items: [
+            { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/accounts', label: 'Social Accounts', icon: Users },
         ],
