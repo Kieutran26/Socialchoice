@@ -3,8 +3,9 @@ import { LinkedinMentionTextarea as Textarea } from '@/components/composer/linke
 import { PLATFORM_LABEL } from '@/lib/constants';
 import { CAPTION_LIMITS, captionLength } from '@/lib/publishing-content';
 import LinkedinMentionBar from './LinkedinMentionBar';
+import SignatureSelector from './SignatureSelector';
 
-    export default function PlatformCaptions({ platforms, captions, mainCaption, onChange, linkedinAccounts = [] }) {
+    export default function PlatformCaptions({ platforms, captions, mainCaption, onChange, linkedinAccounts = [], brandId }) {
         const { t } = useTranslation();
         if (!platforms.length) return null;
         return <section className="panel p-5 space-y-4">
@@ -14,7 +15,16 @@ import LinkedinMentionBar from './LinkedinMentionBar';
                 const count = captionLength(captions[platform]?.trim() ? captions[platform] : mainCaption, platform);
                 const limit = CAPTION_LIMITS[platform];
                 return <div key={platform} className="block text-xs">
-                    <label className="block">{PLATFORM_LABEL[platform]}
+                    <div className="flex items-center justify-between mb-1.5">
+                        <span className="font-semibold text-foreground">{PLATFORM_LABEL[platform]}</span>
+                        <SignatureSelector
+                            brandId={brandId}
+                            platform={platform}
+                            currentCaption={captions[platform] || ''}
+                            onApply={(newCaption) => onChange({ ...captions, [platform]: newCaption })}
+                        />
+                    </div>
+                    <label className="block">
                         <Textarea enabled={platform === 'linkedin'} linkedinAccounts={linkedinAccounts} aria-label={t('Caption for {platform}', { platform: PLATFORM_LABEL[platform] })} className="mt-2" rows={3}
                             placeholder={mainCaption || t('Uses the main caption when empty')} value={captions[platform] || ''}
                             onChange={e => onChange({ ...captions, [platform]: e.target.value })} />

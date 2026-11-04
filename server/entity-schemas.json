@@ -570,5 +570,58 @@
       "name",
       "brand_id"
     ]
+  },
+  "PostSignature": {
+    "name": "PostSignature",
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "content": {
+        "type": "string"
+      },
+      "brand_id": {
+        "type": "string"
+      },
+      "platform": {
+        "type": "string",
+        "enum": [
+          "all",
+          "facebook",
+          "instagram",
+          "threads",
+          "linkedin",
+          "tiktok",
+          "x"
+        ],
+        "default": "all"
+      },
+      "account_id": {
+        "type": "string",
+        "default": ""
+      },
+      "is_default": {
+        "type": "boolean",
+        "default": false
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "default": "active"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
+      "content",
+      "brand_id"
+    ]
   }
 }

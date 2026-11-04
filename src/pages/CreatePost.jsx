@@ -39,6 +39,7 @@ import { applyAiSuggestion, applyAiPlatformSuggestion } from '@/lib/ai-draft';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import PlatformLogo from '@/components/composer/PlatformLogo';
+import SignatureSelector from '@/components/composer/SignatureSelector';
 import { aiRequest } from '@/api/ai';
 import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 
@@ -682,9 +683,17 @@ export default function CreatePost() {
                                 <Label htmlFor="post-caption" className="text-xs font-medium text-foreground block">
                                     {t('Main content')}
                                 </Label>
-                                <span className="text-[11px] text-muted-foreground font-mono">
-                                    {form.caption.replace(/@\[([^\]]{1,200})\]\(urn:li:(?:organization|person):[a-zA-Z0-9_-]{1,128}\)/g, '@$1').length} {t('characters')}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <SignatureSelector
+                                        brandId={form.brand_id}
+                                        currentCaption={form.caption}
+                                        onApply={(newCaption) => setForm({ ...form, caption: newCaption })}
+                                        disabled={uploading || saving}
+                                    />
+                                    <span className="text-[11px] text-muted-foreground font-mono">
+                                        {form.caption.replace(/@\[([^\]]{1,200})\]\(urn:li:(?:organization|person):[a-zA-Z0-9_-]{1,128}\)/g, '@$1').length} {t('characters')}
+                                    </span>
+                                </div>
                             </div>
                             <Textarea enabled={platforms.includes('linkedin')} linkedinAccounts={linkedinAccounts}
                                 id="post-caption"
@@ -822,6 +831,7 @@ export default function CreatePost() {
                             <div className="pt-3 border-t border-border/50">
                                 <PlatformCaptions
                                     platforms={platforms}
+                                    brandId={form.brand_id}
                                     captions={form.platform_captions}
                                     mainCaption={form.caption}
                                     linkedinAccounts={linkedinAccounts}

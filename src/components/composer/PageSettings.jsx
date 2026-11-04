@@ -5,6 +5,7 @@ import { PLATFORM_LABEL } from '@/lib/constants';
 import MediaUploader from './MediaUploader';
 import CommentChainEditor from './CommentChainEditor';
 import LinkedinMentionBar from './LinkedinMentionBar';
+import SignatureSelector from './SignatureSelector';
 
     export default function PageSettings({
         accounts,
@@ -58,8 +59,18 @@ import LinkedinMentionBar from './LinkedinMentionBar';
                                                     {account.name} · {PLATFORM_LABEL[account.platform]}
                                                 </legend>
                                                 <div className="block text-xs">
-                                                    <label className="block">
+                                                    <div className="flex items-center justify-between mb-1.5">
                                                         <span>{t('Account caption (optional)')}</span>
+                                                        <SignatureSelector
+                                                            brandId={brandId}
+                                                            platform={account.platform}
+                                                            accountId={account.id}
+                                                            currentCaption={accountSetting.caption || ''}
+                                                            onApply={(newCaption) => change(account.id, { caption: newCaption })}
+                                                            disabled={disabled}
+                                                        />
+                                                    </div>
+                                                    <label className="block">
                                                         <Textarea enabled={account.platform === 'linkedin'} linkedinAccounts={linkedinAccounts}
                                                             aria-label={t('Caption for {account}', { account: account.name })}
                                                             className="mt-2"

@@ -19,7 +19,9 @@ import {
     CaretDown,
     Translate,
     LinkSimple,
+    PenNib,
 } from '@phosphor-icons/react';
+import { useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -40,6 +42,7 @@ import DesktopAiSettings from '@/components/desktop-ai-settings';
 import DesktopLicense from '@/components/desktop-license';
 import CustomerLicense from '@/components/customer-license';
 import ShortlinkSettingsCard from '@/components/settings/ShortlinkSettingsCard';
+import SignaturesSettingsCard from '@/components/settings/SignaturesSettingsCard';
 
 export default function Settings() {
     const { t, language, setLanguage } = useTranslation();
@@ -59,9 +62,10 @@ export default function Settings() {
     const [editing, setEditing] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
     const [clearOpen, setClearOpen] = useState(false);
+    const [searchParams] = useSearchParams();
     const [running, setRunning] = useState(false);
     const [loadError, setLoadError] = useState('');
-    const [activeTab, setActiveTab] = useState('all'); // 'all' | 'ai' | 'brands' | 'publishing' | 'workspace'
+    const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -325,6 +329,19 @@ export default function Settings() {
 
                 <button
                     type="button"
+                    onClick={() => setActiveTab('signatures')}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
+                        activeTab === 'signatures'
+                            ? 'bg-foreground text-background shadow-xs'
+                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                    }`}
+                >
+                    <PenNib size={16} weight={activeTab === 'signatures' ? 'bold' : 'regular'} />
+                    <span>{t('Signatures (Chữ ký)')}</span>
+                </button>
+
+                <button
+                    type="button"
                     onClick={() => setActiveTab('shortlinks')}
                     className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
                         activeTab === 'shortlinks'
@@ -515,6 +532,11 @@ export default function Settings() {
                                 </div>
                             )}
                         </section>
+                    )}
+
+                    {/* Post Signatures Settings Card */}
+                    {(activeTab === 'all' || activeTab === 'signatures') && (
+                        <SignaturesSettingsCard />
                     )}
 
                     {/* Shortlink Settings Card */}
