@@ -21,6 +21,7 @@ import { desktopRequest } from './desktop/request';
 
     // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
     export const appClient = {
+        links: { build: input => request('links/build', [input]), list: input => request('links/list', [input]), disable: input => request('links/disable', [input]) },
         postiz: { status: () => request('postiz/status'), channels: () => request('postiz/channels'), importChannels: (brandId, ids) => request('postiz/import', [brandId, ids]), check: id => request('postiz/check', [id]), disconnect: id => request('postiz/disconnect', [id]) },
         autopilot: { call: (operation, input = {}) => request(`autopilot/${operation}`, [input]) },
         licenses: {

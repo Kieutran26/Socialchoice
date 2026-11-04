@@ -25,6 +25,7 @@ import PillarAngleFields from '@/components/composer/PillarAngleFields';
 import ScheduleFields from '@/components/composer/ScheduleFields';
 import PostPreview from '@/components/composer/PostPreview';
 import PageSettings from '@/components/composer/PageSettings';
+import UtmLinkBuilder from '@/components/composer/utm-link-builder';
 import PlatformCaptions from '@/components/composer/PlatformCaptions';
 import DestinationChecks from '@/components/composer/DestinationChecks';
 import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds } from '@/lib/publishing-content';
@@ -766,6 +767,8 @@ export default function CreatePost() {
                             />
                         )}
                     </section>
+
+                    {!desktop && <UtmLinkBuilder form={form} accounts={selectedAccounts} setForm={setForm} disabled={uploading || saving} />}
 
                     {/* CARD 03: Media chung (Attachments & Dropzone) */}
                     <section className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">

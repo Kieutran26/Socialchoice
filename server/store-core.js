@@ -6,6 +6,7 @@ import { fail, validateRecord } from './validation.js';
 import { createImageStorage } from './image-storage.js';
 import { createVideoStorage } from './video-storage.js';
 import { createMetricsStorage } from './facebook-metrics-storage.js';
+import { createTrackingLinkStore } from './tracking-link-store.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -37,6 +38,7 @@ export function createStoreCore(db, transactionSync) {
     db.exec('CREATE TABLE IF NOT EXISTS notification_reads (id TEXT PRIMARY KEY, read_at INTEGER NOT NULL);');
     db.exec("CREATE INDEX IF NOT EXISTS publishing_problem_recent ON publish_attempts(COALESCE(json_extract(data,'$.finishedAt'),json_extract(data,'$.rejectedAt'),json_extract(data,'$.startedAt'),0) DESC) WHERE json_extract(data,'$.status') IN ('failed','unknown');");
     const store = {
+        trackingLinks: createTrackingLinkStore(db),
         bulkImport: id => { const row = db.prepare('SELECT data FROM bulk_post_imports WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
         saveBulkImport: value => db.prepare('INSERT INTO bulk_post_imports VALUES (?,?)').run(value.id, JSON.stringify(value)),
         savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),

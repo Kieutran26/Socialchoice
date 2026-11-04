@@ -12,8 +12,10 @@ import { importPostDrafts } from './bulk-post-import.js';
 import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
+import { createTrackingLinks } from './tracking-links.js';
 
-export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, x, xSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {} }) {
+export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, x, xSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {}, linkScope = 'owner' }) {
+    const tracking = createTrackingLinks(store, linkScope);
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const autopilot = createAutopilot({ store, auth, key: aiKey || metaSettings.key, aiFetch, ...autopilotOptions });
     const notifications = createPublishingNotifications(store);
@@ -29,6 +31,7 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             const host = req.headers.host?.split(':')[0];
             const hosts = new Set([...allowedHosts, 'socialchoice.site', 'www.socialchoice.site', 'socialchoice.vercel.app']);
             if (!hosts.has(host)) fail('Allowed host required', 403);
+            if (tracking.redirect(req, res)) return;
             const origins = [
                 ...(publicOrigin ? [publicOrigin] : []),
                 'https://socialchoice.site',
@@ -72,6 +75,15 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
                 return send(200, { ok: true });
             }
             auth.require(req);
+            const linkRoute = req.url.match(/^\/api\/links\/(build|list|disable)$/);
+            if (linkRoute) {
+                if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
+                let body = '';
+                for await (const chunk of req) { body += chunk; if (Buffer.byteLength(body) > 1024 * 1024) fail('Request too large', 413); }
+                let input; try { input = JSON.parse(body); } catch { fail('Invalid JSON'); }
+                if (!Array.isArray(input?.args) || input.args.length !== 1) fail('One link input required');
+                return send(200, tracking.execute(linkRoute[1], input.args[0], publicOrigin || `http://${req.headers.host}`));
+            }
             if (req.url.startsWith('/api/autopilot/')) {
                 if (req.method !== 'POST' || !req.headers['content-type']?.startsWith('application/json')) fail('JSON POST required', 415);
                 let body = '';

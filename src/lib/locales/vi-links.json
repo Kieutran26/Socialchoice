@@ -1,0 +1,18 @@
+{
+"UTM builder and link tracking":"Tạo UTM và theo dõi liên kết",
+"Tag links in captions before applying. A blank source uses each destination platform. Existing UTM values are kept by default.":"Gắn UTM cho liên kết trong nội dung trước khi áp dụng. Để trống nguồn để dùng nền tảng của từng tài khoản. Mặc định giữ các giá trị UTM đã có.",
+"Source (optional)":"Nguồn (không bắt buộc)","Medium":"Phương tiện","Campaign":"Chiến dịch","Content tag (optional)":"Nhãn nội dung (không bắt buộc)","Term (optional)":"Từ khóa (không bắt buộc)",
+"Use tracked redirect links":"Dùng liên kết chuyển hướng có thống kê","Replace existing UTM values":"Thay các giá trị UTM đã có","Link preview":"Xem trước liên kết",
+"Add a public HTTP or HTTPS link to a caption to preview it.":"Thêm liên kết HTTP hoặc HTTPS công khai vào nội dung để xem trước.",
+"Tracked redirect URLs are created when you apply. The preview shows their destinations.":"Liên kết chuyển hướng được tạo khi áp dụng. Bản xem trước hiển thị địa chỉ đích.",
+"Applying links…":"Đang áp dụng liên kết…","Apply links to draft":"Áp dụng liên kết vào bản nháp","Tracked links for this brand":"Liên kết được theo dõi của thương hiệu","Refresh statistics":"Làm mới thống kê",
+"Counts are redirect requests, not unique people. Known bots and prefetch requests are excluded heuristically; counts can still include automated traffic.":"Số liệu đếm yêu cầu chuyển hướng, không phải số người duy nhất. Bot và yêu cầu tải trước được nhận diện để loại trừ; số liệu vẫn có thể gồm truy cập tự động.",
+"No tracked links for this brand yet.":"Thương hiệu chưa có liên kết được theo dõi.","Refresh to load tracked links for this brand.":"Làm mới để tải liên kết được theo dõi của thương hiệu.","Requests":"Yêu cầu","Last request":"Yêu cầu gần nhất","Daily requests (UTC)":"Yêu cầu theo ngày (UTC)","Disable tracking link":"Vô hiệu hóa liên kết","Link disabled":"Đã vô hiệu hóa",
+"Could not load link statistics. Try again.":"Không tải được thống kê liên kết. Vui lòng thử lại.",
+"The caption or destinations changed. Review the preview and apply again.":"Nội dung hoặc tài khoản đích đã thay đổi. Hãy xem lại bản xem trước rồi áp dụng lại.",
+"Links applied to this draft. No post was published.":"Đã áp dụng liên kết vào bản nháp. Chưa đăng bài viết.",
+"Could not build links. Check the UTM values and try again.":"Không tạo được liên kết. Hãy kiểm tra giá trị UTM rồi thử lại.",
+"Could not disable this link. Try again.":"Không vô hiệu hóa được liên kết. Vui lòng thử lại.",
+"Invalid UTM settings":"Thiết lập UTM không hợp lệ","UTM values must be text up to 200 characters":"Giá trị UTM phải là văn bản tối đa 200 ký tự","Medium and campaign are required":"Cần nhập phương tiện và chiến dịch","Selected account is unavailable":"Tài khoản đã chọn không khả dụng"
+}
+

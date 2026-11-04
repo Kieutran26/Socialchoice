@@ -67,6 +67,31 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await (await request('/api/entities/Brand/list', [], b.cookie)).json()).items.length, 0);
         assert.equal((await request('/api/entities/Brand/update', [brand.id, { name: 'Cross-tenant overwrite' }], b.cookie)).status, 404);
         assert.equal((await request('/api/entities/Post/create', [{ brand_id: brand.id, title: 'Cross-tenant reference' }], b.cookie)).status, 404);
+        const buildLink = async (brandId, cookie) => {
+            const response = await request('/api/links/build', [{ brand_id: brandId, form: { caption: 'Read https://example.com/article', account_ids: [] }, options: { medium: 'social', campaign: 'isolation', tracking: true } }], cookie);
+            assert.equal(response.status, 200, await response.clone().text());
+            return (await response.json()).links[0].final;
+        };
+        const issuedBrand = await issuedBrandResponse.json();
+        const issuedPublicLink = new URL(await buildLink(issuedBrand.id, issuedCustomer.cookie));
+        const customerLink = new URL(await buildLink(brand.id, a.cookie));
+        const ownerLink = new URL(await buildLink(ownerBrand.id, ownerCookie));
+        assert.ok(customerLink.pathname.startsWith('/api/links/go/' + aSession.id + '/'));
+        assert.ok(ownerLink.pathname.startsWith('/api/links/go/owner/'));
+        for (const url of [customerLink, ownerLink]) {
+            for (const cookie of [undefined, a.cookie, b.cookie, ownerCookie]) {
+                const response = await request(url.pathname, undefined, cookie, { 'sec-fetch-site': 'cross-site', origin: 'https://external.example', 'x-socialchoice-workspace-context': 'forged.context' });
+                assert.equal(response.status, 302, await response.clone().text());
+                assert.ok(response.headers.get('location').startsWith('https://example.com/article?'));
+            }
+            assert.equal((await runtime.dispatchFetch(url.href, { method: 'HEAD', redirect: 'manual' })).status, 302);
+        }
+        const customerLinkId = customerLink.pathname.split('/').at(-1);
+        const bSession = await (await request('/api/session', undefined, b.cookie)).json();
+        for (const scope of ['owner', bSession.id, crypto.randomUUID()]) {
+            assert.equal((await request('/api/links/go/' + scope + '/' + customerLinkId)).status, 404);
+        }
+        assert.equal((await request(customerLink.pathname, [{}], a.cookie)).status, 405);
         const bulkInput = { request_id: crypto.randomUUID(), brand_id: brand.id, rows: [{ rowNumber: 2, values: { title: 'Private imported draft', caption: 'Only customer A' } }] };
         const bulkResponse = await request('/api/posts/import', [bulkInput], a.cookie);
         assert.equal(bulkResponse.status, 200, await bulkResponse.clone().text());
@@ -122,6 +147,7 @@ test('real customer Workers isolate records, media, OAuth and sessions while pre
         assert.equal((await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }], b.cookie)).status, 403);
         const revoked = await request('/api/admin/licenses/revoke', [{ requestId: issuance.requestId, confirmed: true }], ownerCookie);
         assert.equal(revoked.status, 200, await revoked.clone().text()); const revokedRecord = await revoked.json(); assert.equal(revokedRecord.status, 'revoked');
+        assert.equal((await request(issuedPublicLink.pathname)).status, 302);
         for (const cookie of [issuedCustomer.cookie, issuedSecondCookie]) assert.equal((await request('/api/session', undefined, cookie)).status, 401);
         assert.equal((await request('/api/customer/recover', [{ email: issuance.email, password, recoveryCode: issuedCustomer.recoveryCode }])).status, 403);
         assert.equal((await request('/api/customer/login', [{ email: issuance.email, password }])).status, 403);

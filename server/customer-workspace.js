@@ -1,3 +1,4 @@
+import { TRACKING_PATH } from './tracking-links.js';
 import { DurableObject } from 'cloudflare:workers';
 import { createCloudWorkspaceRuntime } from './cloudflare-workspace-runtime.js';
 import { handleWebRequest } from './web-request-adapter.js';
@@ -17,6 +18,13 @@ export class SocialchoiceCustomerWorkspace extends DurableObject {
     async fetch(request) {
         try {
             const value = request.headers.get(CONTEXT_HEADER), path = new URL(request.url).pathname;
+            const tracking = ['GET', 'HEAD'].includes(request.method) && path.match(TRACKING_PATH);
+            if (tracking) {
+                const savedId = await this.ctx.storage.get('customer-id');
+                if (!savedId || tracking[1] !== savedId) return Response.json({ message: 'Link not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+                await this.start(savedId);
+                return handleWebRequest(request, this.runtime.handler);
+            }
             const publicMedia = ['GET', 'HEAD'].includes(request.method) && /^\/api\/instagram-media\/[a-f0-9-]{36}\/[a-f0-9-]{36}$/.test(path);
             const identity = value ? readCustomerContext(value, this.env.SOCIALCHOICE_STORAGE_KEY) : null;
             const savedId = await this.ctx.storage.get('customer-id');

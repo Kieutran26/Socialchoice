@@ -38,3 +38,25 @@ test('customer logout revokes the central session without requiring a reachable 
     const response = await gateway(new Request('https://app.example/api/auth/logout', { method: 'POST', headers: { cookie: 'socialchoice_customer=fixture', 'x-socialchoice-client': 'local-ui' } }));
     assert.equal(response.status, 200); assert.equal(revoked, true); assert.match(response.headers.get('set-cookie'), /Max-Age=0/);
 });
+
+test('public tracking routes follow URL scope before identity and cross-site checks and strip credentials', async () => {
+    const origin = 'https://app.example', customer = randomUUID(), link = randomUUID();
+    const forwarded = [];
+    const gateway = createCustomerGateway({
+        env: { SOCIALCHOICE_PUBLIC_ORIGIN: origin },
+        directory: { resolve: () => { throw new Error('Public clicks must not resolve sessions'); } },
+        forwardOwner: request => { forwarded.push(['owner', request]); return new Response(null, { status: 302, headers: { location: 'https://example.com/owner' } }); },
+        forwardCustomer: (id, request) => { forwarded.push([id, request]); return new Response(null, { status: 302, headers: { location: 'https://example.com/customer' } }); },
+    });
+    for (const scope of ['owner', customer]) for (const method of ['GET', 'HEAD']) {
+        const response = await gateway(new Request(`${origin}/api/links/go/${scope}/${link}`, { method, headers: { cookie: 'socialchoice_customer=other', authorization: 'Bearer fixture', 'proxy-authorization': 'fixture', [CONTEXT_HEADER]: 'forged', origin: 'https://external.example', 'sec-fetch-site': 'cross-site' } }));
+        assert.equal(response.status, 302);
+        const [id, request] = forwarded.at(-1); assert.equal(id, scope); assert.equal(request.method, method);
+        assert.equal(new URL(request.url).pathname, `/api/links/go/${scope}/${link}`);
+        for (const name of ['cookie', 'authorization', 'proxy-authorization', CONTEXT_HEADER]) assert.equal(request.headers.get(name), null);
+    }
+    const count = forwarded.length;
+    assert.equal((await gateway(new Request(`${origin}/api/links/go/${customer}/${link}`, { method: 'POST' }))).status, 405);
+    assert.equal((await gateway(new Request(`https://evil.example/api/links/go/${customer}/${link}`))).status, 403);
+    assert.equal(forwarded.length, count);
+});

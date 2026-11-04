@@ -1,3 +1,4 @@
+import { TRACKING_PATH } from './tracking-links.js';
 import { DurableObject } from 'cloudflare:workers';
 import { createCloudWorkspaceRuntime } from './cloudflare-workspace-runtime.js';
 import { handleWebRequest } from './web-request-adapter.js';
@@ -7,11 +8,12 @@ export class SocialchoiceWorkspace extends DurableObject {
     constructor(ctx, env) {
         super(ctx, env);
         this.runtime = createCloudWorkspaceRuntime(ctx, env);
-        ctx.blockConcurrencyWhile(() => this.reconcilePhotos());
+
     }
     async fetch(request) {
         if (!this.runtime) return Response.json({ message: 'Configure private admin and storage secrets before deployment', ready: false }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
-        await this.reconcilePhotos();
+        const publicTracking = ['GET', 'HEAD'].includes(request.method) && TRACKING_PATH.test(new URL(request.url).pathname);
+        if (!publicTracking) await this.reconcilePhotos();
         return handleWebRequest(request, this.runtime.handler);
     }
     async reconcilePhotos() { if (this.runtime) await this.runtime.publisher.resumePhotos(); }
