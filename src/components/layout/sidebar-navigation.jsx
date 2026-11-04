@@ -2,6 +2,7 @@ import { NavLink } from 'react-router-dom';
 import {
     SquaresFour,
     ChartLineUp,
+    Sparkle,
     PencilSimple,
     Article,
     CopySimple,
@@ -28,6 +29,7 @@ const NAV_GROUPS = [
     {
         title: 'CONTENT',
         items: [
+            { to: '/agent', label: 'AI Agent Chat', icon: Sparkle },
             { to: '/create', label: 'Create Post', icon: PencilSimple },
             { to: '/posts', label: 'All Posts', icon: Article },
             { to: '/templates', label: 'Post templates', icon: CopySimple },

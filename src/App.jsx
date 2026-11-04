@@ -11,6 +11,7 @@ import ContentCalendar from '@/pages/ContentCalendar';
 import PostTemplates from '@/pages/PostTemplates';
 import CreateTemplate from '@/pages/CreateTemplate';
 import CreatePost from '@/pages/CreatePost';
+import ChatAgent from '@/pages/ChatAgent';
 import AllPosts from '@/pages/AllPosts';
 import ContentStrategy from '@/pages/ContentStrategy';
 import ContentPillars from '@/pages/ContentPillars';
@@ -48,6 +49,7 @@ export default function App() {
             <Route element={<Layout />}>
                 <Route path="/" element={<Overview />} />
                 <Route path="/calendar" element={<ContentCalendar />} />
+                <Route path="/agent" element={<ChatAgent />} />
                 <Route path="/create" element={<CreatePost />} />
                 <Route path="/templates" element={<PostTemplates />} />
                 <Route path="/templates/create" element={<CreateTemplate />} />

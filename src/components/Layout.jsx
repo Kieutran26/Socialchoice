@@ -14,6 +14,7 @@ import { appClient } from '@/api/app-client';
 const ROUTE_LABELS = {
     '/': 'Overview',
     '/analytics': 'Analytics',
+    '/agent': 'AI Agent Chat',
     '/create': 'Create Post',
     '/posts': 'All Posts',
     '/templates': 'Post templates',
