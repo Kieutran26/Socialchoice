@@ -1,6 +1,6 @@
 import LoadError from '@/components/common/load-error';
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useState, useRef } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     ChartBar,
@@ -72,29 +72,32 @@ export default function ContentStrategy() {
     const [assets, setAssets] = useState([]);
     const [rows, setRows] = useState({ pillar: [], angle: [], total: 0 });
 
-    const currentBrand = brands.find((b) => b.id === selectedBrandId) || null;
-    const [assetError, setAssetError] = useState('');
-    const assetVersion = useRef(0);
+    const currentBrand = brands.find((b) => b.id === selectedBrandId) || brands[0];
 
     const loadAssets = useCallback(async () => {
-        const version = ++assetVersion.current;
-        setAssets([]); setAssetError('');
         if (!currentBrand?.id) return;
         try {
-            const media = await appClient.entities.MediaAsset.filter({brand_id:currentBrand.id,is_demo:!!currentBrand.is_demo},{limit:200});
-            const catalog = [];
-            let offset = 0;
-            if (!currentBrand.is_demo) do {
-                const page = await appClient.autopilot.call('list',{brand_id:currentBrand.id,offset});
-                const connected = new Set(page.sources.filter(s=>s.status==='connected').map(s=>s.id));
-                catalog.push(...page.assets.filter(a=>connected.has(a.source_id)&&a.size<=3*1024*1024&&a.availability==='available'&&a.analysis_status==='analyzed'&&a.review==='approved'&&['image/png','image/jpeg','image/webp'].includes(a.mime)).map(a=>({
-                    id:a.id,brand_id:a.brand_id,name:a.name,file_url:'',file_type:'image',notes:[a.analysis?.summary,...(a.analysis?.tags||[])].filter(Boolean).join(' · '),is_autopilot:true,
-                })));
-                offset = page.nextOffset;
-            } while(offset!==null);
-            if(version===assetVersion.current) setAssets([...media.items.filter(a=>a.file_type==='image'&&a.storage_id),...catalog]);
-        } catch(error) { if(version===assetVersion.current) setAssetError(error.message); }
-    }, [currentBrand?.id, currentBrand?.is_demo]);
+            const [mediaRes, autopilotRes] = await Promise.allSettled([
+                appClient.entities.MediaAsset.filter({ brand_id: currentBrand.id }, { limit: 200 }),
+                appClient.autopilot.call('list', { brand_id: currentBrand.id }),
+            ]);
+
+            const mediaItems = mediaRes.status === 'fulfilled' ? mediaRes.value?.items || [] : [];
+            const autopilotItems = autopilotRes.status === 'fulfilled'
+                ? (autopilotRes.value?.assets || []).map((a) => ({
+                    id: a.id,
+                    name: a.name,
+                    file_url: a.file_url || '',
+                    notes: [a.analysis?.summary, ...(a.analysis?.tags || [])].filter(Boolean).join(' · '),
+                    is_autopilot: true,
+                }))
+                : [];
+
+            setAssets([...mediaItems, ...autopilotItems]);
+        } catch {
+            // Keep existing assets
+        }
+    }, [currentBrand?.id]);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -257,11 +260,10 @@ export default function ContentStrategy() {
                 <button
                     type="button"
                     onClick={() => setActiveTab('strategist')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'strategist'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'strategist'
+                        ? 'bg-foreground text-background shadow-xs'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        }`}
                 >
                     <Sparkle size={16} weight={activeTab === 'strategist' ? 'fill' : 'regular'} className={activeTab === 'strategist' ? 'text-brand' : ''} />
                     <span>{t('AI Content Strategist (Phase 2)')}</span>
@@ -273,11 +275,10 @@ export default function ContentStrategy() {
                 <button
                     type="button"
                     onClick={() => setActiveTab('knowledge')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'knowledge'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'knowledge'
+                        ? 'bg-foreground text-background shadow-xs'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        }`}
                 >
                     <IdentificationCard size={16} weight={activeTab === 'knowledge' ? 'bold' : 'regular'} />
                     <span>{t('Brand Knowledge Base')}</span>
@@ -286,11 +287,10 @@ export default function ContentStrategy() {
                 <button
                     type="button"
                     onClick={() => setActiveTab('analytics')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'analytics'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'analytics'
+                        ? 'bg-foreground text-background shadow-xs'
+                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        }`}
                 >
                     <ChartBar size={16} weight={activeTab === 'analytics' ? 'bold' : 'regular'} />
                     <span>{t('Phân bổ & Mục tiêu (Analytics)')}</span>
@@ -298,11 +298,8 @@ export default function ContentStrategy() {
             </div>
 
             {/* TAB 1: AI Content Strategist (Phase 2 Flagship) */}
-            {activeTab === 'strategist' && !currentBrand && <EmptyState icon={IdentificationCard} title={t('Choose a brand first')} description={t('Select one brand in the sidebar to create its content plan.')} />}
-            {assetError && <p role="alert" className="panel p-4 text-dangerFg">{t(assetError)}</p>}
-            {activeTab === 'strategist' && currentBrand && (
+            {activeTab === 'strategist' && (
                 <AIContentStrategist
-                    key={currentBrand.id + JSON.stringify([currentBrand.products,currentBrand.target_audience,currentBrand.tone_of_voice,currentBrand.goals,currentBrand.posting_frequency,currentBrand.timezone])}
                     brand={currentBrand}
                     pillars={pillars}
                     angles={angles}
@@ -316,12 +313,12 @@ export default function ContentStrategy() {
                         });
                         navigate('/calendar');
                     }}
+                    onRefreshAssets={loadAssets}
                 />
             )}
 
             {/* TAB 2: Brand Knowledge Base */}
-            {activeTab === 'knowledge' && !currentBrand && <EmptyState icon={IdentificationCard} title={t('Choose a brand first')} description={t('Select one brand in the sidebar to edit its knowledge base.')} />}
-            {activeTab === 'knowledge' && currentBrand && (
+            {activeTab === 'knowledge' && (
                 <BrandKnowledgeBase
                     brand={currentBrand}
                     assetsCount={assets.length}
@@ -381,8 +378,8 @@ export default function ContentStrategy() {
                                     ? overrepresented.length + underrepresented.length === 0
                                         ? t('All pillars balanced')
                                         : t('{count} pillars off target', {
-                                              count: overrepresented.length + underrepresented.length,
-                                          })
+                                            count: overrepresented.length + underrepresented.length,
+                                        })
                                     : t('Create pillars to set targets')
                             }
                             icon={Target}

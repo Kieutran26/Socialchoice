@@ -1,87 +1,894 @@
-import { useState, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import ConfirmDialog from '@/components/common/ConfirmDialog';
+import {
+    generateStrategyPlan,
+    regeneratePlanItem,
+    applyPlanToCalendar,
+    seedBrandSampleAssets,
+} from '@/lib/ai-content-strategist';
+import {
+    Sparkle,
+    Stack,
+    TreeStructure,
+    Images,
+    ArrowsClockwise,
+    CheckCircle,
+    Check,
+    PencilSimple,
+    Trash,
+    Plus,
+    WarningCircle,
+    Table,
+    SquaresFour,
+    Lightning,
+    MagnifyingGlass,
+    CheckSquareOffset,
+} from '@phosphor-icons/react';
 import PlatformBadge from '@/components/common/PlatformBadge';
-import { applyPlanToCalendar, editPlanItem, summarizePlan } from '@/lib/ai-content-strategist';
-import { Sparkle, ArrowsClockwise, PencilSimple, Trash, CheckSquareOffset } from '@phosphor-icons/react';
 
-const platforms = ['facebook','instagram','linkedin','tiktok','threads'];
-const frequencyFor = value => ({'1 bài/ngày':'1_per_day','2 bài/ngày':'2_per_day','3 bài/tuần':'3_per_week','5 bài/tuần':'5_per_week'}[value] || (['1_per_day','2_per_day','3_per_week','5_per_week'].includes(value)?value:'1_per_day'));
+const PLATFORM_OPTIONS = [
+    { key: 'facebook', label: 'Facebook' },
+    { key: 'instagram', label: 'Instagram' },
+    { key: 'linkedin', label: 'LinkedIn' },
+    { key: 'tiktok', label: 'TikTok' },
+    { key: 'threads', label: 'Threads' },
+];
 
-export default function AIContentStrategist({brand,pillars=[],angles=[],assets=[],appClient,onPlanApplied}) {
-    const {t,language}=useTranslation(),{toast}=useToast();
-    const [days,setDays]=useState(30),[frequency,setFrequency]=useState(frequencyFor(brand?.posting_frequency));
-    const [selected,setSelected]=useState(['facebook']),[plan,setPlan]=useState(null),[busy,setBusy]=useState(false),[error,setError]=useState('');
-    const [view,setView]=useState('cards'),[search,setSearch]=useState(''),[editing,setEditing]=useState(null),[form,setForm]=useState(null);
-    const [confirmation,setConfirmation]=useState(null);
-    const lock=useRef(false), request=useRef(null);
-    const activePillars=pillars.filter(p=>p.brand_id===brand?.id&&p.status!=='archived');
-    const activeAngles=angles.filter(a=>a.brand_id===brand?.id&&a.status!=='archived');
-    const enough=assets.length>=20;
-    async function generate(item=null) {
-        if(lock.current)return;
-        lock.current=true;setBusy(true);setError('');
-        // Keep the request ID after uncertain transport failures. A fresh paid request needs a new confirmation.
-        const intent=JSON.stringify([brand.id,days,frequency,selected,language,item?.id,item?.time,item?.platform,plan?.id]);
-        if(request.current?.intent!==intent)request.current={intent,id:crypto.randomUUID()};
+export default function AIContentStrategist({
+    brand,
+    pillars = [],
+    angles = [],
+    assets = [],
+    appClient,
+    onPlanApplied,
+    onRefreshAssets,
+}) {
+    const { t } = useTranslation();
+    const { toast } = useToast();
+
+    // Configuration state
+    const [days, setDays] = useState(30);
+    const [frequency, setFrequency] = useState('1_per_day');
+    const [selectedPlatforms, setSelectedPlatforms] = useState(['facebook', 'instagram']);
+    const [generating, setGenerating] = useState(false);
+    const [applying, setApplying] = useState(false);
+    const [seedingAssets, setSeedingAssets] = useState(false);
+
+    // Current generated plan
+    const [currentPlan, setCurrentPlan] = useState(null);
+
+    // Filter & view modes
+    const [viewMode, setViewMode] = useState('cards'); // 'cards' | 'table'
+    const [filterPillar, setFilterPillar] = useState('all');
+    const [filterPlatform, setFilterPlatform] = useState('all');
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Editing modal state
+    const [editingItem, setEditingItem] = useState(null);
+    const [editForm, setEditForm] = useState({
+        title: '',
+        caption: '',
+        pillar_id: '',
+        angle_id: '',
+        platform: '',
+        time: '',
+        asset_id: '',
+        reason: '',
+    });
+
+    const hasEnoughAssets = assets.length >= 20;
+
+    // Toggle platform in selection
+    const togglePlatform = (key) => {
+        if (selectedPlatforms.includes(key)) {
+            if (selectedPlatforms.length > 1) {
+                setSelectedPlatforms(selectedPlatforms.filter((p) => p !== key));
+            }
+        } else {
+            setSelectedPlatforms([...selectedPlatforms, key]);
+        }
+    };
+
+    // Generate full strategy plan
+    const handleGenerate = () => {
+        if (!brand) return;
+        setGenerating(true);
         try {
-            const result=await appClient.autopilot.call(item?'strategyRegenerate':'strategyGenerate',{
-                brand_id:brand.id,request_id:request.current.id,confirmed:true,language,
-                ...(item?{plan_id:plan.id,item_id:item.id,slot:{time:item.time,platform:item.platform}}:{options:{days,frequency,platforms:selected}}),
+            const plan = generateStrategyPlan({
+                brand,
+                pillars,
+                angles,
+                assets,
+                options: {
+                    days,
+                    frequency,
+                    platforms: selectedPlatforms,
+                },
             });
-            setPlan(item?summarizePlan({...plan,posts:plan.posts.map(p=>p.id===item.id?result.posts[0]:p)}):result);
-            request.current=null;setConfirmation(null);
-        }catch(e){setError(e.message);throw e;}finally{lock.current=false;setBusy(false);}
-    }
-    async function apply() {
-        if(lock.current||!plan)return;
-        lock.current=true;setBusy(true);setError('');
-        try{const posts=await applyPlanToCalendar({plan,brand,appClient});setPlan({...plan,applied:true});onPlanApplied?.(posts);}
-        catch(e){setError(e.message);}finally{lock.current=false;setBusy(false);}
-    }
-    function openEdit(item){setEditing(item);setForm({title:item.title,caption:item.caption,pillar_id:item.pillar.id,angle_id:item.angle.id,platform:item.platform,time:item.time,asset_id:item.asset?.id||'',reason:item.reason});}
-    function saveEdit(){try{const updated=editPlanItem(editing,form,{brand,pillars:choices,angles:allAngles,assets});setPlan(summarizePlan({...plan,posts:plan.posts.map(p=>p.id===updated.id?updated:p)}));setEditing(null);}catch(e){toast({variant:'destructive',title:t(e.message)});}}
-    const rows=plan?.posts.filter(p=>[p.title,p.caption,p.pillar.name,p.angle.name].join(' ').toLowerCase().includes(search.toLowerCase()))||[];
-    const choices=[...new Map([...activePillars,...(plan?.posts.filter(p=>p.pillar.is_virtual).map(p=>p.pillar)||[])].map(p=>[p.id,p])).values()];
-    const allAngles=[...new Map([...activeAngles,...(plan?.posts.filter(p=>p.angle.is_virtual).map(p=>p.angle)||[])].map(a=>[a.id,a])).values()];
-    const angleChoices=form?allAngles.filter(a=>a.pillar_id===form.pillar_id):[];
-    return <div className="space-y-5">
-        {error&&<p role="alert" className="panel p-4 text-dangerFg">{t(error)}</p>}
-        <section className="panel p-5 space-y-4" aria-busy={busy}>
-            <h2 className="text-[15px] flex items-center gap-2"><Sparkle size={18}/>{t('AI Content Strategist')}</h2>
-            <p className="text-sm text-muted-foreground">{t('Strategy uses your configured AI provider and eligible assets. Review every suggestion before saving drafts.')}</p>
-            <p className="text-sm">{t('{count} eligible assets. At least 20 are required.',{count:assets.length})}</p>
-            {!enough&&<p className="text-sm text-muted-foreground">{t('Import and approve image analysis in Media Library, or upload your own images. Sample URLs do not count.')}</p>}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label htmlFor="strategy-days">{t('Plan duration')}</Label><select id="strategy-days" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={days} disabled={busy} onChange={e=>setDays(Number(e.target.value))}>{[7,14,30].map(n=><option key={n} value={n}>{t('{days} days',{days:n})}</option>)}</select></div>
-                <div className="space-y-1.5"><Label htmlFor="strategy-frequency">{t('Posting frequency')}</Label><select id="strategy-frequency" className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm" value={frequency} disabled={busy} onChange={e=>setFrequency(e.target.value)}>{[['1_per_day','1 post / day'],['2_per_day','2 posts / day'],['3_per_week','3 posts / week'],['5_per_week','5 posts / week']].map(([v,label])=><option key={v} value={v}>{t(label)}</option>)}</select></div>
+            setCurrentPlan(plan);
+            toast({
+                title: t('Kế hoạch nội dung {days} ngày đã sẵn sàng!', { days }),
+                description: t('Đã tạo {count} bài viết chiến lược với trụ cột, góc khai thác và gắn kết tài nguyên tương ứng.', {
+                    count: plan.totalPosts,
+                }),
+            });
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: t('Lỗi tạo kế hoạch'),
+                description: error.message,
+            });
+        } finally {
+            setGenerating(false);
+        }
+    };
+
+    // Regenerate a single item
+    const handleRegenerateItem = (item) => {
+        if (!currentPlan) return;
+        const updatedItem = regeneratePlanItem({
+            item,
+            brand,
+            pillars,
+            angles,
+            assets,
+        });
+
+        setCurrentPlan({
+            ...currentPlan,
+            posts: currentPlan.posts.map((p) => (p.id === item.id ? updatedItem : p)),
+        });
+
+        toast({
+            title: t('Đã tạo lại ý tưởng Ngày {day}', { day: item.dayIndex }),
+            description: t('Đã chọn góc khai thác mới và tài nguyên thay thế phù hợp.'),
+        });
+    };
+
+    // Delete single item from plan
+    const handleDeleteItem = (id) => {
+        if (!currentPlan) return;
+        const newPosts = currentPlan.posts.filter((p) => p.id !== id);
+        setCurrentPlan({
+            ...currentPlan,
+            totalPosts: newPosts.length,
+            posts: newPosts,
+        });
+    };
+
+    // Open edit dialog for an item
+    const handleOpenEdit = (item) => {
+        setEditingItem(item);
+        setEditForm({
+            title: item.title,
+            caption: item.caption,
+            pillar_id: item.pillar?.id || '',
+            angle_id: item.angle?.id || '',
+            platform: item.platform || 'facebook',
+            time: item.time || '09:00',
+            asset_id: item.asset?.id || '',
+            reason: item.reason || '',
+        });
+    };
+
+    // Save edited item
+    const handleSaveEdit = () => {
+        if (!editingItem || !currentPlan) return;
+        const selectedPillar = pillars.find((p) => p.id === editForm.pillar_id) || editingItem.pillar;
+        const selectedAngle = angles.find((a) => a.id === editForm.angle_id) || editingItem.angle;
+        const selectedAsset = assets.find((a) => a.id === editForm.asset_id) || editingItem.asset;
+
+        const updated = {
+            ...editingItem,
+            title: editForm.title,
+            caption: editForm.caption,
+            pillar: selectedPillar,
+            angle: selectedAngle,
+            platform: editForm.platform,
+            time: editForm.time,
+            asset: selectedAsset,
+            reason: editForm.reason,
+        };
+
+        setCurrentPlan({
+            ...currentPlan,
+            posts: currentPlan.posts.map((p) => (p.id === editingItem.id ? updated : p)),
+        });
+
+        setEditingItem(null);
+        toast({ title: t('Đã cập nhật bài viết') });
+    };
+
+    // Apply entire plan to Content Calendar (as DRAFTS)
+    const handleApplyPlan = async () => {
+        if (!currentPlan || !currentPlan.posts.length) return;
+        setApplying(true);
+        try {
+            const created = await applyPlanToCalendar({
+                plan: currentPlan,
+                brand,
+                appClient,
+            });
+
+            toast({
+                title: t('Đã áp dụng {count} bài viết vào Lịch nội dung!', { count: created.length }),
+                description: t('Tất cả bài viết được tạo ở trạng thái Nháp (Draft), sẵn sàng xem và tinh chỉnh trên lịch.'),
+            });
+
+            onPlanApplied?.(created);
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: t('Không thể lưu vào lịch'),
+                description: error.message,
+            });
+        } finally {
+            setApplying(false);
+        }
+    };
+
+    // Quick seed 20 sample assets
+    const handleSeedAssets = async () => {
+        setSeedingAssets(true);
+        try {
+            const added = await seedBrandSampleAssets({
+                brandId: brand.id,
+                isDemo: !!brand.is_demo,
+                appClient,
+            });
+            toast({
+                title: t('Đã nạp {count} tài nguyên mẫu vào Asset Library', { count: added.length }),
+            });
+            onRefreshAssets?.();
+        } catch (error) {
+            toast({
+                variant: 'destructive',
+                title: t('Lỗi nạp tài nguyên'),
+                description: error.message,
+            });
+        } finally {
+            setSeedingAssets(false);
+        }
+    };
+
+    // Filtered posts in the review section
+    const filteredPosts = useMemo(() => {
+        if (!currentPlan) return [];
+        return currentPlan.posts.filter((post) => {
+            if (filterPillar !== 'all' && post.pillar?.name !== filterPillar) return false;
+            if (filterPlatform !== 'all' && post.platform !== filterPlatform) return false;
+            if (searchQuery.trim()) {
+                const q = searchQuery.toLowerCase();
+                const matchTitle = post.title.toLowerCase().includes(q);
+                const matchAngle = post.angle?.name?.toLowerCase().includes(q);
+                const matchReason = post.reason?.toLowerCase().includes(q);
+                if (!matchTitle && !matchAngle && !matchReason) return false;
+            }
+            return true;
+        });
+    }, [currentPlan, filterPillar, filterPlatform, searchQuery]);
+
+    return (
+        <div className="space-y-6">
+            {/* Asset Library Readiness Banner */}
+            {!hasEnoughAssets && (
+                <div className="panel p-4 bg-amber-500/10 border border-amber-500/20 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+                    <div className="flex items-center gap-2.5 text-amber-800">
+                        <WarningCircle size={20} weight="fill" className="text-amber-600 shrink-0" />
+                        <div>
+                            <span className="font-semibold text-foreground">
+                                {t('Thư viện hiện có {count}/20 tài nguyên.', { count: assets.length })}
+                            </span>{' '}
+                            <span className="text-muted-foreground">
+                                {t('Để đạt hiệu quả tối ưu cho lịch 30 ngày, hệ thống khuyến nghị nạp ít nhất 20 assets.')}
+                            </span>
+                        </div>
+                    </div>
+                    <Button
+                        size="sm"
+                        onClick={handleSeedAssets}
+                        disabled={seedingAssets}
+                        className="btn-skew shrink-0 text-xs font-semibold h-8 px-3"
+                    >
+                        <Plus size={14} weight="bold" />
+                        <span>{seedingAssets ? t('Đang nạp…') : t('Nạp 20 assets mẫu ngay')}</span>
+                    </Button>
+                </div>
+            )}
+
+            {/* AI Generator Control Bar */}
+            <div className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-5">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-border/60 pb-4">
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand/20 text-brand-ink">
+                                <Sparkle size={18} weight="fill" />
+                            </span>
+                            <h2 className="text-base font-semibold text-foreground">
+                                {t('AI Content Strategist — Lập kế hoạch nội dung tự động')}
+                            </h2>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                            {t('AI phân tích thông tin thương hiệu, mục tiêu và thư viện tài nguyên Phase 1 để đề xuất content pillars, angles, chủ đề và lịch đăng.')}
+                        </p>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <span className="label-xs rounded-xl bg-muted/60 px-3 py-1.5 font-medium text-muted-foreground border border-border/60">
+                            {t('{count} assets sẵn sàng', { count: assets.length })}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Duration */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            {t('Khoảng thời gian kế hoạch')}
+                        </label>
+                        <div className="flex items-center rounded-xl border border-border p-1 bg-muted/20">
+                            {[7, 14, 30].map((d) => (
+                                <button
+                                    key={d}
+                                    type="button"
+                                    onClick={() => setDays(d)}
+                                    className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${days === d
+                                        ? 'bg-foreground text-background shadow-xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                >
+                                    {d} {t('ngày')}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Frequency */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            {t('Tần suất đăng bài')}
+                        </label>
+                        <select
+                            value={frequency}
+                            onChange={(e) => setFrequency(e.target.value)}
+                            className="w-full h-9 text-xs rounded-xl border border-border bg-background px-3 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
+                        >
+                            <option value="1_per_day">{t('1 bài / ngày (Chuẩn 30 bài)')}</option>
+                            <option value="2_per_day">{t('2 bài / ngày (Sáng & Tối)')}</option>
+                            <option value="3_per_week">{t('3 bài / tuần (T2, T4, T6)')}</option>
+                            <option value="5_per_week">{t('5 bài / tuần (T2 đến T6)')}</option>
+                        </select>
+                    </div>
+
+                    {/* Target Platforms */}
+                    <div className="space-y-1.5 lg:col-span-2">
+                        <label className="text-xs font-medium text-muted-foreground">
+                            {t('Nền tảng đích')}
+                        </label>
+                        <div className="flex flex-wrap items-center gap-1.5">
+                            {PLATFORM_OPTIONS.map((p) => {
+                                const selected = selectedPlatforms.includes(p.key);
+                                return (
+                                    <button
+                                        key={p.key}
+                                        type="button"
+                                        onClick={() => togglePlatform(p.key)}
+                                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium transition-all ${selected
+                                            ? 'bg-brand/15 border-brand-dark/40 text-brand-ink font-semibold'
+                                            : 'border-border bg-background text-muted-foreground hover:text-foreground'
+                                            }`}
+                                    >
+                                        <PlatformBadge platform={p.key} />
+                                        <span>{p.label}</span>
+                                        {selected && <Check size={12} weight="bold" className="text-brand-dark" />}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                    <p className="text-[11px] text-muted-foreground">
+                        {t('Kế hoạch sẽ được lập ở trạng thái Bản nháp (Draft), không tự động xuất bản.')}
+                    </p>
+
+                    <button
+                        type="button"
+                        onClick={handleGenerate}
+                        disabled={generating}
+                        className="btn-skew inline-flex items-center gap-2 px-5 py-2.5 text-xs font-semibold shadow-xs"
+                    >
+                        <Lightning size={16} weight="fill" />
+                        <span>{generating ? t('AI đang phân tích & lập lịch…') : t('Tạo lịch {days} ngày với AI', { days })}</span>
+                    </button>
+                </div>
             </div>
-            <fieldset disabled={busy}><legend className="label-xs mb-2">{t('Platforms')}</legend><div className="flex flex-wrap gap-2">{platforms.map(p=><Button key={p} variant="outline" aria-pressed={selected.includes(p)} onClick={()=>setSelected(selected.includes(p)?selected.length>1?selected.filter(v=>v!==p):selected:[...selected,p])}><PlatformBadge platform={p}/></Button>)}</div></fieldset>
-            <p className="label-xs">{t('Suggested times are fixed planning defaults, not account performance predictions.')}</p>
-            <div className="flex justify-end"><button type="button" className="btn-skew" disabled={busy||!enough||!!brand?.is_demo} onClick={()=>{request.current=null;setConfirmation({item:null});}}><Sparkle size={16} weight="duotone"/>{t(busy?'Generating.':'Generate plan with AI')}</button></div>
-            {busy&&<p role="status" className="label-xs">{t('Processing. Keep this page open.')}</p>}
-        </section>
-        {plan&&<section className="space-y-4">
-            <div className="panel p-5 space-y-4"><div className="flex flex-wrap items-center justify-between gap-3"><h2 className="text-[15px]">{t('Review {count} draft posts',{count:plan.posts.length})}</h2><button type="button" className="btn-skew" disabled={busy||plan.applied||!plan.posts.length} onClick={apply}><CheckSquareOffset size={16} weight="duotone"/>{t(plan.applied?'Applied':'Apply to calendar')}</button></div><p className="label-xs">{plan.provider} · {plan.model} · {t('Drafts only. Nothing is published automatically.')}</p><Label htmlFor="strategy-search">{t('Search plan')}</Label><Input id="strategy-search" value={search} onChange={e=>setSearch(e.target.value)}/><div className="flex gap-2"><Button variant="outline" aria-pressed={view==='cards'} onClick={()=>setView('cards')}>{t('Cards')}</Button><Button variant="outline" aria-pressed={view==='table'} onClick={()=>setView('table')}>{t('Table')}</Button></div></div>
-            {view==='cards'?<div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">{rows.map(item=><article key={item.id} className="panel p-5 min-w-0 space-y-3"><div className="flex flex-wrap items-center gap-2 text-sm"><span>{item.date} · {item.time}</span><PlatformBadge platform={item.platform}/></div><p className="label-xs break-words">{item.pillar.name} · {item.angle.name}</p><h3 className="text-[15px] break-words">{item.title}</h3><p className="text-sm whitespace-pre-wrap break-words">{item.caption}</p>{item.asset?.file_url&&<img src={item.asset.file_url} alt={item.asset.name} className="w-full h-40 object-contain rounded-lg"/>}<p className="label-xs break-words">{item.asset?.name||t('No asset')}</p><p className="text-sm break-words">{item.reason}</p><div className="flex flex-wrap gap-2 border-t pt-3"><Button variant="ghost" disabled={busy||plan.applied} onClick={()=>{request.current=null;setConfirmation({item});}}><ArrowsClockwise size={16}/>{t('Regenerate')}</Button><Button variant="outline" disabled={busy||plan.applied} onClick={()=>openEdit(item)}><PencilSimple size={16}/>{t('Edit')}</Button><Button variant="ghost" aria-label={t('Remove post')} disabled={busy||plan.applied} onClick={()=>setPlan(summarizePlan({...plan,posts:plan.posts.filter(p=>p.id!==item.id)}))}><Trash size={16}/></Button></div></article>)}</div>:<div className="panel overflow-x-auto"><table className="w-full text-sm"><thead className="bg-muted"><tr>{['Date','Platform','Pillar','Title','Asset','Actions'].map(label=><th key={label} className="text-left p-3">{t(label)}</th>)}</tr></thead><tbody>{rows.map(item=><tr key={item.id} className="border-t"><td className="p-3 whitespace-nowrap">{item.date}<br/>{item.time}</td><td className="p-3"><PlatformBadge platform={item.platform}/></td><td className="p-3">{item.pillar.name}</td><td className="p-3 break-words">{item.title}</td><td className="p-3">{item.asset?.name||t('No asset')}</td><td className="p-3"><Button variant="outline" disabled={busy||plan.applied} onClick={()=>openEdit(item)}>{t('Edit')}</Button></td></tr>)}</tbody></table></div>}
-        </section>}
-        <ConfirmDialog destructive={false} open={!!confirmation} onOpenChange={open=>{if(!open&&!busy)setConfirmation(null);}} title={t('Confirm AI generation')} description={t('Brand context and asset descriptions will be sent to your configured AI provider. Provider charges may apply. No image bytes are sent. Nothing will be published.')} confirmLabel="Generate" onConfirm={()=>generate(confirmation?.item)}/>
-        <Dialog open={!!editing} onOpenChange={open=>{if(!open)setEditing(null);}}><DialogContent className="max-w-xl"><DialogHeader><DialogTitle>{t('Edit draft suggestion')}</DialogTitle></DialogHeader>{form&&<div className="space-y-4">
-            <div><Label htmlFor="strategy-title">{t('Title')}</Label><Input id="strategy-title" maxLength={200} value={form.title} onChange={e=>setForm(previous=>({...previous,title:e.target.value}))}/></div>
-            <div><Label htmlFor="strategy-caption">{t('Caption')}</Label><Textarea id="strategy-caption" rows={5} maxLength={20000} value={form.caption} onChange={e=>setForm(previous=>({...previous,caption:e.target.value}))}/></div>
-            <div><Label htmlFor="strategy-pillar">{t('Pillar')}</Label><select id="strategy-pillar" className="w-full border border-input rounded-lg p-2 text-sm" value={form.pillar_id} onChange={e=>{const id=e.target.value;setForm(previous=>({...previous,pillar_id:id,angle_id:allAngles.find(a=>a.pillar_id===id)?.id||''}));}}>{choices.map(p=><option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
-            <div><Label htmlFor="strategy-angle">{t('Angle')}</Label><select id="strategy-angle" className="w-full border border-input rounded-lg p-2 text-sm" value={form.angle_id} onChange={e=>setForm(previous=>({...previous,angle_id:e.target.value}))}><option value="">{t('Choose an angle')}</option>{angleChoices.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-            <div><Label htmlFor="strategy-platform">{t('Platform')}</Label><select id="strategy-platform" className="w-full border border-input rounded-lg p-2 text-sm" value={form.platform} onChange={e=>setForm(previous=>({...previous,platform:e.target.value}))}>{platforms.map(p=><option key={p} value={p}>{p}</option>)}</select></div>
-            <div><Label htmlFor="strategy-time">{t('Time')}</Label><Input id="strategy-time" type="time" onInput={e=>{const time=e.currentTarget.value;setForm(previous=>({...previous,time}));}} value={form.time} onChange={e=>setForm(previous=>({...previous,time:e.target.value}))}/></div>
-            <div><Label htmlFor="strategy-asset">{t('Asset')}</Label><select id="strategy-asset" className="w-full border border-input rounded-lg p-2 text-sm" value={form.asset_id} onChange={e=>setForm(previous=>({...previous,asset_id:e.target.value}))}><option value="">{t('No asset')}</option>{assets.map(a=><option key={a.id} value={a.id}>{a.name}</option>)}</select></div>
-            <div><Label htmlFor="strategy-reason">{t('Selection reason')}</Label><Textarea id="strategy-reason" maxLength={2000} value={form.reason} onChange={e=>setForm(previous=>({...previous,reason:e.target.value}))}/></div>
-            <div className="flex justify-end gap-3"><Button variant="outline" onClick={()=>setEditing(null)}>{t('Cancel')}</Button><button type="button" className="btn-skew" onClick={saveEdit}>{t('Save changes')}</button></div>
-        </div>}</DialogContent></Dialog>
-    </div>;
+
+            {/* Generated Plan Review Section */}
+            {currentPlan && (
+                <div className="space-y-5">
+                    {/* Review Header Banner with Stats */}
+                    <div className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                            <div>
+                                <div className="flex items-center gap-2.5">
+                                    <h3 className="text-base font-semibold text-foreground">
+                                        {t('Chiến lược nội dung đề xuất ({count} bài viết · {days} ngày)', {
+                                            count: currentPlan.totalPosts,
+                                            days: currentPlan.days,
+                                        })}
+                                    </h3>
+                                    <span className="rounded-lg bg-emerald-50 border border-emerald-200/60 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                                        {t('Draft Plan')}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                    {t('Xem lại, chỉnh sửa hoặc tạo lại từng ý tưởng. Nhấn "Áp dụng vào lịch" để đưa toàn bộ vào Content Calendar.')}
+                                </p>
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-2.5">
+                                <button
+                                    type="button"
+                                    onClick={handleGenerate}
+                                    disabled={generating}
+                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-border bg-background hover:bg-muted/50 text-xs font-medium text-foreground transition-all"
+                                >
+                                    <ArrowsClockwise size={14} />
+                                    <span>{t('Tạo lại toàn bộ')}</span>
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={handleApplyPlan}
+                                    disabled={applying}
+                                    className="btn-skew inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold"
+                                >
+                                    <CheckSquareOffset size={16} weight="bold" />
+                                    <span>{applying ? t('Đang đưa vào lịch…') : t('Áp dụng vào lịch nội dung')}</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Metric Highlights */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 border-t border-border/60">
+                            <div className="rounded-xl bg-muted/30 p-2.5 border border-border/40">
+                                <span className="text-[11px] text-muted-foreground">{t('Tổng số bài')}</span>
+                                <p className="text-lg font-bold text-foreground mt-0.5">{currentPlan.totalPosts}</p>
+                            </div>
+                            <div className="rounded-xl bg-muted/30 p-2.5 border border-border/40">
+                                <span className="text-[11px] text-muted-foreground">{t('Assets được gắn khớp')}</span>
+                                <p className="text-lg font-bold text-foreground mt-0.5">
+                                    {currentPlan.summary.matchedAssetsCount} / {currentPlan.summary.totalAssetsAvailable}
+                                </p>
+                            </div>
+                            <div className="rounded-xl bg-muted/30 p-2.5 border border-border/40">
+                                <span className="text-[11px] text-muted-foreground">{t('Trụ cột nội dung')}</span>
+                                <p className="text-lg font-bold text-foreground mt-0.5">
+                                    {Object.keys(currentPlan.summary.pillarCounts || {}).length}
+                                </p>
+                            </div>
+                            <div className="rounded-xl bg-muted/30 p-2.5 border border-border/40">
+                                <span className="text-[11px] text-muted-foreground">{t('Trạng thái')}</span>
+                                <p className="text-sm font-semibold text-emerald-600 mt-1 flex items-center gap-1">
+                                    <CheckCircle size={14} weight="fill" />
+                                    <span>{t('Draft (Chưa đăng)')}</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Filter & View Bar */}
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+                            <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+                                <div className="relative flex-1 sm:w-60">
+                                    <MagnifyingGlass size={14} className="absolute left-3 top-2.5 text-muted-foreground" />
+                                    <Input
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        placeholder={t('Tìm kiếm chủ đề, góc khai thác…')}
+                                        className="h-8 pl-8 text-xs rounded-xl border-border bg-background"
+                                    />
+                                </div>
+
+                                <select
+                                    value={filterPillar}
+                                    onChange={(e) => setFilterPillar(e.target.value)}
+                                    className="h-8 text-xs rounded-xl border border-border bg-background px-2.5 text-foreground"
+                                >
+                                    <option value="all">{t('Tất cả trụ cột')}</option>
+                                    {Object.keys(currentPlan.summary.pillarCounts || {}).map((name) => (
+                                        <option key={name} value={name}>{name}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={filterPlatform}
+                                    onChange={(e) => setFilterPlatform(e.target.value)}
+                                    className="h-8 text-xs rounded-xl border border-border bg-background px-2.5 text-foreground"
+                                >
+                                    <option value="all">{t('Tất cả nền tảng')}</option>
+                                    {PLATFORM_OPTIONS.map((p) => (
+                                        <option key={p.key} value={p.key}>{p.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div className="flex items-center gap-1 rounded-xl border border-border p-0.5 bg-muted/30">
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('cards')}
+                                    className={`p-1.5 rounded-lg transition-all ${viewMode === 'cards'
+                                        ? 'bg-background text-foreground shadow-2xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    title={t('Dạng lưới thẻ')}
+                                >
+                                    <SquaresFour size={16} />
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setViewMode('table')}
+                                    className={`p-1.5 rounded-lg transition-all ${viewMode === 'table'
+                                        ? 'bg-background text-foreground shadow-2xs'
+                                        : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                    title={t('Dạng bảng danh sách')}
+                                >
+                                    <Table size={16} />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Post Cards Grid */}
+                    {viewMode === 'cards' ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            {filteredPosts.map((post) => (
+                                <div
+                                    key={post.id}
+                                    className="panel p-4 bg-card border border-border/80 rounded-2xl shadow-2xs flex flex-col justify-between transition-all hover:border-border"
+                                >
+                                    <div className="space-y-3">
+                                        {/* Card Top: Day, Date, Time, Platform */}
+                                        <div className="flex items-center justify-between gap-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="font-mono text-xs font-bold text-foreground bg-muted/60 px-2 py-0.5 rounded-md">
+                                                    {t('Ngày {day}', { day: post.dayIndex })}
+                                                </span>
+                                                <span className="text-[11px] text-muted-foreground">
+                                                    {post.date} · {post.time}
+                                                </span>
+                                            </div>
+
+                                            <div className="flex items-center gap-1.5">
+                                                <PlatformBadge platform={post.platform} />
+                                                <span className="label-xs rounded-md bg-emerald-50 text-emerald-700 px-1.5 py-0.5 text-[10px] font-medium border border-emerald-200/50">
+                                                    {t('Draft')}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        {/* Pillar & Angle Badges */}
+                                        <div className="flex flex-wrap items-center gap-1.5">
+                                            <span
+                                                className="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border"
+                                                style={{
+                                                    borderColor: `${post.pillar.color}40`,
+                                                    backgroundColor: `${post.pillar.color}15`,
+                                                    color: post.pillar.color,
+                                                }}
+                                            >
+                                                <Stack size={11} weight="bold" />
+                                                <span>{post.pillar.name}</span>
+                                            </span>
+
+                                            <span className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-muted-foreground border border-border/60">
+                                                <TreeStructure size={11} weight="bold" />
+                                                <span>{post.angle.name}</span>
+                                            </span>
+                                        </div>
+
+                                        {/* Title / Topic */}
+                                        <div>
+                                            <h4 className="text-xs font-bold text-foreground line-clamp-2 leading-relaxed">
+                                                {post.title}
+                                            </h4>
+                                            <p className="text-[11px] text-muted-foreground mt-1 line-clamp-2 leading-relaxed">
+                                                {post.caption}
+                                            </p>
+                                        </div>
+
+                                        {/* Matched Asset Preview */}
+                                        <div className="rounded-xl border border-border/70 bg-muted/20 p-2 flex items-center gap-2.5">
+                                            {post.asset?.file_url ? (
+                                                <img
+                                                    src={post.asset.file_url}
+                                                    alt={post.asset.name}
+                                                    className="h-12 w-12 rounded-lg object-cover border border-border shrink-0 bg-muted"
+                                                    onError={(e) => {
+                                                        if (e.currentTarget) e.currentTarget.style.display = 'none';
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center shrink-0 text-muted-foreground">
+                                                    <Images size={20} />
+                                                </div>
+                                            )}
+                                            <div className="min-w-0 flex-1">
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200/50">
+                                                        {t('Matched Asset')}
+                                                    </span>
+                                                </div>
+                                                <p className="text-[11px] font-medium text-foreground truncate mt-0.5">
+                                                    {post.asset?.name || t('Chưa gán asset')}
+                                                </p>
+                                                <p className="text-[10px] text-muted-foreground truncate">
+                                                    {post.asset?.notes || t('Ảnh sản phẩm/thương hiệu')}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Strategic Reason / "Lý do lựa chọn" Callout */}
+                                        <div className="rounded-xl border border-amber-200/60 bg-amber-50/60 p-2.5 text-[11px] space-y-1">
+                                            <span className="font-semibold text-amber-800 flex items-center gap-1 text-[10px] uppercase tracking-wider">
+                                                <Sparkle size={12} weight="fill" className="text-amber-600" />
+                                                {t('Lý do lựa chọn & góc khai thác:')}
+                                            </span>
+                                            <p className="text-amber-900 leading-normal text-[11px]">
+                                                {post.reason}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    {/* Card Actions Bottom */}
+                                    <div className="flex items-center justify-between border-t border-border/60 pt-3 mt-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => handleRegenerateItem(post)}
+                                            className="inline-flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground transition-colors"
+                                            title={t('Tạo lại ý tưởng & chọn asset khác cho ngày này')}
+                                        >
+                                            <ArrowsClockwise size={13} />
+                                            <span>{t('Đổi ý tưởng')}</span>
+                                        </button>
+
+                                        <div className="flex items-center gap-1">
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => handleOpenEdit(post)}
+                                                className="h-7 px-2 text-xs gap-1"
+                                            >
+                                                <PencilSimple size={13} />
+                                                <span>{t('Sửa')}</span>
+                                            </Button>
+
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={() => handleDeleteItem(post.id)}
+                                                className="h-7 px-2 text-xs text-dangerFg hover:bg-dangerBg/20"
+                                            >
+                                                <Trash size={13} />
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        /* Table View */
+                        <div className="panel p-0 bg-card border border-border/80 rounded-2xl shadow-2xs overflow-hidden">
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-left text-xs border-collapse">
+                                    <thead>
+                                        <tr className="border-b border-border bg-muted/40 text-[11px] font-semibold text-muted-foreground">
+                                            <th className="p-3 w-16">{t('Ngày')}</th>
+                                            <th className="p-3 w-28">{t('Thời gian')}</th>
+                                            <th className="p-3 w-28">{t('Nền tảng')}</th>
+                                            <th className="p-3 w-36">{t('Trụ cột')}</th>
+                                            <th className="p-3">{t('Chủ đề bài viết')}</th>
+                                            <th className="p-3 w-44">{t('Asset đề xuất')}</th>
+                                            <th className="p-3 w-60">{t('Lý do lựa chọn')}</th>
+                                            <th className="p-3 w-20 text-right">{t('Thao tác')}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody className="divide-y divide-border/60">
+                                        {filteredPosts.map((post) => (
+                                            <tr key={post.id} className="hover:bg-muted/30 transition-colors">
+                                                <td className="p-3 font-mono font-bold text-foreground">
+                                                    #{post.dayIndex}
+                                                </td>
+                                                <td className="p-3 text-muted-foreground">
+                                                    {post.date}<br />
+                                                    <span className="font-medium text-foreground">{post.time}</span>
+                                                </td>
+                                                <td className="p-3">
+                                                    <PlatformBadge platform={post.platform} />
+                                                </td>
+                                                <td className="p-3">
+                                                    <span
+                                                        className="inline-block rounded px-2 py-0.5 text-[10px] font-medium"
+                                                        style={{
+                                                            backgroundColor: `${post.pillar.color}20`,
+                                                            color: post.pillar.color,
+                                                        }}
+                                                    >
+                                                        {post.pillar.name}
+                                                    </span>
+                                                    <p className="text-[10px] text-muted-foreground mt-0.5">
+                                                        {post.angle.name}
+                                                    </p>
+                                                </td>
+                                                <td className="p-3 font-medium text-foreground max-w-xs">
+                                                    <p className="line-clamp-2">{post.title}</p>
+                                                </td>
+                                                <td className="p-3">
+                                                    <div className="flex items-center gap-2">
+                                                        {post.asset?.file_url && (
+                                                            <img
+                                                                src={post.asset.file_url}
+                                                                alt=""
+                                                                className="h-8 w-8 rounded object-cover border border-border"
+                                                            />
+                                                        )}
+                                                        <span className="text-[11px] truncate max-w-[120px]">
+                                                            {post.asset?.name}
+                                                        </span>
+                                                    </div>
+                                                </td>
+                                                <td className="p-3 text-muted-foreground text-[11px] max-w-xs">
+                                                    <p className="line-clamp-2">{post.reason}</p>
+                                                </td>
+                                                <td className="p-3 text-right">
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                        onClick={() => handleOpenEdit(post)}
+                                                        className="h-7 w-7 p-0"
+                                                    >
+                                                        <PencilSimple size={14} />
+                                                    </Button>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            )}
+
+            {/* Edit Item Modal */}
+            <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+                <DialogContent className="max-w-xl">
+                    <DialogHeader>
+                        <DialogTitle>{t('Chỉnh sửa bài viết Ngày {day}', { day: editingItem?.dayIndex })}</DialogTitle>
+                    </DialogHeader>
+
+                    <div className="space-y-4 py-2 text-xs">
+                        {/* Title */}
+                        <div className="space-y-1.5">
+                            <label className="font-semibold text-foreground">{t('Chủ đề / Tiêu đề bài viết')}</label>
+                            <Input
+                                value={editForm.title}
+                                onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                                className="text-xs rounded-xl"
+                            />
+                        </div>
+
+                        {/* Caption */}
+                        <div className="space-y-1.5">
+                            <label className="font-semibold text-foreground">{t('Nội dung chú thích (Caption)')}</label>
+                            <Textarea
+                                rows={4}
+                                value={editForm.caption}
+                                onChange={(e) => setEditForm({ ...editForm, caption: e.target.value })}
+                                className="text-xs rounded-xl"
+                            />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                            {/* Pillar */}
+                            <div className="space-y-1.5">
+                                <label className="font-semibold text-foreground">{t('Trụ cột nội dung (Pillar)')}</label>
+                                <select
+                                    value={editForm.pillar_id}
+                                    onChange={(e) => setEditForm({ ...editForm, pillar_id: e.target.value })}
+                                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs"
+                                >
+                                    {pillars.map((p) => (
+                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Angle */}
+                            <div className="space-y-1.5">
+                                <label className="font-semibold text-foreground">{t('Góc khai thác (Angle)')}</label>
+                                <select
+                                    value={editForm.angle_id}
+                                    onChange={(e) => setEditForm({ ...editForm, angle_id: e.target.value })}
+                                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs"
+                                >
+                                    {angles.filter((a) => a.pillar_id === editForm.pillar_id).map((a) => (
+                                        <option key={a.id} value={a.id}>{a.name}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Platform */}
+                            <div className="space-y-1.5">
+                                <label className="font-semibold text-foreground">{t('Nền tảng đăng')}</label>
+                                <select
+                                    value={editForm.platform}
+                                    onChange={(e) => setEditForm({ ...editForm, platform: e.target.value })}
+                                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs"
+                                >
+                                    {PLATFORM_OPTIONS.map((p) => (
+                                        <option key={p.key} value={p.key}>{p.label}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            {/* Time */}
+                            <div className="space-y-1.5">
+                                <label className="font-semibold text-foreground">{t('Giờ đăng')}</label>
+                                <Input
+                                    type="time"
+                                    value={editForm.time}
+                                    onChange={(e) => setEditForm({ ...editForm, time: e.target.value })}
+                                    className="text-xs rounded-xl"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Matched Asset Picker */}
+                        <div className="space-y-1.5">
+                            <label className="font-semibold text-foreground">{t('Chọn tài nguyên đính kèm')}</label>
+                            <select
+                                value={editForm.asset_id}
+                                onChange={(e) => setEditForm({ ...editForm, asset_id: e.target.value })}
+                                className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs"
+                            >
+                                <option value="">{t('Không gắn asset')}</option>
+                                {assets.map((asset) => (
+                                    <option key={asset.id} value={asset.id}>
+                                        {asset.name} {asset.notes ? `(${asset.notes})` : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+
+                        {/* Reason */}
+                        <div className="space-y-1.5">
+                            <label className="font-semibold text-foreground">{t('Lý do lựa chọn')}</label>
+                            <Input
+                                value={editForm.reason}
+                                onChange={(e) => setEditForm({ ...editForm, reason: e.target.value })}
+                                className="text-xs rounded-xl"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-border/60">
+                        <Button variant="outline" onClick={() => setEditingItem(null)}>
+                            {t('Hủy')}
+                        </Button>
+                        <button type="button" onClick={handleSaveEdit} className="btn-skew px-4 py-2 text-xs font-semibold">
+                            {t('Lưu thay đổi')}
+                        </button>
+                    </div>
+                </DialogContent>
+            </Dialog>
+        </div>
+    );
 }

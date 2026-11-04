@@ -49,7 +49,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
         target_audience: '',
         tone_of_voice: '',
         goals: '',
-        posting_frequency: '1_per_day',
+        posting_frequency: '1 bài/ngày',
     });
 
     useEffect(() => {
@@ -61,7 +61,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
                 target_audience: brand.target_audience || '',
                 tone_of_voice: brand.tone_of_voice || '',
                 goals: brand.goals || '',
-                posting_frequency: ({'1 bài/ngày':'1_per_day','2 bài/ngày':'2_per_day','3 bài/tuần':'3_per_week','5 bài/tuần':'5_per_week'}[brand.posting_frequency] || brand.posting_frequency || '1_per_day'),
+                posting_frequency: brand.posting_frequency || '1 bài/ngày',
             });
         }
     }, [brand]);
@@ -156,25 +156,23 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2.5">
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium ${
-                            isComplete
-                                ? 'bg-emerald-50 border-emerald-200/60 text-emerald-700'
-                                : 'bg-amber-50 border-amber-200/60 text-amber-700'
-                        }`}>
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium ${isComplete
+                            ? 'bg-emerald-50 border-emerald-200/60 text-emerald-700'
+                            : 'bg-amber-50 border-amber-200/60 text-amber-700'
+                            }`}>
                             {isComplete ? <CheckCircle size={15} weight="fill" /> : <WarningCircle size={15} weight="fill" />}
                             <span>{t('Brand Context: {count}/5 fields', { count: fieldsCount })}</span>
                         </div>
 
-                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium ${
-                            hasEnoughAssets
-                                ? 'bg-emerald-50 border-emerald-200/60 text-emerald-700'
-                                : 'bg-amber-50 border-amber-200/60 text-amber-700'
-                        }`}>
+                        <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-medium ${hasEnoughAssets
+                            ? 'bg-emerald-50 border-emerald-200/60 text-emerald-700'
+                            : 'bg-amber-50 border-amber-200/60 text-amber-700'
+                            }`}>
                             <Images size={15} weight="bold" />
                             <span>{t('{count} assets in library', { count: assetsCount })}</span>
                         </div>
 
-                        {!hasEnoughAssets && brand.is_demo && (
+                        {!hasEnoughAssets && (
                             <Button
                                 size="sm"
                                 variant="outline"
@@ -220,11 +218,11 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                     {/* Products / Services */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-products" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <Package size={15} className="text-amber-500" />
                             <span>{t('Sản phẩm & Dịch vụ chủ lực')}</span>
                         </label>
-                        <Textarea id="brand-products"
+                        <Textarea
                             rows={3}
                             value={form.products}
                             onChange={(e) => setForm({ ...form, products: e.target.value })}
@@ -238,11 +236,11 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
 
                     {/* Target Audience */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-target_audience" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <Users size={15} className="text-blue-500" />
                             <span>{t('Khách hàng & Đối tượng mục tiêu')}</span>
                         </label>
-                        <Textarea id="brand-target_audience"
+                        <Textarea
                             rows={3}
                             value={form.target_audience}
                             onChange={(e) => setForm({ ...form, target_audience: e.target.value })}
@@ -256,11 +254,11 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
 
                     {/* Tone of Voice */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-tone_of_voice" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <ChatTeardropText size={15} className="text-purple-500" />
                             <span>{t('Giọng điệu thương hiệu (Tone of Voice)')}</span>
                         </label>
-                        <Input id="brand-tone_of_voice"
+                        <Input
                             type="text"
                             value={form.tone_of_voice}
                             onChange={(e) => setForm({ ...form, tone_of_voice: e.target.value })}
@@ -283,11 +281,11 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
 
                     {/* Marketing Goals & KPIs */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-goals" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <Target size={15} className="text-emerald-500" />
                             <span>{t('Mục tiêu marketing & KPI')}</span>
                         </label>
-                        <Input id="brand-goals"
+                        <Input
                             type="text"
                             value={form.goals}
                             onChange={(e) => setForm({ ...form, goals: e.target.value })}
@@ -310,19 +308,19 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
 
                     {/* Preferred Frequency */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-posting_frequency" className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
                             <CalendarCheck size={15} className="text-rose-500" />
                             <span>{t('Tần suất đăng mong muốn')}</span>
                         </label>
-                        <select id="brand-posting_frequency"
+                        <select
                             value={form.posting_frequency}
                             onChange={(e) => setForm({ ...form, posting_frequency: e.target.value })}
                             className="w-full text-xs rounded-xl border border-border bg-background px-3 py-2 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20"
                         >
-                            <option value="1_per_day">{t('1 bài / ngày (Khuyên dùng cho lịch 30 ngày)')}</option>
-                            <option value="2_per_day">{t('2 bài / ngày (Sáng và Tối)')}</option>
-                            <option value="3_per_week">{t('3 bài / tuần (Thứ 2, Thứ 4, Thứ 6)')}</option>
-                            <option value="5_per_week">{t('5 bài / tuần (Từ Thứ 2 đến Thứ 6)')}</option>
+                            <option value="1 bài/ngày">{t('1 bài / ngày (Khuyên dùng cho lịch 30 ngày)')}</option>
+                            <option value="2 bài/ngày">{t('2 bài / ngày (Sáng và Tối)')}</option>
+                            <option value="3 bài/tuần">{t('3 bài / tuần (Thứ 2, Thứ 4, Thứ 6)')}</option>
+                            <option value="5 bài/tuần">{t('5 bài / tuần (Từ Thứ 2 đến Thứ 6)')}</option>
                         </select>
                         <p className="text-[11px] text-muted-foreground">
                             {t('Tần suất đăng này sẽ được AI Content Strategist áp dụng mặc định khi lên lịch.')}
@@ -331,10 +329,10 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0 }
 
                     {/* General Brand Description */}
                     <div className="space-y-2">
-                        <label htmlFor="brand-description" className="text-xs font-semibold text-foreground">
+                        <label className="text-xs font-semibold text-foreground">
                             {t('Mô tả chung thương hiệu')}
                         </label>
-                        <Textarea id="brand-description"
+                        <Textarea
                             rows={3}
                             value={form.description}
                             onChange={(e) => setForm({ ...form, description: e.target.value })}
