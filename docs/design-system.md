@@ -245,3 +245,8 @@ export default function TitleEditor({ title, onTitleChange, onSave, busy }) {
 ## 12. Short instruction để mang sang AI khác
 
 > Before editing Socialchoice UI, read `docs/design-system.md`, `README.md`, the affected component and a similar existing screen. Preserve the documented light neutral/green identity, Mona Sans/Space Grotesk typography, Phosphor icons, flat brand-green primary buttons, custom radii, layout and responsive contracts. Reuse existing tokens and components. Do not redesign, change global styles or add a new UI system unless the user explicitly requests that scope. Verify relevant states and desktop/mobile behavior; report what was actually checked. Update the design contract only when an intentional design change is requested.
+
+
+## Public landing page
+
+The public `/` and `/landing` routes follow the owner-supplied `landing-page.html` reference, including its PostChoice branding, layout and animated product previews. This exception applies only to the marketing page, not the authenticated workspace. Product illustrations are local SVG files under `public/images/landing`; landing-only accessibility overrides live in `src/pages/landing-page.css`.

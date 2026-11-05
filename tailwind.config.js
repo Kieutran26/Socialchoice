@@ -58,6 +58,13 @@ export default {
                 input: 'oklch(var(--input) / <alpha-value>)',
                 ring: 'oklch(var(--ring) / <alpha-value>)',
                 brand: {
+                    50: '#fffbe8',
+                    100: '#fff4c2',
+                    200: '#ffe98a',
+                    300: '#fede4f',
+                    400: '#fdd835',
+                    500: '#f5c400',
+                    700: '#8a6a00',
                     DEFAULT: '#ffd631',
                     dark: '#d8b216',
                     ink: '#2b2100',
