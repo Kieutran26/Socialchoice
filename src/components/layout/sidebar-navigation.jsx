@@ -15,6 +15,7 @@ import {
     LinkSimple,
     GearSix,
     IdentificationCard,
+    Globe,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/lib/AuthContext';
@@ -23,7 +24,7 @@ const NAV_GROUPS = [
     {
         title: 'GENERAL',
         items: [
-            { to: '/', label: 'Overview', icon: SquaresFour },
+            { to: '/overview', label: 'Overview', icon: SquaresFour },
             { to: '/analytics', label: 'Analytics', icon: ChartLineUp },
         ],
     },
@@ -51,6 +52,7 @@ const NAV_GROUPS = [
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/accounts', label: 'Social Accounts', icon: Users },
+            { to: '/landing', label: 'Trang giới thiệu', icon: Globe },
         ],
     },
 ];
@@ -63,10 +65,9 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
             end
             onClick={onNavigate}
             className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all ${
-                    isActive
-                        ? 'bg-[#ffd631] text-[#2b2100] font-bold shadow-2xs'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium'
+                `flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all ${isActive
+                    ? 'bg-[#ffd631] text-[#2b2100] font-bold shadow-2xs'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium'
                 }`
             }
         >

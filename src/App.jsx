@@ -26,47 +26,84 @@ import Shortlinks from '@/pages/Shortlinks';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import DataDeletion from '@/pages/DataDeletion';
+import LandingPage from '@/pages/LandingPage';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 
 function AppError({ error }) {
     const { t } = useTranslation();
-    return <div role="alert" className="p-8"><h1>{t('Unable to display this screen')}</h1><p>{t(error.message)}</p><a href="/">{t('Return to overview')}</a></div>;
+    return (
+        <div role="alert" className="p-8">
+            <h1>{t('Unable to display this screen')}</h1>
+            <p>{t(error.message)}</p>
+            <a href="/">{t('Return to overview')}</a>
+        </div>
+    );
 }
+
 class ErrorBoundary extends Component {
     state = { error: null };
-    static getDerivedStateFromError(error) { return { error }; }
+    static getDerivedStateFromError(error) {
+        return { error };
+    }
     render() {
         if (this.state.error) return <AppError error={this.state.error} />;
         return this.props.children;
     }
 }
+
+// Protected Workspace layout wrapped with AuthProvider
+function WorkspaceShell() {
+    return (
+        <AuthProvider>
+            <Layout />
+        </AuthProvider>
+    );
+}
+
 export default function App() {
     const Router = isDesktop() ? HashRouter : BrowserRouter;
-    return <LanguageProvider><ErrorBoundary><AuthProvider><QueryClientProvider client={queryClientInstance}>
-        <Router><Routes>
-            <Route path="/privacy" element={<PrivacyPolicy />} />
-            <Route path="/terms" element={<TermsOfService />} />
-            <Route path="/data-deletion" element={<DataDeletion />} />
-            <Route element={<Layout />}>
-                <Route path="/" element={<Overview />} />
-                <Route path="/calendar" element={<ContentCalendar />} />
-                <Route path="/agent" element={<ChatAgent />} />
-                <Route path="/create" element={<CreatePost />} />
-                <Route path="/templates" element={<PostTemplates />} />
-                <Route path="/templates/create" element={<CreateTemplate />} />
-                <Route path="/posts" element={<AllPosts />} />
-                <Route path="/strategy" element={<ContentStrategy />} />
-                <Route path="/strategy/pillars" element={<ContentPillars />} />
-                <Route path="/strategy/angles" element={<ContentAngles />} />
-                <Route path="/analytics" element={<Analytics />} />
-                <Route path="/media" element={<MediaLibrary />} />
-                <Route path="/interactive-images" element={<InteractiveImages />} />
-                <Route path="/shortlinks" element={<Shortlinks />} />
-                <Route path="/accounts" element={<SocialAccounts />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/admin/licenses" element={<AdminLicenses />} />
-                <Route path="*" element={<Navigate to="/" replace />} />
-            </Route>
-        </Routes></Router><Toaster />
-    </QueryClientProvider></AuthProvider></ErrorBoundary></LanguageProvider>;
+
+    return (
+        <LanguageProvider>
+            <ErrorBoundary>
+                <QueryClientProvider client={queryClientInstance}>
+                    <Router>
+                        <Routes>
+                            {/* Public routes — accessible immediately without auth */}
+                            <Route path="/" element={<LandingPage />} />
+                            <Route path="/landing" element={<LandingPage />} />
+                            <Route path="/privacy" element={<PrivacyPolicy />} />
+                            <Route path="/terms" element={<TermsOfService />} />
+                            <Route path="/data-deletion" element={<DataDeletion />} />
+
+                            {/* Authenticated Workspace Routes */}
+                            <Route element={<WorkspaceShell />}>
+                                <Route path="/overview" element={<Overview />} />
+                                <Route path="/app" element={<Overview />} />
+                                <Route path="/dashboard" element={<Overview />} />
+                                <Route path="/calendar" element={<ContentCalendar />} />
+                                <Route path="/agent" element={<ChatAgent />} />
+                                <Route path="/create" element={<CreatePost />} />
+                                <Route path="/templates" element={<PostTemplates />} />
+                                <Route path="/templates/create" element={<CreateTemplate />} />
+                                <Route path="/posts" element={<AllPosts />} />
+                                <Route path="/strategy" element={<ContentStrategy />} />
+                                <Route path="/strategy/pillars" element={<ContentPillars />} />
+                                <Route path="/strategy/angles" element={<ContentAngles />} />
+                                <Route path="/analytics" element={<Analytics />} />
+                                <Route path="/media" element={<MediaLibrary />} />
+                                <Route path="/interactive-images" element={<InteractiveImages />} />
+                                <Route path="/shortlinks" element={<Shortlinks />} />
+                                <Route path="/accounts" element={<SocialAccounts />} />
+                                <Route path="/settings" element={<Settings />} />
+                                <Route path="/admin/licenses" element={<AdminLicenses />} />
+                                <Route path="*" element={<Navigate to="/" replace />} />
+                            </Route>
+                        </Routes>
+                    </Router>
+                    <Toaster />
+                </QueryClientProvider>
+            </ErrorBoundary>
+        </LanguageProvider>
+    );
 }
