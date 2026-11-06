@@ -70,7 +70,7 @@ import { desktopRequest } from './desktop/request';
         auth: {
             me: () => request('session'),
             logout: async () => { await request('auth/logout', []); window.location.assign('/'); },
-            loginViaEmailPassword: (password, legacyPassword = undefined) => request('auth/login', [legacyPassword ?? password]),
+            loginViaEmailPassword: (password, legacyPassword = undefined) => request('auth/login', [legacyPassword ?? password], { silent: true }),
             loginWithProvider: (..._args) => { throw new Error('OAuth sign-in is not configured.'); },
             register: async (..._args) => { throw new Error('Hosted registration is not configured.'); },
             /** @returns {Promise<{access_token: string}>} */
