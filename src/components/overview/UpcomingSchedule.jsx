@@ -15,7 +15,7 @@ import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { todayInZone, toZonedParts } from '@/lib/tz';
 import { DEFAULT_TIMEZONE } from '@/lib/constants';
 
-export default function UpcomingSchedule({ posts = [], brands = [], timezone = DEFAULT_TIMEZONE }) {
+export default function UpcomingSchedule({ posts = [], brands = [], accounts = [], timezone = DEFAULT_TIMEZONE }) {
     const { t } = useTranslation();
     const [selectedDayFilter, setSelectedDayFilter] = useState('all');
 
@@ -191,7 +191,10 @@ export default function UpcomingSchedule({ posts = [], brands = [], timezone = D
                         <div className="divide-y divide-border/60">
                             {filteredPosts.map((p) => {
                                 const brand = brands.find((b) => b.id === p.brand_id);
-                                const accounts = p.account_ids || [];
+                                const postAccounts = (p.account_ids || [])
+                                    .map((id) => accounts.find((a) => a.id === id))
+                                    .filter(Boolean);
+                                const mediaUrl = p.media_urls?.[0] || (Array.isArray(p.media) ? p.media[0]?.url : null);
 
                                 return (
                                     <Link
@@ -199,16 +202,24 @@ export default function UpcomingSchedule({ posts = [], brands = [], timezone = D
                                         to={`/posts?post=${p.id}`}
                                         className="group flex items-start gap-3.5 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2"
                                     >
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-surface text-muted-foreground group-hover:border-border transition-colors">
-                                            <Clock size={18} weight="duotone" />
-                                        </div>
+                                        {mediaUrl ? (
+                                            <img
+                                                src={mediaUrl}
+                                                alt=""
+                                                className="h-10 w-10 shrink-0 rounded-xl object-cover border border-border/70"
+                                            />
+                                        ) : (
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-surface text-muted-foreground group-hover:border-border transition-colors">
+                                                <Clock size={18} weight="duotone" />
+                                            </div>
+                                        )}
 
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center justify-between gap-2">
-                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary-foreground transition-colors">
+                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground/80 transition-colors">
                                                     {p.title || t("Untitled")}
                                                 </p>
-                                                <span className="font-mono text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full shrink-0">
+                                                <span className="font-mono text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full shrink-0">
                                                     {formatDateTime(p.scheduled_at, p.timezone || timezone)}
                                                 </span>
                                             </div>
@@ -230,11 +241,29 @@ export default function UpcomingSchedule({ posts = [], brands = [], timezone = D
                                                     </span>
                                                 )}
 
-                                                {accounts.length > 0 && (
+                                                {postAccounts.length > 0 ? (
+                                                    <div className="flex items-center gap-1">
+                                                        {postAccounts.map((acc) => {
+                                                            const conf = PLATFORM_CONFIG[acc.platform];
+                                                            const IconComp = conf?.icon;
+                                                            return (
+                                                                <span
+                                                                    key={acc.id}
+                                                                    title={`${acc.name} (${acc.platform})`}
+                                                                    className={`inline-flex items-center justify-center rounded-md p-1 border text-[11px] ${
+                                                                        conf?.bg || 'bg-muted'
+                                                                    } ${conf?.border || 'border-border'} ${conf?.color || 'text-foreground'}`}
+                                                                >
+                                                                    {IconComp ? <IconComp size={12} weight="bold" /> : acc.platform}
+                                                                </span>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                ) : p.account_ids?.length > 0 ? (
                                                     <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
-                                                        <span>{accounts.length} kênh đăng</span>
+                                                        <span>{p.account_ids.length} kênh đăng</span>
                                                     </span>
-                                                )}
+                                                ) : null}
                                             </div>
                                         </div>
 
