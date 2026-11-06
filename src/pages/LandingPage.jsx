@@ -31,7 +31,7 @@ export default function LandingPage() {
                     // Điều hướng khi người dùng nhấn các nút CTA trên Landing Page
                     if (text.includes('đăng nhập')) {
                         e.preventDefault();
-                        navigate('/overview');
+                        navigate('/login');
                     } else if (
                         text.includes('dùng thử') ||
                         text.includes('bắt đầu') ||

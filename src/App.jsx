@@ -27,6 +27,7 @@ import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import DataDeletion from '@/pages/DataDeletion';
 import LandingPage from '@/pages/LandingPage';
+import LoginPage from '@/pages/LoginPage';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 
 function AppError({ error }) {
@@ -72,6 +73,7 @@ export default function App() {
                             {/* Public routes — accessible immediately without auth */}
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/landing" element={<LandingPage />} />
+                            <Route path="/login" element={<LoginPage />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsOfService />} />
                             <Route path="/data-deletion" element={<DataDeletion />} />
