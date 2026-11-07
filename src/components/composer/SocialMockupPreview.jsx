@@ -15,6 +15,7 @@ import {
 } from '@phosphor-icons/react';
 import PlatformLogo from './PlatformLogo';
 import { useTranslation } from '@/lib/i18n';
+import { getAccountAvatarUrl } from '@/lib/account-avatar';
 
 export default function SocialMockupPreview({
     account,
@@ -145,11 +146,23 @@ export default function SocialMockupPreview({
     // Threads or X (Twitter) Mockup
     if (platform === 'threads' || platform === 'x') {
         const isX = platform === 'x';
+        const avatarUrl = getAccountAvatarUrl(account);
         return (
             <div className="overflow-hidden rounded-2xl border border-border/80 bg-card p-4 shadow-2xs">
                 <div className="flex gap-3">
-                    <div className="grid size-9 shrink-0 place-items-center rounded-full bg-muted font-heading text-xs font-bold text-foreground">
-                        {handle[0]?.toUpperCase() || 'S'}
+                    <div className="size-9 shrink-0 rounded-full overflow-hidden border border-border/60 bg-muted">
+                        {avatarUrl ? (
+                            <img
+                                src={avatarUrl}
+                                alt={handle}
+                                className="size-full object-cover"
+                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                            />
+                        ) : (
+                            <div className="grid size-full place-items-center font-heading text-xs font-bold text-foreground">
+                                {handle[0]?.toUpperCase() || 'S'}
+                            </div>
+                        )}
                     </div>
                     <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-1 text-[13px]">
@@ -184,14 +197,26 @@ export default function SocialMockupPreview({
 
     // Instagram Mockup
     if (platform === 'instagram') {
+        const avatarUrl = getAccountAvatarUrl(account);
         return (
             <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
                 {/* Header */}
                 <div className="flex items-center justify-between p-3">
                     <div className="flex items-center gap-2.5">
-                        <div className="grid size-8 place-items-center rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-[2px]">
-                            <div className="grid size-full place-items-center rounded-full bg-card text-[11px] font-bold text-foreground">
-                                {handle[0]?.toUpperCase() || 'S'}
+                        <div className="size-8 rounded-full bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 p-[2px]">
+                            <div className="size-full rounded-full overflow-hidden bg-card">
+                                {avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt={handle}
+                                        className="size-full object-cover"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                ) : (
+                                    <div className="grid size-full place-items-center text-[11px] font-bold text-foreground">
+                                        {handle[0]?.toUpperCase() || 'S'}
+                                    </div>
+                                )}
                             </div>
                         </div>
                         <div className="font-semibold text-xs text-foreground truncate max-w-[180px]">{handle}</div>
@@ -240,14 +265,27 @@ export default function SocialMockupPreview({
               [ShareFat, t('Chia sẻ')],
           ];
 
+    const avatarUrl = getAccountAvatarUrl(account);
+
     return (
         <div className="overflow-hidden rounded-2xl border border-border/80 bg-card shadow-2xs">
             {/* Header */}
             <div className="flex items-center justify-between p-3.5">
                 <div className="flex items-center gap-2.5 min-w-0">
                     <div className="relative">
-                        <div className="grid size-9 place-items-center rounded-full bg-muted font-heading text-xs font-bold text-foreground">
-                            {handle[0]?.toUpperCase() || 'S'}
+                        <div className="size-9 rounded-full overflow-hidden border border-border/60 bg-muted">
+                            {avatarUrl ? (
+                                <img
+                                    src={avatarUrl}
+                                    alt={handle}
+                                    className="size-full object-cover"
+                                    onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                />
+                            ) : (
+                                <div className="grid size-full place-items-center font-heading text-xs font-bold text-foreground">
+                                    {handle[0]?.toUpperCase() || 'S'}
+                                </div>
+                            )}
                         </div>
                         <div className="absolute -bottom-0.5 -right-0.5">
                             <PlatformLogo platform={platform} size={14} />

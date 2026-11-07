@@ -16,6 +16,14 @@ import {
     Lightning,
     CaretDown,
     LinkSimple,
+    ChatCircleDots,
+    PencilSimple,
+    Eye,
+    FacebookLogo,
+    LinkedinLogo,
+    ThreadsLogo,
+    InstagramLogo,
+    XLogo,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { aiRequest } from '@/api/ai';
@@ -99,6 +107,13 @@ function generatePlatformContent(baseCaption, userPrompt) {
     };
 }
 
+const PLATFORM_TABS = [
+    { key: 'facebook', label: 'Facebook', icon: FacebookLogo, color: 'text-blue-600', badgeClass: 'bg-blue-50 text-blue-700 border-blue-200' },
+    { key: 'linkedin', label: 'LinkedIn', icon: LinkedinLogo, color: 'text-sky-700', badgeClass: 'bg-sky-50 text-sky-800 border-sky-200' },
+    { key: 'threads', label: 'Threads', icon: ThreadsLogo, color: 'text-zinc-900', badgeClass: 'bg-zinc-100 text-zinc-900 border-zinc-200' },
+    { key: 'instagram', label: 'Instagram', icon: InstagramLogo, color: 'text-purple-600', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200' },
+];
+
 export default function ChatAgent() {
     const { t } = useTranslation();
     const { brands, selectedBrandId, setSelectedBrandId, timezone, demoMode } = useWorkspace();
@@ -112,6 +127,12 @@ export default function ChatAgent() {
     const [selectedImages, setSelectedImages] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
     const [isAgentThinking, setIsAgentThinking] = useState(false);
+
+    // Split-Screen Copilot States
+    const [activeDraftMessageId, setActiveDraftMessageId] = useState(null);
+    const [activePlatformTab, setActivePlatformTab] = useState('facebook');
+    const [mobileTab, setMobileTab] = useState('chat'); // 'chat' | 'preview'
+    const [isEditingCaption, setIsEditingCaption] = useState(false);
 
     const fileInputRef = useRef(null);
     const chatEndRef = useRef(null);
@@ -159,12 +180,25 @@ export default function ChatAgent() {
                 {
                     id: 'welcome',
                     role: 'agent',
-                    text: `Xin chào! Tôi là **Socialchoice AI Agent** 🤖.\n\nBạn chỉ cần gửi ý tưởng, ghi chú hoặc đính kèm hình ảnh. Tôi sẽ tự động:\n1. ✍️ **Viết caption hấp dẫn** & gắn hashtag phù hợp.\n2. 🎯 **Tối ưu nội dung** riêng cho Threads, LinkedIn, Facebook, Instagram...\n3. ⏰ **Tự động trích xuất thời gian** (ví dụ: *"lên lịch 9h sáng mai"* hoặc *"20:00 tối nay"*).\n4. 🚀 **Lên lịch đăng bài ngay** chỉ với 1 cú click!`,
+                    text: `Xin chào! Tôi là **Socialchoice AI Agent** 🤖.\n\nBạn chỉ cần gửi ý tưởng, ghi chú hoặc đính kèm hình ảnh. Tôi sẽ tự động:\n1. ✍️ **Viết caption hấp dẫn** & gắn hashtag phù hợp.\n2. 🎯 **Tối ưu nội dung** riêng cho Facebook, LinkedIn, Threads, Instagram...\n3. ⏰ **Tự động trích xuất thời gian** (ví dụ: *"lên lịch 9h sáng mai"* hoặc *"20:00 tối nay"*).\n4. 🚀 **Hiển thị bản xem trước trực tiếp** ở cột bên phải để bạn duyệt và lên lịch ngay!`,
                     createdAt: new Date().toISOString(),
                 },
             ]);
         }
     }, [messages.length]);
+
+    // Determine current active draft message
+    const activeDraftMessage = useMemo(() => {
+        if (activeDraftMessageId) {
+            const found = messages.find((m) => m.id === activeDraftMessageId && m.postDraft);
+            if (found) return found;
+        }
+        // Fallback to latest message with draft
+        for (let i = messages.length - 1; i >= 0; i--) {
+            if (messages[i].postDraft) return messages[i];
+        }
+        return null;
+    }, [messages, activeDraftMessageId]);
 
     // Auto scroll chat
     useEffect(() => {
@@ -329,15 +363,23 @@ export default function ChatAgent() {
                 scheduledPostId: null,
             };
 
+            const newMsgId = `agent-${Date.now()}`;
             const agentReply = {
-                id: `agent-${Date.now()}`,
+                id: newMsgId,
                 role: 'agent',
-                text: `Tôi đã soạn xong bài đăng và chuẩn bị lịch vào **${schedule.time} ngày ${schedule.date}** cho bạn! 📅\n\nBạn hãy kiểm tra nội dung và các kênh bên dưới, sau đó bấm **Xác nhận lên lịch ngay** nhé.`,
+                text: `✨ Tôi đã soạn xong bài đăng và chuẩn bị lịch vào **${schedule.time} ngày ${schedule.date}**!\n\n👉 **Xem bản xem trước đa kênh trực tiếp ở cột bên phải** để kiểm tra và bấm **Xác nhận lên lịch ngay**.`,
                 createdAt: new Date().toISOString(),
                 postDraft,
             };
 
             setMessages((prev) => [...prev, agentReply]);
+            setActiveDraftMessageId(newMsgId);
+            setIsEditingCaption(false);
+
+            // If mobile view, auto-switch to preview tab so user sees the result
+            if (window.innerWidth < 1024) {
+                setMobileTab('preview');
+            }
         } catch (err) {
             console.error('Agent error:', err);
             setMessages((prev) => [
@@ -409,7 +451,7 @@ export default function ChatAgent() {
                 is_demo: demoMode,
             };
 
-            // Save post plan to SQLite backend
+            // Save post plan to backend
             const saved = await appClient.posts.save({ data: payload });
 
             // Arm publishing queue if not demo and accounts exist
@@ -491,24 +533,31 @@ export default function ChatAgent() {
         );
     };
 
+    // Get current caption to display in preview based on active platform tab
+    const currentPreviewCaption = useMemo(() => {
+        if (!activeDraftMessage?.postDraft) return '';
+        const draft = activeDraftMessage.postDraft;
+        return draft.platformCaptions?.[activePlatformTab] || draft.caption || '';
+    }, [activeDraftMessage, activePlatformTab]);
+
     return (
-        <div className="flex h-[calc(100vh-4rem)] flex-col -mx-4 -my-6 sm:-mx-8">
+        <div className="flex h-[calc(100vh-4rem)] flex-col -mx-4 -my-6 sm:-mx-8 bg-zinc-50/50">
             {/* Top Bar / Header */}
-            <header className="border-b border-border bg-card/80 backdrop-blur-sm px-6 py-4 flex flex-wrap items-center justify-between gap-4">
+            <header className="border-b border-zinc-200 bg-white px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-2xs">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#ffd631] text-[#2b2100] shadow-sm">
-                        <Sparkle size={22} weight="bold" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs">
+                        <Sparkle size={20} weight="bold" />
                     </div>
                     <div>
                         <div className="flex items-center gap-2">
-                            <h1 className="text-lg font-bold font-heading text-foreground">AI Scheduling Agent</h1>
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[11px] font-semibold text-emerald-600">
+                            <h1 className="text-base font-bold font-heading text-zinc-900">AI Scheduling Agent</h1>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[11px] font-bold text-emerald-700">
                                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
                                 Online
                             </span>
                         </div>
-                        <p className="text-xs text-muted-foreground">
-                            Gửi nội dung hoặc hình ảnh — Agent tự động viết bài và lên lịch đăng đa kênh
+                        <p className="text-xs text-zinc-500">
+                            Bố cục Split-Screen Copilot: Hội thoại tương tác (trái) & Xem trước trực quan đa kênh (phải)
                         </p>
                     </div>
                 </div>
@@ -517,12 +566,12 @@ export default function ChatAgent() {
                 <div className="flex items-center gap-3">
                     {brands.length > 0 && (
                         <div className="flex items-center gap-2 text-xs">
-                            <span className="text-muted-foreground font-medium">Thương hiệu:</span>
+                            <span className="text-zinc-500 font-medium">Thương hiệu:</span>
                             <div className="relative">
                                 <select
                                     value={currentBrand?.id || ''}
                                     onChange={(e) => setSelectedBrandId(e.target.value)}
-                                    className="h-8 rounded-lg border border-border bg-background px-2.5 pr-8 text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#ffd631] appearance-none cursor-pointer"
+                                    className="h-8 rounded-lg border border-zinc-200 bg-white px-2.5 pr-8 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 appearance-none cursor-pointer"
                                 >
                                     {brands.map((b) => (
                                         <option key={b.id} value={b.id}>
@@ -530,192 +579,493 @@ export default function ChatAgent() {
                                         </option>
                                     ))}
                                 </select>
-                                <CaretDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-muted-foreground" />
+                                <CaretDown size={12} className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none text-zinc-400" />
                             </div>
                         </div>
                     )}
 
-                    <div className="flex items-center gap-1.5 rounded-lg border border-border bg-muted/30 px-2.5 py-1 text-xs">
-                        <PlugsConnected size={14} className="text-[#ffd631]" weight="bold" />
-                        <span className="font-semibold text-foreground">{brandAccounts.length}</span>
-                        <span className="text-muted-foreground">kênh kết nối</span>
+                    <div className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-800 shadow-2xs">
+                        <PlugsConnected size={14} className="text-zinc-900" weight="bold" />
+                        <span>{brandAccounts.length}</span>
+                        <span className="text-zinc-500 font-normal">kênh</span>
                     </div>
                 </div>
             </header>
 
-            {/* Chat Thread Canvas */}
-            <main className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
-                <div className="max-w-4xl mx-auto space-y-6">
-                    {messages.map((msg) => (
-                        <div
-                            key={msg.id}
-                            className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                        >
-                            {msg.role === 'agent' && (
-                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#ffd631] text-[#2b2100]">
-                                    <Sparkle size={18} weight="bold" />
-                                </div>
-                            )}
+            {/* Mobile Tab Switcher (< lg screens) */}
+            <div className="lg:hidden flex border-b border-zinc-200 bg-white shrink-0">
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('chat')}
+                    className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition-all ${
+                        mobileTab === 'chat'
+                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50'
+                            : 'border-transparent text-zinc-500 hover:text-zinc-800'
+                    }`}
+                >
+                    <ChatCircleDots size={16} weight="bold" />
+                    Cuộc hội thoại ({messages.length})
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setMobileTab('preview')}
+                    className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition-all ${
+                        mobileTab === 'preview'
+                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50'
+                            : 'border-transparent text-zinc-500 hover:text-zinc-800'
+                    }`}
+                >
+                    <Eye size={16} weight="bold" />
+                    Xem trước trực quan
+                    {activeDraftMessage && (
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    )}
+                </button>
+            </div>
 
-                            <div
-                                className={`flex flex-col space-y-3 max-w-[90%] sm:max-w-[85%] ${
-                                    msg.role === 'user' ? 'items-end' : 'items-start'
-                                }`}
-                            >
-                                {/* Message bubble */}
+            {/* 2-COLUMN SPLIT-SCREEN MAIN CANVAS */}
+            <div className="flex-1 overflow-hidden p-4 sm:p-5">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 h-full">
+
+                    {/* ========================================================= */}
+                    {/* LEFT COLUMN: CHAT THREAD & PROMPT DOCK                     */}
+                    {/* ========================================================= */}
+                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden ${
+                        mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'
+                    }`}>
+                        {/* Subheader */}
+                        <div className="px-5 py-3 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/70 shrink-0">
+                            <span className="text-xs font-bold uppercase tracking-wider text-zinc-600 flex items-center gap-2">
+                                <ChatCircleDots size={16} className="text-zinc-900" weight="bold" />
+                                Luồng trao đổi với Agent
+                            </span>
+                            <span className="text-[11px] text-zinc-400 font-medium">
+                                Tự động trích xuất ngày & giờ đăng
+                            </span>
+                        </div>
+
+                        {/* Scrollable Message List */}
+                        <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+                            {messages.map((msg) => (
                                 <div
-                                    className={`rounded-2xl px-4 py-3 text-sm leading-relaxed whitespace-pre-line shadow-2xs ${
-                                        msg.role === 'user'
-                                            ? 'bg-foreground text-background font-medium rounded-tr-xs'
-                                            : 'bg-card border border-border text-foreground rounded-tl-xs'
-                                    }`}
+                                    key={msg.id}
+                                    className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
-                                    {msg.text}
-
-                                    {/* User attached images preview in bubble */}
-                                    {msg.attachedImages?.length > 0 && (
-                                        <div className="mt-3 flex flex-wrap gap-2">
-                                            {msg.attachedImages.map((img, i) => (
-                                                <div
-                                                    key={i}
-                                                    className="relative h-20 w-20 overflow-hidden rounded-lg border border-border bg-muted/40"
-                                                >
-                                                    <img
-                                                        src={img.url}
-                                                        alt={img.name || 'image'}
-                                                        className="h-full w-full object-cover"
-                                                    />
-                                                </div>
-                                            ))}
+                                    {msg.role === 'agent' && (
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs text-xs">
+                                            <Sparkle size={16} weight="bold" />
                                         </div>
                                     )}
-                                </div>
 
-                                {/* Post Scheduling Card (if attached to agent reply) */}
-                                {msg.postDraft && (
-                                    <div className="w-full rounded-2xl border border-border bg-card p-5 shadow-xs space-y-4">
-                                        {/* Status Header */}
-                                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3">
-                                            <div className="flex items-center gap-2">
-                                                <CalendarBlank size={18} className="text-[#d8b216]" weight="bold" />
-                                                <span className="font-heading font-bold text-sm text-foreground">
-                                                    {msg.postDraft.isScheduled
-                                                        ? 'Đã lên lịch thành công 🎉'
-                                                        : 'Kế hoạch đăng bài tự động'}
-                                                </span>
-                                            </div>
-                                            {msg.postDraft.isScheduled ? (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-semibold text-emerald-600">
-                                                    <CheckCircle size={14} weight="bold" /> Đã xếp lịch đăng
-                                                </span>
-                                            ) : (
-                                                <span className="inline-flex items-center gap-1 rounded-full bg-[#ffd631]/20 px-2.5 py-1 text-xs font-semibold text-[#806400]">
-                                                    <Clock size={14} weight="bold" /> Sẵn sàng lên lịch
-                                                </span>
+                                    <div
+                                        className={`flex flex-col space-y-2.5 max-w-[90%] sm:max-w-[85%] ${
+                                            msg.role === 'user' ? 'items-end' : 'items-start'
+                                        }`}
+                                    >
+                                        {/* Message Bubble */}
+                                        <div
+                                            className={`rounded-2xl px-4 py-3 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
+                                                msg.role === 'user'
+                                                    ? 'bg-zinc-900 text-white font-medium rounded-tr-xs'
+                                                    : 'bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-tl-xs'
+                                            }`}
+                                        >
+                                            {msg.text}
+
+                                            {/* User Attached Images */}
+                                            {msg.attachedImages?.length > 0 && (
+                                                <div className="mt-3 flex flex-wrap gap-2">
+                                                    {msg.attachedImages.map((img, i) => (
+                                                        <div
+                                                            key={i}
+                                                            className="relative h-18 w-18 overflow-hidden rounded-xl border border-zinc-700 bg-zinc-800"
+                                                        >
+                                                            <img
+                                                                src={img.url}
+                                                                alt={img.name || 'image'}
+                                                                className="h-full w-full object-cover"
+                                                            />
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             )}
                                         </div>
 
-                                        {/* Internal Title */}
+                                        {/* Compact Draft Summary Card in Left Column */}
+                                        {msg.postDraft && (
+                                            <div
+                                                onClick={() => {
+                                                    setActiveDraftMessageId(msg.id);
+                                                    if (window.innerWidth < 1024) setMobileTab('preview');
+                                                }}
+                                                className={`w-full rounded-xl border p-3.5 transition-all cursor-pointer space-y-2.5 shadow-2xs ${
+                                                    activeDraftMessageId === msg.id || (!activeDraftMessageId && msg.id === activeDraftMessage?.id)
+                                                        ? 'border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900'
+                                                        : 'border-zinc-200 bg-white hover:border-zinc-400'
+                                                }`}
+                                            >
+                                                <div className="flex items-center justify-between gap-2">
+                                                    <span className="font-bold text-xs text-zinc-900 flex items-center gap-1.5">
+                                                        <CalendarBlank size={15} className="text-zinc-900" weight="bold" />
+                                                        {msg.postDraft.title || 'Bản thảo bài viết'}
+                                                    </span>
+                                                    {msg.postDraft.isScheduled ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                                            <CheckCircle size={12} weight="bold" /> Đã lên lịch
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                                                            <Clock size={12} weight="bold" /> {msg.postDraft.scheduledTime} · {msg.postDraft.scheduledDate}
+                                                        </span>
+                                                    )}
+                                                </div>
+
+                                                <p className="text-[11px] text-zinc-500 line-clamp-2">
+                                                    {msg.postDraft.caption}
+                                                </p>
+
+                                                <div className="flex items-center justify-between pt-1 border-t border-zinc-100 text-[11px]">
+                                                    <span className="text-zinc-400 font-medium">
+                                                        {msg.postDraft.selectedAccountIds?.length || 0} kênh đã chọn
+                                                    </span>
+                                                    <span className="font-bold text-zinc-900 flex items-center gap-1 hover:underline">
+                                                        Xem & Tinh chỉnh 👉
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+
+                            {/* Agent Thinking Indicator */}
+                            {isAgentThinking && (
+                                <div className="flex items-center gap-3">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs">
+                                        <Sparkle size={16} weight="bold" />
+                                    </div>
+                                    <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-xs text-zinc-600 shadow-2xs">
+                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce"></span>
+                                        <span className="ml-1 font-medium">AI Agent đang soạn thảo & tối ưu lịch đăng...</span>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={chatEndRef} />
+                        </div>
+
+                        {/* Sticky Prompt Input Dock (Left Column Bottom) */}
+                        <div className="p-3.5 border-t border-zinc-100 bg-white shrink-0 space-y-2.5">
+                            {/* Quick Suggestion Chips */}
+                            <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pb-0.5 scrollbar-none">
+                                <span className="font-bold text-zinc-400 uppercase text-[10px] shrink-0 flex items-center gap-1">
+                                    <Lightning size={12} weight="bold" className="text-amber-500" /> Gợi ý:
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => handleQuickPrompt('Ra mắt tính năng mới vào 9h sáng mai trên Threads và Facebook')}
+                                    className="px-2.5 py-1 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-400 text-zinc-700 font-medium shrink-0 cursor-pointer transition-all"
+                                >
+                                    🚀 Ra mắt tính năng 9h sáng mai
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleQuickPrompt('Chia sẻ bài học tối ưu nội dung MXH vào 20:00 tối nay trên LinkedIn')}
+                                    className="px-2.5 py-1 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-400 text-zinc-700 font-medium shrink-0 cursor-pointer transition-all"
+                                >
+                                    📈 Bài học kinh nghiệm 20:00
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => handleQuickPrompt('Lời chúc đầu tuần tràn đầy năng lượng lúc 8:30 sáng')}
+                                    className="px-2.5 py-1 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-400 text-zinc-700 font-medium shrink-0 cursor-pointer transition-all"
+                                >
+                                    ☕ Chào tuần mới 8:30 sáng
+                                </button>
+                            </div>
+
+                            {/* Pending Images Strip */}
+                            {selectedImages.length > 0 && (
+                                <div className="flex items-center gap-2 overflow-x-auto py-1">
+                                    {selectedImages.map((img, idx) => (
+                                        <div
+                                            key={idx}
+                                            className="relative group h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-2xs"
+                                        >
+                                            <img src={img.url} alt="attached" className="h-full w-full object-cover" />
+                                            <button
+                                                type="button"
+                                                onClick={() => removeSelectedImage(idx)}
+                                                className="absolute top-1 right-1 h-4 w-4 rounded-full bg-black/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                            >
+                                                <X size={10} weight="bold" />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Input Container */}
+                            <div className="relative flex items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-2 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
+                                <input
+                                    ref={fileInputRef}
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="hidden"
+                                    onChange={handleFileSelect}
+                                />
+
+                                <button
+                                    type="button"
+                                    disabled={isUploading || isAgentThinking}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    title="Đính kèm hình ảnh"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 transition-all cursor-pointer disabled:opacity-40"
+                                >
+                                    {isUploading ? (
+                                        <span className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-zinc-500 border-t-transparent"></span>
+                                    ) : (
+                                        <ImageIcon size={18} />
+                                    )}
+                                </button>
+
+                                <textarea
+                                    ref={textareaRef}
+                                    rows={1}
+                                    value={inputText}
+                                    onChange={handleInputChange}
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' && !e.shiftKey) {
+                                            e.preventDefault();
+                                            handleSendMessage();
+                                        }
+                                    }}
+                                    placeholder="Nhập yêu cầu (VD: 'Đăng bài này lên Facebook & LinkedIn lúc 9h sáng mai')..."
+                                    className="flex-1 max-h-32 resize-none bg-transparent py-1.5 px-1.5 text-xs text-zinc-900 focus:outline-none placeholder:text-zinc-400 leading-relaxed"
+                                />
+
+                                <button
+                                    type="button"
+                                    disabled={(!inputText.trim() && selectedImages.length === 0) || isAgentThinking}
+                                    onClick={handleSendMessage}
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+                                >
+                                    <PaperPlaneRight size={16} weight="bold" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* ========================================================= */}
+                    {/* RIGHT COLUMN: LIVE MULTI-CHANNEL PREVIEW & SCHEDULING      */}
+                    {/* ========================================================= */}
+                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden ${
+                        mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'
+                    }`}>
+                        {activeDraftMessage?.postDraft ? (
+                            <>
+                                {/* Preview Header: Platform Tabs + Schedule Info */}
+                                <div className="px-5 py-3 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-3 bg-zinc-50/70 shrink-0">
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-xs font-bold uppercase tracking-wider text-zinc-600">
+                                            Xem trước:
+                                        </span>
+                                        <div className="flex items-center p-0.5 rounded-lg border border-zinc-200 bg-white">
+                                            {PLATFORM_TABS.map((tab) => {
+                                                const Icon = tab.icon;
+                                                const isActive = activePlatformTab === tab.key;
+                                                return (
+                                                    <button
+                                                        key={tab.key}
+                                                        type="button"
+                                                        onClick={() => setActivePlatformTab(tab.key)}
+                                                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
+                                                            isActive
+                                                                ? 'bg-zinc-900 text-white shadow-2xs'
+                                                                : 'text-zinc-500 hover:text-zinc-900'
+                                                        }`}
+                                                    >
+                                                        <Icon size={13} weight="bold" className={isActive ? 'text-white' : tab.color} />
+                                                        <span>{tab.label}</span>
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+
+                                    {activeDraftMessage.postDraft.isScheduled ? (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                                            <CheckCircle size={13} weight="bold" /> Đã xếp lịch đăng
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-800">
+                                            <Clock size={13} weight="bold" />
+                                            {activeDraftMessage.postDraft.scheduledTime} · {activeDraftMessage.postDraft.scheduledDate}
+                                        </span>
+                                    )}
+                                </div>
+
+                                {/* Scrollable Live Preview Content */}
+                                <div className="flex-1 overflow-y-auto p-5 space-y-4">
+
+                                    {/* SOCIAL MOCKUP POST CARD */}
+                                    <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-2xs space-y-3.5">
+                                        {/* Mockup Author Bar */}
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs uppercase shadow-2xs">
+                                                    {currentBrand?.name ? currentBrand.name.slice(0, 2) : 'SC'}
+                                                </div>
+                                                <div>
+                                                    <div className="font-bold text-xs text-zinc-900">
+                                                        {currentBrand?.name || 'Socialchoice Brand'}
+                                                    </div>
+                                                    <div className="text-[10px] text-zinc-400">
+                                                        Lên lịch tự động bởi AI Agent · {activeDraftMessage.postDraft.scheduledTime} {activeDraftMessage.postDraft.scheduledDate}
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Platform Badge */}
+                                            {(() => {
+                                                const currentTabConfig = PLATFORM_TABS.find((t) => t.key === activePlatformTab) || PLATFORM_TABS[0];
+                                                const TabIcon = currentTabConfig.icon;
+                                                return (
+                                                    <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border ${currentTabConfig.badgeClass}`}>
+                                                        <TabIcon size={12} weight="bold" />
+                                                        {currentTabConfig.label}
+                                                    </span>
+                                                );
+                                            })()}
+                                        </div>
+
+                                        {/* Post Title Field */}
                                         <div>
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1">
-                                                Tiêu đề bài viết:
-                                            </label>
                                             <input
                                                 type="text"
-                                                disabled={msg.postDraft.isScheduled}
-                                                value={msg.postDraft.title}
-                                                onChange={(e) => updateDraftField(msg.id, 'title', e.target.value)}
-                                                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#ffd631] disabled:opacity-75"
+                                                disabled={activeDraftMessage.postDraft.isScheduled}
+                                                value={activeDraftMessage.postDraft.title}
+                                                onChange={(e) => updateDraftField(activeDraftMessage.id, 'title', e.target.value)}
+                                                placeholder="Tiêu đề nội bộ bài viết..."
+                                                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-1.5 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
                                             />
                                         </div>
 
-                                        {/* Main Caption Preview */}
-                                        <div>
-                                            <div className="flex items-center justify-between mb-1">
-                                                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
-                                                    Nội dung bài viết:
-                                                </label>
-                                                <span className="text-[11px] text-muted-foreground font-mono">
-                                                    {msg.postDraft.caption?.length || 0} ký tự
+                                        {/* Mockup Caption */}
+                                        <div className="space-y-1.5">
+                                            <div className="flex items-center justify-between text-[11px]">
+                                                <span className="font-bold text-zinc-500 uppercase tracking-wider text-[10px]">
+                                                    Nội dung ({activePlatformTab}):
                                                 </span>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setIsEditingCaption(!isEditingCaption)}
+                                                        className="text-zinc-600 hover:text-zinc-900 font-semibold flex items-center gap-1 cursor-pointer"
+                                                    >
+                                                        <PencilSimple size={12} />
+                                                        {isEditingCaption ? 'Xong' : 'Chỉnh sửa'}
+                                                    </button>
+                                                    <span className="text-zinc-400 font-mono">
+                                                        {currentPreviewCaption.length} ký tự
+                                                    </span>
+                                                </div>
                                             </div>
-                                            <textarea
-                                                rows={4}
-                                                disabled={msg.postDraft.isScheduled}
-                                                value={msg.postDraft.caption}
-                                                onChange={(e) => updateDraftField(msg.id, 'caption', e.target.value)}
-                                                className="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed focus:outline-none focus:ring-1 focus:ring-[#ffd631] disabled:opacity-75 resize-none"
-                                            />
 
-                                            {/* Shortlink Prompt if preference is 'ask' and contains URL */}
-                                            {getShortlinkPreference() === 'ask' &&
-                                                !msg.postDraft.shortlinkDismissed &&
-                                                !msg.postDraft.isScheduled &&
-                                                /https?:\/\/[^\s]+/i.test(msg.postDraft.caption) &&
-                                                !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(msg.postDraft.caption) && (
-                                                    <div className="mt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-[#ffd631]/40 bg-[#ffd631]/10 p-2.5 text-xs text-foreground">
-                                                        <span className="flex items-center gap-1.5 font-medium">
-                                                            <LinkSimple size={15} className="text-[#806400] shrink-0" weight="bold" />
-                                                            {t('Phát hiện liên kết URL. Bạn có muốn rút gọn sang Shortlink để theo dõi nhấp chuột?')}
-                                                        </span>
-                                                        <div className="flex items-center gap-2 shrink-0">
-                                                            <button
-                                                                type="button"
-                                                                onClick={async () => {
-                                                                    try {
-                                                                        const res = await appClient.links.build({
-                                                                            brand_id: currentBrand.id,
-                                                                            form: { caption: msg.postDraft.caption, platform_captions: msg.postDraft.platformCaptions },
-                                                                            options: { medium: 'social', campaign: msg.postDraft.title || 'agent-post', tracking: true, short: true },
-                                                                        });
-                                                                        if (res?.caption) {
-                                                                            setMessages((prev) =>
-                                                                                prev.map((m) =>
-                                                                                    m.id === msg.id
-                                                                                        ? {
-                                                                                              ...m,
-                                                                                              postDraft: {
-                                                                                                  ...m.postDraft,
-                                                                                                  caption: res.caption,
-                                                                                                  platformCaptions: res.platform_captions || m.postDraft.platformCaptions,
-                                                                                              },
-                                                                                          }
-                                                                                        : m
-                                                                                )
-                                                                            );
-                                                                            toast({ title: t('Đã rút gọn liên kết thành công!') });
-                                                                        }
-                                                                    } catch (e) {
-                                                                        toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
-                                                                    }
-                                                                }}
-                                                                className="btn-skew text-xs py-1 px-3 shadow-2xs cursor-pointer"
-                                                            >
-                                                                {t('Rút gọn ngay')}
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={() => updateDraftField(msg.id, 'shortlinkDismissed', true)}
-                                                                className="rounded-lg border border-border bg-background px-2 py-1 text-xs text-muted-foreground hover:text-foreground cursor-pointer"
-                                                            >
-                                                                {t('Bỏ qua')}
-                                                            </button>
-                                                        </div>
-                                                    </div>
-                                                )}
+                                            {isEditingCaption ? (
+                                                <textarea
+                                                    rows={5}
+                                                    disabled={activeDraftMessage.postDraft.isScheduled}
+                                                    value={
+                                                        activeDraftMessage.postDraft.platformCaptions?.[activePlatformTab] ??
+                                                        activeDraftMessage.postDraft.caption
+                                                    }
+                                                    onChange={(e) => {
+                                                        const newVal = e.target.value;
+                                                        const existing = activeDraftMessage.postDraft.platformCaptions || {};
+                                                        updateDraftField(activeDraftMessage.id, 'platformCaptions', {
+                                                            ...existing,
+                                                            [activePlatformTab]: newVal,
+                                                        });
+                                                    }}
+                                                    className="w-full rounded-xl border border-zinc-300 bg-white p-3 text-xs leading-relaxed text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
+                                                />
+                                            ) : (
+                                                <div className="p-3.5 rounded-xl border border-zinc-100 bg-zinc-50/50 text-xs leading-relaxed text-zinc-800 whitespace-pre-line">
+                                                    {currentPreviewCaption}
+                                                </div>
+                                            )}
                                         </div>
 
-                                        {/* Media Preview inside card */}
-                                        {msg.postDraft.media?.length > 0 && (
-                                            <div>
-                                                <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                                                    Ảnh đính kèm ({msg.postDraft.media.length}):
-                                                </label>
+                                        {/* Shortlink suggestion banner if URL detected */}
+                                        {getShortlinkPreference() === 'ask' &&
+                                            !activeDraftMessage.postDraft.shortlinkDismissed &&
+                                            !activeDraftMessage.postDraft.isScheduled &&
+                                            /https?:\/\/[^\s]+/i.test(activeDraftMessage.postDraft.caption) &&
+                                            !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(activeDraftMessage.postDraft.caption) && (
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-xs text-amber-900">
+                                                    <span className="flex items-center gap-1.5 font-medium">
+                                                        <LinkSimple size={14} className="text-amber-800 shrink-0" weight="bold" />
+                                                        Phát hiện link URL. Bạn có muốn rút gọn sang Shortlink để đo lường click?
+                                                    </span>
+                                                    <div className="flex items-center gap-2 shrink-0">
+                                                        <button
+                                                            type="button"
+                                                            onClick={async () => {
+                                                                try {
+                                                                    const res = await appClient.links.build({
+                                                                        brand_id: currentBrand.id,
+                                                                        form: {
+                                                                            caption: activeDraftMessage.postDraft.caption,
+                                                                            platform_captions: activeDraftMessage.postDraft.platformCaptions,
+                                                                        },
+                                                                        options: {
+                                                                            medium: 'social',
+                                                                            campaign: activeDraftMessage.postDraft.title || 'agent-post',
+                                                                            tracking: true,
+                                                                            short: true,
+                                                                        },
+                                                                    });
+                                                                    if (res?.caption) {
+                                                                        updateDraftField(activeDraftMessage.id, 'caption', res.caption);
+                                                                        if (res.platform_captions) {
+                                                                            updateDraftField(activeDraftMessage.id, 'platformCaptions', res.platform_captions);
+                                                                        }
+                                                                        toast({ title: t('Đã rút gọn liên kết thành công!') });
+                                                                    }
+                                                                } catch (e) {
+                                                                    toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
+                                                                }
+                                                            }}
+                                                            className="rounded-lg bg-zinc-900 text-white px-2.5 py-1 text-xs font-semibold cursor-pointer"
+                                                        >
+                                                            Rút gọn ngay
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => updateDraftField(activeDraftMessage.id, 'shortlinkDismissed', true)}
+                                                            className="rounded-lg border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-600 hover:text-zinc-900 cursor-pointer"
+                                                        >
+                                                            Bỏ qua
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                        {/* Mockup Attached Media */}
+                                        {activeDraftMessage.postDraft.media?.length > 0 && (
+                                            <div className="space-y-1.5">
+                                                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-wider">
+                                                    Ảnh đính kèm ({activeDraftMessage.postDraft.media.length}):
+                                                </span>
                                                 <div className="flex flex-wrap gap-2">
-                                                    {msg.postDraft.media.map((img, i) => (
+                                                    {activeDraftMessage.postDraft.media.map((img, i) => (
                                                         <div
                                                             key={i}
-                                                            className="relative h-18 w-18 overflow-hidden rounded-xl border border-border bg-muted/30"
+                                                            className="relative h-20 w-20 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 shadow-2xs"
                                                         >
                                                             <img
                                                                 src={img.url}
@@ -727,303 +1077,228 @@ export default function ChatAgent() {
                                                 </div>
                                             </div>
                                         )}
+                                    </div>
 
-                                        {/* Target Channel Selector */}
-                                        <div>
-                                            <label className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-1.5">
-                                                Đích đăng ({msg.postDraft.selectedAccountIds?.length || 0} kênh đã chọn):
-                                            </label>
-                                            <div className="flex flex-wrap gap-2">
-                                                {brandAccounts.length === 0 ? (
-                                                    <p className="text-xs text-muted-foreground italic">
-                                                        Chưa có kênh nào được liên kết cho thương hiệu này.{' '}
-                                                        <Link to="/accounts" className="text-foreground underline">
-                                                            Kết nối ngay
-                                                        </Link>
-                                                    </p>
-                                                ) : (
-                                                    brandAccounts.map((acc) => {
-                                                        const isSelected = msg.postDraft.selectedAccountIds?.includes(acc.id);
-                                                        const platformCfg = PLATFORM_CONFIG[acc.platform] || {
-                                                            label: acc.platform,
-                                                            color: 'text-foreground',
-                                                        };
-                                                        const Icon = platformCfg.icon;
-
-                                                        return (
-                                                            <button
-                                                                key={acc.id}
-                                                                type="button"
-                                                                disabled={msg.postDraft.isScheduled}
-                                                                onClick={() => toggleAccountSelection(msg.id, acc.id)}
-                                                                className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border ${
-                                                                    isSelected
-                                                                        ? 'bg-foreground text-background border-foreground shadow-2xs'
-                                                                        : 'bg-background text-muted-foreground border-border hover:border-foreground/50'
-                                                                }`}
-                                                            >
-                                                                {Icon && <Icon size={14} className={isSelected ? 'text-background' : platformCfg.color} />}
-                                                                <span>{acc.name}</span>
-                                                                {isSelected && <Check size={12} weight="bold" className="text-[#ffd631]" />}
-                                                            </button>
-                                                        );
-                                                    })
-                                                )}
-                                            </div>
+                                    {/* CHANNELS SELECTION */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center justify-between text-xs">
+                                            <span className="font-bold uppercase tracking-wider text-zinc-600 text-[11px]">
+                                                Đích đăng ({activeDraftMessage.postDraft.selectedAccountIds?.length || 0} kênh đã chọn):
+                                            </span>
+                                            <Link to="/accounts" className="text-zinc-500 hover:text-zinc-900 underline text-[11px]">
+                                                Quản lý kênh
+                                            </Link>
                                         </div>
 
-                                        {/* Schedule Date & Time Picker */}
-                                        <div className="rounded-xl border border-border/70 bg-muted/20 p-3 space-y-2.5">
-                                            <div className="flex flex-wrap items-center justify-between gap-2">
-                                                <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                                    <Clock size={15} className="text-[#d8b216]" weight="bold" />
-                                                    Thời gian xuất bản:
-                                                </span>
-                                                <span className="text-[11px] text-muted-foreground">
-                                                    Múi giờ: {msg.postDraft.timezone}
-                                                </span>
-                                            </div>
-
-                                            <div className="flex flex-wrap items-center gap-3">
-                                                <input
-                                                    type="date"
-                                                    disabled={msg.postDraft.isScheduled}
-                                                    value={msg.postDraft.scheduledDate}
-                                                    onChange={(e) => updateDraftField(msg.id, 'scheduledDate', e.target.value)}
-                                                    className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#ffd631] disabled:opacity-75"
-                                                />
-                                                <input
-                                                    type="time"
-                                                    disabled={msg.postDraft.isScheduled}
-                                                    value={msg.postDraft.scheduledTime}
-                                                    onChange={(e) => updateDraftField(msg.id, 'scheduledTime', e.target.value)}
-                                                    className="rounded-lg border border-border bg-background px-3 py-1.5 text-xs font-medium focus:outline-none focus:ring-1 focus:ring-[#ffd631] disabled:opacity-75"
-                                                />
-
-                                                {/* Quick time shortcuts */}
-                                                {!msg.postDraft.isScheduled && (
-                                                    <div className="flex flex-wrap items-center gap-1.5 ml-auto">
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const today = todayInZone(msg.postDraft.timezone);
-                                                                updateDraftField(msg.id, 'scheduledDate', addDays(today, 1));
-                                                                updateDraftField(msg.id, 'scheduledTime', '09:00');
-                                                            }}
-                                                            className="rounded-md bg-background border border-border px-2 py-1 text-[11px] hover:bg-muted font-medium cursor-pointer"
-                                                        >
-                                                            Sáng mai 09:00
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const today = todayInZone(msg.postDraft.timezone);
-                                                                updateDraftField(msg.id, 'scheduledDate', addDays(today, 1));
-                                                                updateDraftField(msg.id, 'scheduledTime', '15:00');
-                                                            }}
-                                                            className="rounded-md bg-background border border-border px-2 py-1 text-[11px] hover:bg-muted font-medium cursor-pointer"
-                                                        >
-                                                            Chiều mai 15:00
-                                                        </button>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const today = todayInZone(msg.postDraft.timezone);
-                                                                updateDraftField(msg.id, 'scheduledDate', today);
-                                                                updateDraftField(msg.id, 'scheduledTime', '20:00');
-                                                            }}
-                                                            className="rounded-md bg-background border border-border px-2 py-1 text-[11px] hover:bg-muted font-medium cursor-pointer"
-                                                        >
-                                                            Tối nay 20:00
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Action Buttons */}
-                                        <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-                                            {msg.postDraft.isScheduled ? (
-                                                <div className="flex flex-wrap items-center gap-2">
-                                                    <Link
-                                                        to="/calendar"
-                                                        className="btn-skew inline-flex items-center gap-1.5"
-                                                    >
-                                                        <CalendarBlank size={16} weight="bold" />
-                                                        Xem trên Lịch (Calendar)
-                                                    </Link>
-                                                    {msg.postDraft.scheduledPostId && (
-                                                        <Link
-                                                            to={`/posts?post=${msg.postDraft.scheduledPostId}`}
-                                                            className="rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold hover:bg-muted flex items-center gap-1.5"
-                                                        >
-                                                            <ArrowSquareOut size={14} /> Chi tiết bài viết
-                                                        </Link>
-                                                    )}
-                                                </div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {brandAccounts.length === 0 ? (
+                                                <p className="text-xs text-zinc-500 italic">
+                                                    Chưa có kênh nào được liên kết cho thương hiệu này.
+                                                </p>
                                             ) : (
-                                                <>
-                                                    <button
-                                                        type="button"
-                                                        disabled={msg.postDraft.isSaving}
-                                                        onClick={() => handleConfirmSchedule(msg.id)}
-                                                        className="btn-skew inline-flex items-center gap-2 cursor-pointer shadow-sm"
-                                                    >
-                                                        {msg.postDraft.isSaving ? (
-                                                            <>
-                                                                <span className="h-3 w-3 animate-spin rounded-full border-2 border-[#2b2100] border-t-transparent"></span>
-                                                                Đang lên lịch...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <CheckCircle size={16} weight="bold" />
-                                                                Xác nhận lên lịch ngay
-                                                            </>
-                                                        )}
-                                                    </button>
+                                                brandAccounts.map((acc) => {
+                                                    const isSelected = activeDraftMessage.postDraft.selectedAccountIds?.includes(acc.id);
+                                                    const platformCfg = PLATFORM_CONFIG[acc.platform] || {
+                                                        label: acc.platform,
+                                                        color: 'text-zinc-900',
+                                                    };
+                                                    const Icon = platformCfg.icon;
 
-                                                    <Link
-                                                        to="/create"
-                                                        className="text-xs text-muted-foreground hover:text-foreground font-medium flex items-center gap-1"
-                                                    >
-                                                        Mở bộ soạn thảo đầy đủ <ArrowSquareOut size={13} />
-                                                    </Link>
-                                                </>
+                                                    return (
+                                                        <button
+                                                            key={acc.id}
+                                                            type="button"
+                                                            disabled={activeDraftMessage.postDraft.isScheduled}
+                                                            onClick={() => toggleAccountSelection(activeDraftMessage.id, acc.id)}
+                                                            className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border ${
+                                                                isSelected
+                                                                    ? 'bg-zinc-900 text-white border-zinc-900 shadow-2xs'
+                                                                    : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
+                                                            }`}
+                                                        >
+                                                            {Icon && <Icon size={14} className={isSelected ? 'text-white' : platformCfg.color} />}
+                                                            <span>{acc.name}</span>
+                                                            {isSelected && <Check size={12} weight="bold" className="text-emerald-400" />}
+                                                        </button>
+                                                    );
+                                                })
                                             )}
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        </div>
-                    ))}
 
-                    {/* Agent Thinking Indicator */}
-                    {isAgentThinking && (
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ffd631] text-[#2b2100]">
-                                <Sparkle size={18} weight="bold" />
-                            </div>
-                            <div className="flex items-center gap-1.5 rounded-2xl border border-border bg-card px-4 py-3 text-xs text-muted-foreground">
-                                <span className="h-2 w-2 rounded-full bg-[#ffd631] animate-bounce [animation-delay:-0.3s]"></span>
-                                <span className="h-2 w-2 rounded-full bg-[#ffd631] animate-bounce [animation-delay:-0.15s]"></span>
-                                <span className="h-2 w-2 rounded-full bg-[#ffd631] animate-bounce"></span>
-                                <span className="ml-2 font-medium">Agent đang soạn nội dung & lên lịch...</span>
-                            </div>
-                        </div>
-                    )}
+                                    {/* SCHEDULE DATE & TIME PICKER */}
+                                    <div className="rounded-xl border border-zinc-200 bg-zinc-50/60 p-3.5 space-y-2.5">
+                                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                            <span className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+                                                <Clock size={15} className="text-zinc-900" weight="bold" />
+                                                Thời gian xuất bản:
+                                            </span>
+                                            <span className="text-[11px] text-zinc-500 font-mono">
+                                                Múi giờ: {activeDraftMessage.postDraft.timezone}
+                                            </span>
+                                        </div>
 
-                    <div ref={chatEndRef} />
-                </div>
-            </main>
+                                        <div className="flex flex-wrap items-center gap-3">
+                                            <input
+                                                type="date"
+                                                disabled={activeDraftMessage.postDraft.isScheduled}
+                                                value={activeDraftMessage.postDraft.scheduledDate}
+                                                onChange={(e) => updateDraftField(activeDraftMessage.id, 'scheduledDate', e.target.value)}
+                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
+                                            />
+                                            <input
+                                                type="time"
+                                                disabled={activeDraftMessage.postDraft.isScheduled}
+                                                value={activeDraftMessage.postDraft.scheduledTime}
+                                                onChange={(e) => updateDraftField(activeDraftMessage.id, 'scheduledTime', e.target.value)}
+                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
+                                            />
 
-            {/* Quick Suggestions & Input Footer */}
-            <footer className="border-t border-border bg-card/80 backdrop-blur-sm p-4 sm:px-8 space-y-3">
-                <div className="max-w-4xl mx-auto space-y-3">
-                    {/* Quick prompt chips */}
-                    <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-                        <span className="text-[11px] font-bold text-muted-foreground uppercase shrink-0 flex items-center gap-1">
-                            <Lightning size={13} weight="bold" className="text-[#ffd631]" /> Gợi ý:
-                        </span>
-                        <button
-                            type="button"
-                            onClick={() => handleQuickPrompt('Ra mắt tính năng mới vào 9h sáng mai trên Threads và LinkedIn')}
-                            className="shrink-0 rounded-full border border-border bg-background px-3 py-1 font-medium hover:bg-muted hover:border-foreground/30 transition-all cursor-pointer"
-                        >
-                            🚀 Ra mắt tính năng 9h sáng mai
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleQuickPrompt('Chia sẻ bí quyết tăng trưởng nội dung MXH vào 20:00 tối nay')}
-                            className="shrink-0 rounded-full border border-border bg-background px-3 py-1 font-medium hover:bg-muted hover:border-foreground/30 transition-all cursor-pointer"
-                        >
-                            📈 Bài học kinh nghiệm 20:00 tối nay
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => handleQuickPrompt('Lời chúc đầu tuần năng lượng và lời khuyên năng suất lúc 8:30 sáng')}
-                            className="shrink-0 rounded-full border border-border bg-background px-3 py-1 font-medium hover:bg-muted hover:border-foreground/30 transition-all cursor-pointer"
-                        >
-                            ☕ Chào tuần mới 8:30 sáng
-                        </button>
-                    </div>
+                                            {/* Quick Time Shortcuts */}
+                                            {!activeDraftMessage.postDraft.isScheduled && (
+                                                <div className="flex flex-wrap items-center gap-1.5 ml-auto">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const today = todayInZone(activeDraftMessage.postDraft.timezone);
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledDate', addDays(today, 1));
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledTime', '09:00');
+                                                        }}
+                                                        className="rounded-md bg-white border border-zinc-200 px-2 py-1 text-[11px] hover:bg-zinc-100 font-medium cursor-pointer"
+                                                    >
+                                                        Sáng mai 09:00
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const today = todayInZone(activeDraftMessage.postDraft.timezone);
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledDate', addDays(today, 1));
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledTime', '15:00');
+                                                        }}
+                                                        className="rounded-md bg-white border border-zinc-200 px-2 py-1 text-[11px] hover:bg-zinc-100 font-medium cursor-pointer"
+                                                    >
+                                                        Chiều mai 15:00
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            const today = todayInZone(activeDraftMessage.postDraft.timezone);
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledDate', today);
+                                                            updateDraftField(activeDraftMessage.id, 'scheduledTime', '20:00');
+                                                        }}
+                                                        className="rounded-md bg-white border border-zinc-200 px-2 py-1 text-[11px] hover:bg-zinc-100 font-medium cursor-pointer"
+                                                    >
+                                                        Tối nay 20:00
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
 
-                    {/* Pending attached images preview */}
-                    {selectedImages.length > 0 && (
-                        <div className="flex items-center gap-2 overflow-x-auto py-1">
-                            {selectedImages.map((img, idx) => (
-                                <div
-                                    key={idx}
-                                    className="relative group h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-border bg-muted/40 shadow-2xs"
-                                >
-                                    <img src={img.url} alt="attached" className="h-full w-full object-cover" />
+                                {/* Sticky Bottom Action Bar */}
+                                <div className="p-4 border-t border-zinc-100 bg-zinc-50/80 flex flex-wrap items-center justify-between gap-3 shrink-0">
+                                    {activeDraftMessage.postDraft.isScheduled ? (
+                                        <>
+                                            <span className="text-xs text-emerald-700 font-semibold flex items-center gap-1.5">
+                                                <CheckCircle size={16} weight="bold" />
+                                                Bài đăng đã được xếp lịch xuất bản an toàn!
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    to="/calendar"
+                                                    className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 text-white px-4 py-2 text-xs font-semibold hover:bg-zinc-800 transition-all shadow-2xs"
+                                                >
+                                                    <CalendarBlank size={15} weight="bold" />
+                                                    Xem trên Lịch
+                                                </Link>
+                                                {activeDraftMessage.postDraft.scheduledPostId && (
+                                                    <Link
+                                                        to={`/posts?post=${activeDraftMessage.postDraft.scheduledPostId}`}
+                                                        className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-100"
+                                                    >
+                                                        <ArrowSquareOut size={13} /> Chi tiết
+                                                    </Link>
+                                                )}
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-xs text-zinc-500">
+                                                Bấm xác nhận để đưa bài vào hàng đợi xuất bản tự động
+                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                <Link
+                                                    to="/create"
+                                                    className="text-xs text-zinc-500 hover:text-zinc-900 font-medium hidden sm:inline-flex items-center gap-1 mr-2"
+                                                >
+                                                    Soạn thảo đầy đủ <ArrowSquareOut size={13} />
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    disabled={activeDraftMessage.postDraft.isSaving}
+                                                    onClick={() => handleConfirmSchedule(activeDraftMessage.id)}
+                                                    className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 text-white px-5 py-2.5 text-xs font-bold hover:bg-zinc-800 disabled:opacity-40 transition-all cursor-pointer shadow-xs"
+                                                >
+                                                    {activeDraftMessage.postDraft.isSaving ? (
+                                                        <>
+                                                            <span className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent"></span>
+                                                            Đang lên lịch...
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <CheckCircle size={16} weight="bold" />
+                                                            Xác nhận lên lịch ngay
+                                                        </>
+                                                    )}
+                                                </button>
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+                            </>
+                        ) : (
+                            /* Empty Guide State (When no draft has been requested yet) */
+                            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
+                                <div className="h-16 w-16 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-800 shadow-2xs">
+                                    <Sparkle size={32} weight="bold" />
+                                </div>
+                                <div className="max-w-sm space-y-1.5">
+                                    <h3 className="font-heading font-bold text-base text-zinc-900">
+                                        Bản xem trước thời gian thực
+                                    </h3>
+                                    <p className="text-xs text-zinc-500 leading-relaxed">
+                                        Nhập ý tưởng hoặc đính kèm ảnh ở cột bên trái. AI Agent sẽ tự động viết caption, định dạng theo từng mạng xã hội và hiển thị bản mô phỏng trực tiếp tại đây!
+                                    </p>
+                                </div>
+
+                                <div className="pt-2 flex flex-col gap-2 w-full max-w-xs text-xs">
+                                    <span className="text-[11px] font-bold text-zinc-400 uppercase tracking-wider">
+                                        Thử nhanh một yêu cầu mẫu:
+                                    </span>
                                     <button
                                         type="button"
-                                        onClick={() => removeSelectedImage(idx)}
-                                        className="absolute top-1 right-1 h-4 w-4 rounded-full bg-black/75 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => handleQuickPrompt('Ra mắt tính năng mới vào 9h sáng mai trên Threads và Facebook')}
+                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between"
                                     >
-                                        <X size={10} weight="bold" />
+                                        <span>🚀 Ra mắt tính năng 9h sáng mai</span>
+                                        <ArrowSquareOut size={14} className="text-zinc-400" />
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleQuickPrompt('Chia sẻ bài học tối ưu nội dung MXH vào 20:00 tối nay trên LinkedIn')}
+                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between"
+                                    >
+                                        <span>📈 Bài học kinh nghiệm 20:00 tối</span>
+                                        <ArrowSquareOut size={14} className="text-zinc-400" />
                                     </button>
                                 </div>
-                            ))}
-                        </div>
-                    )}
-
-                    {/* Chat Input Box */}
-                    <div className="relative flex items-end gap-2 rounded-2xl border border-border bg-background p-2 shadow-xs focus-within:ring-1 focus-within:ring-[#ffd631]">
-                        {/* Hidden file input */}
-                        <input
-                            ref={fileInputRef}
-                            type="file"
-                            accept="image/*"
-                            multiple
-                            className="hidden"
-                            onChange={handleFileSelect}
-                        />
-
-                        {/* Attach image button */}
-                        <button
-                            type="button"
-                            disabled={isUploading || isAgentThinking}
-                            onClick={() => fileInputRef.current?.click()}
-                            title="Đính kèm hình ảnh"
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-muted-foreground hover:bg-muted hover:text-foreground transition-all cursor-pointer disabled:opacity-50"
-                        >
-                            {isUploading ? (
-                                <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></span>
-                            ) : (
-                                <ImageIcon size={20} />
-                            )}
-                        </button>
-
-                        {/* Textarea */}
-                        <textarea
-                            ref={textareaRef}
-                            rows={1}
-                            value={inputText}
-                            onChange={handleInputChange}
-                            onKeyDown={(e) => {
-                                if (e.key === 'Enter' && !e.shiftKey) {
-                                    e.preventDefault();
-                                    handleSendMessage();
-                                }
-                            }}
-                            placeholder="Nhập nội dung, yêu cầu hoặc kèm ảnh (VD: 'Đăng ảnh này lên Threads lúc 9h sáng mai')..."
-                            className="flex-1 max-h-36 resize-none bg-transparent py-2.5 px-2 text-xs sm:text-sm focus:outline-none placeholder:text-muted-foreground leading-relaxed"
-                        />
-
-                        {/* Send button */}
-                        <button
-                            type="button"
-                            disabled={(!inputText.trim() && selectedImages.length === 0) || isAgentThinking}
-                            onClick={handleSendMessage}
-                            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffd631] text-[#2b2100] hover:bg-[#ffe059] disabled:opacity-40 transition-all cursor-pointer shadow-2xs font-bold"
-                        >
-                            <PaperPlaneRight size={18} weight="bold" />
-                        </button>
+                            </div>
+                        )}
                     </div>
+
                 </div>
-            </footer>
+            </div>
         </div>
     );
 }
-

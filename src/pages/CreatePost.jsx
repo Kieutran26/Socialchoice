@@ -39,6 +39,8 @@ import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
 import PlatformLogo from '@/components/composer/PlatformLogo';
+import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
+import { getAccountAvatarUrl } from '@/lib/account-avatar';
 import { toUnicodeBold, toUnicodeUnderline, PLATFORM_CHAR_LIMITS } from '@/lib/unicode-formatting';
 import { aiRequest } from '@/api/ai';
 import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
@@ -344,16 +346,22 @@ export default function CreatePost() {
         return angles.filter((a) => a.pillar_id === form.pillar_id);
     }, [angles, form.pillar_id]);
 
-    // Maintain preview account
+    // Maintain preview account & auto-select first account if none selected
     useEffect(() => {
-        if (selectedAccounts.length > 0) {
+        if (!sourceId && form.account_ids.length === 0 && connectedAccounts.length > 0) {
+            setForm((prev) => ({
+                ...prev,
+                account_ids: [connectedAccounts[0].id],
+            }));
+            setPreviewAccountId(connectedAccounts[0].id);
+        } else if (selectedAccounts.length > 0) {
             if (!selectedAccounts.some((a) => a.id === previewAccountId)) {
                 setPreviewAccountId(selectedAccounts[0].id);
             }
-        } else {
-            setPreviewAccountId('');
+        } else if (connectedAccounts.length > 0 && !previewAccountId) {
+            setPreviewAccountId(connectedAccounts[0].id);
         }
-    }, [selectedAccounts, previewAccountId]);
+    }, [connectedAccounts, selectedAccounts, previewAccountId, sourceId, form.account_ids.length]);
 
     // Active channel tab logic
     const currentTabAccount = useMemo(() => selectedAccounts.find((a) => a.id === activeTab), [selectedAccounts, activeTab]);
@@ -734,8 +742,8 @@ export default function CreatePost() {
 
     // Current preview account object
     const currentPreviewAccount = useMemo(() => {
-        return selectedAccounts.find((a) => a.id === previewAccountId) || selectedAccounts[0];
-    }, [selectedAccounts, previewAccountId]);
+        return selectedAccounts.find((a) => a.id === previewAccountId) || selectedAccounts[0] || connectedAccounts[0] || null;
+    }, [selectedAccounts, previewAccountId, connectedAccounts]);
 
     // Character counter for current active tab
     const currentTabLimit = currentTabAccount
@@ -746,148 +754,220 @@ export default function CreatePost() {
     const currentTabCharCount = currentEditorValue.length + (PRESET_SIGNATURES[signatureKey]?.length || 0);
 
     return (
-        <div className="w-full pb-20">
-            {/* Outer Card matching mau-tao-bai-viet.html */}
-            <div className="overflow-clip rounded-2xl border border-zinc-200/80 bg-white shadow-[0_1px_2px_rgba(16,24,40,0.04),0_12px_32px_-12px_rgba(16,24,40,0.08)]">
-                <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px]">
-                    {/* LEFT COLUMN: Main studio editor */}
-                    <div className="min-w-0 p-6 lg:p-8">
-                        {/* Header */}
-                        <div className="flex items-center justify-between gap-4">
-                            <div>
-                                <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                                    {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
-                                </h1>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="flex h-7 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700">
-                                    <span className="size-1.5 rounded-full bg-emerald-500" />
-                                    {t('Đã lưu tự động')}
-                                </span>
-                                {existing && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate(`/create?duplicate=${existing.id}`)}
-                                            className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition"
-                                            title={t('Nhân bản')}
-                                        >
-                                            <Copy size={15} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDeleteOpen(true)}
-                                            className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
-                                            title={t('Xoá')}
-                                        >
-                                            <Trash size={15} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
+        <div className="w-full pb-20 space-y-6">
+            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
+                {/* LEFT COLUMN: Main studio editor */}
+                <div className="min-w-0 space-y-5">
+                    {/* Header */}
+                    <div className="flex items-center justify-between gap-4">
+                        <div>
+                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                                {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
+                            </h1>
                         </div>
-
-                        {/* Top Connected Accounts Circular Buttons Bar */}
-                        <div className="mt-6 flex flex-wrap items-center gap-3">
-                            {connectedAccounts.map((account) => {
-                                const isSelected = form.account_ids.includes(account.id);
-                                const initials = (account.name || account.platform).slice(0, 2).toUpperCase();
-                                return (
+                        <div className="flex items-center gap-2">
+                            <span className="flex h-7 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700">
+                                <span className="size-1.5 rounded-full bg-emerald-500" />
+                                {t('Đã lưu tự động')}
+                            </span>
+                            {existing && (
+                                <>
                                     <button
-                                        key={account.id}
                                         type="button"
-                                        onClick={() => toggleAccountSelection(account.id)}
-                                        title={`${account.name} · @${account.platform}`}
-                                        className="group relative cursor-pointer focus:outline-hidden"
+                                        onClick={() => navigate(`/create?duplicate=${existing.id}`)}
+                                        className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition"
+                                        title={t('Nhân bản')}
                                     >
-                                        <span
-                                            className={`grid size-12 place-items-center rounded-full text-[13px] font-semibold transition ${isSelected
-                                                    ? 'bg-zinc-900 text-white ring-2 ring-brand-400 ring-offset-2'
-                                                    : 'bg-zinc-100 text-zinc-400 opacity-70 hover:opacity-100'
-                                                }`}
-                                        >
-                                            {account.avatar_url ? (
-                                                <img
-                                                    src={account.avatar_url}
-                                                    alt={account.name}
-                                                    className="size-full rounded-full object-cover"
-                                                />
-                                            ) : (
-                                                initials
-                                            )}
-                                        </span>
-                                        <PlatformLogo
-                                            platform={account.platform}
-                                            className={`absolute -bottom-0.5 -right-0.5 size-[18px] rounded-full ring-2 ring-white transition ${isSelected ? '' : 'grayscale'
-                                                }`}
-                                        />
+                                        <Copy size={15} />
                                     </button>
-                                );
-                            })}
-                            <Link
-                                to="/accounts"
-                                title={t('Kết nối kênh mới')}
-                                className="grid size-12 place-items-center rounded-full border border-dashed border-zinc-300 text-zinc-400 transition hover:border-zinc-400 hover:text-zinc-700"
-                            >
-                                <Plus size={16} />
-                            </Link>
-                        </div>
-
-                        {/* Channel Customizer Tabs Sub-bar */}
-                        <div className="mt-5 flex flex-wrap items-center gap-2">
-                            {[{ id: 'default', label: 'Nội dung chung' }, ...selectedAccounts].map((tab) => {
-                                const isDefault = tab.id === 'default';
-                                const isSelectedTab = activeTab === tab.id;
-                                const isExceeded = !isDefault && getResolvedAccountText(tab).length > (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
-                                const isCustomized = !isDefault && form.destination_settings[tab.id]?.caption !== undefined;
-
-                                return (
                                     <button
-                                        key={tab.id}
                                         type="button"
-                                        onClick={() => setActiveTab(tab.id)}
-                                        title={isDefault ? t('Nội dung chung') : t(`Tuỳ chỉnh cho ${tab.name}`)}
-                                        className={`relative grid size-9 place-items-center rounded-lg text-[10px] font-semibold transition cursor-pointer ${isSelectedTab
-                                                ? 'bg-brand-50 text-zinc-900 ring-2 ring-brand-400'
-                                                : 'bg-zinc-100 text-zinc-600 hover:bg-zinc-200'
-                                            }`}
+                                        onClick={() => setDeleteOpen(true)}
+                                        className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
+                                        title={t('Xoá')}
                                     >
-                                        {isDefault ? (
-                                            <Globe size={16} />
-                                        ) : (
-                                            (tab.name || tab.platform).slice(0, 2).toUpperCase()
-                                        )}
-                                        {!isDefault && (
-                                            <PlatformLogo
-                                                platform={tab.platform}
-                                                className="absolute -bottom-1 -right-1 size-3.5 rounded-full ring-2 ring-white"
-                                            />
-                                        )}
-                                        {(isExceeded || isCustomized) && (
-                                            <span
-                                                className={`absolute -right-1 -top-1 size-2.5 rounded-full ring-2 ring-white ${isExceeded ? 'bg-red-500' : 'bg-brand-500'
-                                                    }`}
-                                            />
-                                        )}
+                                        <Trash size={15} />
                                     </button>
-                                );
-                            })}
-                            {selectedAccounts.length > 0 && (
-                                <span className="ml-1 text-[12px] text-zinc-400">
-                                    {currentTabAccount ? (
-                                        <>
-                                            {t('Đang chỉnh cho')}{' '}
-                                            <span className="font-medium text-zinc-700">{currentTabAccount.name}</span>
-                                        </>
-                                    ) : (
-                                        t('Chọn một kênh để tuỳ chỉnh riêng')
-                                    )}
-                                </span>
+                                </>
                             )}
                         </div>
+                    </div>
+
+                    {/* Top Connected Accounts Circular Buttons Bar (Restored Channel Frame) */}
+                    <div className="flex flex-wrap items-center gap-3 p-3 rounded-2xl bg-zinc-50/70 border border-zinc-200/80">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mr-1 flex items-center gap-1.5">
+                            <Globe size={14} className="text-zinc-800" />
+                            {t('Kênh phân phối')}:
+                        </span>
+                        {connectedAccounts.map((account) => {
+                            const isSelected = form.account_ids.includes(account.id);
+                            const cfg = PLATFORM_CONFIG[account.platform] || { icon: Globe, color: 'text-zinc-600' };
+                            const PlatformIcon = cfg.icon;
+
+                            return (
+                                <button
+                                    key={account.id}
+                                    type="button"
+                                    onClick={() => toggleAccountSelection(account.id)}
+                                    title={`${account.name} · @${account.platform}`}
+                                    className="group relative cursor-pointer focus:outline-hidden"
+                                >
+                                    {/* The Main Account Avatar */}
+                                    {(() => {
+                                        const avatarUrl = getAccountAvatarUrl(account);
+                                        const initials = (account.name || account.platform).slice(0, 2).toUpperCase();
+                                        return (
+                                            <div
+                                                className={`size-11 rounded-full overflow-hidden transition flex items-center justify-center font-bold text-xs ${
+                                                    isSelected
+                                                        ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-2xs'
+                                                        : 'border border-zinc-200 opacity-60 hover:opacity-100'
+                                                } ${avatarUrl ? 'bg-zinc-100' : 'bg-gradient-to-br from-zinc-100 to-zinc-200 text-zinc-700'}`}
+                                            >
+                                                {avatarUrl ? (
+                                                    <img
+                                                        src={avatarUrl}
+                                                        alt={account.name}
+                                                        className="size-full object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none';
+                                                            if (e.currentTarget.nextSibling) {
+                                                                e.currentTarget.nextSibling.style.display = 'inline';
+                                                            }
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <span style={{ display: avatarUrl ? 'none' : 'inline' }}>
+                                                    {initials}
+                                                </span>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Platform Logo Badge: Authentic Brand Color Icon */}
+                                    <span
+                                        className="absolute -bottom-1 -right-1 size-5 rounded-full bg-white ring-2 ring-white shadow-2xs flex items-center justify-center"
+                                        title={cfg.label || account.platform}
+                                    >
+                                        <PlatformIcon size={12} weight="fill" className={cfg.color} />
+                                    </span>
+
+                                    {/* Checkmark when selected */}
+                                    {isSelected && (
+                                        <span className="absolute -top-1 -left-1 size-4 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold ring-2 ring-white shadow-2xs">
+                                            ✓
+                                        </span>
+                                    )}
+                                </button>
+                            );
+                        })}
+                        <Link
+                            to="/accounts"
+                            title={t('Kết nối kênh mới')}
+                            className="grid size-11 place-items-center rounded-full border border-dashed border-zinc-300 bg-white text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-800"
+                        >
+                            <Plus size={16} />
+                        </Link>
+                    </div>
+
+                    {/* Channel Customizer Tabs Sub-bar (Hình tròn đồng bộ như trên) */}
+                    <div className="flex flex-wrap items-center gap-3">
+                        {/* Default Tab: Hình tròn Địa Cầu */}
+                        <button
+                            type="button"
+                            onClick={() => setActiveTab('default')}
+                            title={t('Nội dung chung (Tất cả kênh)')}
+                            className={`group relative size-10 rounded-full flex items-center justify-center transition cursor-pointer ${
+                                activeTab === 'default'
+                                    ? 'bg-zinc-900 text-white ring-2 ring-zinc-900 ring-offset-2 shadow-2xs'
+                                    : 'bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200'
+                            }`}
+                        >
+                            <Globe size={18} />
+                        </button>
+
+                        {/* Selected Account Tabs: Hình tròn Avatar + Icon Platform có màu giống hàng trên */}
+                        {selectedAccounts.map((tab) => {
+                            const isSelectedTab = activeTab === tab.id;
+                            const isExceeded = !isSelectedTab && getResolvedAccountText(tab).length > (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
+                            const isCustomized = form.destination_settings[tab.id]?.caption !== undefined;
+                            const cfg = PLATFORM_CONFIG[tab.platform] || { icon: Globe, color: 'text-zinc-600' };
+                            const TabIcon = cfg.icon;
+
+                            return (
+                                <button
+                                    key={tab.id}
+                                    type="button"
+                                    onClick={() => setActiveTab(tab.id)}
+                                    title={t(`Tuỳ chỉnh cho ${tab.name}`)}
+                                    className="group relative cursor-pointer focus:outline-hidden"
+                                >
+                                    {/* Circular Avatar */}
+                                    {(() => {
+                                        const avatarUrl = getAccountAvatarUrl(tab);
+                                        const initials = (tab.name || tab.platform).slice(0, 2).toUpperCase();
+                                        return (
+                                            <div
+                                                className={`size-10 rounded-full overflow-hidden transition flex items-center justify-center font-bold text-xs ${
+                                                    isSelectedTab
+                                                        ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-2xs bg-zinc-900 text-white'
+                                                        : 'border border-zinc-200 opacity-70 hover:opacity-100 bg-white text-zinc-700'
+                                                }`}
+                                            >
+                                                {avatarUrl ? (
+                                                    <img
+                                                        src={avatarUrl}
+                                                        alt={tab.name}
+                                                        className="size-full object-cover"
+                                                        onError={(e) => {
+                                                            e.currentTarget.style.display = 'none';
+                                                            if (e.currentTarget.nextSibling) {
+                                                                e.currentTarget.nextSibling.style.display = 'inline';
+                                                            }
+                                                        }}
+                                                    />
+                                                ) : null}
+                                                <span style={{ display: avatarUrl ? 'none' : 'inline' }}>
+                                                    {initials}
+                                                </span>
+                                            </div>
+                                        );
+                                    })()}
+
+                                    {/* Platform Logo Badge: Authentic Brand Color Icon */}
+                                    <span
+                                        className="absolute -bottom-1 -right-1 size-4.5 rounded-full bg-white ring-1.5 ring-white shadow-2xs flex items-center justify-center"
+                                        title={cfg.label || tab.platform}
+                                    >
+                                        <TabIcon size={11} weight="fill" className={cfg.color} />
+                                    </span>
+
+                                    {/* Status Indicator */}
+                                    {isExceeded ? (
+                                        <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-red-500 ring-1.5 ring-white" />
+                                    ) : isCustomized ? (
+                                        <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-blue-500 ring-1.5 ring-white" />
+                                    ) : null}
+                                </button>
+                            );
+                        })}
+
+                        {selectedAccounts.length > 0 && (
+                            <span className="ml-2 text-[12px] text-zinc-500 font-medium">
+                                {currentTabAccount ? (
+                                    <>
+                                        {t('Đang chỉnh cho')}:{' '}
+                                        <span className="font-bold text-zinc-900">{currentTabAccount.name}</span>
+                                    </>
+                                ) : (
+                                    t('Nội dung dùng chung (tất cả kênh)')
+                                )}
+                            </span>
+                        )}
+                    </div>
 
                         {/* Main Composer Box */}
-                        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/40 transition focus-within:border-zinc-300 focus-within:bg-white focus-within:ring-4 focus-within:ring-brand-100">
+                        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/40 transition focus-within:border-zinc-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-zinc-900/10">
                             {/* Card Header */}
                             <div className="flex items-center justify-between gap-3 px-4 pt-3.5">
                                 <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
@@ -903,7 +983,7 @@ export default function CreatePost() {
                                                 type="checkbox"
                                                 checked={hasCustomCaption}
                                                 onChange={(e) => toggleCustomTab(e.target.checked)}
-                                                className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-brand-400 cursor-pointer"
+                                                className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
                                             />
                                         </label>
                                     )}
@@ -1125,7 +1205,7 @@ export default function CreatePost() {
                                                                 type="button"
                                                                 onClick={() => handleToggleMedia(item)}
                                                                 className={`relative aspect-square overflow-hidden rounded-md ring-offset-1 transition cursor-pointer ${isSelected
-                                                                        ? 'ring-2 ring-brand-400'
+                                                                        ? 'ring-2 ring-zinc-900'
                                                                         : 'opacity-80 hover:opacity-100'
                                                                     }`}
                                                             >
@@ -1149,7 +1229,7 @@ export default function CreatePost() {
 
                                     {/* Inline AI Assistant Drawer */}
                                     {isAiDrawerOpen && (
-                                        <div className="rounded-b-2xl border-t border-zinc-100 bg-brand-50/50 p-3">
+                                        <div className="rounded-b-2xl border-t border-zinc-200 bg-zinc-50 p-3">
                                             <div className="mb-2.5 flex items-center gap-2 text-[11px] text-zinc-500">
                                                 <span className="size-1.5 rounded-full bg-emerald-500" />
                                                 <span>{aiConfig?.provider || 'AI Assistant'}</span>
@@ -1215,7 +1295,7 @@ export default function CreatePost() {
                                 <div key={index} className="relative pl-6">
                                     <span className="absolute left-2 top-0 h-full w-px bg-zinc-200" />
                                     <span className="absolute left-[5px] top-4 size-2 rounded-full bg-zinc-300" />
-                                    <div className="rounded-xl border border-zinc-200 bg-white focus-within:border-zinc-300 focus-within:ring-4 focus-within:ring-brand-100">
+                                    <div className="rounded-xl border border-zinc-200 bg-white focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-zinc-900/10">
                                         <div className="flex items-center justify-between px-3 pt-2.5">
                                             <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
                                                 {t('Bình luận')} {index + 1}
@@ -1271,15 +1351,15 @@ export default function CreatePost() {
                             <button
                                 type="button"
                                 onClick={() => setIsSettingsOpen((p) => !p)}
-                                className={`flex w-full items-center gap-2.5 px-4 py-3 text-left text-[13px] font-semibold transition cursor-pointer ${isSettingsOpen ? 'bg-brand-400 text-zinc-900' : 'bg-white hover:bg-zinc-50'
+                                className={`flex w-full items-center gap-2.5 px-4 py-3 text-left text-[13px] font-semibold transition cursor-pointer ${isSettingsOpen ? 'bg-zinc-50 border-b border-zinc-200 text-zinc-900' : 'bg-white hover:bg-zinc-50 text-zinc-800'
                                     }`}
                             >
-                                <SlidersHorizontal size={16} />
+                                <SlidersHorizontal size={16} className="text-zinc-700" />
                                 <span>{t('Cài đặt')}</span>
-                                <span className={`ml-1 text-[11px] font-normal ${isSettingsOpen ? 'text-zinc-800/70' : 'text-zinc-400'}`}>
+                                <span className="ml-1 text-[11px] font-normal text-zinc-400">
                                     {t('Thương hiệu · chiến lược · UTM')}
                                 </span>
-                                <CaretDown size={16} className={`ml-auto transition ${isSettingsOpen ? 'rotate-180' : ''}`} />
+                                <CaretDown size={16} className={`ml-auto text-zinc-400 transition ${isSettingsOpen ? 'rotate-180' : ''}`} />
                             </button>
 
                             {isSettingsOpen && (
@@ -1295,7 +1375,7 @@ export default function CreatePost() {
                                                 value={form.title}
                                                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                                                 placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
-                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400 focus:ring-2 focus:ring-brand-100"
+                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
                                             />
                                         </div>
 
@@ -1385,7 +1465,7 @@ export default function CreatePost() {
                                                             {t('URL đích')}
                                                         </label>
                                                         {!utmForm.url && detectedUrlInCaption && (
-                                                            <span className="text-[11px] text-brand-600">
+                                                            <span className="text-[11px] text-emerald-700 font-medium">
                                                                 {t('Đang dùng liên kết trong nội dung')}
                                                             </span>
                                                         )}
@@ -1480,7 +1560,7 @@ export default function CreatePost() {
                                                             type="checkbox"
                                                             checked={useShortlink}
                                                             onChange={(e) => setUseShortlink(e.target.checked)}
-                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-brand-400 cursor-pointer"
+                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
                                                         />
                                                     </label>
 
@@ -1497,7 +1577,7 @@ export default function CreatePost() {
                                                             type="checkbox"
                                                             checked={overrideExistingUtm}
                                                             onChange={(e) => setOverrideExistingUtm(e.target.checked)}
-                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-brand-400 cursor-pointer"
+                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
                                                         />
                                                     </label>
                                                 </div>
@@ -1583,8 +1663,8 @@ export default function CreatePost() {
                     </div>
 
                     {/* RIGHT COLUMN: Sticky preview & checklist */}
-                    <aside className="flex flex-col border-t border-zinc-100 bg-zinc-50/70 xl:border-l xl:border-t-0">
-                        <div className="sticky top-14 flex flex-col p-6 lg:p-8">
+                    <aside className="flex flex-col">
+                        <div className="sticky top-4 flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 lg:p-6 shadow-2xs space-y-4">
                             {/* Preview Header */}
                             <div className="flex items-center justify-between">
                                 <h2 className="text-[15px] font-semibold text-zinc-900">
@@ -1619,6 +1699,19 @@ export default function CreatePost() {
                                                         : 'bg-white text-zinc-600 ring-1 ring-zinc-200 hover:ring-zinc-300'
                                                     }`}
                                             >
+                                                {(() => {
+                                                    const avatarUrl = getAccountAvatarUrl(account);
+                                                    return avatarUrl ? (
+                                                        <div className="size-4.5 rounded-full overflow-hidden shrink-0 border border-white/20">
+                                                            <img
+                                                                src={avatarUrl}
+                                                                alt=""
+                                                                className="size-full object-cover"
+                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                            />
+                                                        </div>
+                                                    ) : null;
+                                                })()}
                                                 <PlatformLogo platform={account.platform} className="size-3.5" />
                                                 <span className="truncate max-w-[100px]">{account.name}</span>
                                             </button>
@@ -1628,11 +1721,11 @@ export default function CreatePost() {
                             )}
 
                             {/* Mockup Preview Container */}
-                            <div className="mt-4 min-h-[360px] rounded-2xl border border-dashed border-zinc-200 bg-white/60 p-4">
-                                {currentPreviewAccount && (form.caption.trim() || form.media.length > 0 || hasCustomCaption) ? (
+                            <div className="mt-4 min-h-[360px] rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
+                                {currentPreviewAccount ? (
                                     <SocialMockupPreview
                                         account={currentPreviewAccount}
-                                        text={getResolvedAccountText(currentPreviewAccount)}
+                                        text={getResolvedAccountText(currentPreviewAccount) || t('🚀 Nội dung bài viết đang được soạn thảo sẽ hiển thị trực quan tại đây theo thời gian thực...')}
                                         media={form.media}
                                         when={t('Vừa xong')}
                                     />
@@ -1668,7 +1761,7 @@ export default function CreatePost() {
 
                                 <div className="mb-3 h-1 overflow-hidden rounded-full bg-zinc-200/70">
                                     <div
-                                        className="h-full rounded-full bg-brand-400 transition-all duration-500"
+                                        className="h-full rounded-full bg-emerald-500 transition-all duration-500"
                                         style={{ width: `${(checklistPassedCount / checklistItems.length) * 100}%` }}
                                     />
                                 </div>
@@ -1692,8 +1785,8 @@ export default function CreatePost() {
                     </aside>
                 </div>
 
-                {/* Sticky Bottom Action Bar matching mau-tao-bai-viet.html */}
-                <div className="sticky bottom-0 z-10 flex flex-wrap items-center gap-3 border-t border-zinc-200/80 bg-white/90 px-6 py-3 backdrop-blur-md lg:px-8">
+                {/* Sticky Bottom Action Bar */}
+                <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/90 bg-white/95 px-6 py-3.5 backdrop-blur-md shadow-xs">
                     <button
                         type="button"
                         disabled={saving}
@@ -1746,7 +1839,7 @@ export default function CreatePost() {
                             type="button"
                             disabled={!canSubmit || saving}
                             onClick={() => submit('publish')}
-                            className="btn-skew flex h-9 items-center gap-2 rounded-lg bg-brand-400 px-4 text-[13px] font-semibold text-zinc-900 shadow-[inset_0_-2px_0_rgba(0,0,0,0.08)] transition hover:bg-brand-300 active:translate-y-px disabled:cursor-not-allowed disabled:bg-zinc-100 disabled:text-zinc-400 disabled:shadow-none cursor-pointer"
+                            className="flex h-9 items-center gap-2 rounded-xl bg-zinc-900 px-5 text-[13px] font-bold text-white shadow-xs transition hover:bg-zinc-800 active:translate-y-px disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 disabled:shadow-none cursor-pointer"
                         >
                             <PaperPlaneTilt size={16} weight="fill" />
                             <span>
@@ -1756,7 +1849,6 @@ export default function CreatePost() {
                         </button>
                     </div>
                 </div>
-            </div>
 
             {/* Publishing Confirmation Dialog */}
             {publishReview && (

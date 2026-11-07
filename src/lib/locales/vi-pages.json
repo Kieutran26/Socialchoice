@@ -557,5 +557,10 @@
   "Mô tả chung thương hiệu": "Mô tả chung thương hiệu",
   "Giới thiệu tổng quan về thương hiệu, quy mô, địa chỉ chi nhánh…": "Giới thiệu tổng quan về thương hiệu, quy mô, địa chỉ chi nhánh…",
   "Đã áp dụng thành công {count} bài viết!": "Đã áp dụng thành công {count} bài viết!",
-  "Xem các bài nháp đã tạo trên Lịch nội dung.": "Xem các bài nháp đã tạo trên Lịch nội dung."
+  "Xem các bài nháp đã tạo trên Lịch nội dung.": "Xem các bài nháp đã tạo trên Lịch nội dung.",
+  "Workspace Overview": "Tổng quan workspace",
+  "Facebook Insights": "Hiệu quả Facebook",
+  "All time": "Toàn bộ thời gian",
+  "Retry": "Thử lại",
+  "Workspace reports show content and delivery records. Facebook engagement is reported separately in Facebook Insights.": "Báo cáo workspace thống kê nội dung và kết quả đăng bài. Tương tác Facebook được hiển thị riêng trong mục Hiệu quả Facebook."
 }

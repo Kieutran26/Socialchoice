@@ -1,0 +1,854 @@
+<!doctype html>
+<html lang="vi" data-mau="mau">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Wireframe - Hiệu quả Facebook (Skill UI-UX)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --app-font: "Space Grotesk", system-ui, sans-serif;
+      --brand: #ffd631;
+      --brand-ink: #2b2100;
+      --primary: #ffd631;
+      --primary-foreground: #2b2100;
+      --background: #f8f8fa;
+      --surface: #ffffff;
+      --foreground: #1e1e24;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --border-strong: #d1d5db;
+    }
+
+    /* Nấc Xám (theo skill ui-ux) */
+    :root[data-mau="xam"] {
+      --brand: #2b2b2b;
+      --brand-ink: #ffffff;
+      --primary: #2b2b2b;
+      --primary-foreground: #ffffff;
+    }
+
+    body {
+      font-family: var(--app-font);
+      background-color: var(--background);
+      color: var(--foreground);
+    }
+
+    /* Công tắc Gọn chữ & Bỏ lặp */
+    body[data-gon="1"] [data-wf-gon] { display: none !important; }
+    body[data-bolap="1"] [data-wf-lap] { display: none !important; }
+
+    /* Khổ Mobile mô phỏng */
+    body[data-kho="mobile"] main {
+      max-width: 390px !important;
+      margin: 0 auto;
+      border-left: 1px solid var(--border-strong);
+      border-right: 1px solid var(--border-strong);
+      background-color: var(--background);
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-sm antialiased pb-20">
+  <!-- THANH CÔNG CỤ CHUẨN CỦA SKILL UI-UX (NHÁNH U) -->
+  <header class="sticky top-0 z-50 border-b border-zinc-700 bg-zinc-900 text-zinc-100 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-lg">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded bg-amber-400 text-zinc-900 font-bold text-xs">
+        <i data-lucide="layout" class="size-3.5"></i> Skill UI-UX
+      </span>
+      <span class="text-xs text-zinc-300 font-medium">Chọn phương án bố cục (Wireframe U3)</span>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <!-- Ba phương án bố cục khác nhau thật sự -->
+      <div class="inline-flex rounded-lg bg-zinc-800 p-0.5 border border-zinc-700">
+        <button id="btn-opt-a" onclick="switchOption('a')" class="px-2.5 py-1 rounded font-medium bg-zinc-700 text-white cursor-pointer transition-all">
+          A: Khối hợp nhất
+        </button>
+        <button id="btn-opt-b" onclick="switchOption('b')" class="px-2.5 py-1 rounded font-medium text-zinc-400 hover:text-white cursor-pointer transition-all">
+          B: 2 Cột (Master-Detail)
+        </button>
+        <button id="btn-opt-c" onclick="switchOption('c')" class="px-2.5 py-1 rounded font-medium text-zinc-400 hover:text-white cursor-pointer transition-all">
+          C: Feed Cards & Ma trận
+        </button>
+      </div>
+
+      <!-- Công tắc Màu -->
+      <button id="btn-mau" onclick="toggleMau()" class="px-2.5 py-1 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 cursor-pointer font-medium">
+        Màu: <span id="label-mau" class="text-amber-400 font-bold">Màu thật</span>
+      </button>
+
+      <!-- Khổ Desktop / Mobile -->
+      <button id="btn-kho" onclick="toggleKho()" class="px-2.5 py-1 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 cursor-pointer font-medium">
+        Khổ: <span id="label-kho" class="text-cyan-400 font-bold">Desktop</span>
+      </button>
+
+      <!-- Công tắc Gọn chữ -->
+      <button id="btn-gon" onclick="toggleGon()" class="px-2.5 py-1 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 cursor-pointer">
+        Gọn chữ: <span id="label-gon" class="text-zinc-400 font-bold">Tắt</span>
+      </button>
+
+      <!-- Công tắc Bỏ lặp -->
+      <button id="btn-lap" onclick="toggleLap()" class="px-2.5 py-1 rounded-lg border border-zinc-700 bg-zinc-800 text-zinc-300 hover:bg-zinc-700 cursor-pointer">
+        Bỏ lặp: <span id="label-lap" class="text-zinc-400 font-bold">Tắt</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-[1400px] mx-auto p-4 sm:p-6 space-y-6 transition-all">
+    <!-- Tiêu đề trang -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+      <div>
+        <div class="flex items-center gap-2 text-xs text-gray-500 mb-1">
+          <span>Socialchoice</span>
+          <span>›</span>
+          <span class="text-gray-900 font-medium">Phân tích</span>
+        </div>
+        <h1 class="text-xl font-bold text-gray-900">Phân tích hiệu quả Facebook</h1>
+        <p class="text-xs text-gray-500 mt-0.5" data-wf-gon>
+          Nội dung đã tạo, kết quả tại từng đích đăng và mức độ tập trung nội dung trong không gian làm việc.
+        </p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs px-2.5 py-1 rounded-md bg-gray-100 text-gray-600 font-medium flex items-center gap-1.5">
+          <i data-lucide="clock" class="size-3.5"></i> Asia/Ho_Chi_Minh
+        </span>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- PHƯƠNG ÁN A: KHỐI HỢP NHẤT CHIA KẺ (DASHBOARD CHUẨN)           -->
+    <!-- ============================================================== -->
+    <div id="view-opt-a" class="space-y-6">
+      <!-- Khung lý do Phương án A -->
+      <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/70 text-blue-900 text-xs flex items-start gap-2.5">
+        <i data-lucide="info" class="size-4 shrink-0 mt-0.5 text-blue-600"></i>
+        <div>
+          <p class="font-semibold">Chiến lược A: Khối hợp nhất (Executive Dashboard)</p>
+          <p class="text-blue-800 mt-0.5 leading-relaxed">
+            • <strong>Việc chính thấy ở đâu:</strong> Hàng 4 số liệu gộp chung 1 khối chia kẻ; 2 bảng Page/Pillar đặt cạnh nhau giúp so sánh ngay tỷ trọng; danh sách bài viết chi tiết ở dưới.<br />
+            • <strong>Đổi gì so với bản cũ:</strong> Gom 4 card rời rạc thành 1 khối duy nhất; thêm thanh tỷ trọng cho từng Page/Pillar; rút gọn cột "Đã đo" không lặp chữ.<br />
+            • <strong>Đánh đổi:</strong> Bảng chia 2 cột song song chiếm bề ngang; ở màn hình hẹp phải cuộn xuống dưới mới xem được bài viết chi tiết.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1. Thanh công cụ lọc & đồng bộ -->
+      <section class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="flex size-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600 shrink-0">
+              <i data-lucide="facebook" class="size-5"></i>
+            </span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-semibold text-gray-900">Hiệu quả bài đăng Facebook</h2>
+                <span class="px-2 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+                  • 6 bài sẵn sàng cập nhật
+                </span>
+              </div>
+              <p class="text-xs text-gray-500 mt-0.5" data-wf-gon>
+                Lọc theo ngày xuất bản. Số liệu là tổng tích lũy gần nhất lấy được từ Facebook.
+              </p>
+            </div>
+          </div>
+
+          <button class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-xs bg-[#ffd631] text-[#2b2100] border border-[#d8b216] hover:bg-[#ffe059] transition-all cursor-pointer shadow-xs">
+            <i data-lucide="refresh-cw" class="size-3.5"></i>
+            <span>Cập nhật 3 bài tiếp theo</span>
+          </button>
+        </div>
+
+        <div class="mt-4 pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
+          <div class="flex items-center p-0.5 rounded-lg border border-gray-200 bg-gray-50 text-xs">
+            <button class="px-2.5 py-1 rounded font-medium text-gray-600 hover:text-gray-900">7 ngày qua</button>
+            <button class="px-2.5 py-1 rounded font-semibold bg-white text-gray-900 shadow-xs">30 ngày qua</button>
+            <button class="px-2.5 py-1 rounded font-medium text-gray-600 hover:text-gray-900">90 ngày qua</button>
+          </div>
+          <div class="flex items-center gap-2 text-xs">
+            <input type="date" value="2026-10-09" class="h-8 px-2.5 rounded-lg border border-gray-200 bg-white text-xs font-medium" />
+            <span class="text-gray-400">→</span>
+            <input type="date" value="2026-11-07" class="h-8 px-2.5 rounded-lg border border-gray-200 bg-white text-xs font-medium" />
+          </div>
+          <select class="h-8 px-3 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700">
+            <option>Tất cả Pages (3 Pages)</option>
+          </select>
+          <select class="h-8 px-3 rounded-lg border border-gray-200 bg-white text-xs font-medium text-gray-700">
+            <option>Tất cả trụ cột (1 trụ cột)</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- 2. HÀNG 4 CARD VỚI ICON CÓ MÀU SẮC RỰC RỠ -->
+      <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3">
+        <!-- Card 1 -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 font-semibold tracking-wider uppercase text-[11px]">
+            <span>LƯỢT ĐĂNG ĐÃ XÁC NHẬN</span>
+            <div class="flex size-9 items-center justify-center rounded-xl bg-emerald-100/90 text-emerald-700 border border-emerald-200">
+              <i data-lucide="send" class="size-4.5"></i>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-baseline justify-between gap-2">
+            <p class="text-2xl font-bold text-gray-900">6</p>
+            <span class="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-emerald-50 text-emerald-800 border border-emerald-200">
+              ĐÃ XÁC NHẬN
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1" data-wf-gon>Được đích đăng xác nhận</p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 font-semibold tracking-wider uppercase text-[11px]">
+            <span>PHẢN ỨNG</span>
+            <div class="flex size-9 items-center justify-center rounded-xl bg-blue-100/90 text-[#1877F2] border border-blue-200">
+              <i data-lucide="thumbs-up" class="size-4.5"></i>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-baseline justify-between gap-2">
+            <p class="text-2xl font-bold text-gray-900">—</p>
+            <span class="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-blue-50 text-blue-800 border border-blue-200">
+              THỜI GIAN THỰC
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1" data-wf-gon>Chờ đồng bộ số liệu (0/6)</p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 font-semibold tracking-wider uppercase text-[11px]">
+            <span>BÌNH LUẬN</span>
+            <div class="flex size-9 items-center justify-center rounded-xl bg-indigo-100/90 text-indigo-700 border border-indigo-200">
+              <i data-lucide="message-square" class="size-4.5"></i>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-baseline justify-between gap-2">
+            <p class="text-2xl font-bold text-gray-900">—</p>
+            <span class="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-indigo-50 text-indigo-800 border border-indigo-200">
+              24H TỚI
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1" data-wf-gon>Chờ đồng bộ số liệu (0/6)</p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-xs flex flex-col justify-between">
+          <div class="flex items-center justify-between text-xs text-gray-500 font-semibold tracking-wider uppercase text-[11px]">
+            <span>CHIA SẺ</span>
+            <div class="flex size-9 items-center justify-center rounded-xl bg-amber-100/90 text-amber-700 border border-amber-200">
+              <i data-lucide="share-2" class="size-4.5"></i>
+            </div>
+          </div>
+          <div class="mt-2.5 flex items-baseline justify-between gap-2">
+            <p class="text-2xl font-bold text-gray-900">—</p>
+            <span class="rounded-md px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wide bg-amber-50 text-amber-800 border border-amber-200">
+              SẴN SÀNG
+            </span>
+          </div>
+          <p class="text-xs text-gray-500 mt-1" data-wf-gon>Chờ đồng bộ số liệu (0/6)</p>
+        </div>
+      </section>
+
+      <!-- 3. HAI BẢNG SO SÁNH PAGE & TRỤ CỘT -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        <section class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="flex size-7 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                <i data-lucide="facebook" class="size-4"></i>
+              </span>
+              <h3 class="font-semibold text-gray-900 text-sm">Hiệu quả từng Page</h3>
+            </div>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">3 Pages</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-gray-100 text-left bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                  <th class="py-2 px-3 rounded-l">Tên Page</th>
+                  <th class="py-2 px-2 text-right">Lượt đăng</th>
+                  <th class="py-2 px-2 text-center">Đã đo</th>
+                  <th class="py-2 px-2 text-right">Phản ứng</th>
+                  <th class="py-2 px-2 text-right">Bình luận</th>
+                  <th class="py-2 px-2 text-right rounded-r">Chia sẻ</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2.5 px-3 font-medium text-gray-900">
+                    <div>TalentChoice</div>
+                    <div class="mt-1 h-1 w-24 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-400 w-1/6"></div>
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-2 text-right font-medium">1 <span class="text-[10px] text-gray-400" data-wf-lap>(17%)</span></td>
+                  <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">0/1</span></td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                </tr>
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2.5 px-3 font-medium text-gray-900">
+                    <div>NextChoice</div>
+                    <div class="mt-1 h-1 w-24 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-400 w-1/6"></div>
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-2 text-right font-medium">1 <span class="text-[10px] text-gray-400" data-wf-lap>(17%)</span></td>
+                  <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">0/1</span></td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+            <div class="flex items-center gap-2">
+              <span class="flex size-7 items-center justify-center rounded-lg bg-gray-100 text-gray-700">
+                <i data-lucide="layers" class="size-4"></i>
+              </span>
+              <h3 class="font-semibold text-gray-900 text-sm">Hiệu quả từng trụ cột</h3>
+            </div>
+            <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">1 trụ cột</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-xs">
+              <thead>
+                <tr class="border-b border-gray-100 text-left bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                  <th class="py-2 px-3 rounded-l">Trụ cột</th>
+                  <th class="py-2 px-2 text-right">Lượt đăng</th>
+                  <th class="py-2 px-2 text-center">Đã đo</th>
+                  <th class="py-2 px-2 text-right">Phản ứng</th>
+                  <th class="py-2 px-2 text-right">Bình luận</th>
+                  <th class="py-2 px-2 text-right rounded-r">Chia sẻ</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100">
+                <tr class="hover:bg-gray-50">
+                  <td class="py-2.5 px-3 font-medium text-gray-900">
+                    <div>Chưa phân loại</div>
+                    <div class="mt-1 h-1 w-24 bg-gray-100 rounded-full overflow-hidden">
+                      <div class="h-full bg-amber-400 w-full"></div>
+                    </div>
+                  </td>
+                  <td class="py-2.5 px-2 text-right font-medium">6 <span class="text-[10px] text-gray-400" data-wf-lap>(100%)</span></td>
+                  <td class="py-2.5 px-2 text-center"><span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">0/6</span></td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                  <td class="py-2.5 px-2 text-right">—</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- 4. BẢNG BÀI VIẾT CHI TIẾT -->
+      <section class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+          <div class="flex items-center gap-2">
+            <span class="flex size-7 items-center justify-center rounded-lg bg-amber-50 text-amber-600">
+              <i data-lucide="trending-up" class="size-4"></i>
+            </span>
+            <div>
+              <h3 class="font-semibold text-gray-900 text-sm">Chi tiết bài đăng Facebook</h3>
+              <p class="text-[11px] text-gray-500 mt-0.5" data-wf-gon>Số liệu là tổng tích lũy trọn đời từ Facebook</p>
+            </div>
+          </div>
+          <span class="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded font-medium">6 bài viết</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="border-b border-gray-100 text-left bg-gray-50 text-gray-500 uppercase text-[10px] tracking-wider">
+                <th class="py-2 px-3 rounded-l">Bài viết</th>
+                <th class="py-2 px-3">Page & Trụ cột</th>
+                <th class="py-2 px-2 text-right">Phản ứng</th>
+                <th class="py-2 px-2 text-right">Bình luận</th>
+                <th class="py-2 px-2 text-right">Chia sẻ</th>
+                <th class="py-2 px-3 text-right rounded-r">Đồng bộ</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50">
+                <td class="py-3 px-3">
+                  <div class="font-medium text-gray-900">Chiến lược Social 2026: Tối ưu tương tác đa kênh</div>
+                  <div class="flex items-center gap-2 mt-1 text-[11px] text-gray-500">
+                    <span>07/11/2026 10:30</span>
+                    <span>·</span>
+                    <a href="#" class="text-blue-600 hover:underline flex items-center gap-0.5">
+                      <span>Xem trên Facebook</span>
+                      <i data-lucide="external-link" class="size-3"></i>
+                    </a>
+                  </div>
+                </td>
+                <td class="py-3 px-3">
+                  <div class="font-medium text-gray-900">TalentChoice</div>
+                  <span class="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">Chưa phân loại</span>
+                </td>
+                <td class="py-3 px-2 text-right font-medium">—</td>
+                <td class="py-3 px-2 text-right font-medium">—</td>
+                <td class="py-3 px-2 text-right font-medium">—</td>
+                <td class="py-3 px-3 text-right">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">
+                    <i data-lucide="clock" class="size-3"></i> Chưa cập nhật
+                  </span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- PHƯƠNG ÁN B: BỐ CỤC 2 CỘT SPLIT VIEW (MASTER - DETAIL)          -->
+    <!-- ============================================================== -->
+    <div id="view-opt-b" class="space-y-6 hidden">
+      <!-- Khung lý do Phương án B -->
+      <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/70 text-emerald-900 text-xs flex items-start gap-2.5">
+        <i data-lucide="check-circle" class="size-4 shrink-0 mt-0.5 text-emerald-600"></i>
+        <div>
+          <p class="font-semibold">Chiến lược B: 2 Cột song song (Master - Detail Workspace)</p>
+          <p class="text-emerald-800 mt-0.5 leading-relaxed">
+            • <strong>Việc chính thấy ở đâu:</strong> Cột trái là danh sách Xếp hạng Fanpage & Trụ cột để chọn nhanh; Cột phải lập tức hiển thị KPI và danh sách bài viết tương ứng.<br />
+            • <strong>Đổi gì so với bản cũ:</strong> Loại bỏ hoàn toàn cảm giác cuộn trang dài. Bấm vào Page nào ở cột trái, cột phải lọc ngay bài viết của Page đó mà không cần mở dropdown.<br />
+            • <strong>Đánh đổi:</strong> Màn hình dưới 1024px sẽ tự động xếp chồng (Cột trái lên trên, Cột phải xuống dưới).
+          </p>
+        </div>
+      </div>
+
+      <!-- Thanh bộ lọc thu gọn trên cùng -->
+      <div class="bg-white rounded-xl border border-gray-200 p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-2">
+          <span class="p-1.5 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="filter" class="size-4"></i></span>
+          <span class="font-semibold text-xs text-gray-900">Khoảng thời gian:</span>
+          <div class="flex items-center gap-1.5 bg-gray-100 p-1 rounded-lg text-xs">
+            <button class="px-2 py-0.5 rounded bg-white text-gray-900 font-semibold shadow-xs">30 ngày qua</button>
+            <button class="px-2 py-0.5 text-gray-500 hover:text-gray-900">7 ngày</button>
+            <button class="px-2 py-0.5 text-gray-500 hover:text-gray-900">Tùy chọn</button>
+          </div>
+        </div>
+        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium text-xs bg-[#ffd631] text-[#2b2100] border border-[#d8b216] cursor-pointer">
+          <i data-lucide="refresh-cw" class="size-3.5"></i>
+          <span>Cập nhật số liệu</span>
+        </button>
+      </div>
+
+      <!-- BỐ CỤC 2 CỘT SPLIT -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- CỘT TRÁI (4 CỘT): DANH SÁCH FANPAGES & TRỤ CỘT -->
+        <div class="lg:col-span-4 space-y-4">
+          <!-- Card chọn Page -->
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Fanpages (3)</h3>
+              <span class="text-[11px] text-blue-600 font-medium cursor-pointer">Chọn tất cả</span>
+            </div>
+
+            <div class="space-y-1.5">
+              <!-- Item 1: Active -->
+              <div class="p-2.5 rounded-lg border-2 border-[#ffd631] bg-amber-50/40 cursor-pointer flex items-center justify-between">
+                <div class="flex items-center gap-2 min-w-0">
+                  <i data-lucide="facebook" class="size-4 text-blue-600 shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-semibold text-xs text-gray-900 truncate">TalentChoice</p>
+                    <p class="text-[10px] text-gray-500">1 bài xuất bản</p>
+                  </div>
+                </div>
+                <span class="text-xs font-bold text-gray-900">17%</span>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-2 min-w-0">
+                  <i data-lucide="facebook" class="size-4 text-blue-600 shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-medium text-xs text-gray-700 truncate">NextChoice</p>
+                    <p class="text-[10px] text-gray-500">1 bài xuất bản</p>
+                  </div>
+                </div>
+                <span class="text-xs text-gray-500 font-medium">17%</span>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="p-2.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer flex items-center justify-between transition-colors">
+                <div class="flex items-center gap-2 min-w-0">
+                  <i data-lucide="facebook" class="size-4 text-blue-600 shrink-0"></i>
+                  <div class="min-w-0">
+                    <p class="font-medium text-xs text-gray-700 truncate">Socialchoice Hub</p>
+                    <p class="text-[10px] text-gray-500">4 bài xuất bản</p>
+                  </div>
+                </div>
+                <span class="text-xs text-gray-500 font-medium">66%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card phân bổ Trụ cột -->
+          <div class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-500">Theo Trụ cột nội dung</h3>
+            <div class="p-2.5 rounded-lg bg-gray-50 border border-gray-200">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-medium text-gray-800">Chưa phân loại</span>
+                <span class="font-bold text-gray-900">6 bài (100%)</span>
+              </div>
+              <div class="mt-2 h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                <div class="h-full bg-amber-400 w-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CỘT PHẢI (8 CỘT): METRICS CHI TIẾT & BÀI ĐĂNG CỦA PAGE ĐƯỢC CHỌN -->
+        <div class="lg:col-span-8 space-y-4">
+          <!-- 4 Card KPI thu gọn -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Lượt đăng</span>
+              <p class="text-xl font-bold text-gray-900 mt-1">1 bài</p>
+              <span class="text-[10px] text-emerald-600 font-medium">Đã xuất bản</span>
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Phản ứng</span>
+              <p class="text-xl font-bold text-gray-900 mt-1">—</p>
+              <span class="text-[10px] text-gray-400">0/1 đã đo</span>
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Bình luận</span>
+              <p class="text-xl font-bold text-gray-900 mt-1">—</p>
+              <span class="text-[10px] text-gray-400">0/1 đã đo</span>
+            </div>
+            <div class="bg-white p-3.5 rounded-xl border border-gray-200 shadow-2xs">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-gray-500">Chia sẻ</span>
+              <p class="text-xl font-bold text-gray-900 mt-1">—</p>
+              <span class="text-[10px] text-gray-400">0/1 đã đo</span>
+            </div>
+          </div>
+
+          <!-- Bảng bài viết của Fanpage được chọn -->
+          <div class="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
+            <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between bg-gray-50/50">
+              <div class="flex items-center gap-2">
+                <span class="font-semibold text-xs text-gray-900">Bài đăng trên: TalentChoice</span>
+                <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-semibold">1 bài</span>
+              </div>
+              <span class="text-xs text-gray-500">Sắp xếp: Mới nhất</span>
+            </div>
+
+            <div class="divide-y divide-gray-100">
+              <div class="p-4 hover:bg-gray-50 transition-colors flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="min-w-0 space-y-1">
+                  <p class="font-semibold text-sm text-gray-900 hover:text-blue-600 cursor-pointer">
+                    Chiến lược Social 2026: Tối ưu tương tác đa kênh
+                  </p>
+                  <div class="flex items-center gap-3 text-xs text-gray-500">
+                    <span>Xuất bản: 07/11/2026 10:30</span>
+                    <span class="px-1.5 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">Chưa phân loại</span>
+                    <a href="#" class="text-blue-600 hover:underline flex items-center gap-1 font-medium">
+                      <span>Mở link Facebook</span>
+                      <i data-lucide="external-link" class="size-3"></i>
+                    </a>
+                  </div>
+                </div>
+
+                <!-- Tương tác -->
+                <div class="flex items-center gap-4 shrink-0 bg-gray-50 px-3 py-2 rounded-lg border border-gray-100">
+                  <div class="text-center">
+                    <span class="text-[10px] text-gray-400 block">Like</span>
+                    <span class="font-bold text-xs text-gray-700">—</span>
+                  </div>
+                  <div class="text-center">
+                    <span class="text-[10px] text-gray-400 block">Cmt</span>
+                    <span class="font-bold text-xs text-gray-700">—</span>
+                  </div>
+                  <div class="text-center">
+                    <span class="text-[10px] text-gray-400 block">Share</span>
+                    <span class="font-bold text-xs text-gray-700">—</span>
+                  </div>
+                  <span class="ml-2 px-2 py-1 rounded bg-amber-100 text-amber-800 text-[10px] font-medium">Chờ sync</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- PHƯƠNG ÁN C: FEED CARDS & MA TRẬN CHÉO (VISUAL CARDS & MATRIX)  -->
+    <!-- ============================================================== -->
+    <div id="view-opt-c" class="space-y-6 hidden">
+      <!-- Khung lý do Phương án C -->
+      <div class="p-3.5 rounded-xl border border-purple-200 bg-purple-50/70 text-purple-900 text-xs flex items-start gap-2.5">
+        <i data-lucide="layout-grid" class="size-4 shrink-0 mt-0.5 text-purple-600"></i>
+        <div>
+          <p class="font-semibold">Chiến lược C: Ma trận đối chiếu chéo & Feed Cards trực quan</p>
+          <p class="text-purple-800 mt-0.5 leading-relaxed">
+            • <strong>Việc chính thấy ở đâu:</strong> Ma trận chéo phân tích Page × Trụ cột giúp Content Lead thấy ngay khoảng trống nội dung; bên dưới là Feed dạng card có hình ảnh xem trước.<br />
+            • <strong>Đổi gì so với bản cũ:</strong> Thay danh sách dạng bảng nhàm chán bằng lưới Card trực quan như feed mạng xã hội thật; số like/cmt/share hiển thị to rõ như infographic.<br />
+            • <strong>Đánh đổi:</strong> Tốn diện tích cuộn hơn dạng bảng nếu có hàng trăm bài viết.
+          </p>
+        </div>
+      </div>
+
+      <!-- 1. Dải KPI dẹt (Slim Status Bar) -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div class="bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-gray-500 uppercase font-bold">Tổng bài đăng</p>
+            <p class="text-lg font-bold text-gray-900">6 bài</p>
+          </div>
+          <span class="p-2 rounded-lg bg-emerald-50 text-emerald-600"><i data-lucide="send" class="size-4"></i></span>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-gray-500 uppercase font-bold">Phản ứng</p>
+            <p class="text-lg font-bold text-gray-900">—</p>
+          </div>
+          <span class="p-2 rounded-lg bg-blue-50 text-blue-600"><i data-lucide="thumbs-up" class="size-4"></i></span>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-gray-500 uppercase font-bold">Bình luận</p>
+            <p class="text-lg font-bold text-gray-900">—</p>
+          </div>
+          <span class="p-2 rounded-lg bg-indigo-50 text-indigo-600"><i data-lucide="message-square" class="size-4"></i></span>
+        </div>
+        <div class="bg-white p-3 rounded-xl border border-gray-200 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] text-gray-500 uppercase font-bold">Chia sẻ</p>
+            <p class="text-lg font-bold text-gray-900">—</p>
+          </div>
+          <span class="p-2 rounded-lg bg-amber-50 text-amber-600"><i data-lucide="share-2" class="size-4"></i></span>
+        </div>
+      </div>
+
+      <!-- 2. Ma trận chéo Fanpage × Trụ cột -->
+      <section class="bg-white rounded-xl border border-gray-200 p-4 shadow-xs space-y-3">
+        <div class="flex items-center justify-between pb-2 border-b border-gray-100">
+          <div class="flex items-center gap-2">
+            <i data-lucide="grid" class="size-4 text-purple-600"></i>
+            <h3 class="font-semibold text-gray-900 text-sm">Ma trận phân bổ: Page × Trụ cột nội dung</h3>
+          </div>
+          <span class="text-xs text-gray-500">Giúp phát hiện Page nào đang thiếu Trụ cột nào</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-xs">
+            <thead>
+              <tr class="bg-gray-50 text-gray-600 border-b border-gray-200">
+                <th class="py-2.5 px-3 text-left font-semibold">Fanpage</th>
+                <th class="py-2.5 px-3 text-center font-semibold bg-purple-50/50 text-purple-900">Chưa phân loại</th>
+                <th class="py-2.5 px-3 text-center font-semibold text-gray-400">Kiến thức ngành</th>
+                <th class="py-2.5 px-3 text-center font-semibold text-gray-400">Case Study</th>
+                <th class="py-2.5 px-3 text-right font-semibold">Tổng bài</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+              <tr class="hover:bg-gray-50">
+                <td class="py-2.5 px-3 font-semibold text-gray-900">TalentChoice</td>
+                <td class="py-2.5 px-3 text-center font-bold text-purple-700 bg-purple-50/30">1 bài</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-right font-bold text-gray-900">1 bài</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="py-2.5 px-3 font-semibold text-gray-900">NextChoice</td>
+                <td class="py-2.5 px-3 text-center font-bold text-purple-700 bg-purple-50/30">1 bài</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-right font-bold text-gray-900">1 bài</td>
+              </tr>
+              <tr class="hover:bg-gray-50">
+                <td class="py-2.5 px-3 font-semibold text-gray-900">Socialchoice Hub</td>
+                <td class="py-2.5 px-3 text-center font-bold text-purple-700 bg-purple-50/30">4 bài</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-center text-gray-300">0</td>
+                <td class="py-2.5 px-3 text-right font-bold text-gray-900">4 bài</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. FEED CARDS BÀI VIẾT NỔI BẬT (3 CỘT) -->
+      <div>
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-sm text-gray-900">Feed bài viết trực quan</h3>
+          <span class="text-xs text-gray-500">6 bài đăng gần nhất</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Card 1 -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:border-gray-300 transition-all flex flex-col justify-between">
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold flex items-center gap-1">
+                  <i data-lucide="facebook" class="size-3"></i> TalentChoice
+                </span>
+                <span class="text-gray-400 text-[11px]">07/11/2026</span>
+              </div>
+              <p class="font-semibold text-gray-900 text-sm line-clamp-2">
+                Chiến lược Social 2026: Tối ưu tương tác đa kênh và tự động hóa
+              </p>
+              <span class="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">Chưa phân loại</span>
+            </div>
+
+            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3 text-gray-600">
+                <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="size-3.5 text-blue-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="message-square" class="size-3.5 text-indigo-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="share-2" class="size-3.5 text-amber-500"></i> —</span>
+              </div>
+              <a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-[11px] font-semibold">
+                <span>Facebook</span>
+                <i data-lucide="external-link" class="size-3"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 2 -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:border-gray-300 transition-all flex flex-col justify-between">
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold flex items-center gap-1">
+                  <i data-lucide="facebook" class="size-3"></i> NextChoice
+                </span>
+                <span class="text-gray-400 text-[11px]">06/11/2026</span>
+              </div>
+              <p class="font-semibold text-gray-900 text-sm line-clamp-2">
+                5 bước xây dựng kịch bản nội dung Viral cho Fanpage B2B
+              </p>
+              <span class="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">Chưa phân loại</span>
+            </div>
+
+            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3 text-gray-600">
+                <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="size-3.5 text-blue-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="message-square" class="size-3.5 text-indigo-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="share-2" class="size-3.5 text-amber-500"></i> —</span>
+              </div>
+              <a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-[11px] font-semibold">
+                <span>Facebook</span>
+                <i data-lucide="external-link" class="size-3"></i>
+              </a>
+            </div>
+          </div>
+
+          <!-- Card 3 -->
+          <div class="bg-white rounded-xl border border-gray-200 overflow-hidden shadow-xs hover:border-gray-300 transition-all flex flex-col justify-between">
+            <div class="p-4 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-700 font-semibold flex items-center gap-1">
+                  <i data-lucide="facebook" class="size-3"></i> Socialchoice Hub
+                </span>
+                <span class="text-gray-400 text-[11px]">05/11/2026</span>
+              </div>
+              <p class="font-semibold text-gray-900 text-sm line-clamp-2">
+                Tổng kết hiệu quả chiến dịch tháng 10 và định hướng Q4
+              </p>
+              <span class="inline-block px-2 py-0.5 rounded bg-gray-100 text-gray-600 text-[10px]">Chưa phân loại</span>
+            </div>
+
+            <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3 text-gray-600">
+                <span class="flex items-center gap-1"><i data-lucide="thumbs-up" class="size-3.5 text-blue-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="message-square" class="size-3.5 text-indigo-500"></i> —</span>
+                <span class="flex items-center gap-1"><i data-lucide="share-2" class="size-3.5 text-amber-500"></i> —</span>
+              </div>
+              <a href="#" class="text-blue-600 hover:underline flex items-center gap-1 text-[11px] font-semibold">
+                <span>Facebook</span>
+                <i data-lucide="external-link" class="size-3"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // Khởi tạo Lucide Icons
+    lucide.createIcons();
+
+    function switchOption(opt) {
+      const viewA = document.getElementById('view-opt-a');
+      const viewB = document.getElementById('view-opt-b');
+      const viewC = document.getElementById('view-opt-c');
+
+      const btnA = document.getElementById('btn-opt-a');
+      const btnB = document.getElementById('btn-opt-b');
+      const btnC = document.getElementById('btn-opt-c');
+
+      viewA.classList.add('hidden');
+      viewB.classList.add('hidden');
+      viewC.classList.add('hidden');
+
+      btnA.className = 'px-2.5 py-1 rounded font-medium text-zinc-400 hover:text-white cursor-pointer transition-all';
+      btnB.className = 'px-2.5 py-1 rounded font-medium text-zinc-400 hover:text-white cursor-pointer transition-all';
+      btnC.className = 'px-2.5 py-1 rounded font-medium text-zinc-400 hover:text-white cursor-pointer transition-all';
+
+      if (opt === 'a') {
+        viewA.classList.remove('hidden');
+        btnA.className = 'px-2.5 py-1 rounded font-medium bg-zinc-700 text-white cursor-pointer transition-all';
+      } else if (opt === 'b') {
+        viewB.classList.remove('hidden');
+        btnB.className = 'px-2.5 py-1 rounded font-medium bg-zinc-700 text-white cursor-pointer transition-all';
+      } else if (opt === 'c') {
+        viewC.classList.remove('hidden');
+        btnC.className = 'px-2.5 py-1 rounded font-medium bg-zinc-700 text-white cursor-pointer transition-all';
+      }
+      lucide.createIcons();
+    }
+
+    function toggleMau() {
+      const html = document.documentElement;
+      const cur = html.getAttribute('data-mau');
+      const next = cur === 'xam' ? 'mau' : 'xam';
+      html.setAttribute('data-mau', next);
+      document.getElementById('label-mau').innerText = next === 'xam' ? 'Xám (Bố cục)' : 'Màu thật';
+      document.getElementById('label-mau').className = next === 'xam' ? 'text-zinc-400 font-bold' : 'text-amber-400 font-bold';
+    }
+
+    function toggleKho() {
+      const body = document.body;
+      const cur = body.getAttribute('data-kho');
+      const next = cur === 'mobile' ? 'desktop' : 'mobile';
+      body.setAttribute('data-kho', next);
+      document.getElementById('label-kho').innerText = next === 'mobile' ? 'Mobile (390px)' : 'Desktop';
+      document.getElementById('label-kho').className = next === 'mobile' ? 'text-purple-400 font-bold' : 'text-cyan-400 font-bold';
+    }
+
+    function toggleGon() {
+      const body = document.body;
+      const isGon = body.getAttribute('data-gon') === '1';
+      body.setAttribute('data-gon', isGon ? '0' : '1');
+      document.getElementById('label-gon').innerText = isGon ? 'Tắt' : 'Bật';
+      document.getElementById('label-gon').className = isGon ? 'text-zinc-400 font-bold' : 'text-emerald-400 font-bold';
+    }
+
+    function toggleLap() {
+      const body = document.body;
+      const isLap = body.getAttribute('data-bolap') === '1';
+      body.setAttribute('data-bolap', isLap ? '0' : '1');
+      document.getElementById('label-lap').innerText = isLap ? 'Tắt' : 'Bật';
+      document.getElementById('label-lap').className = isLap ? 'text-zinc-400 font-bold' : 'text-emerald-400 font-bold';
+    }
+  </script>
+</body>
+</html>

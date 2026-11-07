@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>So sánh Wireframe: Trắng Đen vs Vàng Thương Hiệu (Socialchoice)</title>
+  <!-- Google Fonts & Tailwind CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons (Socialchoice Design Contract Standard) -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      
+      --color-brand-yellow: #ffd631;
+      --color-brand-hover: #ffe059;
+      --color-brand-dark: #d8b216;
+      --color-brand-ink: #2b2100;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f4f4f5;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .panel-card {
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      border-radius: 16px;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.03);
+    }
+    .badge-amber {
+      background: rgba(245, 158, 11, 0.1);
+      color: #78350f;
+      border: 1px solid rgba(245, 158, 11, 0.25);
+    }
+    .badge-emerald {
+      background: rgba(16, 185, 129, 0.1);
+      color: #065f46;
+      border: 1px solid rgba(16, 185, 129, 0.25);
+    }
+    .badge-blue {
+      background: rgba(59, 130, 246, 0.1);
+      color: #1e40af;
+      border: 1px solid rgba(59, 130, 246, 0.25);
+    }
+    .badge-indigo {
+      background: rgba(99, 102, 241, 0.1);
+      color: #3730a3;
+      border: 1px solid rgba(99, 102, 241, 0.25);
+    }
+    .badge-purple {
+      background: rgba(168, 85, 247, 0.1);
+      color: #6b21a8;
+      border: 1px solid rgba(168, 85, 247, 0.25);
+    }
+    .btn-brand {
+      background: #ffd631;
+      color: #2b2100;
+      border: 1px solid #d8b216;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .btn-brand:hover {
+      background: #ffe059;
+    }
+    .btn-mono {
+      background: #18181b;
+      color: #ffffff;
+      border: 1px solid #18181b;
+      border-radius: 10px;
+      font-weight: 600;
+      transition: all 0.15s ease;
+    }
+    .btn-mono:hover {
+      background: #27272a;
+    }
+    /* Toolbar controls */
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+
+  <!-- TOP APP HEADER / WIREFRAME CONTROL BAR -->
+  <header class="sticky top-0 z-50 bg-white border-b border-zinc-200 px-6 py-3.5 shadow-xs">
+    <div class="max-w-[1800px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-400 text-amber-950 font-bold text-sm shadow-xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">Bảng Đối Chiếu Wireframe</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-700 border border-zinc-200">
+              Trắng Đen vs Vàng Brand (Cả hai đều có Badge Màu)
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">So sánh 1:1 trực quan để bạn chọn phương án đưa lên giao diện chính thức</p>
+        </div>
+      </div>
+
+      <!-- VIEW MODE TOGGLES -->
+      <div class="flex items-center gap-2">
+        <span class="text-xs font-semibold text-zinc-500 mr-1">Chế độ xem:</span>
+        <button id="view-split" class="ctrl-pill active" onclick="setViewMode('split')">
+          <i class="ph-bold ph-columns"></i>
+          <span>Chia đôi 1:1 (Side by Side)</span>
+        </button>
+        <button id="view-mono" class="ctrl-pill" onclick="setViewMode('mono')">
+          <i class="ph-bold ph-circle-half"></i>
+          <span>Chỉ xem Trắng Đen</span>
+        </button>
+        <button id="view-yellow" class="ctrl-pill" onclick="setViewMode('yellow')">
+          <i class="ph-bold ph-sparkle text-amber-500"></i>
+          <span>Chỉ xem Vàng Brand</span>
+        </button>
+      </div>
+
+      <!-- DEVICE EMULATOR TOGGLE -->
+      <div class="flex items-center gap-1.5 bg-zinc-100 p-1 rounded-lg border border-zinc-200">
+        <button id="dev-desktop" class="px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-zinc-900 shadow-2xs" onclick="setDevice('desktop')">
+          <i class="ph-bold ph-desktop mr-1"></i> Desktop
+        </button>
+        <button id="dev-laptop" class="px-2.5 py-1 text-xs font-semibold rounded-md text-zinc-600 hover:text-zinc-900" onclick="setDevice('laptop')">
+          <i class="ph-bold ph-laptop mr-1"></i> Laptop
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DIFF SUMMARY BANNER -->
+  <section class="max-w-[1800px] mx-auto px-6 py-4">
+    <div class="p-4 rounded-xl bg-white border border-zinc-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="h-8 w-8 rounded-lg bg-zinc-900 text-white flex items-center justify-center font-bold text-xs shrink-0">
+          <i class="ph-bold ph-scales text-sm"></i>
+        </div>
+        <div class="text-xs leading-relaxed text-zinc-700">
+          <span class="font-bold text-zinc-900">Điểm giống nhau:</span> Cả 2 bên đều dùng cấu trúc Option A tối giản, giữ nguyên các 
+          <span class="font-semibold text-amber-700 bg-amber-50 px-1 rounded border border-amber-200">Badge màu</span>
+          (vàng cam cho <i>Chưa phân loại</i>, cam cho <i>Chưa cập nhật</i>, xanh lá cho <i>Đã đồng bộ</i>).<br>
+          <span class="font-bold text-zinc-900">Điểm khác biệt:</span> 
+          Bên trái dùng <span class="font-bold text-zinc-900 underline decoration-zinc-900">Màu Đen (#18181b)</span> cho Nút CTA, Icon box, Filter Active & Thanh phân bổ. 
+          Bên phải đổi toàn bộ thành <span class="font-bold text-amber-700 underline decoration-amber-400">Vàng Thương Hiệu (#ffd631)</span> Socialchoice!
+        </div>
+      </div>
+      <div class="text-xs text-zinc-500 flex items-center gap-2">
+        <span class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>Sẵn sàng áp dụng ngay khi bạn chọn</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN COMPARISON CONTAINER -->
+  <main class="max-w-[1800px] mx-auto px-6 pb-16">
+    <div id="compare-grid" class="grid grid-cols-1 lg:grid-cols-2 gap-8 transition-all">
+
+      <!-- ========================================== -->
+      <!-- BÊN TRÁI: PHƯƠNG ÁN 1 (TRẮNG ĐEN TỐI GIẢN) -->
+      <!-- ========================================== -->
+      <article id="col-mono" class="space-y-4">
+        <!-- Card Header Badge -->
+        <div class="flex items-center justify-between pb-1 border-b-2 border-zinc-900">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-6 w-6 items-center justify-center rounded-md bg-zinc-900 text-white text-xs font-bold">1</span>
+            <h2 class="font-heading font-bold text-base text-zinc-900">Bản A: Trắng Đen (Monochrome Minimal)</h2>
+          </div>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-zinc-200 text-zinc-800">
+            Accent Đen · Badge có màu
+          </span>
+        </div>
+
+        <div class="space-y-5">
+          <!-- PANEL 1: FILTER BAR & HEADER -->
+          <div class="panel-card p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100">
+              <div class="flex items-center gap-3">
+                <!-- MONO ICON BOX (BLACK) -->
+                <div class="h-10 w-10 rounded-xl bg-zinc-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                  <i class="ph-fill ph-facebook-logo text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-heading font-semibold text-sm text-zinc-900">Hiệu quả bài đăng Facebook</h3>
+                  <p class="text-xs text-zinc-500 mt-0.5">Số liệu tích lũy mới nhất từ Facebook Graph API</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <!-- SEMANTIC BADGE (AMBER) -->
+                <span class="badge-amber inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  Có 6 bài sẵn sàng cập nhật
+                </span>
+                <!-- MONO CTA BUTTON (BLACK) -->
+                <button class="btn-mono px-3.5 py-2 text-xs flex items-center gap-1.5 cursor-pointer">
+                  <i class="ph-bold ph-arrows-clockwise text-xs"></i>
+                  <span>Cập nhật 3 bài tiếp theo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- PRESETS & FILTER INPUTS -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <!-- MONO PRESET PILLS -->
+                <div class="inline-flex p-0.5 rounded-lg border border-zinc-200 bg-white text-xs shadow-2xs">
+                  <span class="px-2.5 py-1 rounded-md text-zinc-500 font-medium">7 ngày qua</span>
+                  <span class="px-2.5 py-1 rounded-md bg-zinc-900 text-white font-semibold shadow-2xs">30 ngày qua</span>
+                  <span class="px-2.5 py-1 rounded-md text-zinc-500 font-medium">90 ngày qua</span>
+                </div>
+                <span class="text-[11px] text-zinc-400">Múi giờ: Asia/Ho_Chi_Minh</span>
+              </div>
+
+              <!-- 4-COL INPUTS -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Đăng từ ngày</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span>09/10/2026</span>
+                    <i class="ph-bold ph-calendar-blank text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Đăng đến ngày</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span>07/11/2026</span>
+                    <i class="ph-bold ph-calendar-blank text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Page</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span class="truncate">Tất cả Pages (3)</span>
+                    <i class="ph-bold ph-caret-down text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Trụ cột</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span class="truncate">Tất cả trụ cột (0)</span>
+                    <i class="ph-bold ph-caret-down text-zinc-400"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: 4 METRIC CARDS WITH COLORFUL BADGES -->
+          <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <!-- CARD 1 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Đã xác nhận</span>
+                <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center text-zinc-900">
+                  <i class="ph-duotone ph-paper-plane-tilt text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-900">6</span>
+                <span class="badge-amber px-1.5 py-0.5 rounded text-[10px] font-bold">6 CHỜ ĐỒNG BỘ</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Được đích đăng xác nhận</p>
+            </div>
+
+            <!-- CARD 2 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Phản ứng</span>
+                <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center text-zinc-900">
+                  <i class="ph-duotone ph-thumbs-up text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-blue px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+
+            <!-- CARD 3 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Bình luận</span>
+                <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center text-zinc-900">
+                  <i class="ph-duotone ph-chat-dots text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-indigo px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+
+            <!-- CARD 4 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Chia sẻ</span>
+                <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-zinc-50 flex items-center justify-center text-zinc-900">
+                  <i class="ph-duotone ph-share-fat text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-purple px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+          </div>
+
+          <!-- PANEL 3: 2 COMPARISON TABLES -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- PAGE PERFORMANCE -->
+            <div class="panel-card p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+                <div class="flex items-center gap-2">
+                  <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-900">
+                    <i class="ph-fill ph-facebook-logo text-sm"></i>
+                  </span>
+                  <span class="font-heading font-semibold text-xs text-zinc-900">Hiệu quả từng Page</span>
+                </div>
+                <span class="badge-blue px-2 py-0.5 rounded text-[10px] font-semibold">3 Pages</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>TalentChoice</span>
+                    <span class="font-bold">1 bài</span>
+                  </div>
+                  <!-- MONO VOLUME BAR (BLACK) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-zinc-900 rounded-full" style="width: 17%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>NextChoice</span>
+                    <span class="font-bold">1 bài</span>
+                  </div>
+                  <!-- MONO VOLUME BAR (BLACK) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-zinc-900 rounded-full" style="width: 17%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>Socialchoice Tech</span>
+                    <span class="font-bold">4 bài</span>
+                  </div>
+                  <!-- MONO VOLUME BAR (BLACK) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-zinc-900 rounded-full" style="width: 66%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PILLAR PERFORMANCE -->
+            <div class="panel-card p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+                <div class="flex items-center gap-2">
+                  <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-900">
+                    <i class="ph-bold ph-stack text-sm"></i>
+                  </span>
+                  <span class="font-heading font-semibold text-xs text-zinc-900">Hiệu quả từng trụ cột</span>
+                </div>
+                <span class="badge-purple px-2 py-0.5 rounded text-[10px] font-semibold">1 Trụ cột</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span class="badge-amber px-1.5 py-0.5 rounded text-[10px] font-semibold">Chưa phân loại</span>
+                    <span class="font-bold">6 bài</span>
+                  </div>
+                  <!-- MONO VOLUME BAR (BLACK) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1.5 overflow-hidden">
+                    <div class="h-full bg-zinc-900 rounded-full" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 4: DETAILED PUBLICATIONS TABLE (WITH COLORFUL BADGES) -->
+          <div class="panel-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div class="flex items-center gap-2">
+                <span class="h-7 w-7 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-900">
+                  <i class="ph-bold ph-trend-up text-sm"></i>
+                </span>
+                <span class="font-heading font-semibold text-xs text-zinc-900">Top bài viết trên Facebook</span>
+              </div>
+              <span class="text-xs text-zinc-500 font-semibold px-2 py-0.5 rounded bg-zinc-100">6 nội dung</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="text-left text-zinc-400 border-b border-zinc-100 text-[10px] uppercase font-bold">
+                    <th class="py-2">Page & Trụ cột</th>
+                    <th class="py-2 text-center">Phản ứng</th>
+                    <th class="py-2 text-center">Bình luận</th>
+                    <th class="py-2 text-center">Chia sẻ</th>
+                    <th class="py-2 text-right">Lần kiểm tra gần nhất</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                  <tr>
+                    <td class="py-2.5">
+                      <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-facebook-logo text-zinc-600"></i> TalentChoice
+                      </div>
+                      <!-- SEMANTIC BADGE (AMBER) -->
+                      <span class="badge-amber inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold mt-1">
+                        Chưa phân loại
+                      </span>
+                    </td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-right">
+                      <!-- SEMANTIC BADGE (AMBER CLOCK) -->
+                      <span class="badge-amber inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold">
+                        <i class="ph-fill ph-clock"></i> Chưa cập nhật
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5">
+                      <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-facebook-logo text-zinc-600"></i> NextChoice
+                      </div>
+                      <!-- SEMANTIC BADGE (PURPLE) -->
+                      <span class="badge-purple inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold mt-1">
+                        Kiến thức chuyên môn
+                      </span>
+                    </td>
+                    <td class="text-center text-zinc-800 font-bold">142</td>
+                    <td class="text-center text-zinc-800 font-bold">18</td>
+                    <td class="text-center text-zinc-800 font-bold">5</td>
+                    <td class="text-right">
+                      <!-- SEMANTIC BADGE (EMERALD CHECK) -->
+                      <span class="badge-emerald inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold">
+                        <i class="ph-fill ph-check-circle"></i> Đã đồng bộ
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- ========================================== -->
+      <!-- BÊN PHẢI: PHƯƠNG ÁN 2 (VÀNG THƯƠNG HIỆU) -->
+      <!-- ========================================== -->
+      <article id="col-yellow" class="space-y-4">
+        <!-- Card Header Badge -->
+        <div class="flex items-center justify-between pb-1 border-b-2 border-amber-400">
+          <div class="flex items-center gap-2.5">
+            <span class="flex h-6 w-6 items-center justify-center rounded-md bg-amber-400 text-amber-950 text-xs font-bold">2</span>
+            <h2 class="font-heading font-bold text-base text-zinc-900">Bản B: Vàng Thương Hiệu (Brand Yellow)</h2>
+          </div>
+          <span class="text-xs font-semibold px-2 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-300">
+            Thay Đen bằng Vàng · Badge giữ nguyên màu
+          </span>
+        </div>
+
+        <div class="space-y-5">
+          <!-- PANEL 1: FILTER BAR & HEADER -->
+          <div class="panel-card p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-100">
+              <div class="flex items-center gap-3">
+                <!-- BRAND ICON BOX (YELLOW ACCENT) -->
+                <div class="h-10 w-10 rounded-xl bg-amber-400 text-amber-950 flex items-center justify-center shrink-0 shadow-2xs border border-amber-500/40">
+                  <i class="ph-fill ph-facebook-logo text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="font-heading font-semibold text-sm text-zinc-900">Hiệu quả bài đăng Facebook</h3>
+                  <p class="text-xs text-zinc-500 mt-0.5">Số liệu tích lũy mới nhất từ Facebook Graph API</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <!-- SEMANTIC BADGE (AMBER) -->
+                <span class="badge-amber inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold">
+                  <span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+                  Có 6 bài sẵn sàng cập nhật
+                </span>
+                <!-- BRAND CTA BUTTON (.btn-skew STYLE YELLOW) -->
+                <button class="btn-brand px-3.5 py-2 text-xs flex items-center gap-1.5 cursor-pointer shadow-xs">
+                  <i class="ph-bold ph-arrows-clockwise text-xs"></i>
+                  <span>Cập nhật 3 bài tiếp theo</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- PRESETS & FILTER INPUTS -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between gap-3 flex-wrap">
+                <!-- BRAND PRESET PILLS (YELLOW ACTIVE) -->
+                <div class="inline-flex p-0.5 rounded-lg border border-zinc-200 bg-white text-xs shadow-2xs">
+                  <span class="px-2.5 py-1 rounded-md text-zinc-500 font-medium">7 ngày qua</span>
+                  <span class="px-2.5 py-1 rounded-md bg-amber-400 text-amber-950 font-bold border border-amber-500/40 shadow-2xs">30 ngày qua</span>
+                  <span class="px-2.5 py-1 rounded-md text-zinc-500 font-medium">90 ngày qua</span>
+                </div>
+                <span class="text-[11px] text-zinc-400">Múi giờ: Asia/Ho_Chi_Minh</span>
+              </div>
+
+              <!-- 4-COL INPUTS -->
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Đăng từ ngày</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span>09/10/2026</span>
+                    <i class="ph-bold ph-calendar-blank text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Đăng đến ngày</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span>07/11/2026</span>
+                    <i class="ph-bold ph-calendar-blank text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Page</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span class="truncate">Tất cả Pages (3)</span>
+                    <i class="ph-bold ph-caret-down text-zinc-400"></i>
+                  </div>
+                </div>
+                <div class="space-y-1">
+                  <label class="font-semibold text-zinc-500 text-[10px] uppercase">Trụ cột</label>
+                  <div class="h-9 px-3 rounded-lg border border-zinc-200 bg-white flex items-center justify-between text-zinc-800">
+                    <span class="truncate">Tất cả trụ cột (0)</span>
+                    <i class="ph-bold ph-caret-down text-zinc-400"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 2: 4 METRIC CARDS WITH COLORFUL BADGES -->
+          <div class="grid grid-cols-2 xl:grid-cols-4 gap-3">
+            <!-- CARD 1 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Đã xác nhận</span>
+                <span class="h-7 w-7 rounded-lg border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-900">
+                  <i class="ph-duotone ph-paper-plane-tilt text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-900">6</span>
+                <span class="badge-amber px-1.5 py-0.5 rounded text-[10px] font-bold">6 CHỜ ĐỒNG BỘ</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Được đích đăng xác nhận</p>
+            </div>
+
+            <!-- CARD 2 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Phản ứng</span>
+                <span class="h-7 w-7 rounded-lg border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-900">
+                  <i class="ph-duotone ph-thumbs-up text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-blue px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+
+            <!-- CARD 3 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Bình luận</span>
+                <span class="h-7 w-7 rounded-lg border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-900">
+                  <i class="ph-duotone ph-chat-dots text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-indigo px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+
+            <!-- CARD 4 -->
+            <div class="panel-card p-4 space-y-2">
+              <div class="flex items-center justify-between text-zinc-500">
+                <span class="text-[10px] font-bold uppercase tracking-wider">Chia sẻ</span>
+                <span class="h-7 w-7 rounded-lg border border-amber-200 bg-amber-50 flex items-center justify-center text-amber-900">
+                  <i class="ph-duotone ph-share-fat text-sm"></i>
+                </span>
+              </div>
+              <div class="flex items-baseline justify-between">
+                <span class="font-heading text-2xl font-bold text-zinc-400">—</span>
+                <span class="badge-purple px-1.5 py-0.5 rounded text-[10px] font-bold">0 / BÀI</span>
+              </div>
+              <p class="text-[11px] text-zinc-400 truncate">Có số liệu cho 0/6 bài</p>
+            </div>
+          </div>
+
+          <!-- PANEL 3: 2 COMPARISON TABLES -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- PAGE PERFORMANCE -->
+            <div class="panel-card p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+                <div class="flex items-center gap-2">
+                  <span class="h-7 w-7 rounded-lg border border-amber-300 bg-amber-50 flex items-center justify-center text-amber-900">
+                    <i class="ph-fill ph-facebook-logo text-sm"></i>
+                  </span>
+                  <span class="font-heading font-semibold text-xs text-zinc-900">Hiệu quả từng Page</span>
+                </div>
+                <span class="badge-blue px-2 py-0.5 rounded text-[10px] font-semibold">3 Pages</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>TalentChoice</span>
+                    <span class="font-bold">1 bài</span>
+                  </div>
+                  <!-- BRAND VOLUME BAR (YELLOW) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 17%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>NextChoice</span>
+                    <span class="font-bold">1 bài</span>
+                  </div>
+                  <!-- BRAND VOLUME BAR (YELLOW) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 17%"></div>
+                  </div>
+                </div>
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span>Socialchoice Tech</span>
+                    <span class="font-bold">4 bài</span>
+                  </div>
+                  <!-- BRAND VOLUME BAR (YELLOW) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1 overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 66%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PILLAR PERFORMANCE -->
+            <div class="panel-card p-4 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+                <div class="flex items-center gap-2">
+                  <span class="h-7 w-7 rounded-lg border border-amber-300 bg-amber-50 flex items-center justify-center text-amber-900">
+                    <i class="ph-bold ph-stack text-sm"></i>
+                  </span>
+                  <span class="font-heading font-semibold text-xs text-zinc-900">Hiệu quả từng trụ cột</span>
+                </div>
+                <span class="badge-purple px-2 py-0.5 rounded text-[10px] font-semibold">1 Trụ cột</span>
+              </div>
+              <div class="space-y-2 text-xs">
+                <div>
+                  <div class="flex justify-between font-medium text-zinc-800">
+                    <span class="badge-amber px-1.5 py-0.5 rounded text-[10px] font-semibold">Chưa phân loại</span>
+                    <span class="font-bold">6 bài</span>
+                  </div>
+                  <!-- BRAND VOLUME BAR (YELLOW) -->
+                  <div class="h-1.5 w-full bg-zinc-100 rounded-full mt-1.5 overflow-hidden">
+                    <div class="h-full bg-amber-400 rounded-full" style="width: 100%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PANEL 4: DETAILED PUBLICATIONS TABLE (WITH COLORFUL BADGES) -->
+          <div class="panel-card p-5 space-y-3">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div class="flex items-center gap-2">
+                <span class="h-7 w-7 rounded-lg border border-amber-300 bg-amber-50 flex items-center justify-center text-amber-900">
+                  <i class="ph-bold ph-trend-up text-sm"></i>
+                </span>
+                <span class="font-heading font-semibold text-xs text-zinc-900">Top bài viết trên Facebook</span>
+              </div>
+              <span class="text-xs text-zinc-500 font-semibold px-2 py-0.5 rounded bg-zinc-100">6 nội dung</span>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-xs">
+                <thead>
+                  <tr class="text-left text-zinc-400 border-b border-zinc-100 text-[10px] uppercase font-bold">
+                    <th class="py-2">Page & Trụ cột</th>
+                    <th class="py-2 text-center">Phản ứng</th>
+                    <th class="py-2 text-center">Bình luận</th>
+                    <th class="py-2 text-center">Chia sẻ</th>
+                    <th class="py-2 text-right">Lần kiểm tra gần nhất</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                  <tr>
+                    <td class="py-2.5">
+                      <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-facebook-logo text-amber-600"></i> TalentChoice
+                      </div>
+                      <!-- SEMANTIC BADGE (AMBER) -->
+                      <span class="badge-amber inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold mt-1">
+                        Chưa phân loại
+                      </span>
+                    </td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-center text-zinc-400 font-mono">—</td>
+                    <td class="text-right">
+                      <!-- SEMANTIC BADGE (AMBER CLOCK) -->
+                      <span class="badge-amber inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold">
+                        <i class="ph-fill ph-clock"></i> Chưa cập nhật
+                      </span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td class="py-2.5">
+                      <div class="font-semibold text-zinc-900 flex items-center gap-1.5">
+                        <i class="ph-fill ph-facebook-logo text-amber-600"></i> NextChoice
+                      </div>
+                      <!-- SEMANTIC BADGE (PURPLE) -->
+                      <span class="badge-purple inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold mt-1">
+                        Kiến thức chuyên môn
+                      </span>
+                    </td>
+                    <td class="text-center text-zinc-800 font-bold">142</td>
+                    <td class="text-center text-zinc-800 font-bold">18</td>
+                    <td class="text-center text-zinc-800 font-bold">5</td>
+                    <td class="text-right">
+                      <!-- SEMANTIC BADGE (EMERALD CHECK) -->
+                      <span class="badge-emerald inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-semibold">
+                        <i class="ph-fill ph-check-circle"></i> Đã đồng bộ
+                      </span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </main>
+
+  <script>
+    function setViewMode(mode) {
+      const grid = document.getElementById('compare-grid');
+      const colMono = document.getElementById('col-mono');
+      const colYellow = document.getElementById('col-yellow');
+      
+      document.getElementById('view-split').classList.toggle('active', mode === 'split');
+      document.getElementById('view-mono').classList.toggle('active', mode === 'mono');
+      document.getElementById('view-yellow').classList.toggle('active', mode === 'yellow');
+
+      if (mode === 'split') {
+        grid.className = 'grid grid-cols-1 lg:grid-cols-2 gap-8';
+        colMono.style.display = 'block';
+        colYellow.style.display = 'block';
+      } else if (mode === 'mono') {
+        grid.className = 'max-w-4xl mx-auto';
+        colMono.style.display = 'block';
+        colYellow.style.display = 'none';
+      } else if (mode === 'yellow') {
+        grid.className = 'max-w-4xl mx-auto';
+        colMono.style.display = 'none';
+        colYellow.style.display = 'block';
+      }
+    }
+
+    function setDevice(device) {
+      const grid = document.getElementById('compare-grid');
+      document.getElementById('dev-desktop').className = device === 'desktop'
+        ? 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-zinc-900 shadow-2xs'
+        : 'px-2.5 py-1 text-xs font-semibold rounded-md text-zinc-600 hover:text-zinc-900';
+      document.getElementById('dev-laptop').className = device === 'laptop'
+        ? 'px-2.5 py-1 text-xs font-semibold rounded-md bg-white text-zinc-900 shadow-2xs'
+        : 'px-2.5 py-1 text-xs font-semibold rounded-md text-zinc-600 hover:text-zinc-900';
+
+      if (device === 'laptop') {
+        grid.style.maxWidth = '1120px';
+        grid.style.margin = '0 auto';
+      } else {
+        grid.style.maxWidth = '1800px';
+      }
+    }
+  </script>
+</body>
+</html>
