@@ -20,6 +20,7 @@ import {
     Translate,
     LinkSimple,
     PenNib,
+    MagnifyingGlass,
 } from '@phosphor-icons/react';
 import { useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
@@ -65,7 +66,8 @@ export default function Settings() {
     const [searchParams] = useSearchParams();
     const [running, setRunning] = useState(false);
     const [loadError, setLoadError] = useState('');
-    const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'all');
+    const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'ai');
+    const [searchQuery, setSearchQuery] = useState('');
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -213,7 +215,11 @@ export default function Settings() {
         return (
             <div role="alert" className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
                 <p className="mb-3 text-xs text-dangerFg font-medium">{t(loadError)}</p>
-                <button type="button" className="btn-skew text-xs" onClick={load}>
+                <button
+                    type="button"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                    onClick={load}
+                >
                     {t('Retry')}
                 </button>
             </div>
@@ -221,156 +227,234 @@ export default function Settings() {
 
     return (
         <div className="space-y-6">
-            <PageHeader
-                title={t('Settings')}
-                description={t(
-                    'Brands, workspace data and how publishing runs in this workspace.'
-                )}
-            />
+            {/* Header with Search (Option A Style) */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-1">
+                <PageHeader
+                    title={t('Settings')}
+                    description={t(
+                        'Brands, workspace data and how publishing runs in this workspace.'
+                    )}
+                />
+                <div className="flex items-center gap-2.5">
+                    <div className="relative w-64">
+                        <MagnifyingGlass
+                            size={14}
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                        />
+                        <input
+                            type="text"
+                            placeholder={t('Search settings...')}
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="w-full h-9 pl-8 pr-3 text-xs bg-card border border-border/80 rounded-xl focus:outline-none focus:border-foreground transition-colors placeholder:text-muted-foreground"
+                        />
+                    </div>
+                </div>
+            </div>
 
-            {/* KPI Stat Cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {/* KPI Stat Cards (Monochrome Minimalist) */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <StatCard
                     label={t('Active brands')}
                     value={brands.length}
                     hint={t('{count} configured', { count: brands.length })}
                     icon={Tag}
-                    iconBg="bg-blue-50"
-                    iconColor="text-blue-600"
+                    iconBg="bg-muted/60 border-border/60"
+                    iconColor="text-foreground"
                 />
                 <StatCard
                     label={t('Connected destinations')}
                     value={engine.connected}
                     hint={t('Facebook Pages with a live connection')}
                     icon={Broadcast}
-                    iconBg="bg-emerald-50"
-                    iconColor="text-emerald-600"
+                    iconBg="bg-muted/60 border-border/60"
+                    iconColor="text-foreground"
                 />
                 <StatCard
                     label={t('Queued publications')}
                     value={engine.queued}
                     hint={t('Pending delivery jobs')}
                     icon={ClockCountdown}
-                    iconBg="bg-amber-50"
-                    iconColor="text-amber-600"
+                    iconBg="bg-muted/60 border-border/60"
+                    iconColor="text-foreground"
                 />
                 <StatCard
                     label={t('AI engine')}
                     value={isDesktop() ? 'Local AI' : 'Active'}
                     hint={t('Encrypted API Key')}
                     icon={Sparkle}
-                    iconBg="bg-purple-50"
-                    iconColor="text-purple-600"
+                    iconBg="bg-muted/60 border-border/60"
+                    iconColor="text-foreground"
                 />
             </div>
 
-            {/* Tab Navigation */}
-            <div className="flex items-center gap-2 border-b border-border/80 pb-3 overflow-x-auto">
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('all')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'all'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <SquaresFour size={16} weight={activeTab === 'all' ? 'bold' : 'regular'} />
-                    <span>{t('All settings')}</span>
-                </button>
+            {/* Option A Layout: Left Vertical Category Sidebar + Right Canvas */}
+            <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+                {/* Left Navigation Sidebar */}
+                <nav className="panel p-2.5 space-y-4 sticky top-20 bg-card border border-border/80 rounded-2xl shadow-2xs">
+                    <div>
+                        <div className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                            {t('Core & Assistant')}
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('ai')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'ai'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Sparkle size={15} weight={activeTab === 'ai' ? 'bold' : 'regular'} />
+                                    <span>{t('AI & Assistant')}</span>
+                                </span>
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                            </button>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('ai')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'ai'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <Sparkle size={16} weight={activeTab === 'ai' ? 'bold' : 'regular'} />
-                    <span>{t('AI & Assistant')}</span>
-                </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('publishing')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'publishing'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Broadcast size={15} weight={activeTab === 'publishing' ? 'bold' : 'regular'} />
+                                    <span>{t('Publishing Engine')}</span>
+                                </span>
+                                <span className="text-[10px] font-mono text-muted-foreground">
+                                    {engine.connected}
+                                </span>
+                            </button>
+                        </div>
+                    </div>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('brands')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'brands'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <Tag size={16} weight={activeTab === 'brands' ? 'bold' : 'regular'} />
-                    <span>{t('Brands')}</span>
-                    <span
-                        className={`rounded-md px-1.5 py-0.5 text-[10px] font-mono ${
-                            activeTab === 'brands'
-                                ? 'bg-background/20 text-background'
-                                : 'bg-muted text-muted-foreground'
-                        }`}
-                    >
-                        {brands.length}
-                    </span>
-                </button>
+                    <div>
+                        <div className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                            {t('Content Management')}
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('brands')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'brands'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <Tag size={15} weight={activeTab === 'brands' ? 'bold' : 'regular'} />
+                                    <span>{t('Brands')}</span>
+                                </span>
+                                <span
+                                    className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
+                                        activeTab === 'brands'
+                                            ? 'bg-background/20 text-background'
+                                            : 'bg-muted text-muted-foreground'
+                                    }`}
+                                >
+                                    {brands.length}
+                                </span>
+                            </button>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('publishing')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'publishing'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <Broadcast size={16} weight={activeTab === 'publishing' ? 'bold' : 'regular'} />
-                    <span>{t('Publishing Engine')}</span>
-                </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('signatures')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'signatures'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <PenNib size={15} weight={activeTab === 'signatures' ? 'bold' : 'regular'} />
+                                    <span>{t('Signatures (Chữ ký)')}</span>
+                                </span>
+                            </button>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('signatures')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'signatures'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <PenNib size={16} weight={activeTab === 'signatures' ? 'bold' : 'regular'} />
-                    <span>{t('Signatures (Chữ ký)')}</span>
-                </button>
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('shortlinks')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'shortlinks'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <LinkSimple size={15} weight={activeTab === 'shortlinks' ? 'bold' : 'regular'} />
+                                    <span>{t('Shortlinks')}</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('shortlinks')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'shortlinks'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <LinkSimple size={16} weight={activeTab === 'shortlinks' ? 'bold' : 'regular'} />
-                    <span>{t('Shortlinks')}</span>
-                </button>
+                    <div>
+                        <div className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
+                            {t('System & Account')}
+                        </div>
+                        <div className="mt-1 space-y-0.5">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('workspace')}
+                                className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                    activeTab === 'workspace'
+                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                }`}
+                            >
+                                <span className="flex items-center gap-2">
+                                    <GearSix size={15} weight={activeTab === 'workspace' ? 'bold' : 'regular'} />
+                                    <span>{t('General & Workspace')}</span>
+                                </span>
+                                <span className="text-[10px] font-mono text-muted-foreground uppercase">{language}</span>
+                            </button>
 
-                <button
-                    type="button"
-                    onClick={() => setActiveTab('workspace')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${
-                        activeTab === 'workspace'
-                            ? 'bg-foreground text-background shadow-xs'
-                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-                    }`}
-                >
-                    <Database size={16} weight={activeTab === 'workspace' ? 'bold' : 'regular'} />
-                    <span>{t('Account & Preferences')}</span>
-                </button>
-            </div>
+                            {!isDesktop() && (
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('license')}
+                                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                        activeTab === 'license'
+                                            ? 'bg-foreground text-background font-semibold shadow-xs'
+                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <Database size={15} weight={activeTab === 'license' ? 'bold' : 'regular'} />
+                                        <span>{t('License & Version')}</span>
+                                    </span>
+                                    <span className="px-1.5 py-0.2 rounded-md bg-muted text-[10px] font-mono">Pro</span>
+                                </button>
+                            )}
 
-            {/* Content Area */}
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-                {/* Left Column */}
-                <div className="space-y-6">
+                            <div className="pt-2 border-t border-border/60">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('all')}
+                                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                        activeTab === 'all'
+                                            ? 'bg-foreground text-background font-semibold shadow-xs'
+                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <SquaresFour size={15} weight={activeTab === 'all' ? 'bold' : 'regular'} />
+                                        <span>{t('View all settings')}</span>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+
+                {/* Right Content Canvas */}
+                <div className="space-y-6 min-w-0">
                     {/* Backup/License on Desktop */}
                     {isDesktop() && <DesktopBackup />}
                     {isDesktop() && <DesktopLicense />}
@@ -383,7 +467,7 @@ export default function Settings() {
                         <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
                             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
                                 <div className="flex items-center gap-2.5">
-                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                                         <Tag size={17} weight="duotone" />
                                     </span>
                                     <div>
@@ -399,7 +483,7 @@ export default function Settings() {
                                 </div>
                                 <button
                                     type="button"
-                                    className="btn-skew inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2"
+                                    className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
                                     onClick={() => {
                                         setEditing(null);
                                         setFormOpen(true);
@@ -427,7 +511,7 @@ export default function Settings() {
                                                     <span
                                                         className="h-9 w-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs text-white shadow-2xs ring-1 ring-border/50"
                                                         style={{
-                                                            backgroundColor: brand.color || '#ffd631',
+                                                            backgroundColor: brand.color || '#18181b',
                                                         }}
                                                     >
                                                         {brand.name.slice(0, 1).toUpperCase()}
@@ -490,13 +574,13 @@ export default function Settings() {
                                                     >
                                                         {brand.status === 'archived' ? (
                                                             <>
-                                                                <ArrowCounterClockwise size={13} />
-                                                                <span>{t('Restore')}</span>
+                                                                  <ArrowCounterClockwise size={13} />
+                                                                  <span>{t('Restore')}</span>
                                                             </>
                                                         ) : (
                                                             <>
-                                                                <Archive size={13} />
-                                                                <span>{t('Archive')}</span>
+                                                                  <Archive size={13} />
+                                                                  <span>{t('Archive')}</span>
                                                             </>
                                                         )}
                                                     </Button>
@@ -534,76 +618,11 @@ export default function Settings() {
                         </section>
                     )}
 
-                    {/* Post Signatures Settings Card */}
-                    {(activeTab === 'all' || activeTab === 'signatures') && (
-                        <SignaturesSettingsCard />
-                    )}
-
-                    {/* Shortlink Settings Card */}
-                    {(activeTab === 'all' || activeTab === 'publishing' || activeTab === 'shortlinks') && (
-                        <ShortlinkSettingsCard />
-                    )}
-
-                    {/* Workspace Demo Data */}
-                    {!isDesktop() && (activeTab === 'all' || activeTab === 'workspace') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
-                            <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-purple-50 text-purple-600">
-                                    <Database size={17} weight="duotone" />
-                                </span>
-                                <div>
-                                    <h2 className="text-[15px] font-semibold text-foreground">
-                                        {t('Workspace data')}
-                                    </h2>
-                                    <p className="label-xs text-muted-foreground mt-0.5">
-                                        {t('Manage sample data and simulated testing environment.')}
-                                    </p>
-                                </div>
-                            </div>
-
-                            <div className="max-w-sm">
-                                <DemoModeSwitch />
-                            </div>
-
-                            <p className="label-xs text-muted-foreground leading-relaxed">
-                                {t(
-                                    'Demo data is stored separately and labelled everywhere it appears. It is never sent to a platform and is never counted as live publishing history.'
-                                )}
-                            </p>
-
-                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border/60">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-9 rounded-xl text-xs font-medium gap-1.5"
-                                    disabled={seeding}
-                                    onClick={reloadSample}
-                                >
-                                    <ArrowCounterClockwise size={13} />
-                                    <span>{t('Rebuild sample workspace')}</span>
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    className="h-9 rounded-xl text-xs font-medium text-dangerFg hover:text-dangerFg hover:bg-rose-50 gap-1.5"
-                                    disabled={seeding}
-                                    onClick={() => setClearOpen(true)}
-                                >
-                                    <Trash size={13} />
-                                    <span>{t('Remove sample data')}</span>
-                                </Button>
-                            </div>
-                        </section>
-                    )}
-                </div>
-
-                {/* Right Column / Secondary Column */}
-                <div className="space-y-6">
                     {/* Publishing Engine Status */}
                     {(activeTab === 'all' || activeTab === 'publishing') && (
                         <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
                             <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                                     <Broadcast size={17} weight="duotone" />
                                 </span>
                                 <div>
@@ -616,8 +635,8 @@ export default function Settings() {
                                 </div>
                             </div>
 
-                            <dl className="space-y-3 text-xs">
-                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-background border border-border/60">
+                            <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-border/60">
                                     <dt className="text-muted-foreground">
                                         {t('Queued destination jobs')}
                                     </dt>
@@ -626,14 +645,14 @@ export default function Settings() {
                                     </dd>
                                 </div>
 
-                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-background border border-border/60">
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-border/60">
                                     <dt className="text-muted-foreground">{t('Next job due')}</dt>
                                     <dd className="font-mono text-xs font-medium text-foreground">
                                         {engine.nextDue ? formatDateTime(engine.nextDue) : '—'}
                                     </dd>
                                 </div>
 
-                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-background border border-border/60">
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-border/60">
                                     <dt className="text-muted-foreground">
                                         {t('Destinations with a live connection')}
                                     </dt>
@@ -642,7 +661,7 @@ export default function Settings() {
                                     </dd>
                                 </div>
 
-                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-background border border-border/60">
+                                <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-background border border-border/60">
                                     <dt className="text-muted-foreground">
                                         {t('Automatic background runs')}
                                     </dt>
@@ -654,13 +673,6 @@ export default function Settings() {
                                                     : 'Configuration required'
                                             )}
                                         </StatusBadge>
-                                    </dd>
-                                </div>
-
-                                <div className="flex items-center justify-between gap-3 p-2.5 rounded-xl bg-background border border-border/60">
-                                    <dt className="text-muted-foreground">{t('Retry policy')}</dt>
-                                    <dd className="text-right text-muted-foreground text-[11px]">
-                                        {t('Uncertain deliveries are not resent')}
                                     </dd>
                                 </div>
                             </dl>
@@ -675,7 +687,7 @@ export default function Settings() {
 
                             <Button
                                 variant="outline"
-                                className="w-full rounded-xl h-10 text-xs font-semibold gap-1.5"
+                                className="w-full rounded-xl h-10 text-xs font-semibold gap-1.5 border-border hover:border-foreground/40"
                                 disabled={running}
                                 onClick={runEngine}
                             >
@@ -683,6 +695,16 @@ export default function Settings() {
                                 <span>{running ? t('Checking…') : t('Check publishing availability')}</span>
                             </Button>
                         </section>
+                    )}
+
+                    {/* Post Signatures Settings Card */}
+                    {(activeTab === 'all' || activeTab === 'signatures') && (
+                        <SignaturesSettingsCard />
+                    )}
+
+                    {/* Shortlink Settings Card */}
+                    {(activeTab === 'all' || activeTab === 'publishing' || activeTab === 'shortlinks') && (
+                        <ShortlinkSettingsCard />
                     )}
 
                     {/* Language & Account Preferences */}
@@ -735,7 +757,7 @@ export default function Settings() {
                             {/* Account Details */}
                             <div className="pt-3 border-t border-border/60 space-y-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-primary/20 text-foreground font-bold text-sm flex items-center justify-center shrink-0">
+                                    <div className="h-10 w-10 rounded-xl bg-foreground text-background font-bold text-sm flex items-center justify-center shrink-0">
                                         {user?.email
                                             ? user.email.slice(0, 2).toUpperCase()
                                             : 'WO'}
@@ -788,8 +810,62 @@ export default function Settings() {
                         </section>
                     )}
 
+                    {/* Workspace Demo Data */}
+                    {!isDesktop() && (activeTab === 'all' || activeTab === 'workspace') && (
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                            <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
+                                    <Database size={17} weight="duotone" />
+                                </span>
+                                <div>
+                                    <h2 className="text-[15px] font-semibold text-foreground">
+                                        {t('Workspace data')}
+                                    </h2>
+                                    <p className="label-xs text-muted-foreground mt-0.5">
+                                        {t('Manage sample data and simulated testing environment.')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div className="max-w-sm">
+                                <DemoModeSwitch />
+                            </div>
+
+                            <p className="label-xs text-muted-foreground leading-relaxed">
+                                {t(
+                                    'Demo data is stored separately and labelled everywhere it appears. It is never sent to a platform and is never counted as live publishing history.'
+                                )}
+                            </p>
+
+                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border/60">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 rounded-xl text-xs font-medium gap-1.5"
+                                    disabled={seeding}
+                                    onClick={reloadSample}
+                                >
+                                    <ArrowCounterClockwise size={13} />
+                                    <span>{t('Rebuild sample workspace')}</span>
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 rounded-xl text-xs font-medium text-dangerFg hover:text-dangerFg hover:bg-rose-50 gap-1.5"
+                                    disabled={seeding}
+                                    onClick={() => setClearOpen(true)}
+                                >
+                                    <Trash size={13} />
+                                    <span>{t('Remove sample data')}</span>
+                                </Button>
+                            </div>
+                        </section>
+                    )}
+
                     {/* Customer License */}
-                    {!isDesktop() && <CustomerLicense />}
+                    {!isDesktop() && (activeTab === 'all' || activeTab === 'license') && (
+                        <CustomerLicense />
+                    )}
                 </div>
             </div>
 

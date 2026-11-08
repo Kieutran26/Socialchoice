@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Option Wireframe: Lịch nội dung (Content Calendar) - Socialchoice</title>
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+    .day-cell {
+      min-height: 125px;
+      transition: background-color 0.15s ease;
+    }
+    .day-cell:hover .day-quick-add {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .post-chip {
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      user-select: none;
+    }
+    .post-chip:hover {
+      transform: translateY(-1.5px);
+      box-shadow: 0 6px 16px -2px rgba(0,0,0,0.12);
+      z-index: 10;
+    }
+    /* Custom Scrollbar for Drawer */
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f4f4f5;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #d4d4d8;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #a1a1aa;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER / OPTION SWITCHER -->
+  <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Wireframe Options: Lịch nội dung (Content Calendar)</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Interactive Prototype
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">Tích hợp Panel / Drawer xem chi tiết bài viết khi bấm vào bất kỳ bài nào trong ngày ở cả 3 Option</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="opt-btn-a" class="ctrl-pill active" onclick="switchOption('a')">
+          <i class="ph-bold ph-calendar-blank"></i>
+          <span>Option A: Visual Social Calendar</span>
+        </button>
+        <button id="opt-btn-b" class="ctrl-pill" onclick="switchOption('b')">
+          <i class="ph-bold ph-sidebar-simple"></i>
+          <span>Option B: Split Calendar & Queue</span>
+        </button>
+        <button id="opt-btn-c" class="ctrl-pill" onclick="switchOption('c')">
+          <i class="ph-bold ph-git-commit"></i>
+          <span>Option C: Multi-Channel Timeline</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-[1700px] mx-auto p-6 space-y-6">
+
+    <!-- SUBHEADER / DESCRIPTION BANNER -->
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-calendar-blank"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option A: Visual Social Calendar (Chuẩn Buffer / Planoly / Sprout)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Thanh điều hướng hợp nhất. Chip bài viết trực quan. Bấm vào bài viết bất kỳ để mở Panel chi tiết!</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 text-amber-800 border border-amber-200/70 font-semibold shadow-2xs">
+          <i class="ph-fill ph-cursor-click text-amber-600"></i> Bấm vào thẻ bài viết trong ngày để mở Panel chi tiết
+        </span>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: VISUAL SOCIAL CALENDAR                                          -->
+    <!-- ========================================================================= -->
+    <div id="option-a" class="space-y-4">
+      
+      <!-- Top Title & Action -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Lịch nội dung</h2>
+          <p class="text-xs text-zinc-500 mt-1">Tất cả nội dung đã lên lịch và đã đăng, hiển thị theo múi giờ Asia/Ho_Chi_Minh. Nhấn vào một mục để xem, đổi lịch hoặc sửa.</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button class="h-9 px-4 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+            <i class="ph-bold ph-plus text-sm"></i>
+            <span>Tạo bài viết</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Unified Calendar Navigation Bar -->
+      <div class="p-3 bg-white rounded-2xl border border-zinc-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <!-- Date Navigation -->
+        <div class="flex items-center gap-2">
+          <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 p-0.5">
+            <button class="h-8 w-8 rounded-lg hover:bg-white text-zinc-600 hover:text-zinc-900 flex items-center justify-center cursor-pointer transition">
+              <i class="ph-bold ph-caret-left"></i>
+            </button>
+            <button class="h-8 px-3 rounded-lg hover:bg-white text-xs font-bold text-zinc-800 flex items-center justify-center cursor-pointer transition">
+              Hôm nay
+            </button>
+            <button class="h-8 w-8 rounded-lg hover:bg-white text-zinc-600 hover:text-zinc-900 flex items-center justify-center cursor-pointer transition">
+              <i class="ph-bold ph-caret-right"></i>
+            </button>
+          </div>
+          <h3 class="font-heading font-bold text-base text-zinc-900 ml-2">
+            Tháng 11 năm 2026
+          </h3>
+        </div>
+
+        <!-- Filters & View Switcher -->
+        <div class="flex items-center gap-2 flex-wrap ml-auto">
+          <select class="h-8.5 px-3 text-xs rounded-xl border border-zinc-200 bg-white text-zinc-700 font-medium">
+            <option>Tất cả đích đăng</option>
+            <option>Facebook: Deszy Fanpage</option>
+            <option>Instagram: deszy_creative</option>
+            <option>Threads: _ticrn</option>
+          </select>
+          <select class="h-8.5 px-3 text-xs rounded-xl border border-zinc-200 bg-white text-zinc-700 font-medium">
+            <option>Tất cả trụ cột</option>
+            <option>Khuyến mãi</option>
+            <option>Chia sẻ kiến thức</option>
+          </select>
+
+          <!-- View Switcher -->
+          <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-100 p-0.5">
+            <button class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-zinc-900 shadow-2xs cursor-pointer">
+              Tháng (Option A)
+            </button>
+            <button onclick="switchOption('c')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer flex items-center gap-1" title="Chuyển sang dạng Theo kênh (Option C)">
+              <i class="ph-bold ph-git-commit text-amber-600"></i>
+              <span>Theo kênh (Option C)</span>
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">
+              Tuần
+            </button>
+            <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">
+              Danh sách
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Calendar Month Grid Container -->
+      <div class="rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden">
+        
+        <!-- Day of Week Headers -->
+        <div class="grid grid-cols-7 border-b border-zinc-200 bg-zinc-50/80 text-xs font-bold text-zinc-600">
+          <div class="p-3 text-center border-r border-zinc-100">Thứ 2</div>
+          <div class="p-3 text-center border-r border-zinc-100">Thứ 3</div>
+          <div class="p-3 text-center border-r border-zinc-100">Thứ 4</div>
+          <div class="p-3 text-center border-r border-zinc-100">Thứ 5</div>
+          <div class="p-3 text-center border-r border-zinc-100">Thứ 6</div>
+          <div class="p-3 text-center border-r border-zinc-100 text-amber-600">Thứ 7</div>
+          <div class="p-3 text-center text-red-500">Chủ nhật</div>
+        </div>
+
+        <!-- Days Grid -->
+        <div class="grid grid-cols-7 divide-x divide-zinc-200 border-b border-zinc-200">
+          
+          <!-- Previous Month Days (26 to 31) -->
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">26</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">27</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">28</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">29</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">30</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">31</span>
+          </div>
+          <div class="day-cell p-2 bg-zinc-50/40 text-zinc-400">
+            <span class="text-xs font-medium">1</span>
+          </div>
+        </div>
+
+        <!-- Week 2 (Current Days 2, 3, 4, 5, 6, 7, 8) -->
+        <div class="grid grid-cols-7 divide-x divide-zinc-200 border-b border-zinc-200">
+          
+          <!-- Day 2 -->
+          <div class="day-cell p-2 relative group">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-800">2</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer" title="Lên lịch bài ngày này">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Day 3 -->
+          <div class="day-cell p-2 relative group">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-800">3</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Day 4: Post "bb" -->
+          <div class="day-cell p-2 relative group bg-blue-50/10">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-900">4</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+
+            <!-- Rich Post Chip 1 (Click to open drawer) -->
+            <div onclick="openPostDetail('post-bb')" class="post-chip rounded-xl p-1.5 bg-white border border-zinc-200/90 shadow-2xs space-y-1 mb-1.5 border-l-[3.5px] border-l-blue-500 hover:border-zinc-300">
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex items-center gap-1.5">
+                  <!-- Platform Icon -->
+                  <span class="size-4.5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] shrink-0">
+                    <i class="ph-fill ph-facebook-logo"></i>
+                  </span>
+                  <span class="text-[10px] font-bold text-zinc-900 font-mono">15:58</span>
+                </div>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-zinc-100 text-zinc-600">Nháp</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <!-- Tiny Media Thumbnail 22x22 -->
+                <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&auto=format&fit=crop&q=80" alt="" class="size-5.5 rounded-md object-cover border border-zinc-100 shrink-0">
+                <span class="text-[11px] font-bold text-zinc-800 truncate">bb</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day 5: Post "[AI] tạo lịch bài này..." -->
+          <div class="day-cell p-2 relative group bg-amber-50/15">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-900">5</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+
+            <!-- Rich Post Chip 2 (Click to open drawer) -->
+            <div onclick="openPostDetail('post-ai')" class="post-chip rounded-xl p-1.5 bg-white border border-zinc-200/90 shadow-2xs space-y-1 mb-1.5 border-l-[3.5px] border-l-amber-500 hover:border-zinc-300">
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="size-4.5 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[9px] shrink-0">
+                    <i class="ph-fill ph-threads-logo"></i>
+                  </span>
+                  <span class="text-[10px] font-bold text-zinc-900 font-mono">09:00</span>
+                </div>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-red-50 text-red-600 border border-red-200">Đã hủy</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&auto=format&fit=crop&q=80" alt="" class="size-5.5 rounded-md object-cover border border-zinc-100 shrink-0">
+                <span class="text-[11px] font-bold text-zinc-800 truncate">[AI] tạo lịch bài...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Day 6 -->
+          <div class="day-cell p-2 relative group">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-800">6</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Day 7 -->
+          <div class="day-cell p-2 relative group">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-800">7</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Day 8 -->
+          <div class="day-cell p-2 relative group">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-800">8</span>
+              <button class="day-quick-add opacity-0 size-5 rounded-md bg-zinc-100 hover:bg-zinc-900 hover:text-white text-zinc-500 flex items-center justify-center transition cursor-pointer">
+                <i class="ph-bold ph-plus text-[10px]"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 3 (Days 9 to 15) -->
+        <div class="grid grid-cols-7 divide-x divide-zinc-200 border-b border-zinc-200">
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">9</span></div>
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">10</span></div>
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">11</span></div>
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">12</span></div>
+          
+          <!-- Day 13: Post "Kiểm tra đăng theo lịch" -->
+          <div class="day-cell p-2 relative group bg-emerald-50/15">
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-zinc-900">13</span>
+            </div>
+            <!-- Rich Post Chip 3 (Click to open drawer) -->
+            <div onclick="openPostDetail('post-kt')" class="post-chip rounded-xl p-1.5 bg-white border border-zinc-200/90 shadow-2xs space-y-1 mb-1.5 border-l-[3.5px] border-l-emerald-500 hover:border-zinc-300">
+              <div class="flex items-center justify-between gap-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="size-4.5 rounded-full bg-blue-600 text-white flex items-center justify-center text-[9px] shrink-0">
+                    <i class="ph-fill ph-facebook-logo"></i>
+                  </span>
+                  <span class="text-[10px] font-bold text-zinc-900 font-mono">14:40</span>
+                </div>
+                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">Đã đăng</span>
+              </div>
+              <span class="text-[11px] font-bold text-zinc-800 truncate block">Kiểm tra đăng...</span>
+            </div>
+          </div>
+
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">14</span></div>
+          <div class="day-cell p-2"><span class="text-xs font-bold text-zinc-800">15</span></div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: SPLIT CALENDAR & QUEUE (LỊCH 70% + HÀNG CHỜ 30%)               -->
+    <!-- ========================================================================= -->
+    <div id="option-b" class="hidden space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Lịch nội dung & Hàng chờ bài nháp</h2>
+          <p class="text-xs text-zinc-500 mt-1">Kéo các bài viết bản nháp từ cột bên phải thả trực tiếp vào ô lịch ngày bên trái để lên lịch ngay tức thì.</p>
+        </div>
+        <button class="h-9 px-4 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+          <i class="ph-bold ph-plus text-sm"></i>
+          <span>Tạo bài viết mới</span>
+        </button>
+      </div>
+
+      <!-- 2-Column Split: 70% Calendar + 30% Queue Sidebar -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        
+        <!-- Left: Calendar Grid (8 cols = ~67%) -->
+        <div class="lg:col-span-8 rounded-2xl border border-zinc-200 bg-white shadow-2xs p-4 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <button class="size-7 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer"><i class="ph-bold ph-caret-left"></i></button>
+              <h3 class="font-heading font-bold text-sm text-zinc-900">Tháng 11 năm 2026</h3>
+              <button class="size-7 rounded-lg border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 cursor-pointer"><i class="ph-bold ph-caret-right"></i></button>
+            </div>
+            <span class="text-xs font-semibold text-zinc-500">Đã lên lịch: 3 bài</span>
+          </div>
+
+          <!-- Weekdays -->
+          <div class="grid grid-cols-7 border-b border-zinc-200 pb-2 text-[11px] font-bold text-zinc-400 text-center">
+            <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+          </div>
+
+          <!-- Mini Month Grid -->
+          <div class="grid grid-cols-7 gap-1 text-xs">
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">26</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">27</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">28</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">29</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">30</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">31</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl bg-zinc-50/50 text-zinc-300">1</div>
+
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl font-bold">2</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl font-bold">3</div>
+            
+            <!-- Day 4 with Chip (Click to open drawer) -->
+            <div class="h-20 p-1.5 border border-blue-200 rounded-xl bg-blue-50/20 flex flex-col justify-between">
+              <span class="font-bold text-zinc-900">4</span>
+              <div onclick="openPostDetail('post-bb')" class="post-chip px-2 py-1.5 rounded-lg bg-white border border-zinc-200 shadow-2xs text-[10px] truncate border-l-[3px] border-l-blue-500">
+                <span class="font-bold text-blue-600 font-mono">15:58</span> <span class="font-bold text-zinc-800">bb</span>
+              </div>
+            </div>
+
+            <!-- Day 5 with Chip (Click to open drawer) -->
+            <div class="h-20 p-1.5 border border-amber-200 rounded-xl bg-amber-50/20 flex flex-col justify-between">
+              <span class="font-bold text-zinc-900">5</span>
+              <div onclick="openPostDetail('post-ai')" class="post-chip px-2 py-1.5 rounded-lg bg-white border border-zinc-200 shadow-2xs text-[10px] truncate border-l-[3px] border-l-amber-500">
+                <span class="font-bold text-amber-600 font-mono">09:00</span> <span class="font-bold text-zinc-800">[AI] tạo lịch...</span>
+              </div>
+            </div>
+
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl font-bold">6</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl font-bold">7</div>
+            <div class="h-20 p-1.5 border border-zinc-100 rounded-xl font-bold">8</div>
+          </div>
+        </div>
+
+        <!-- Right: Unscheduled Drafts Queue Sidebar (4 cols = ~33%) -->
+        <div class="lg:col-span-4 rounded-2xl border border-zinc-200 bg-white shadow-2xs p-4 space-y-3 sticky top-20">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+            <div class="flex items-center gap-2">
+              <i class="ph-bold ph-tray text-amber-500"></i>
+              <h3 class="font-heading font-bold text-xs text-zinc-900 uppercase tracking-wider">Hàng chờ bản nháp (2)</h3>
+            </div>
+            <span class="text-[10px] font-semibold text-zinc-400">Bấm xem chi tiết</span>
+          </div>
+
+          <!-- Draggable Draft Item 1 (Clickable) -->
+          <div onclick="openPostDetail('post-draft-2')" class="post-chip p-3 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-white hover:border-zinc-300 shadow-2xs space-y-1.5">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-zinc-500">Chưa chọn ngày</span>
+              <span class="px-1.5 py-0.2 rounded bg-zinc-200 text-zinc-700 font-bold">Nháp</span>
+            </div>
+            <h4 class="font-heading font-bold text-xs text-zinc-900">Kiểm tra lịch hàng loạt 2</h4>
+            <p class="text-[11px] text-zinc-500 line-clamp-1">Nội dung nháp kiểm tra lịch hàng loạt 2...</p>
+            <div class="flex items-center gap-1.5 pt-1 text-[10px] text-zinc-400">
+              <i class="ph-fill ph-facebook-logo text-[#1877F2]"></i> Deszy Fanpage
+            </div>
+          </div>
+
+          <!-- Draggable Draft Item 2 (Clickable) -->
+          <div onclick="openPostDetail('post-draft-1')" class="post-chip p-3 rounded-xl border border-zinc-200 bg-zinc-50 hover:bg-white hover:border-zinc-300 shadow-2xs space-y-1.5">
+            <div class="flex items-center justify-between text-[10px]">
+              <span class="font-bold text-zinc-500">Chưa chọn ngày</span>
+              <span class="px-1.5 py-0.2 rounded bg-zinc-200 text-zinc-700 font-bold">Nháp</span>
+            </div>
+            <h4 class="font-heading font-bold text-xs text-zinc-900">Kiểm tra lịch hàng loạt 1</h4>
+            <p class="text-[11px] text-zinc-500 line-clamp-1">Nội dung nháp kiểm tra lịch hàng loạt 1...</p>
+            <div class="flex items-center gap-1.5 pt-1 text-[10px] text-zinc-400">
+              <i class="ph-fill ph-facebook-logo text-[#1877F2]"></i> Deszy Fanpage
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: MULTI-CHANNEL TIMELINE (DÒNG THỜI GIAN THEO KÊNH)               -->
+    <!-- ========================================================================= -->
+    <div id="option-c" class="hidden space-y-4">
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Lịch dòng thời gian phân luồng theo Kênh</h2>
+          <p class="text-xs text-zinc-500 mt-1">Quan sát tần suất xuất bản song song giữa các mạng xã hội. Dễ dàng nhận diện ngày nào đang trống bài.</p>
+        </div>
+        <button class="h-9 px-4 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+          <i class="ph-bold ph-plus text-sm"></i>
+          <span>Tạo bài viết</span>
+        </button>
+      </div>
+
+      <!-- Navigation & View Switcher Bar -->
+      <div class="p-3 bg-white rounded-2xl border border-zinc-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 p-0.5">
+            <button class="h-8 w-8 rounded-lg hover:bg-white text-zinc-600 hover:text-zinc-900 flex items-center justify-center cursor-pointer transition">
+              <i class="ph-bold ph-caret-left"></i>
+            </button>
+            <button class="h-8 px-3 rounded-lg hover:bg-white text-xs font-bold text-zinc-800 flex items-center justify-center cursor-pointer transition">
+              Tuần này
+            </button>
+            <button class="h-8 w-8 rounded-lg hover:bg-white text-zinc-600 hover:text-zinc-900 flex items-center justify-center cursor-pointer transition">
+              <i class="ph-bold ph-caret-right"></i>
+            </button>
+          </div>
+          <h3 class="font-heading font-bold text-base text-zinc-900 ml-2">
+            02/11/2026 → 08/11/2026
+          </h3>
+        </div>
+
+        <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-100 p-0.5 ml-auto">
+          <button onclick="switchOption('a')" class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer flex items-center gap-1">
+            <i class="ph-bold ph-calendar-blank"></i>
+            <span>Tháng (Option A)</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-zinc-900 shadow-2xs cursor-pointer flex items-center gap-1">
+            <i class="ph-bold ph-git-commit text-amber-600"></i>
+            <span>Theo kênh (Option C)</span>
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">
+            Tuần
+          </button>
+          <button class="px-3 py-1.5 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">
+            Danh sách
+          </button>
+        </div>
+      </div>
+
+      <!-- Multi-Channel Timeline Table -->
+      <div class="rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden">
+        
+        <!-- Timeline Header: Days of the week -->
+        <div class="grid grid-cols-8 border-b border-zinc-200 bg-zinc-50 text-xs font-bold text-zinc-600">
+          <div class="p-3 border-r border-zinc-200 font-semibold text-zinc-400">KÊNH / NỀN TẢNG</div>
+          <div class="p-3 text-center border-r border-zinc-100">T2 (02/11)</div>
+          <div class="p-3 text-center border-r border-zinc-100">T3 (03/11)</div>
+          <div class="p-3 text-center border-r border-zinc-100 bg-blue-50/40">T4 (04/11)</div>
+          <div class="p-3 text-center border-r border-zinc-100 bg-amber-50/40">T5 (05/11)</div>
+          <div class="p-3 text-center border-r border-zinc-100">T6 (06/11)</div>
+          <div class="p-3 text-center border-r border-zinc-100">T7 (07/11)</div>
+          <div class="p-3 text-center">CN (08/11)</div>
+        </div>
+
+        <!-- Row 1: Facebook Stream -->
+        <div class="grid grid-cols-8 border-b border-zinc-100 items-center min-h-[72px]">
+          <div class="p-3 border-r border-zinc-200 flex items-center gap-2">
+            <span class="size-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">
+              <i class="ph-fill ph-facebook-logo"></i>
+            </span>
+            <span class="text-xs font-bold text-zinc-800">Deszy Fanpage</span>
+          </div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          
+          <!-- Post on T4 (Click to open drawer) -->
+          <div class="p-2 border-r border-zinc-100 bg-blue-50/20">
+            <div onclick="openPostDetail('post-bb')" class="post-chip p-2 rounded-lg bg-white border border-blue-200 shadow-2xs text-[11px] border-l-[3px] border-l-blue-500">
+              <span class="font-bold text-blue-600 block font-mono">15:58</span>
+              <span class="font-bold text-zinc-800 truncate block">bb</span>
+            </div>
+          </div>
+
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 text-center text-[10px] text-zinc-300">—</div>
+        </div>
+
+        <!-- Row 2: Threads Stream -->
+        <div class="grid grid-cols-8 border-b border-zinc-100 items-center min-h-[72px]">
+          <div class="p-3 border-r border-zinc-200 flex items-center gap-2">
+            <span class="size-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-xs">
+              <i class="ph-fill ph-threads-logo"></i>
+            </span>
+            <span class="text-xs font-bold text-zinc-800">_ticrn</span>
+          </div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          
+          <!-- Post on T5 (Click to open drawer) -->
+          <div class="p-2 border-r border-zinc-100 bg-amber-50/20">
+            <div onclick="openPostDetail('post-ai')" class="post-chip p-2 rounded-lg bg-white border border-amber-200 shadow-2xs text-[11px] border-l-[3px] border-l-amber-500">
+              <span class="font-bold text-amber-600 block font-mono">09:00</span>
+              <span class="font-bold text-zinc-800 truncate block">[AI] tạo lịch...</span>
+            </div>
+          </div>
+
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 text-center text-[10px] text-zinc-300">—</div>
+        </div>
+
+        <!-- Row 3: Instagram Stream -->
+        <div class="grid grid-cols-8 items-center min-h-[72px]">
+          <div class="p-3 border-r border-zinc-200 flex items-center gap-2">
+            <span class="size-6 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs">
+              <i class="ph-fill ph-instagram-logo"></i>
+            </span>
+            <span class="text-xs font-bold text-zinc-800">deszy_creative</span>
+          </div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 border-r border-zinc-100 text-center text-[10px] text-zinc-300">—</div>
+          <div class="p-2 text-center text-[10px] text-zinc-300">—</div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ========================================================================= -->
+  <!-- INTERACTIVE POST DETAIL SLIDE-OVER PANEL / DRAWER                        -->
+  <!-- ========================================================================= -->
+
+  <!-- Backdrop Overlay -->
+  <div id="drawer-backdrop" class="fixed inset-0 z-50 bg-zinc-950/40 backdrop-blur-xs transition-opacity duration-300 opacity-0 pointer-events-none" onclick="closePostDetail()"></div>
+
+  <!-- Slide-over Drawer -->
+  <div id="drawer-panel" class="fixed inset-y-0 right-0 z-50 w-full max-w-[560px] bg-white shadow-2xl flex flex-col border-l border-zinc-200 transition-transform duration-300 transform translate-x-full ease-in-out">
+    
+    <!-- Drawer Header (Sticky Top) -->
+    <div class="p-4 px-6 border-b border-zinc-200 bg-white flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-2.5">
+        <span id="drawer-status-badge" class="px-2.5 py-0.5 rounded-full text-xs font-bold border">
+          Đang tải...
+        </span>
+        <span class="text-xs font-medium text-zinc-400 font-mono" id="drawer-post-id">#POST-0492</span>
+      </div>
+      <div class="flex items-center gap-1.5">
+        <button onclick="alert('Đã nhân bản bài viết thành bản nháp mới!')" class="size-8 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 flex items-center justify-center transition cursor-pointer" title="Nhân bản bản nháp">
+          <i class="ph-bold ph-copy text-sm"></i>
+        </button>
+        <button onclick="closePostDetail()" class="size-8 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 hover:text-zinc-900 flex items-center justify-center transition cursor-pointer" title="Đóng panel (Esc)">
+          <i class="ph-bold ph-x text-sm"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Drawer Body (Scrollable) -->
+    <div class="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
+      
+      <!-- Post Title -->
+      <div>
+        <h3 id="drawer-title" class="font-heading font-bold text-xl text-zinc-900 leading-snug">
+          Tiêu đề bài viết
+        </h3>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 border border-blue-200">
+            <span class="size-1.5 rounded-full bg-blue-600"></span> Trụ cột: <span id="drawer-pillar">Test</span>
+          </span>
+          <span class="text-[11px] text-zinc-400">· Tạo bởi Kiều Trân (Admin)</span>
+        </div>
+      </div>
+
+      <!-- Schedule & Timezone Box -->
+      <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/90 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="font-semibold text-zinc-500 flex items-center gap-1.5">
+            <i class="ph-bold ph-calendar-check text-zinc-700"></i> Lịch xuất bản
+          </span>
+          <span class="text-[11px] text-zinc-400 font-mono">Asia/Ho_Chi_Minh (GMT+7)</span>
+        </div>
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-baseline gap-2">
+            <span id="drawer-time" class="font-mono font-bold text-lg text-zinc-900">09:00</span>
+            <span id="drawer-date" class="text-xs font-semibold text-zinc-600">Thứ Năm, 05/11/2026</span>
+          </div>
+          <button onclick="alert('Mở hộp thoại đổi thời gian lên lịch nhanh')" class="px-2.5 py-1 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-xs font-bold text-zinc-700 shadow-2xs cursor-pointer flex items-center gap-1">
+            <i class="ph-bold ph-clock"></i> Đổi giờ
+          </button>
+        </div>
+      </div>
+
+      <!-- Target Channels / Distribution Destinations -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-zinc-500">
+            Kênh & Đích đăng (<span id="drawer-channel-count">3</span>)
+          </h4>
+          <span class="text-[11px] text-zinc-400">Trạng thái theo kênh</span>
+        </div>
+        <div id="drawer-channels-list" class="space-y-2">
+          <!-- Dynamic injected channels -->
+        </div>
+      </div>
+
+      <!-- Post Caption Text -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-zinc-500">
+            Nội dung chú thích (Caption)
+          </h4>
+          <button onclick="navigator.clipboard.writeText(document.getElementById('drawer-caption').textContent); alert('Đã sao chép caption!');" class="text-xs font-semibold text-zinc-600 hover:text-zinc-900 flex items-center gap-1 cursor-pointer">
+            <i class="ph-bold ph-copy"></i> Sao chép
+          </button>
+        </div>
+        <div class="p-3.5 rounded-xl border border-zinc-200 bg-white shadow-2xs">
+          <p id="drawer-caption" class="text-xs text-zinc-800 leading-relaxed whitespace-pre-line font-sans select-text">
+            Nội dung bài viết...
+          </p>
+          <div class="flex items-center justify-between pt-3 mt-3 border-t border-zinc-100 text-[11px] text-zinc-400 font-mono">
+            <span id="drawer-char-count">192 ký tự · 28 từ</span>
+            <span class="text-emerald-600 font-semibold flex items-center gap-1">
+              <i class="ph-bold ph-check"></i> Phù hợp mọi nền tảng
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Media Attachments Preview -->
+      <div id="drawer-media-section" class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-zinc-500">
+            Tài nguyên đính kèm
+          </h4>
+          <span id="drawer-media-badge" class="text-[11px] font-mono text-zinc-400">1 ảnh (1200x675)</span>
+        </div>
+        <div class="rounded-xl border border-zinc-200 overflow-hidden bg-zinc-900/5 relative group">
+          <img id="drawer-media-img" src="" alt="" class="w-full max-h-56 object-cover bg-zinc-100">
+          <div class="p-2 bg-white/95 border-t border-zinc-200 flex items-center justify-between text-[11px]">
+            <span class="font-medium text-zinc-600 truncate flex items-center gap-1.5">
+              <i class="ph-bold ph-image text-zinc-400"></i> <span id="drawer-media-filename">asset-banner.png</span>
+            </span>
+            <button onclick="window.open(document.getElementById('drawer-media-img').src, '_blank')" class="text-blue-600 font-bold hover:underline">
+              Xem gốc
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Media Live Feed Preview Switcher -->
+      <div class="space-y-2.5">
+        <div class="flex items-center justify-between">
+          <h4 class="font-heading font-bold text-xs uppercase tracking-wider text-zinc-500">
+            Xem trước hiển thị (Live Preview)
+          </h4>
+          <!-- Social Tab Switcher -->
+          <div class="flex items-center rounded-lg bg-zinc-100 p-0.5 text-xs font-semibold">
+            <button id="prev-tab-fb" onclick="switchPreview('fb')" class="px-2.5 py-1 rounded-md bg-white text-zinc-900 shadow-2xs cursor-pointer">
+              Facebook
+            </button>
+            <button id="prev-tab-threads" onclick="switchPreview('threads')" class="px-2.5 py-1 rounded-md text-zinc-500 hover:text-zinc-900 cursor-pointer">
+              Threads
+            </button>
+            <button id="prev-tab-ig" onclick="switchPreview('ig')" class="px-2.5 py-1 rounded-md text-zinc-500 hover:text-zinc-900 cursor-pointer">
+              Instagram
+            </button>
+          </div>
+        </div>
+
+        <!-- Social Feed Card Simulation -->
+        <div id="drawer-feed-box" class="p-4 rounded-xl border border-zinc-200 bg-white shadow-2xs space-y-3">
+          <!-- Feed Header -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <img id="preview-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80" alt="" class="size-9 rounded-full object-cover border border-zinc-200">
+              <div>
+                <h5 id="preview-account-name" class="text-xs font-bold text-zinc-900 leading-tight">Deszy Fanpage</h5>
+                <span id="preview-time-label" class="text-[10px] text-zinc-400">Vừa xong · <i class="ph ph-globe"></i></span>
+              </div>
+            </div>
+            <i class="ph-bold ph-dots-three text-zinc-400 text-lg"></i>
+          </div>
+
+          <!-- Feed Caption -->
+          <p id="preview-caption" class="text-xs text-zinc-800 leading-relaxed line-clamp-3">
+            Caption preview...
+          </p>
+
+          <!-- Feed Media -->
+          <img id="preview-img" src="" alt="" class="w-full max-h-48 object-cover rounded-lg border border-zinc-100">
+
+          <!-- Feed Footer Reactions -->
+          <div class="pt-2 border-t border-zinc-100 flex items-center justify-around text-xs text-zinc-500 font-semibold">
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-thumbs-up"></i> Thích</span>
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-chat-circle"></i> Bình luận</span>
+            <span class="flex items-center gap-1.5"><i class="ph-bold ph-share-fat"></i> Chia sẻ</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Drawer Footer (Sticky Bottom) -->
+    <div class="p-4 px-6 border-t border-zinc-200 bg-white/95 backdrop-blur-md flex items-center justify-between shrink-0">
+      <button onclick="if(confirm('Bạn có chắc muốn xóa bài viết này khỏi lịch?')) closePostDetail();" class="text-xs font-bold text-red-600 hover:text-red-700 flex items-center gap-1.5 px-3 py-2 rounded-lg hover:bg-red-50 transition cursor-pointer">
+        <i class="ph-bold ph-trash"></i> Xóa bài
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button onclick="alert('Đã chuyển bài viết về dạng bản nháp!'); closePostDetail();" class="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-xs font-bold text-zinc-700 transition cursor-pointer">
+          Về bản nháp
+        </button>
+        <button onclick="alert('Chuyển tới trang chỉnh sửa bài viết: /create?edit=' + currentPostId); closePostDetail();" class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs transition flex items-center gap-1.5 cursor-pointer">
+          <i class="ph-bold ph-pencil-simple"></i>
+          <span>Chỉnh sửa bài</span>
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SCRIPT LOGIC -->
+  <script>
+    // Tab switcher logic
+    const optionsInfo = {
+      a: {
+        title: "Option A: Visual Social Calendar (Chuẩn Buffer / Planoly / Sprout)",
+        desc: "Thanh điều hướng hợp nhất. Chip bài viết trực quan. Bấm vào bài viết bất kỳ để mở Panel chi tiết!",
+        icon: "ph-calendar-blank"
+      },
+      b: {
+        title: "Option B: Split Calendar & Queue (Lịch 70% + Hàng chờ bản nháp 30%)",
+        desc: "Bố cục chia đôi: 70% bên trái là lịch trực quan; 30% bên phải là danh sách bài viết bản nháp. Bấm bài viết để mở Panel!",
+        icon: "ph-sidebar-simple"
+      },
+      c: {
+        title: "Option C: Multi-Channel Timeline (Dòng thời gian phân luồng theo từng Kênh)",
+        desc: "Lịch ma trận theo tài khoản. Bấm vào bất kỳ ô bài viết nào trên timeline để mở Drawer kiểm tra chi tiết!",
+        icon: "ph-git-commit"
+      }
+    };
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(k => {
+        const btn = document.getElementById(`opt-btn-${k}`);
+        const view = document.getElementById(`option-${k}`);
+        if (k === opt) {
+          btn.classList.add('active');
+          view.classList.remove('hidden');
+        } else {
+          btn.classList.remove('active');
+          view.classList.add('hidden');
+        }
+      });
+
+      const info = optionsInfo[opt];
+      document.getElementById('intro-title').textContent = info.title;
+      document.getElementById('intro-desc').textContent = info.desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${info.icon}"></i>`;
+    }
+
+    // POST DATABASE FOR DRAWER INSPECTOR
+    const POSTS_DATA = {
+      'post-ai': {
+        id: 'POST-0492',
+        title: '[AI] tạo lịch bài này vào ngày h với nộidu',
+        status: 'Đã hủy',
+        statusBadgeClass: 'bg-red-50 text-red-700 border-red-200',
+        pillar: 'Test',
+        time: '09:00',
+        date: 'Thứ Năm, 05/11/2026',
+        caption: `☀️ TẠO LỊCH BÀI NÀY VÀO NGÀY H VỚI NỘI DUNG: I WILL USE CHATGPT TO GROWTH MY WEBAPP — Góc chia sẻ từ Test. \n\nTrong thời đại số hiện nay, việc tối ưu hóa và liên tục cập nhật là chìa khóa để dẫn đầu. Anh em làm SaaS hay agency đã thử kết hợp AI Agent vào flow quản lý mạng xã hội chưa?\n\n👉 Xem chi tiết bài viết và thảo luận ngay bên dưới!\n#growth #ai #webapp #socialchoice #marketingautomation`,
+        image: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80',
+        filename: 'socialchoice-ai-growth-banner.png',
+        dimensions: '1200 x 675 px · 840 KB',
+        channels: [
+          {
+            name: '_ticrn',
+            platform: 'threads',
+            platformIcon: 'ph-threads-logo',
+            platformBg: 'bg-zinc-900',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80',
+            status: 'Đã hủy',
+            statusClass: 'text-red-600 bg-red-50 border-red-200'
+          },
+          {
+            name: 'Deszy Fanpage',
+            platform: 'facebook',
+            platformIcon: 'ph-facebook-logo',
+            platformBg: 'bg-blue-600',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+            status: 'Đã hủy',
+            statusClass: 'text-red-600 bg-red-50 border-red-200'
+          },
+          {
+            name: 'deszy_creative',
+            platform: 'instagram',
+            platformIcon: 'ph-instagram-logo',
+            platformBg: 'bg-pink-600',
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+            status: 'Đã hủy',
+            statusClass: 'text-red-600 bg-red-50 border-red-200'
+          }
+        ]
+      },
+      'post-bb': {
+        id: 'POST-0491',
+        title: 'bb',
+        status: 'Bản nháp',
+        statusBadgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+        pillar: 'Test',
+        time: '15:58',
+        date: 'Thứ Tư, 04/11/2026',
+        caption: `CHIẾN DỊCH "LÀM MỚI" THƯƠNG HIỆU: \n- Không phù hợp: Đặt lại mục tiêu tăng trưởng \n- Đề bạt nhóm lớn: Mở rộng tệp khách hàng \n- Cá nhân hóa thông điệp qua từng kênh \n\nbb — Đang thử nghiệm tính năng làm mới thương hiệu trên Socialchoice.`,
+        image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80',
+        filename: 'brand-renewal-analytics.jpg',
+        dimensions: '1280 x 720 px · 1.2 MB',
+        channels: [
+          {
+            name: 'Deszy Fanpage',
+            platform: 'facebook',
+            platformIcon: 'ph-facebook-logo',
+            platformBg: 'bg-blue-600',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+            status: 'Chờ lên lịch',
+            statusClass: 'text-zinc-600 bg-zinc-100 border-zinc-200'
+          },
+          {
+            name: 'deszy_creative',
+            platform: 'instagram',
+            platformIcon: 'ph-instagram-logo',
+            platformBg: 'bg-pink-600',
+            avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&auto=format&fit=crop&q=80',
+            status: 'Chờ lên lịch',
+            statusClass: 'text-zinc-600 bg-zinc-100 border-zinc-200'
+          }
+        ]
+      },
+      'post-kt': {
+        id: 'POST-0480',
+        title: 'Kiểm tra đăng theo lịch — Socialchoice',
+        status: 'Đã đăng',
+        statusBadgeClass: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+        pillar: 'Test',
+        time: '14:40',
+        date: 'Thứ Sáu, 13/11/2026',
+        caption: `Bài viết thử nghiệm đăng theo lịch từ Socialchoice. Đây là bài kiểm tra kỹ thuật xuất bản đa kênh tự động hóa bằng hệ thống hàng đợi serverless.`,
+        image: '',
+        filename: 'Chỉ có chữ (Text-only)',
+        dimensions: '0 media',
+        channels: [
+          {
+            name: 'Deszy Fanpage',
+            platform: 'facebook',
+            platformIcon: 'ph-facebook-logo',
+            platformBg: 'bg-blue-600',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+            status: 'Đã xuất bản',
+            statusClass: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+          }
+        ]
+      },
+      'post-draft-1': {
+        id: 'POST-0489',
+        title: 'Kiểm tra lịch hàng loạt 1 — chưa đăng',
+        status: 'Bản nháp',
+        statusBadgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+        pillar: 'Test',
+        time: 'Chưa đặt giờ',
+        date: 'Chưa chọn ngày',
+        caption: `Nội dung nháp kiểm tra lịch hàng loạt 1. Kéo thả bài viết này vào ngày bất kỳ trên ô lịch để lên lịch ngay tức thì.`,
+        image: '',
+        filename: 'Không có ảnh',
+        dimensions: '0 media',
+        channels: [
+          {
+            name: 'Deszy Fanpage',
+            platform: 'facebook',
+            platformIcon: 'ph-facebook-logo',
+            platformBg: 'bg-blue-600',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+            status: 'Hàng chờ',
+            statusClass: 'text-zinc-600 bg-zinc-100 border-zinc-200'
+          }
+        ]
+      },
+      'post-draft-2': {
+        id: 'POST-0488',
+        title: 'Kiểm tra lịch hàng loạt 2 — chưa đăng',
+        status: 'Bản nháp',
+        statusBadgeClass: 'bg-zinc-100 text-zinc-700 border-zinc-200',
+        pillar: 'Test',
+        time: 'Chưa đặt giờ',
+        date: 'Chưa chọn ngày',
+        caption: `Nội dung nháp kiểm tra lịch hàng loạt 2. Chuẩn bị đăng các chiến dịch marketing mạng xã hội Q4.`,
+        image: '',
+        filename: 'Không có ảnh',
+        dimensions: '0 media',
+        channels: [
+          {
+            name: 'Deszy Fanpage',
+            platform: 'facebook',
+            platformIcon: 'ph-facebook-logo',
+            platformBg: 'bg-blue-600',
+            avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&auto=format&fit=crop&q=80',
+            status: 'Hàng chờ',
+            statusClass: 'text-zinc-600 bg-zinc-100 border-zinc-200'
+          }
+        ]
+      }
+    };
+
+    let currentPostId = 'post-ai';
+
+    function openPostDetail(postId) {
+      const p = POSTS_DATA[postId] || POSTS_DATA['post-ai'];
+      currentPostId = postId;
+
+      // Fill header & metadata
+      document.getElementById('drawer-post-id').textContent = '#' + p.id;
+      document.getElementById('drawer-title').textContent = p.title;
+      document.getElementById('drawer-pillar').textContent = p.pillar;
+      document.getElementById('drawer-time').textContent = p.time;
+      document.getElementById('drawer-date').textContent = p.date;
+      document.getElementById('drawer-caption').textContent = p.caption;
+
+      // Status badge
+      const statusBadge = document.getElementById('drawer-status-badge');
+      statusBadge.textContent = p.status;
+      statusBadge.className = `px-2.5 py-0.5 rounded-full text-xs font-bold border ${p.statusBadgeClass}`;
+
+      // Character count
+      const chars = p.caption.length;
+      const words = p.caption.trim().split(/\s+/).length;
+      document.getElementById('drawer-char-count').textContent = `${chars} ký tự · ${words} từ`;
+
+      // Media section
+      const mediaSection = document.getElementById('drawer-media-section');
+      const mediaImg = document.getElementById('drawer-media-img');
+      const previewImg = document.getElementById('preview-img');
+
+      if (p.image) {
+        mediaSection.classList.remove('hidden');
+        mediaImg.src = p.image;
+        previewImg.src = p.image;
+        previewImg.classList.remove('hidden');
+        document.getElementById('drawer-media-filename').textContent = p.filename;
+        document.getElementById('drawer-media-badge').textContent = p.dimensions;
+      } else {
+        mediaSection.classList.add('hidden');
+        previewImg.classList.add('hidden');
+      }
+
+      // Channels list injection
+      document.getElementById('drawer-channel-count').textContent = p.channels.length;
+      const channelsHtml = p.channels.map(ch => `
+        <div class="p-2.5 rounded-xl border border-zinc-200 bg-white flex items-center justify-between gap-3 shadow-2xs">
+          <div class="flex items-center gap-2.5">
+            <div class="relative">
+              <img src="${ch.avatar}" class="size-8 rounded-full object-cover border border-zinc-200" alt="">
+              <span class="absolute -bottom-1 -right-1 size-4 rounded-full ${ch.platformBg} text-white flex items-center justify-center text-[9px] shadow-xs">
+                <i class="ph-fill ${ch.platformIcon}"></i>
+              </span>
+            </div>
+            <div>
+              <div class="text-xs font-bold text-zinc-900">${ch.name}</div>
+              <div class="text-[10px] text-zinc-400 capitalize">${ch.platform}</div>
+            </div>
+          </div>
+          <span class="px-2 py-0.5 rounded-md text-[10px] font-bold border ${ch.statusClass}">
+            ${ch.status}
+          </span>
+        </div>
+      `).join('');
+      document.getElementById('drawer-channels-list').innerHTML = channelsHtml;
+
+      // Update feed preview
+      switchPreview('fb');
+
+      // Animate Drawer open
+      const backdrop = document.getElementById('drawer-backdrop');
+      const panel = document.getElementById('drawer-panel');
+
+      backdrop.classList.remove('pointer-events-none');
+      backdrop.classList.remove('opacity-0');
+      backdrop.classList.add('opacity-100');
+
+      panel.classList.remove('translate-x-full');
+      panel.classList.add('translate-x-0');
+
+      // Prevent body scroll
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closePostDetail() {
+      const backdrop = document.getElementById('drawer-backdrop');
+      const panel = document.getElementById('drawer-panel');
+
+      backdrop.classList.remove('opacity-100');
+      backdrop.classList.add('opacity-0');
+      backdrop.classList.add('pointer-events-none');
+
+      panel.classList.remove('translate-x-0');
+      panel.classList.add('translate-x-full');
+
+      document.body.style.overflow = '';
+    }
+
+    // Keyboard support: Escape to close
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closePostDetail();
+    });
+
+    // Feed preview tab switch
+    function switchPreview(platform) {
+      const p = POSTS_DATA[currentPostId] || POSTS_DATA['post-ai'];
+      const tabs = ['fb', 'threads', 'ig'];
+      tabs.forEach(t => {
+        const btn = document.getElementById(`prev-tab-${t}`);
+        if (t === platform) {
+          btn.className = 'px-2.5 py-1 rounded-md bg-white text-zinc-900 shadow-2xs cursor-pointer font-bold';
+        } else {
+          btn.className = 'px-2.5 py-1 rounded-md text-zinc-500 hover:text-zinc-900 cursor-pointer font-semibold';
+        }
+      });
+
+      const accName = document.getElementById('preview-account-name');
+      const timeLabel = document.getElementById('preview-time-label');
+      const previewCap = document.getElementById('preview-caption');
+      previewCap.textContent = p.caption;
+
+      if (platform === 'fb') {
+        accName.textContent = 'Deszy Fanpage';
+        timeLabel.innerHTML = `${p.time} · <i class="ph ph-globe"></i>`;
+      } else if (platform === 'threads') {
+        accName.textContent = '_ticrn';
+        timeLabel.innerHTML = `${p.time} · Threads`;
+      } else if (platform === 'ig') {
+        accName.textContent = 'deszy_creative';
+        timeLabel.innerHTML = `${p.time} · Instagram`;
+      }
+    }
+  </script>
+</body>
+</html>

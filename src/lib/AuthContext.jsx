@@ -14,6 +14,7 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         let mounted = true;
+        let isReauthenticating = false;
         async function initAuth() {
             try {
                 const me = await appClient.auth.me();
@@ -35,13 +36,16 @@ export function AuthProvider({ children }) {
         initAuth();
 
         const expired = async (event) => {
-            if (event.detail === 'Sign in required') {
+            if (event.detail === 'Sign in required' && !isReauthenticating) {
+                isReauthenticating = true;
                 try {
                     await appClient.auth.loginViaEmailPassword('admin');
                     const me = await appClient.auth.me();
-                    setUser(me);
+                    if (mounted) setUser(me);
                 } catch {
-                    setUser({ id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' });
+                    if (mounted) setUser({ id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' });
+                } finally {
+                    isReauthenticating = false;
                 }
             }
         };

@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Option Wireframe: Brand Persona & Asset Card Widget - Socialchoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f4f4f5;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER / OPTION SWITCHER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1500px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Wireframe Options: Brand Persona Card & Asset Widget</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+              Widget Redesign
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">Nâng cấp cột phải Brand Persona Card + Thư viện tài nguyên (Asset Health)</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="opt-btn-a" class="ctrl-pill active" onclick="switchOption('a')">
+          <i class="ph-bold ph-identification-badge"></i>
+          <span>Option A: Digital Brand Passport (Thẻ ID Thượng Đỉnh + Mini Asset Strip)</span>
+        </button>
+        <button id="opt-btn-b" class="ctrl-pill" onclick="switchOption('b')">
+          <i class="ph-bold ph-gauge"></i>
+          <span>Option B: Executive Readiness Cockpit (Chỉ số sẵn sàng + Tag Pills)</span>
+        </button>
+        <button id="opt-btn-c" class="ctrl-pill" onclick="switchOption('c')">
+          <i class="ph-bold ph-code-simple"></i>
+          <span>Option C: Minimalist Terminal Brief (Biên bản kỹ thuật + System Prompt)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DESCRIPTION BANNER -->
+  <div class="max-w-[1500px] mx-auto px-6 pt-5">
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-identification-badge"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option A: Digital Brand Passport (Thẻ căn cước thương hiệu số + Dải ảnh mini)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Thiết kế phong cách thẻ định danh cao cấp với dải ảnh mẫu thực tế từ 39 assets, khắc phục hoàn toàn nhãn enum thô (3_per_week) thành văn bản mượt mà.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-700 font-semibold shadow-2xs">
+          <i class="ph-bold ph-sparkle text-amber-500"></i> Sang trọng · Có ảnh thật · Chuyên nghiệp
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CANVAS: SIMULATING 2-COLUMN VIEW WITH EMPHASIS ON RIGHT COLUMN -->
+  <main class="max-w-[1500px] mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- LEFT SIDEBAR CONTEXT (MINI FORM PLACEHOLDER FOR SENSE OF SCALE) -->
+      <div class="lg:col-span-6 p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-4 opacity-70">
+        <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <h3 class="text-sm font-bold text-zinc-900 flex items-center gap-2">
+            <i class="ph-fill ph-note-pencil text-zinc-400"></i>
+            <span>Biểu mẫu thiết lập tri thức (Cột trái)</span>
+          </h3>
+          <span class="text-[11px] text-zinc-400">Đang đồng bộ live preview</span>
+        </div>
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="font-bold text-zinc-600 block mb-1">Sản phẩm chủ lực</label>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">cà phê rang xay nguyên chất, Cold Brew</div>
+          </div>
+          <div>
+            <label class="font-bold text-zinc-600 block mb-1">Đối tượng mục tiêu</label>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">giới trẻ 20-30 tuổi, dân văn phòng sáng tạo</div>
+          </div>
+          <div>
+            <label class="font-bold text-zinc-600 block mb-1">Giọng điệu (Tone of Voice)</label>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: 3 OPTIONS PREVIEW (6 COLS) -->
+      <div class="lg:col-span-6">
+
+        <!-- ========================================================================= -->
+        <!-- OPTION A: DIGITAL BRAND PASSPORT + MINI ASSET STRIP                       -->
+        <!-- ========================================================================= -->
+        <div id="option-a" class="space-y-5">
+          
+          <!-- Master Brand Passport Card -->
+          <div class="relative overflow-hidden rounded-3xl bg-zinc-950 text-white p-6 shadow-xl border border-zinc-800">
+            <!-- Subtle Gold Glow Corner -->
+            <div class="absolute -top-16 -right-16 size-40 rounded-full bg-amber-500/10 blur-2xl pointer-events-none"></div>
+
+            <!-- Card Header -->
+            <div class="flex items-start justify-between gap-4 pb-4 border-b border-zinc-800/80">
+              <div class="flex items-center gap-3.5">
+                <div class="size-12 rounded-2xl bg-[#ffd631] text-[#2b2100] font-bold text-lg flex items-center justify-center shadow-md shrink-0">
+                  TE
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-base font-bold text-white tracking-tight">Test</h3>
+                    <span class="text-[10px] font-mono text-zinc-400 bg-zinc-900 px-2 py-0.5 rounded-md border border-zinc-800">Asia/Ho_Chi_Minh</span>
+                  </div>
+                  <p class="text-xs text-zinc-400 mt-0.5">Brand Passport & Context Model</p>
+                </div>
+              </div>
+
+              <div class="flex flex-col items-end gap-1">
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[11px] font-bold">
+                  <span class="size-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                  100% Sẵn sàng
+                </span>
+                <span class="text-[10px] text-zinc-500 font-mono">5/5 trường dữ liệu</span>
+              </div>
+            </div>
+
+            <!-- Card Body: 3 Refined Compartments -->
+            <div class="space-y-3 py-4 text-xs">
+              <!-- Item 1: Offering -->
+              <div class="p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800/80 hover:border-zinc-700/80 transition space-y-1.5">
+                <div class="flex items-center justify-between text-[10px]">
+                  <span class="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <i class="ph-bold ph-package text-sm"></i> Định vị & Sản phẩm chủ lực
+                  </span>
+                  <span class="text-zinc-500">Pillar cốt lõi</span>
+                </div>
+                <p class="text-zinc-200 leading-relaxed text-xs">
+                  Thương hiệu mang phong cách <span class="text-white font-semibold underline decoration-amber-400/50 decoration-1 underline-offset-2">nhẹ nhàng</span> · Sản phẩm trọng tâm: <strong class="text-white font-semibold">cà phê</strong>
+                </p>
+              </div>
+
+              <!-- Item 2: Audience & Tone -->
+              <div class="p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800/80 hover:border-zinc-700/80 transition space-y-1.5">
+                <div class="flex items-center justify-between text-[10px]">
+                  <span class="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <i class="ph-bold ph-chats-circle text-sm"></i> Giọng văn & Độc giả mục tiêu
+                  </span>
+                  <span class="text-zinc-500">Persona AI</span>
+                </div>
+                <p class="text-zinc-200 leading-relaxed text-xs">
+                  Hướng tới <strong class="text-white font-semibold">giới trẻ</strong> với văn phong: <span class="italic text-zinc-100">“Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng”</span>
+                </p>
+              </div>
+
+              <!-- Item 3: Campaign Goal & Cadence -->
+              <div class="p-3.5 rounded-2xl bg-zinc-900/90 border border-zinc-800/80 hover:border-zinc-700/80 transition space-y-1.5">
+                <div class="flex items-center justify-between text-[10px]">
+                  <span class="font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
+                    <i class="ph-bold ph-target text-sm"></i> Mục tiêu chiến dịch & Lịch xuất bản
+                  </span>
+                  <span class="text-zinc-500">Chiến lược</span>
+                </div>
+                <p class="text-zinc-200 leading-relaxed text-xs">
+                  <strong class="text-white font-semibold">Tăng đơn hàng trực tiếp & chuyển đổi doanh số</strong>
+                  <span class="inline-block ml-1.5 px-2 py-0.5 rounded-md bg-zinc-800 text-zinc-300 font-mono text-[10px]">
+                    3 bài / tuần (T2, T4, T6)
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <!-- Card Bottom: AI Prompt Snapshot -->
+            <div class="pt-3 border-t border-zinc-800/80 flex items-center justify-between text-[11px] text-zinc-400">
+              <span class="flex items-center gap-1.5">
+                <i class="ph-bold ph-sparkle text-amber-400"></i> AI Strategist Prompt Injection: Active
+              </span>
+              <span class="font-mono text-[10px] text-zinc-500">UUID: brand-test-01</span>
+            </div>
+          </div>
+
+          <!-- Master Asset Health Card with Real Thumbnail Filmstrip -->
+          <div class="p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-3.5">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="size-8 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                  <i class="ph-bold ph-images text-base"></i>
+                </span>
+                <div>
+                  <h4 class="text-xs font-bold text-zinc-900">Thư viện tài nguyên thương hiệu</h4>
+                  <p class="text-[11px] text-zinc-500">39 tài nguyên đa phương tiện đã sẵn sàng</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[11px] font-bold flex items-center gap-1">
+                <i class="ph-bold ph-check"></i> Đạt chuẩn AI
+              </span>
+            </div>
+
+            <!-- Visual Asset Filmstrip (5 mini thumbs + counter) -->
+            <div class="flex items-center gap-2 pt-1 overflow-x-auto">
+              <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=150&q=80" class="size-12 rounded-xl object-cover border border-zinc-200 shadow-2xs shrink-0" alt="coffee">
+              <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=150&q=80" class="size-12 rounded-xl object-cover border border-zinc-200 shadow-2xs shrink-0" alt="coffee">
+              <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&q=80" class="size-12 rounded-xl object-cover border border-zinc-200 shadow-2xs shrink-0" alt="coffee">
+              <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=150&q=80" class="size-12 rounded-xl object-cover border border-zinc-200 shadow-2xs shrink-0" alt="coffee">
+              <div class="size-12 rounded-xl bg-zinc-100 border border-dashed border-zinc-300 flex flex-col items-center justify-center text-[11px] font-bold text-zinc-600 shrink-0 cursor-pointer hover:bg-zinc-200">
+                <span>+35</span>
+              </div>
+            </div>
+
+            <p class="text-[11px] text-zinc-400 leading-relaxed pt-1 border-t border-zinc-100">
+              AI sẽ tự động ghép ảnh từ kho 39 tài nguyên này vào từng ngày xuất bản theo đúng trụ cột nội dung.
+            </p>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- OPTION B: EXECUTIVE READINESS COCKPIT (TAG PILLS + METRIC GAUGES)         -->
+        <!-- ========================================================================= -->
+        <div id="option-b" class="hidden space-y-5">
+          
+          <div class="p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-5">
+            <!-- Header with Score Gauge -->
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-zinc-900 text-white font-bold text-sm flex items-center justify-center shadow-2xs">
+                  TE
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-zinc-900">Test · Context Quality Score</h3>
+                  <span class="text-[11px] text-zinc-400">Đánh giá mức độ am hiểu của AI</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="text-2xl font-bold font-mono text-zinc-900">98<span class="text-xs text-zinc-400 font-sans">/100</span></span>
+                <span class="size-3 rounded-full bg-emerald-500"></span>
+              </div>
+            </div>
+
+            <!-- Segmented Progress Bar -->
+            <div class="space-y-1.5">
+              <div class="flex items-center justify-between text-[11px]">
+                <span class="text-zinc-500 font-medium">Tiến độ nạp dữ liệu tri thức</span>
+                <span class="font-bold text-emerald-700">5/5 Tiêu chí hoàn thành</span>
+              </div>
+              <div class="grid grid-cols-5 gap-1.5">
+                <div class="h-2 rounded-full bg-emerald-500"></div>
+                <div class="h-2 rounded-full bg-emerald-500"></div>
+                <div class="h-2 rounded-full bg-emerald-500"></div>
+                <div class="h-2 rounded-full bg-emerald-500"></div>
+                <div class="h-2 rounded-full bg-emerald-500"></div>
+              </div>
+            </div>
+
+            <!-- Tag Cloud Persona Breakdown -->
+            <div class="space-y-3 pt-2">
+              <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
+                <span class="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Sản phẩm & Đặc tính</span>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-xs font-semibold text-zinc-800">Cà phê</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-600">Phong cách nhẹ nhàng</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-600">Thủ công</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
+                <span class="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Độc giả mục tiêu (Target Persona)</span>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200 text-xs font-semibold text-blue-700">Giới trẻ (20-30 tuổi)</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-xs text-zinc-600">Dân văn phòng</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
+                <span class="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Bộ từ khóa Giọng điệu (Tone Keywords)</span>
+                <div class="flex flex-wrap gap-1.5">
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">Chân thực</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">Ấm áp</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">Đam mê hương vị</span>
+                  <span class="px-2.5 py-1 rounded-lg bg-amber-50 border border-amber-200 text-xs font-semibold text-amber-800">Truyền cảm hứng</span>
+                </div>
+              </div>
+
+              <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-1.5">
+                <span class="text-[10px] font-bold uppercase text-zinc-400 tracking-wider">Mục tiêu chuyển đổi & Tần suất</span>
+                <p class="text-xs text-zinc-800 font-medium">Tăng đơn hàng trực tiếp & chuyển đổi doanh số · <span class="font-bold text-zinc-900">3 bài/tuần</span></p>
+              </div>
+            </div>
+
+            <!-- Quick Action -->
+            <button class="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs">
+              <i class="ph-bold ph-lightning text-amber-400"></i>
+              <span>Kiểm thử viết mẫu với Persona này</span>
+            </button>
+          </div>
+
+          <!-- Clean Asset Readiness Bar -->
+          <div class="p-4 rounded-2xl bg-zinc-900 text-white flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i class="ph-bold ph-images text-xl text-amber-400"></i>
+              <div>
+                <p class="text-xs font-bold text-white">Thư viện hình ảnh: 39 assets</p>
+                <p class="text-[11px] text-zinc-400">Đủ điều kiện tạo lịch tự động 30 ngày</p>
+              </div>
+            </div>
+            <span class="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-[11px] font-bold">Chuẩn</span>
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- OPTION C: MINIMALIST TERMINAL BRIEF (TECHNICAL KEY-VALUE METADATA)         -->
+        <!-- ========================================================================= -->
+        <div id="option-c" class="hidden space-y-5">
+          
+          <!-- Terminal / Developer Spec View -->
+          <div class="p-5 rounded-2xl bg-zinc-950 text-zinc-100 font-mono text-xs border border-zinc-800 shadow-xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-800 text-[11px]">
+              <div class="flex items-center gap-2">
+                <div class="size-3 rounded-full bg-red-500/80"></div>
+                <div class="size-3 rounded-full bg-amber-500/80"></div>
+                <div class="size-3 rounded-full bg-emerald-500/80"></div>
+                <span class="text-zinc-400 ml-2">brand-context.json</span>
+              </div>
+              <span class="text-emerald-400 font-semibold">[READY 5/5]</span>
+            </div>
+
+            <div class="space-y-2.5 text-[11px] leading-relaxed">
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ brand_id:</span>
+                <span class="text-amber-400">"Test" (Asia/Ho_Chi_Minh)</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ offering:</span>
+                <span class="text-zinc-200">"cà phê" [phong cách nhẹ nhàng]</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ target_user:</span>
+                <span class="text-zinc-200">"giới trẻ 20-30 tuổi, yêu thích trải nghiệm cà phê"</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ voice_tone:</span>
+                <span class="text-zinc-200">"Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng"</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ primary_kpi:</span>
+                <span class="text-zinc-200">"Tăng đơn hàng trực tiếp & chuyển đổi doanh số"</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ cadence:</span>
+                <span class="text-emerald-400">"3 bài / tuần (Thứ 2, 4, 6)"</span>
+              </div>
+              <div class="flex items-start gap-2">
+                <span class="text-zinc-500 w-28 shrink-0">$ assets_pool:</span>
+                <span class="text-cyan-400">39 files connected & indexed</span>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t border-zinc-800 flex items-center justify-between text-[10px] text-zinc-500">
+              <span>Model: Claude 3.5 Sonnet / Gemini Pro</span>
+              <button class="px-3 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-sans font-medium text-xs cursor-pointer">
+                Sao chép Prompt JSON
+              </button>
+            </div>
+          </div>
+
+          <!-- Compact Clean Asset Card -->
+          <div class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs flex items-center justify-between text-xs">
+            <div class="flex items-center gap-3">
+              <span class="size-8 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-700">
+                <i class="ph-bold ph-database"></i>
+              </span>
+              <div>
+                <p class="font-bold text-zinc-900">39 Tài nguyên đa phương tiện</p>
+                <p class="text-[11px] text-zinc-400">Đã index và sẵn sàng cho bài viết</p>
+              </div>
+            </div>
+            <button class="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-semibold cursor-pointer">
+              Xem thư viện →
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const META = {
+      a: {
+        title: 'Option A: Digital Brand Passport (Thẻ căn cước thương hiệu số + Dải ảnh mini)',
+        desc: 'Thiết kế phong cách thẻ định danh cao cấp với dải ảnh mẫu thực tế từ 39 assets, khắc phục hoàn toàn nhãn enum thô (3_per_week) thành văn bản mượt mà.',
+        icon: 'ph-identification-badge'
+      },
+      b: {
+        title: 'Option B: Executive Readiness Cockpit (Thanh điểm số 98/100 + Tag Pills)',
+        desc: 'Hiển thị thẻ trắng tối giản với thanh điểm số chất lượng Context Score 98/100, các tag pills gom nhóm và nút kiểm thử viết mẫu.',
+        icon: 'ph-gauge'
+      },
+      c: {
+        title: 'Option C: Minimalist Terminal Brief (Biên bản kỹ thuật + System Prompt JSON)',
+        desc: 'Thiết kế dạng hộp mã nguồn đen với các dòng thông số $ brand_id, $ offering, $ cadence chuẩn xác, kèm nút sao chép prompt cho chuyên gia.',
+        icon: 'ph-code-simple'
+      }
+    };
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(k => {
+        document.getElementById('option-' + k).classList.toggle('hidden', k !== opt);
+        document.getElementById('opt-btn-' + k).classList.toggle('active', k === opt);
+      });
+      document.getElementById('intro-title').textContent = META[opt].title;
+      document.getElementById('intro-desc').textContent = META[opt].desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${META[opt].icon}"></i>`;
+    }
+  </script>
+</body>
+</html>

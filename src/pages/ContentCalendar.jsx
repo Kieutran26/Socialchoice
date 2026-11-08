@@ -8,6 +8,7 @@ import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import CalendarToolbar from '@/components/calendar/CalendarToolbar';
 import MonthView from '@/components/calendar/MonthView';
+import ChannelTimelineView from '@/components/calendar/ChannelTimelineView';
 import WeekView from '@/components/calendar/WeekView';
 import ListView from '@/components/calendar/ListView';
 import PostDetailSheet from '@/components/posts/PostDetailSheet';
@@ -28,6 +29,7 @@ export default function ContentCalendar() {
     const [anchor, setAnchor] = useState(() => todayInZone(timezone));
     const [loading, setLoading] = useState(true);
     const [posts, setPosts] = useState([]);
+    const [mediaMap, setMediaMap] = useState({});
     const [accounts, setAccounts] = useState([]);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
@@ -44,7 +46,7 @@ export default function ContentCalendar() {
             const start = addDays(first, -weekdayIndex(first));
             return { start, end: addDays(start, 42) };
         }
-        if (view === 'week') {
+        if (view === 'week' || view === 'channel') {
             const start = addDays(anchor, -weekdayIndex(anchor));
             return { start, end: addDays(start, 7) };
         }
@@ -58,7 +60,7 @@ export default function ContentCalendar() {
                 return { date, inMonth: date.slice(0, 7) === anchor.slice(0, 7) };
             });
         }
-        if (view === 'week') {
+        if (view === 'week' || view === 'channel') {
             return Array.from({ length: 7 }, (_, index) => addDays(range.start, index));
         }
         return Array.from({ length: 60 }, (_, index) => addDays(range.start, index));
@@ -69,29 +71,32 @@ export default function ContentCalendar() {
         setLoading(true);
         setError('');
         try {
-        const [pillarPage, anglePage, accountPage] = await Promise.all([
-            base44.entities.ContentPillar.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
-            base44.entities.ContentAngle.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 500 }),
-            base44.entities.SocialAccount.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
-        ]);
-        const query = {
-            ...scope,
-            scheduled_at: {
-                $gte: toUtcIso(range.start, '00:00', timezone),
-                $lt: toUtcIso(isDesktop() ? range.end : addDays(range.end, 1), '00:00', timezone),
-            },
-        };
-        if (filters.pillar_id !== 'all') query.pillar_id = filters.pillar_id;
-        if (filters.angle_id !== 'all') query.angle_id = filters.angle_id;
-        if (filters.account_id !== 'all') query.account_ids = filters.account_id;
-        const page = await base44.entities.Post.filter(query, { sort: 'scheduled_at', limit: view === 'list' ? 200 : 300 });
-        if (version !== requestVersion.current) return;
-        setPillars(pillarPage.items);
-        setAngles(anglePage.items);
-        setAccounts(accountPage.items);
-        setPosts(page.items);
-        } catch (failure) { if (version === requestVersion.current) setError(failure.message); }
-        finally { if (version === requestVersion.current) setLoading(false); }
+            const [pillarPage, anglePage, accountPage] = await Promise.all([
+                base44.entities.ContentPillar.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
+                base44.entities.ContentAngle.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 500 }),
+                base44.entities.SocialAccount.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
+            ]);
+            const query = {
+                ...scope,
+                scheduled_at: {
+                    $gte: toUtcIso(range.start, '00:00', timezone),
+                    $lt: toUtcIso(isDesktop() ? range.end : addDays(range.end, 1), '00:00', timezone),
+                },
+            };
+            if (filters.pillar_id !== 'all') query.pillar_id = filters.pillar_id;
+            if (filters.angle_id !== 'all') query.angle_id = filters.angle_id;
+            if (filters.account_id !== 'all') query.account_ids = filters.account_id;
+            const page = await base44.entities.Post.filter(query, { sort: 'scheduled_at', limit: view === 'list' ? 200 : 300 });
+            if (version !== requestVersion.current) return;
+            setPillars(pillarPage.items);
+            setAngles(anglePage.items);
+            setAccounts(accountPage.items);
+            setPosts(page.items);
+        } catch (failure) {
+            if (version === requestVersion.current) setError(failure.message);
+        } finally {
+            if (version === requestVersion.current) setLoading(false);
+        }
     }, [scope, range, filters, view, timezone]);
     reloadCurrent.current = load;
 
@@ -99,6 +104,29 @@ export default function ContentCalendar() {
         load();
         return () => { requestVersion.current++; };
     }, [load]);
+
+    // Fetch media assets for thumbnails
+    useEffect(() => {
+        const ids = [...new Set(posts.flatMap((p) => p.media_ids || []))];
+        if (!ids.length) {
+            setMediaMap({});
+            return;
+        }
+        let active = true;
+        base44.entities.MediaAsset.filter({ id: { $in: ids } }, { limit: 100 })
+            .then((page) => {
+                if (!active) return;
+                const map = {};
+                page.items?.forEach((item) => {
+                    map[item.id] = item;
+                });
+                setMediaMap(map);
+            })
+            .catch(() => {});
+        return () => {
+            active = false;
+        };
+    }, [posts]);
 
     const postsByDay = useMemo(() => {
         /** @type {Record<string, import('@/components/component-types').EntityRecord[]>} */
@@ -116,13 +144,13 @@ export default function ContentCalendar() {
             ? new Intl.DateTimeFormat(getLocale(), { month: 'long', year: 'numeric', timeZone: 'UTC' }).format(
                 new Date(`${anchor.slice(0, 7)}-01T00:00:00Z`),
             )
-            : view === 'week'
+            : (view === 'week' || view === 'channel')
                 ? `${formatCalendarDate(range.start)} → ${formatCalendarDate(addDays(range.end, -1))}`
                 : t('Next 60 days from {date}', { date: formatCalendarDate(anchor) });
 
     const shift = (direction) => {
         if (view === 'month') setAnchor(shiftMonths(anchor, direction));
-        else setAnchor(addDays(anchor, direction * (view === 'week' ? 7 : 30)));
+        else setAnchor(addDays(anchor, direction * ((view === 'week' || view === 'channel') ? 7 : 30)));
     };
 
     const movePlan = async (id, date) => {
@@ -152,7 +180,7 @@ export default function ContentCalendar() {
                 description={t(isDesktop() ? 'Local calendar plans shown in {timezone}. Open a plan to edit its date and time.' : 'All scheduled and published content, shown in {timezone}. Click any item to open it, reschedule it or edit it.', { timezone })}
                 actions={
                     <Link to="/create" className="btn-skew">
-                        <Plus size={16} weight="duotone" />
+                        <Plus size={16} weight="bold" />
                         {t('Create Post')}
                     </Link>
                 }
@@ -192,8 +220,19 @@ export default function ContentCalendar() {
                     brands={brands}
                     pillars={pillars}
                     accounts={accounts}
+                    mediaMap={mediaMap}
                     timezone={timezone}
                     onSelect={setOpenPost}
+                />
+            ) : view === 'channel' ? (
+                <ChannelTimelineView
+                    days={dayList}
+                    postsByDay={postsByDay}
+                    accounts={accounts}
+                    mediaMap={mediaMap}
+                    timezone={timezone}
+                    onSelect={setOpenPost}
+                    onMove={isDesktop() ? movePlan : undefined}
                 />
             ) : view === 'week' ? (
                 <WeekView
@@ -203,6 +242,7 @@ export default function ContentCalendar() {
                     brands={brands}
                     pillars={pillars}
                     accounts={accounts}
+                    mediaMap={mediaMap}
                     timezone={timezone}
                     onSelect={setOpenPost}
                 />
@@ -214,6 +254,7 @@ export default function ContentCalendar() {
                     pillars={pillars}
                     angles={angles}
                     accounts={accounts}
+                    mediaMap={mediaMap}
                     timezone={timezone}
                     onSelect={setOpenPost}
                 />

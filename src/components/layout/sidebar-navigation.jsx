@@ -66,7 +66,7 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
             onClick={onNavigate}
             className={({ isActive }) =>
                 `flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all ${isActive
-                    ? 'bg-[#ffd631] text-[#2b2100] font-bold shadow-2xs'
+                    ? 'bg-foreground text-background font-semibold shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium'
                 }`
             }

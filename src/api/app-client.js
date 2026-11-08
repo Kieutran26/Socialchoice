@@ -68,7 +68,7 @@ import { desktopRequest } from './desktop/request';
             get: (_, entity) => new Proxy({}, { get: (_, operation) => (...args) => request(`entities/${String(entity)}/${String(operation)}`, args) }),
         }),
         auth: {
-            me: () => request('session'),
+            me: () => request('session', undefined, { silent: true }),
             logout: async () => { await request('auth/logout', []); window.location.assign('/'); },
             loginViaEmailPassword: (password, legacyPassword = undefined) => request('auth/login', [legacyPassword ?? password], { silent: true }),
             loginWithProvider: (..._args) => { throw new Error('OAuth sign-in is not configured.'); },

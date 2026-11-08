@@ -9,7 +9,6 @@ import {
     Plus,
     Clock,
     Sparkle,
-    CheckCircle,
 } from '@phosphor-icons/react';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { todayInZone, toZonedParts } from '@/lib/tz';
@@ -68,7 +67,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
                     <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ffd631]/20 text-[#2b2100]">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
                             <CalendarBlank size={18} weight="bold" />
                         </div>
                         <div>
@@ -91,9 +90,9 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                     <div className="flex items-center gap-2">
                         <Link
                             to="/agent"
-                            className="inline-flex items-center gap-1.5 rounded-lg border border-[#ffd631]/60 bg-[#ffd631]/15 px-2.5 py-1 text-xs font-semibold text-[#806400] hover:bg-[#ffd631]/30 transition-all"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
                         >
-                            <Sparkle size={13} weight="bold" />
+                            <Sparkle size={13} weight="bold" className="text-amber-500" />
                             <span>{t("AI lên lịch nhanh")}</span>
                         </Link>
                         <Link
@@ -135,7 +134,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                         isSelected
                                             ? 'bg-foreground text-background border-foreground shadow-2xs'
                                             : d.isToday
-                                            ? 'bg-[#ffd631]/15 border-[#ffd631] text-foreground font-semibold'
+                                            ? 'bg-muted/80 border-foreground/40 text-foreground font-semibold'
                                             : 'bg-surface/60 border-border/60 hover:border-border text-foreground'
                                     }`}
                                 >
@@ -148,7 +147,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                     {d.count > 0 ? (
                                         <span
                                             className={`mt-1 h-1.5 w-1.5 rounded-full ${
-                                                isSelected ? 'bg-[#ffd631]' : 'bg-blue-600'
+                                                isSelected ? 'bg-background' : 'bg-foreground'
                                             }`}
                                         />
                                     ) : (
@@ -175,15 +174,15 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                             <p className="text-[11px] text-muted-foreground max-w-xs mx-auto mt-1">
                                 {t("Bạn có thể nhờ AI Agent tự động lên lịch hoặc tạo bài viết thủ công.")}
                             </p>
-                            <div className="flex flex-wrap items-center justify-center gap-2 mt-3.5">
-                                <Link to="/agent" className="btn-skew text-xs py-1.5 px-3">
-                                    <Sparkle size={13} weight="bold" /> {t("Nhờ AI lên lịch")}
+                            <div className="flex flex-wrap items-center justify-center gap-2.5 mt-3.5">
+                                <Link to="/agent" className="btn-skew">
+                                    <Sparkle size={15} weight="bold" /> {t("Nhờ AI lên lịch")}
                                 </Link>
                                 <Link
                                     to="/create"
-                                    className="rounded-xl border border-border bg-background px-3 py-1.5 text-xs font-semibold hover:bg-muted"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors shadow-2xs"
                                 >
-                                    <Plus size={13} weight="bold" /> {t("Tạo bài viết")}
+                                    <Plus size={15} weight="bold" /> {t("Tạo bài viết")}
                                 </Link>
                             </div>
                         </div>

@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Option Wireframe: Chiến lược nội dung (Content Strategy) - Socialchoice</title>
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER / OPTION SWITCHER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Wireframe Options: Chiến lược nội dung (Content Strategy)</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Interactive Prototype
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">Tối ưu quy trình AI Content Strategist: Guided 3-Step Wizard, Interactive Dashboard, hoặc Phased Roadmap</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="opt-btn-a" class="ctrl-pill active" onclick="switchOption('a')">
+          <i class="ph-bold ph-steps"></i>
+          <span>Option A: Guided 3-Step Wizard (Quy trình 3 bước rõ ràng)</span>
+        </button>
+        <button id="opt-btn-b" class="ctrl-pill" onclick="switchOption('b')">
+          <i class="ph-bold ph-layout"></i>
+          <span>Option B: Interactive All-in-One Dashboard (Bảng điều khiển 2 cột)</span>
+        </button>
+        <button id="opt-btn-c" class="ctrl-pill" onclick="switchOption('c')">
+          <i class="ph-bold ph-kanban"></i>
+          <span>Option C: Phased Campaign Roadmap (Lộ trình 4 tuần theo giai đoạn)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DESCRIPTION BANNER -->
+  <div class="max-w-[1700px] mx-auto px-6 pt-5">
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-steps"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option A: Guided 3-Step Wizard (Quy trình 3 bước rõ ràng)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Dẫn dắt người dùng từng bước mạch lạc: Bước 1 Brand Context ➔ Bước 2 Ma trận Trụ cột ➔ Bước 3 Cấu hình lịch AI. Có thẻ mẫu trực quan trước khi tạo.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-700 font-semibold shadow-2xs">
+          <i class="ph-bold ph-sparkle text-amber-500"></i> Chuẩn quy trình tiếp thị bài bản
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CANVAS / PREVIEWS -->
+  <main class="max-w-[1700px] mx-auto p-6 space-y-6">
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: GUIDED 3-STEP WIZARD                                            -->
+    <!-- ========================================================================= -->
+    <div id="option-a" class="space-y-6">
+      
+      <!-- Top Header & Breadcrumb Info -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Chiến lược nội dung (Content Strategy)</h2>
+          <p class="text-xs text-zinc-500 mt-1">Lập kế hoạch xuất bản tự động 30 ngày bằng AI dựa trên Brand Context và Thư viện tài nguyên.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-xs font-bold text-zinc-700 shadow-2xs">
+            Thương hiệu: <strong>Test</strong> · 39 assets sẵn sàng
+          </span>
+        </div>
+      </div>
+
+      <!-- 3-Step Process Stepper Bar -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <!-- Step 1 (Completed) -->
+        <div class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs flex items-center gap-3">
+          <div class="size-9 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold text-sm shrink-0">
+            <i class="ph-bold ph-check"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">BƯỚC 1</span>
+            <span class="text-xs font-bold text-zinc-900 block">Tri thức thương hiệu (Brand Context)</span>
+            <span class="text-[11px] text-zinc-400">Tone: Tự tin, Chuyên nghiệp · 39 assets</span>
+          </div>
+        </div>
+
+        <!-- Step 2 (Completed) -->
+        <div class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs flex items-center gap-3">
+          <div class="size-9 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-200 flex items-center justify-center font-bold text-sm shrink-0">
+            <i class="ph-bold ph-check"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">BƯỚC 2</span>
+            <span class="text-xs font-bold text-zinc-900 block">Ma trận trụ cột (Content Pillars)</span>
+            <span class="text-[11px] text-zinc-400">4 Trụ cột · 12 Góc khai thác (Angles)</span>
+          </div>
+        </div>
+
+        <!-- Step 3 (Active) -->
+        <div class="p-4 rounded-2xl bg-zinc-900 text-white shadow-2xs flex items-center gap-3">
+          <div class="size-9 rounded-xl bg-amber-400 text-zinc-950 flex items-center justify-center font-bold text-sm shrink-0">
+            3
+          </div>
+          <div>
+            <span class="text-[10px] font-bold text-amber-400 uppercase tracking-wider block">BƯỚC 3 (ĐANG CHỌN)</span>
+            <span class="text-xs font-bold text-white block">Cấu hình xuất bản & Tạo lịch 30 ngày</span>
+            <span class="text-[11px] text-zinc-300">Tần suất 1 bài/ngày · Đa nền tảng</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Step 3 Configuration Card -->
+      <div class="p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-6">
+        
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-5 border-b border-zinc-100">
+          <div>
+            <h3 class="font-heading font-bold text-base text-zinc-900 flex items-center gap-2">
+              <i class="ph-fill ph-sparkle text-amber-500"></i> Thiết lập tham số chiến dịch AI
+            </h3>
+            <p class="text-xs text-zinc-500 mt-0.5">Chọn khoảng thời gian, tần suất và các kênh mạng xã hội muốn AI tự động lên lịch bài viết.</p>
+          </div>
+          <span class="text-xs font-semibold px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-700">
+            Dự kiến: <strong class="text-zinc-900">30 bài viết dạng bản nháp</strong>
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <!-- Duration -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-zinc-700 uppercase tracking-wider block">Khoảng thời gian chiến dịch</label>
+            <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 p-1">
+              <button class="flex-1 py-2 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">7 ngày</button>
+              <button class="flex-1 py-2 rounded-lg text-xs font-medium text-zinc-600 hover:text-zinc-900 cursor-pointer">14 ngày</button>
+              <button class="flex-1 py-2 rounded-lg text-xs font-bold bg-zinc-900 text-white shadow-2xs cursor-pointer">30 ngày</button>
+            </div>
+          </div>
+
+          <!-- Frequency -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-zinc-700 uppercase tracking-wider block">Tần suất đăng bài</label>
+            <select class="w-full h-10 px-3 text-xs rounded-xl border border-zinc-200 bg-white font-medium text-zinc-800">
+              <option>1 bài / ngày (Chuẩn 30 bài)</option>
+              <option>2 bài / ngày (Sáng 09:00 & Tối 20:00)</option>
+              <option>3 bài / tuần (T2, T4, T6)</option>
+            </select>
+          </div>
+
+          <!-- Platforms -->
+          <div class="space-y-2">
+            <label class="text-xs font-bold text-zinc-700 uppercase tracking-wider block">Mạng xã hội mục tiêu</label>
+            <div class="flex flex-wrap gap-2">
+              <button class="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <i class="ph-fill ph-facebook-logo text-[#1877F2]"></i> Facebook <i class="ph-bold ph-check text-[10px]"></i>
+              </button>
+              <button class="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 text-amber-900 text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+                <i class="ph-fill ph-instagram-logo text-[#E4405F]"></i> Instagram <i class="ph-bold ph-check text-[10px]"></i>
+              </button>
+              <button class="px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 hover:text-zinc-900 text-xs font-medium flex items-center gap-1.5">
+                <i class="ph-fill ph-threads-logo"></i> Threads
+              </button>
+              <button class="px-3 py-1.5 rounded-xl border border-zinc-200 bg-white text-zinc-600 hover:text-zinc-900 text-xs font-medium flex items-center gap-1.5">
+                <i class="ph-fill ph-tiktok-logo"></i> TikTok
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sample Preview Cards (Showing what AI will generate) -->
+        <div class="pt-4 border-t border-zinc-100 space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1.5">
+              <i class="ph-bold ph-cards text-zinc-500"></i> Bản xem trước mẫu bài viết dự kiến (AI Content Samples)
+            </span>
+            <span class="text-[11px] text-zinc-400">Tự động gắn ảnh và trụ cột tương ứng</span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Sample Card 1 -->
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/60 space-y-2.5">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Ngày 1 · 09:00</span>
+                <span class="font-bold text-zinc-500">Kiến thức</span>
+              </div>
+              <h4 class="font-heading font-bold text-xs text-zinc-900 line-clamp-1">5 Sai lầm phổ biến khi làm mới thương hiệu</h4>
+              <p class="text-[11px] text-zinc-500 line-clamp-2">Chia sẻ các bẫy phổ biến của doanh nghiệp vừa và nhỏ khi thay đổi nhận diện...</p>
+              <div class="flex items-center gap-2 pt-1 text-[10px] text-zinc-400">
+                <i class="ph-bold ph-image"></i> Gắn ảnh: asset-brand-1.jpg
+              </div>
+            </div>
+
+            <!-- Sample Card 2 -->
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/60 space-y-2.5">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Ngày 2 · 15:30</span>
+                <span class="font-bold text-zinc-500">Tính năng</span>
+              </div>
+              <h4 class="font-heading font-bold text-xs text-zinc-900 line-clamp-1">Tự động hóa xuất bản đa kênh với Socialchoice</h4>
+              <p class="text-[11px] text-zinc-500 line-clamp-2">Hướng dẫn cách tiết kiệm 10 giờ mỗi tuần với hệ thống AI Agent lên lịch...</p>
+              <div class="flex items-center gap-2 pt-1 text-[10px] text-zinc-400">
+                <i class="ph-bold ph-image"></i> Gắn ảnh: product-ui.png
+              </div>
+            </div>
+
+            <!-- Sample Card 3 -->
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-zinc-50/60 space-y-2.5">
+              <div class="flex items-center justify-between text-[10px]">
+                <span class="font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">Ngày 3 · 19:00</span>
+                <span class="font-bold text-zinc-500">Câu chuyện</span>
+              </div>
+              <h4 class="font-heading font-bold text-xs text-zinc-900 line-clamp-1">Hành trình xây dựng SaaS từ con số 0</h4>
+              <p class="text-[11px] text-zinc-500 line-clamp-2">Những bài học xương máu sau 6 tháng phát triển sản phẩm thực tế...</p>
+              <div class="flex items-center gap-2 pt-1 text-[10px] text-zinc-400">
+                <i class="ph-bold ph-image"></i> Gắn ảnh: team-story.jpg
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Action -->
+        <div class="pt-4 border-t border-zinc-100 flex items-center justify-between">
+          <p class="text-xs text-zinc-400">Kế hoạch sẽ được lập ở trạng thái Bản nháp (Draft), bạn có thể tinh chỉnh từng bài trên Lịch nội dung.</p>
+          <button class="px-6 py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center gap-2 cursor-pointer transition">
+            <i class="ph-fill ph-lightning text-amber-400"></i>
+            <span>Tạo lịch 30 ngày với AI</span>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: INTERACTIVE ALL-IN-ONE DASHBOARD (2 CỘT TÍCH HỢP)                -->
+    <!-- ========================================================================= -->
+    <div id="option-b" class="hidden space-y-6">
+      
+      <!-- Top Header -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Bảng điều khiển chiến lược nội dung</h2>
+          <p class="text-xs text-zinc-500 mt-1">Toàn cảnh chiến dịch: Cấu hình AI ở cột trái, Ma trận Trụ cột & Thư viện tài nguyên ở cột phải.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+            <i class="ph-bold ph-sliders"></i>
+            <span>Tùy chỉnh Brand Context</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2-Column Dashboard Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Left Column: AI Generator & Campaign Goal (5 cols = ~42%) -->
+        <div class="lg:col-span-5 space-y-5">
+          
+          <!-- Generator Card -->
+          <div class="p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-zinc-100">
+              <span class="size-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-sm">
+                <i class="ph-fill ph-sparkle"></i>
+              </span>
+              <div>
+                <h3 class="font-heading font-bold text-sm text-zinc-900">AI Content Strategist</h3>
+                <span class="text-[11px] text-zinc-400">Tạo lịch bài viết tự động</span>
+              </div>
+            </div>
+
+            <!-- Campaign Focus Goal -->
+            <div class="space-y-1.5">
+              <label class="text-xs font-bold text-zinc-700">Trọng tâm chiến dịch (Campaign Goal)</label>
+              <select class="w-full h-9 px-3 text-xs rounded-xl border border-zinc-200 bg-zinc-50 font-medium">
+                <option>Tăng nhận diện thương hiệu & Tương tác (Brand Awareness)</option>
+                <option>Giới thiệu sản phẩm mới & Thu hút dùng thử (Launch Q4)</option>
+                <option>Chia sẻ giá trị chuyên môn & Xây dựng uy tín (Thought Leadership)</option>
+              </select>
+            </div>
+
+            <!-- Duration & Frequency -->
+            <div class="grid grid-cols-2 gap-3">
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-zinc-700">Thời gian</label>
+                <div class="flex items-center rounded-xl border border-zinc-200 bg-zinc-50 p-0.5 text-xs">
+                  <button class="flex-1 py-1 rounded-lg text-zinc-600 font-medium">14n</button>
+                  <button class="flex-1 py-1 rounded-lg bg-zinc-900 text-white font-bold shadow-2xs">30 ngày</button>
+                </div>
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-bold text-zinc-700">Tần suất</label>
+                <select class="w-full h-8 text-xs rounded-xl border border-zinc-200 bg-zinc-50 font-medium px-2">
+                  <option>1 bài / ngày</option>
+                  <option>2 bài / ngày</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Target Platforms Checkboxes -->
+            <div class="space-y-2">
+              <label class="text-xs font-bold text-zinc-700">Đích xuất bản</label>
+              <div class="space-y-1.5 text-xs">
+                <label class="flex items-center justify-between p-2 rounded-xl border border-zinc-200 bg-white cursor-pointer hover:bg-zinc-50">
+                  <span class="flex items-center gap-2"><i class="ph-fill ph-facebook-logo text-[#1877F2]"></i> Facebook (Deszy Fanpage)</span>
+                  <input type="checkbox" checked class="rounded text-zinc-900">
+                </label>
+                <label class="flex items-center justify-between p-2 rounded-xl border border-zinc-200 bg-white cursor-pointer hover:bg-zinc-50">
+                  <span class="flex items-center gap-2"><i class="ph-fill ph-instagram-logo text-[#E4405F]"></i> Instagram (deszy_creative)</span>
+                  <input type="checkbox" checked class="rounded text-zinc-900">
+                </label>
+                <label class="flex items-center justify-between p-2 rounded-xl border border-zinc-200 bg-white cursor-pointer hover:bg-zinc-50">
+                  <span class="flex items-center gap-2"><i class="ph-fill ph-threads-logo"></i> Threads (_ticrn)</span>
+                  <input type="checkbox" class="rounded text-zinc-900">
+                </label>
+              </div>
+            </div>
+
+            <!-- Action Button -->
+            <button class="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center justify-center gap-2 cursor-pointer transition">
+              <i class="ph-fill ph-lightning text-amber-400"></i>
+              <span>Khởi tạo 30 bài viết với AI</span>
+            </button>
+          </div>
+
+          <!-- Asset Library Readiness Widget -->
+          <div class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold">
+              <span class="flex items-center gap-1.5 text-zinc-800"><i class="ph-bold ph-images text-zinc-500"></i> Thư viện tài nguyên (Asset Library)</span>
+              <span class="text-emerald-600 font-bold">39 assets sẵn sàng</span>
+            </div>
+            <div class="w-full bg-zinc-100 rounded-full h-2 overflow-hidden">
+              <div class="bg-emerald-500 h-2 rounded-full" style="width: 100%"></div>
+            </div>
+            <p class="text-[11px] text-zinc-400">Đủ 100% tài nguyên ảnh & video để gắn tự động vào 30 bài viết.</p>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Pillars & Angles Strategy Matrix (7 cols = ~58%) -->
+        <div class="lg:col-span-7 space-y-5">
+          
+          <!-- Pillars Distribution Card -->
+          <div class="p-5 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-100">
+              <div>
+                <h3 class="font-heading font-bold text-sm text-zinc-900">Ma trận 4 Trụ cột nội dung (Content Pillars)</h3>
+                <span class="text-[11px] text-zinc-400">Tỷ lệ phân bổ mục tiêu theo chuẩn tiếp thị</span>
+              </div>
+              <button class="text-xs font-bold text-blue-600 hover:underline flex items-center gap-1">
+                <i class="ph-bold ph-plus"></i> Thêm trụ cột
+              </button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <!-- Pillar 1 -->
+              <div class="p-3.5 rounded-xl border border-blue-200 bg-blue-50/30 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-blue-700">1. Chia sẻ kiến thức (40%)</span>
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-blue-100 text-blue-800">12 bài</span>
+                </div>
+                <p class="text-[11px] text-zinc-500">Cung cấp mẹo, hướng dẫn quy trình và kiến thức chuyên môn trong ngành.</p>
+                <div class="text-[10px] font-semibold text-zinc-400">Góc: Mẹo hay, Sai lầm cần tránh, Case study</div>
+              </div>
+
+              <!-- Pillar 2 -->
+              <div class="p-3.5 rounded-xl border border-amber-200 bg-amber-50/30 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-amber-700">2. Tính năng sản phẩm (30%)</span>
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800">9 bài</span>
+                </div>
+                <p class="text-[11px] text-zinc-500">Giới thiệu các giải pháp cốt lõi và tính năng AI của sản phẩm.</p>
+                <div class="text-[10px] font-semibold text-zinc-400">Góc: Demo tính năng, So sánh giải pháp</div>
+              </div>
+
+              <!-- Pillar 3 -->
+              <div class="p-3.5 rounded-xl border border-emerald-200 bg-emerald-50/30 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-emerald-700">3. Câu chuyện thương hiệu (20%)</span>
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800">6 bài</span>
+                </div>
+                <p class="text-[11px] text-zinc-500">Hậu trường đội ngũ, văn hóa và câu chuyện xây dựng thương hiệu.</p>
+                <div class="text-[10px] font-semibold text-zinc-400">Góc: Đằng sau hậu trường, Phỏng vấn founder</div>
+              </div>
+
+              <!-- Pillar 4 -->
+              <div class="p-3.5 rounded-xl border border-purple-200 bg-purple-50/30 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="font-bold text-purple-700">4. Kêu gọi hành động (10%)</span>
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-purple-100 text-purple-800">3 bài</span>
+                </div>
+                <p class="text-[11px] text-zinc-500">Khuyến mãi, ưu đãi dùng thử và chuyển đổi người theo dõi thành khách hàng.</p>
+                <div class="text-[10px] font-semibold text-zinc-400">Góc: Ưu đãi giới hạn, Đăng ký dùng thử</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Market Trending Hooks -->
+          <div class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between text-xs font-bold text-zinc-800">
+              <span class="flex items-center gap-1.5"><i class="ph-bold ph-trend-up text-amber-500"></i> Chủ đề xu hướng đề xuất cho tuần này</span>
+              <span class="text-[10px] text-zinc-400">AI Web Scanning</span>
+            </div>
+            <div class="space-y-2 text-xs">
+              <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
+                <span class="text-zinc-700">🔥 "Cách kết hợp AI Agent vào quản lý mạng xã hội cho doanh nghiệp nhỏ"</span>
+                <span class="text-[10px] font-bold text-blue-600 cursor-pointer hover:underline">+ Dùng chủ đề này</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-100 flex items-center justify-between">
+                <span class="text-zinc-700">🔥 "Top 3 sai lầm khiến bài viết fanpage bị bóp tương tác năm 2026"</span>
+                <span class="text-[10px] font-bold text-blue-600 cursor-pointer hover:underline">+ Dùng chủ đề này</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: PHASED CAMPAIGN ROADMAP (LỘ TRÌNH 4 TUẦN THEO GIAI ĐOẠN)         -->
+    <!-- ========================================================================= -->
+    <div id="option-c" class="hidden space-y-6">
+      
+      <!-- Top Header & Action -->
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h2 class="text-2xl font-bold tracking-tight text-zinc-900">Lộ trình chiến dịch theo giai đoạn (Phased Campaign Roadmap)</h2>
+          <p class="text-xs text-zinc-500 mt-1">Phân bổ 30 bài viết theo 4 tuần phễu tiếp thị: Nhận diện ➔ Cân nhắc ➔ Quyết định ➔ Chuyển đổi.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+            <i class="ph-fill ph-lightning text-amber-400"></i>
+            <span>Tạo lại toàn bộ lộ trình AI</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4-Week Roadmap Cards -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        
+        <!-- Week 1: Awareness -->
+        <div class="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+            <div>
+              <span class="text-[10px] font-bold text-blue-600 uppercase">TUẦN 1 (BÀI 1 - 7)</span>
+              <h3 class="font-heading font-bold text-xs text-zinc-900">Nhận diện & Đặt vấn đề</h3>
+            </div>
+            <span class="size-6 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center text-xs font-bold">1</span>
+          </div>
+          <p class="text-[11px] text-zinc-500">Tập trung giải quyết nỗi đau của khách hàng và định vị chuyên môn thương hiệu.</p>
+
+          <div class="space-y-2 pt-1">
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T2 · 09:00</span>
+              <div class="font-bold text-zinc-800 truncate">5 Lý do marketing mạng xã hội tốn thời gian</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T3 · 15:00</span>
+              <div class="font-bold text-zinc-800 truncate">Sai lầm khi không có lịch nội dung</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T5 · 20:00</span>
+              <div class="font-bold text-zinc-800 truncate">Xu hướng AI tự động hóa năm 2026</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 2: Consideration -->
+        <div class="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+            <div>
+              <span class="text-[10px] font-bold text-amber-600 uppercase">TUẦN 2 (BÀI 8 - 15)</span>
+              <h3 class="font-heading font-bold text-xs text-zinc-900">Giải pháp & Thương hiệu</h3>
+            </div>
+            <span class="size-6 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xs font-bold">2</span>
+          </div>
+          <p class="text-[11px] text-zinc-500">Giới thiệu giải pháp Socialchoice và câu chuyện xây dựng sản phẩm.</p>
+
+          <div class="space-y-2 pt-1">
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T2 · 09:00</span>
+              <div class="font-bold text-zinc-800 truncate">Cách AI tạo lịch 30 ngày chỉ trong 1 click</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T4 · 14:00</span>
+              <div class="font-bold text-zinc-800 truncate">Hậu trường đội ngũ phát triển tính năng mới</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T6 · 18:30</span>
+              <div class="font-bold text-zinc-800 truncate">So sánh quản lý thủ công vs tự động</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 3: Decision & Social Proof -->
+        <div class="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+            <div>
+              <span class="text-[10px] font-bold text-purple-600 uppercase">TUẦN 3 (BÀI 16 - 23)</span>
+              <h3 class="font-heading font-bold text-xs text-zinc-900">Minh chứng & Case Study</h3>
+            </div>
+            <span class="size-6 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center text-xs font-bold">3</span>
+          </div>
+          <p class="text-[11px] text-zinc-500">Khách hàng thực tế nói gì và hiệu quả tăng trưởng đo lường được.</p>
+
+          <div class="space-y-2 pt-1">
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T2 · 09:00</span>
+              <div class="font-bold text-zinc-800 truncate">Deszy tăng 300% tương tác sau 1 tháng</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T4 · 15:00</span>
+              <div class="font-bold text-zinc-800 truncate">Đánh giá từ các Agency quảng cáo hàng đầu</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T7 · 10:00</span>
+              <div class="font-bold text-zinc-800 truncate">Livestream Q&A trực tiếp cùng Founder</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Week 4: Conversion & Action -->
+        <div class="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-100">
+            <div>
+              <span class="text-[10px] font-bold text-emerald-600 uppercase">TUẦN 4 (BÀI 24 - 30)</span>
+              <h3 class="font-heading font-bold text-xs text-zinc-900">Kêu gọi hành động & Ưu đãi</h3>
+            </div>
+            <span class="size-6 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xs font-bold">4</span>
+          </div>
+          <p class="text-[11px] text-zinc-500">Thúc đẩy dùng thử sản phẩm và chuyển đổi người theo dõi thành khách hàng.</p>
+
+          <div class="space-y-2 pt-1">
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T2 · 09:00</span>
+              <div class="font-bold text-zinc-800 truncate">Ưu đãi giảm 30% gói khởi nghiệp Q4</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T4 · 12:00</span>
+              <div class="font-bold text-zinc-800 truncate">Chỉ còn 48h nhận quà tặng độc quyền</div>
+            </div>
+            <div class="p-2.5 rounded-xl border border-zinc-200 bg-zinc-50 text-xs space-y-1">
+              <span class="text-[9px] font-bold text-zinc-400">T6 · 21:00</span>
+              <div class="font-bold text-zinc-800 truncate">Tổng kết chiến dịch & Cảm ơn cộng đồng</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Action Banner -->
+      <div class="p-5 rounded-2xl bg-zinc-900 text-white flex flex-wrap items-center justify-between gap-4 shadow-sm">
+        <div>
+          <h4 class="font-heading font-bold text-sm text-white">Bạn hài lòng với lộ trình 4 tuần này?</h4>
+          <p class="text-xs text-zinc-300 mt-0.5">Nhấn "Áp dụng vào Lịch nội dung" để đưa toàn bộ 30 bài viết vào Lịch ở dạng bản nháp.</p>
+        </div>
+        <button class="px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-zinc-950 font-bold text-xs shadow-2xs cursor-pointer transition">
+          Áp dụng toàn bộ 30 bài vào Lịch nội dung
+        </button>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    const optionsInfo = {
+      a: {
+        title: "Option A: Guided 3-Step Wizard (Quy trình 3 bước rõ ràng)",
+        desc: "Dẫn dắt người dùng từng bước mạch lạc: Bước 1 Brand Context ➔ Bước 2 Ma trận Trụ cột ➔ Bước 3 Cấu hình lịch AI. Có thẻ mẫu trực quan trước khi tạo.",
+        icon: "ph-steps"
+      },
+      b: {
+        title: "Option B: Interactive All-in-One Dashboard (Bảng điều khiển 2 cột)",
+        desc: "Bố cục 2 cột không phân tab: Cột trái thiết lập tham số AI & mục tiêu; cột phải hiển thị ma trận 4 Trụ cột nội dung và thanh đo lường tài nguyên.",
+        icon: "ph-layout"
+      },
+      c: {
+        title: "Option C: Phased Campaign Roadmap (Lộ trình 4 tuần theo giai đoạn)",
+        desc: "Phân bổ 30 bài viết theo lộ trình phễu 4 tuần tiếp thị: Tuần 1 Nhận diện ➔ Tuần 2 Cân nhắc ➔ Tuần 3 Minh chứng ➔ Tuần 4 Chuyển đổi.",
+        icon: "ph-kanban"
+      }
+    };
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(k => {
+        const btn = document.getElementById(`opt-btn-${k}`);
+        const view = document.getElementById(`option-${k}`);
+        if (k === opt) {
+          btn.classList.add('active');
+          view.classList.remove('hidden');
+        } else {
+          btn.classList.remove('active');
+          view.classList.add('hidden');
+        }
+      });
+
+      const info = optionsInfo[opt];
+      document.getElementById('intro-title').textContent = info.title;
+      document.getElementById('intro-desc').textContent = info.desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${info.icon}"></i>`;
+    }
+  </script>
+</body>
+</html>

@@ -28,6 +28,9 @@ import {
     X,
     SquaresFour,
     ListBullets,
+    DotsThree,
+    Tag,
+    Check,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -41,6 +44,16 @@ import AddAccountDialog from '@/components/accounts/AddAccountDialog';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+    DropdownMenuSub,
+    DropdownMenuSubTrigger,
+    DropdownMenuSubContent,
+} from '@/components/ui/dropdown-menu';
 import { CONNECTION_LABEL, CONNECTION_TONE, PLATFORM_LABEL } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -238,6 +251,17 @@ export default function SocialAccounts() {
         }
     };
 
+    const handleCheckAllInGroup = async (items) => {
+        const eligible = items.filter(item => item.credential_id && item.connection_status === 'connected');
+        if (!eligible.length) {
+            toast({ title: t("No active OAuth channels to verify in this group") });
+            return;
+        }
+        for (const account of eligible) {
+            await handleCheckAccess(account);
+        }
+    };
+
     const handleFixConnection = (account) => {
         if (account.connection_provider === 'postiz') { handleCheckAccess(account); return; }
         if (isDesktop() && ['facebook', 'instagram', 'threads', 'linkedin', 'tiktok'].includes(account.platform)) {
@@ -308,8 +332,12 @@ export default function SocialAccounts() {
                 title={t("Social Accounts")}
                 description={t('Manage connected Facebook, Instagram, Threads, TikTok and LinkedIn accounts by brand.')}
                 actions={
-                    <button type="button" className="btn-skew" onClick={() => setChannelOpen(true)}>
-                        <Plus size={16} weight="duotone" /> {t("Add channel")}
+                    <button
+                        type="button"
+                        onClick={() => setChannelOpen(true)}
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                    >
+                        <Plus size={16} weight="bold" /> {t("Add channel")}
                     </button>
                 }
             />
@@ -375,9 +403,9 @@ export default function SocialAccounts() {
                                     <button
                                         type="button"
                                         onClick={() => setPlatformFilter('all')}
-                                        className={`rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                                        className={`rounded-lg px-2.5 py-1 text-xs transition-colors ${
                                             platformFilter === 'all'
-                                                ? 'bg-brand/15 text-brand-ink font-semibold'
+                                                ? 'bg-foreground text-background font-medium shadow-2xs'
                                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                         }`}
                                     >
@@ -392,13 +420,13 @@ export default function SocialAccounts() {
                                                 key={platform}
                                                 type="button"
                                                 onClick={() => setPlatformFilter(isSelected ? 'all' : platform)}
-                                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-medium transition-colors ${
+                                                className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-colors ${
                                                     isSelected
-                                                        ? 'bg-brand/15 text-brand-ink font-semibold'
+                                                        ? 'bg-foreground text-background font-medium shadow-2xs'
                                                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                                 }`}
                                             >
-                                                <Icon size={14} weight={cfg.weight} className={cfg.text} />
+                                                <Icon size={14} weight={cfg.weight} className={isSelected ? 'text-background' : cfg.text} />
                                                 <span>{PLATFORM_LABEL[platform] || platform}</span>
                                             </button>
                                         );
@@ -414,9 +442,9 @@ export default function SocialAccounts() {
                                 title={t("Grid view")}
                                 aria-label={t("Grid view")}
                                 onClick={() => setViewMode('grid')}
-                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
                                     viewMode === 'grid'
-                                        ? 'bg-brand/15 text-brand-ink font-semibold'
+                                        ? 'bg-foreground text-background font-medium shadow-2xs'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -428,9 +456,9 @@ export default function SocialAccounts() {
                                 title={t("List view")}
                                 aria-label={t("List view")}
                                 onClick={() => setViewMode('list')}
-                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                                className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
                                     viewMode === 'list'
-                                        ? 'bg-brand/15 text-brand-ink font-semibold'
+                                        ? 'bg-foreground text-background font-medium shadow-2xs'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -482,14 +510,14 @@ export default function SocialAccounts() {
                             );
                             return (
                                 <section key={group.brand?.id || 'ungrouped'} className="panel p-5">
-                                    {/* Brand Panel Header */}
-                                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
+                                    {/* Brand Panel Header (Option B Style) */}
+                                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-border/80">
                                         <div className="flex items-center gap-2.5">
                                             <span
                                                 className="h-3 w-3 rounded-full shrink-0 ring-2 ring-background"
                                                 style={{ backgroundColor: group.brand?.color || '#9ca3af' }}
                                             />
-                                            <h2 className="font-heading text-[15px] font-medium text-foreground">
+                                            <h2 className="font-heading text-[15px] font-semibold text-foreground">
                                                 {group.brand?.name || t("No brand assigned")}
                                             </h2>
                                             <span className="label-xs rounded-full bg-muted px-2 py-0.5 text-muted-foreground font-medium">
@@ -497,192 +525,215 @@ export default function SocialAccounts() {
                                             </span>
                                         </div>
 
-                                        {allConnected && group.items.length > 0 && (
-                                            <span className="inline-flex items-center gap-1.5 label-xs text-successFg font-medium">
-                                                <CheckCircle size={13} weight="fill" />
-                                                {t("All connected")}
-                                            </span>
-                                        )}
+                                        <div className="flex items-center gap-2.5">
+                                            {allConnected && group.items.length > 0 && (
+                                                <span className="inline-flex items-center gap-1.5 label-xs text-successFg font-medium">
+                                                    <CheckCircle size={13} weight="fill" />
+                                                    {t("All connected")}
+                                                </span>
+                                            )}
+                                            {group.items.some((item) => item.credential_id) && (
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="h-7 text-xs px-2.5 font-medium border-border/80 hover:border-foreground/30 text-muted-foreground hover:text-foreground"
+                                                    onClick={() => handleCheckAllInGroup(group.items)}
+                                                >
+                                                    <ArrowsClockwise size={12} className={checkingId ? "animate-spin" : ""} />
+                                                    <span>{t("Verify all in group")}</span>
+                                                </Button>
+                                            )}
+                                        </div>
                                     </div>
 
-                                    {/* Content: Grid Mode (Các ô) or List Mode */}
+                                    {/* Content: Grid Mode (Option B: Modular Minimalist Cards) or List Mode */}
                                     {viewMode === 'grid' ? (
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3.5 pt-4">
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 pt-4">
                                             {group.items.map((account) => {
                                                 const config = PLATFORM_CONFIG[account.platform] || DEFAULT_PLATFORM_CONFIG;
                                                 const PlatformIcon = config.icon;
+                                                const isChecking = checkingId === account.id;
 
                                                 return (
                                                     <div
                                                         key={account.id}
-                                                        className="group relative flex flex-col justify-between rounded-xl border border-border/80 bg-background/50 p-4 transition-all hover:border-border hover:bg-card hover:shadow-xs"
+                                                        className="group relative flex flex-col justify-between rounded-xl border border-border/80 bg-card p-4 transition-all hover:border-foreground/40 hover:shadow-2xs"
                                                     >
-                                                        {/* Top: Avatar, Name, Status, Delete */}
                                                         <div>
+                                                            {/* Top Row: Avatar with status dot + Actions Menu (...) */}
                                                             <div className="flex items-start justify-between gap-2.5 mb-3">
-                                                                <div className="flex items-center gap-3 min-w-0">
-                                                                    <div
-                                                                        className={`relative flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border ${config.border} ${config.bg} transition-transform group-hover:scale-105`}
-                                                                    >
-                                                                        <PlatformIcon size={24} weight={config.weight} className={config.text} />
-                                                                        {account.connection_status === 'connected' ? (
-                                                                            <span
-                                                                                className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card bg-successFg"
-                                                                                title={t("Connected")}
-                                                                            />
-                                                                        ) : account.connection_status === 'expired' || account.connection_status === 'configuration_required' ? (
-                                                                            <span
-                                                                                className="absolute -bottom-0.5 -right-0.5 flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-card bg-warnFg"
-                                                                                title={CONNECTION_LABEL[account.connection_status]}
-                                                                            />
-                                                                        ) : null}
+                                                                <div className="relative">
+                                                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/80 bg-muted/40 transition-transform group-hover:scale-105">
+                                                                        <PlatformIcon size={22} weight={config.weight} className="text-foreground" />
                                                                     </div>
-
-                                                                    <div className="min-w-0 flex-1">
-                                                                        <h3 className="font-heading text-[14.5px] font-medium text-foreground truncate" title={account.name}>
-                                                                            {account.name}
-                                                                        </h3>
-                                                                        <p className="label-xs text-muted-foreground truncate">
-                                                                            {PLATFORM_LABEL[account.platform] || account.platform}
-                                                                        </p>
-                                                                    </div>
-                                                                </div>
-
-                                                                <Button
-                                                                    variant="ghost"
-                                                                    size="sm"
-                                                                    className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-dangerFg hover:bg-dangerBg/40 shrink-0"
-                                                                    title={t("Remove destination")}
-                                                                    aria-label={t("Remove destination")}
-                                                                    onClick={() => setDeleteTarget(account)}
-                                                                >
-                                                                    <Trash size={13} />
-                                                                </Button>
-                                                            </div>
-
-                                                            {/* Status badge and metadata */}
-                                                            <div className="space-y-2 pb-3 pt-0.5 border-b border-border/60">
-                                                                <div className="flex flex-wrap items-center gap-1.5">
-                                                                    <StatusBadge tone={CONNECTION_TONE[account.connection_status]}>
-                                                                        {CONNECTION_LABEL[account.connection_status]}
-                                                                    </StatusBadge>
-                                                                    {account.connection_status !== 'connected' && (
-                                                                        <span className="inline-flex items-center gap-1 rounded-md bg-warnBg px-1.5 py-0.5 text-[11px] font-medium text-warnFg">
-                                                                            <WarningCircle size={12} weight="bold" />
-                                                                            {t("not delivering")}
-                                                                        </span>
-                                                                    )}
-                                                                </div>
-
-                                                                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-muted-foreground text-xs">
-                                                                    {account.username ? (
-                                                                        <span className="font-mono text-muted-foreground bg-muted/60 px-1.5 py-0.5 rounded text-[11px]">
-                                                                            @{account.username}
-                                                                        </span>
-                                                                    ) : null}
-                                                                    {account.followers ? (
-                                                                        <span className="inline-flex items-center gap-1 text-[11px]">
-                                                                            <Users size={12} weight="bold" />
-                                                                            {formatNumber(account.followers)} {t("followers")}
-                                                                        </span>
-                                                                    ) : null}
-                                                                    {account.external_id ? (
-                                                                        <span className="font-mono text-[10.5px] text-muted-foreground/80 bg-muted/50 px-1.5 py-0.5 rounded border border-border/40">
-                                                                            ID: {account.external_id}
-                                                                        </span>
+                                                                    {account.connection_status === 'connected' ? (
+                                                                        <span
+                                                                            className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-card bg-successFg ring-1 ring-card"
+                                                                            title={t("Connected")}
+                                                                        />
+                                                                    ) : account.connection_status === 'expired' || account.connection_status === 'configuration_required' ? (
+                                                                        <span
+                                                                            className="absolute -bottom-0.5 -right-0.5 flex h-3 w-3 items-center justify-center rounded-full border-2 border-card bg-warnFg ring-1 ring-card"
+                                                                            title={CONNECTION_LABEL[account.connection_status]}
+                                                                        />
                                                                     ) : null}
                                                                 </div>
-                                                            </div>
-                                                        </div>
 
-                                                        {/* Bottom: Brand selector and action buttons */}
-                                                        <div className="mt-3 space-y-2">
-                                                            <div className="flex items-center justify-between gap-2">
-                                                                <span className="label-xs text-muted-foreground shrink-0">{t("Brand")}:</span>
-                                                                <Select
-                                                                    value={account.brand_id}
-                                                                    disabled={isDesktop() && !!account.credential_id}
-                                                                    onValueChange={(value) => setBrand(account, value)}
-                                                                >
-                                                                    <SelectTrigger className="h-7 w-full max-w-[150px] rounded-lg text-[11.5px] bg-background border-border shadow-2xs font-medium">
-                                                                        <SelectValue placeholder={t("Assign brand")} />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        {brands.map((brand) => (
-                                                                            <SelectItem key={brand.id} value={brand.id}>
-                                                                                <div className="flex items-center gap-2">
-                                                                                    <span
-                                                                                        className="h-2 w-2 rounded-full shrink-0"
-                                                                                        style={{ backgroundColor: brand.color }}
-                                                                                    />
-                                                                                    <span className="truncate">{brand.name}</span>
-                                                                                </div>
-                                                                            </SelectItem>
-                                                                        ))}
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </div>
-
-                                                            {account.connection_status !== 'demo' ? (
-                                                                <div className="space-y-1.5 pt-1">
-                                                                    {account.credential_id && (
-                                                                        <Button
-                                                                            variant="outline"
-                                                                            size="sm"
-                                                                            disabled={checkingId === account.id}
-                                                                            className="w-full h-7 rounded-lg text-[11.5px] gap-1.5 font-medium hover:border-brand-dark"
-                                                                            onClick={() => handleCheckAccess(account)}
-                                                                        >
-                                                                            {checkingId === account.id ? (
-                                                                                <ArrowsClockwise size={12} className="animate-spin text-muted-foreground" />
-                                                                            ) : (
-                                                                                <ShieldCheck size={13} className="text-muted-foreground" />
-                                                                            )}
-                                                                            <span className="truncate">
-                                                                                {t(
-                                                                                    account.platform === 'linkedin'
-                                                                                        ? 'Check LinkedIn access'
-                                                                                        : account.platform === 'tiktok'
-                                                                                        ? 'Check TikTok access'
-                                                                                        : account.platform === 'threads'
-                                                                                        ? 'Check Threads access'
-                                                                                        : account.platform === 'instagram'
-                                                                                        ? 'Check Instagram access'
-                                                                                        : 'Check Facebook access'
-                                                                                )}
-                                                                            </span>
-                                                                        </Button>
-                                                                    )}
-
-                                                                    <div className="grid grid-cols-2 gap-1.5">
-                                                                        <Button
-                                                                            variant={account.connection_status === 'connected' ? 'ghost' : 'outline'}
-                                                                            size="sm"
-                                                                            className={`h-7 rounded-lg text-[11px] gap-1 px-1.5 ${
-                                                                                account.connection_status === 'connected'
-                                                                                    ? 'text-muted-foreground hover:text-foreground'
-                                                                                    : 'border-warnFg/30 text-warnFg hover:bg-warnBg/50 font-medium'
-                                                                            }`}
-                                                                            onClick={() => handleFixConnection(account)}
-                                                                        >
-                                                                            <ArrowsClockwise size={12} />
-                                                                            <span className="truncate">{t("Fix connection")}</span>
-                                                                        </Button>
-
+                                                                {/* Overflow Actions Menu (DotsThree) */}
+                                                                <DropdownMenu>
+                                                                    <DropdownMenuTrigger asChild>
                                                                         <Button
                                                                             variant="ghost"
                                                                             size="sm"
-                                                                            className="h-7 rounded-lg text-[11px] text-muted-foreground hover:text-foreground gap-1 px-1.5"
+                                                                            className="h-7 w-7 p-0 rounded-lg text-muted-foreground hover:text-foreground"
+                                                                            title={t("Actions")}
+                                                                            aria-label={t("Actions")}
+                                                                        >
+                                                                            <DotsThree size={18} weight="bold" />
+                                                                        </Button>
+                                                                    </DropdownMenuTrigger>
+                                                                    <DropdownMenuContent align="end">
+                                                                        <DropdownMenuItem onClick={() => handleFixConnection(account)}>
+                                                                            <ArrowsClockwise size={14} />
+                                                                            <span>{t("Fix connection")}</span>
+                                                                        </DropdownMenuItem>
+                                                                        <DropdownMenuItem
                                                                             disabled={account.connection_status === 'disconnected'}
                                                                             onClick={() => disconnect(account)}
                                                                         >
-                                                                            <Plugs size={12} />
-                                                                            <span className="truncate">{t("Disconnect")}</span>
-                                                                        </Button>
+                                                                            <Plugs size={14} />
+                                                                            <span>{t("Disconnect")}</span>
+                                                                        </DropdownMenuItem>
+                                                                        {brands && brands.length > 0 && (
+                                                                            <DropdownMenuSub>
+                                                                                <DropdownMenuSubTrigger disabled={isDesktop() && !!account.credential_id}>
+                                                                                    <div className="flex items-center gap-2">
+                                                                                        <Tag size={14} />
+                                                                                        <span>{t("Assign brand")}</span>
+                                                                                    </div>
+                                                                                </DropdownMenuSubTrigger>
+                                                                                <DropdownMenuSubContent>
+                                                                                    {brands.map((b) => (
+                                                                                        <DropdownMenuItem
+                                                                                            key={b.id}
+                                                                                            onClick={() => setBrand(account, b.id)}
+                                                                                            className="flex items-center justify-between"
+                                                                                        >
+                                                                                            <div className="flex items-center gap-2">
+                                                                                                <span
+                                                                                                    className="h-2 w-2 rounded-full shrink-0"
+                                                                                                    style={{ backgroundColor: b.color || '#18181b' }}
+                                                                                                />
+                                                                                                <span>{b.name}</span>
+                                                                                            </div>
+                                                                                            {account.brand_id === b.id && <Check size={12} weight="bold" className="text-foreground" />}
+                                                                                        </DropdownMenuItem>
+                                                                                    ))}
+                                                                                </DropdownMenuSubContent>
+                                                                            </DropdownMenuSub>
+                                                                        )}
+                                                                        <DropdownMenuSeparator />
+                                                                        <DropdownMenuItem
+                                                                            className="text-dangerFg focus:text-dangerFg focus:bg-dangerBg/40"
+                                                                            onClick={() => setDeleteTarget(account)}
+                                                                        >
+                                                                            <Trash size={14} />
+                                                                            <span>{t("Remove destination")}</span>
+                                                                        </DropdownMenuItem>
+                                                                    </DropdownMenuContent>
+                                                                </DropdownMenu>
+                                                            </div>
+
+                                                            {/* Account Title & Subtitle */}
+                                                            <div>
+                                                                <h3 className="font-heading text-[14px] font-semibold text-foreground truncate" title={account.name}>
+                                                                    {account.name}
+                                                                </h3>
+                                                                <p className="text-[11.5px] font-mono text-muted-foreground truncate mt-0.5">
+                                                                    {account.username ? `@${account.username} · ` : ''}{PLATFORM_LABEL[account.platform] || account.platform}
+                                                                </p>
+                                                            </div>
+
+                                                            {/* Clean Metadata Section */}
+                                                            <div className="mt-3 pt-3 border-t border-border/60 text-xs space-y-1.5">
+                                                                <div className="flex items-center justify-between text-[11.5px]">
+                                                                    <span className="text-muted-foreground">{t("Status")}:</span>
+                                                                    <div className="flex items-center gap-1.5">
+                                                                        <StatusBadge tone={CONNECTION_TONE[account.connection_status]}>
+                                                                            {CONNECTION_LABEL[account.connection_status]}
+                                                                        </StatusBadge>
+                                                                        {account.connection_status !== 'connected' && (
+                                                                            <span className="inline-flex items-center gap-0.5 rounded px-1 py-0.2 bg-warnBg text-[10px] font-medium text-warnFg">
+                                                                                <WarningCircle size={10} weight="bold" />
+                                                                                {t("not delivering")}
+                                                                            </span>
+                                                                        )}
                                                                     </div>
                                                                 </div>
+
+                                                                {account.external_id ? (
+                                                                    <div className="flex items-center justify-between text-[11px]">
+                                                                        <span className="text-muted-foreground">{t("Channel ID")}:</span>
+                                                                        <span className="font-mono text-muted-foreground/90 truncate max-w-[140px]" title={account.external_id}>
+                                                                            {account.external_id}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : null}
+
+                                                                {account.followers ? (
+                                                                    <div className="flex items-center justify-between text-[11px]">
+                                                                        <span className="text-muted-foreground">{t("Followers")}:</span>
+                                                                        <span className="font-medium text-foreground">
+                                                                            {formatNumber(account.followers)}
+                                                                        </span>
+                                                                    </div>
+                                                                ) : null}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Bottom: Single Action Button */}
+                                                        <div className="mt-4 pt-3 border-t border-border/60">
+                                                            {account.connection_status !== 'demo' ? (
+                                                                account.credential_id ? (
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        disabled={isChecking}
+                                                                        className="w-full h-8 rounded-lg text-xs gap-1.5 font-medium border-border hover:border-foreground/40 transition-colors"
+                                                                        onClick={() => handleCheckAccess(account)}
+                                                                    >
+                                                                        {isChecking ? (
+                                                                            <ArrowsClockwise size={13} className="animate-spin text-muted-foreground" />
+                                                                        ) : (
+                                                                            <ShieldCheck size={14} className="text-muted-foreground" />
+                                                                        )}
+                                                                        <span className="truncate">
+                                                                            {t(
+                                                                                account.platform === 'linkedin'
+                                                                                    ? 'Check LinkedIn access'
+                                                                                    : account.platform === 'tiktok'
+                                                                                    ? 'Check TikTok access'
+                                                                                    : account.platform === 'threads'
+                                                                                    ? 'Check Threads access'
+                                                                                    : account.platform === 'instagram'
+                                                                                    ? 'Check Instagram access'
+                                                                                    : 'Check Facebook access'
+                                                                            )}
+                                                                        </span>
+                                                                    </Button>
+                                                                ) : (
+                                                                    <Button
+                                                                        variant="outline"
+                                                                        size="sm"
+                                                                        className="w-full h-8 rounded-lg text-xs gap-1.5 font-medium border-warnFg/40 text-warnFg hover:bg-warnBg/50"
+                                                                        onClick={() => handleFixConnection(account)}
+                                                                    >
+                                                                        <ArrowsClockwise size={13} />
+                                                                        <span>{t("Fix connection")}</span>
+                                                                    </Button>
+                                                                )
                                                             ) : (
-                                                                <div className="pt-1 text-center">
+                                                                <div className="text-center py-1">
                                                                     <span className="label-xs text-muted-foreground">{t("Sample destination")}</span>
                                                                 </div>
                                                             )}
@@ -801,7 +852,7 @@ export default function SocialAccounts() {
                                                                             variant="outline"
                                                                             size="sm"
                                                                             disabled={checkingId === account.id}
-                                                                            className="h-8 rounded-lg text-[12px] gap-1.5 font-medium hover:border-brand-dark"
+                                                                            className="h-8 rounded-lg text-[12px] gap-1.5 font-medium hover:border-foreground/40"
                                                                             onClick={() => handleCheckAccess(account)}
                                                                         >
                                                                             {checkingId === account.id ? (

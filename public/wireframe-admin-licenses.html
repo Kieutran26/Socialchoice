@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe - 3 Option Quản Lý License (Admin Licenses)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <style type="text/tailwindcss">
+    :root {
+      --app-font: 'Space Grotesk', -apple-system, sans-serif;
+      --heading-font: 'Mona Sans', -apple-system, sans-serif;
+      --background: #fbfbfb;
+      --surface: #ffffff;
+      --foreground: #18181b;
+      --muted: #71717a;
+      --border: #e4e4e7;
+    }
+    body {
+      font-family: var(--app-font);
+      background: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: var(--heading-font);
+    }
+    .wf-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 52px;
+      padding: 0 20px;
+      background: #ffffff;
+      border-bottom: 1px solid #e4e4e7;
+      font-size: 13px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .wf-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .wf-btn.active {
+      background: #18181b;
+      color: #ffffff;
+      border-color: #18181b;
+    }
+    .wf-btn:not(.active) {
+      background: #f4f4f5;
+      color: #71717a;
+    }
+    .wf-btn:not(.active):hover {
+      background: #e4e4e7;
+      color: #18181b;
+    }
+    .card-wireframe {
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      border-radius: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+  </style>
+</head>
+<body class="bg-[#fbfbfb] text-[#18181b]">
+
+  <!-- Top Controller Bar -->
+  <header class="wf-bar">
+    <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-neutral-400 font-mono mr-2">
+      <span class="h-2 w-2 rounded-full bg-black"></span>
+      <span>Admin Licenses Wireframes:</span>
+    </div>
+
+    <div class="flex items-center gap-1.5 bg-[#f4f4f5] p-1 rounded-xl">
+      <button class="wf-btn active" id="btn-opt-a" onclick="switchOption('a')">
+        <span>Option A · Command Split-Deck</span>
+      </button>
+      <button class="wf-btn" id="btn-opt-b" onclick="switchOption('b')">
+        <span>Option B · Two-Column Workbench</span>
+      </button>
+      <button class="wf-btn" id="btn-opt-c" onclick="switchOption('c')">
+        <span>Option C · Full Ledger & Modal Dialog</span>
+      </button>
+    </div>
+
+    <div class="ml-auto text-xs text-muted-foreground flex items-center gap-3">
+      <span class="hidden md:inline">Phong cách: <strong>Monochrome (Đen - Trắng)</strong></span>
+      <span class="text-neutral-300">|</span>
+      <a href="/admin/licenses" class="text-black font-medium hover:underline flex items-center gap-1">
+        <span>Quay lại trang thật &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="max-w-[1340px] mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: COMMAND SPLIT-DECK (Stripe / Vercel Billing style)             -->
+    <!-- ========================================================================= -->
+    <div id="option-a" class="space-y-6">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div>
+          <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Quản trị hệ thống</div>
+          <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Quản lý License khách hàng</h1>
+          <p class="text-xs text-neutral-500 mt-1">Cấp mã bản quyền sau khi xác minh chuyển khoản. Mỗi license kích hoạt được trên nhiều thiết bị.</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <button class="h-9 px-3 text-xs font-medium rounded-xl border border-zinc-200 bg-white text-neutral-700 hover:bg-neutral-50 transition-colors inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            <span>Cập nhật trạng thái</span>
+          </button>
+          <button onclick="document.getElementById('issue-form-a').scrollIntoView({behavior: 'smooth'})" class="h-9 px-4 text-xs font-medium rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            <span>+ Cấp license mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 4 Compact Monochrome KPI Tiles -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="card-wireframe p-4 bg-white">
+          <div class="flex items-center justify-between text-neutral-500 text-xs font-mono uppercase tracking-wider">
+            <span>Tổng license đã cấp</span>
+            <span class="h-2 w-2 rounded-full bg-black"></span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-bold text-black font-heading">1</span>
+            <span class="text-xs text-neutral-400">cấp qua web</span>
+          </div>
+        </div>
+
+        <div class="card-wireframe p-4 bg-white">
+          <div class="flex items-center justify-between text-neutral-500 text-xs font-mono uppercase tracking-wider">
+            <span>Đang hiệu lực</span>
+            <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-bold text-black font-heading">1</span>
+            <span class="text-xs text-neutral-500">100% hoạt động</span>
+          </div>
+        </div>
+
+        <div class="card-wireframe p-4 bg-white">
+          <div class="flex items-center justify-between text-neutral-500 text-xs font-mono uppercase tracking-wider">
+            <span>Tài khoản kích hoạt</span>
+            <span class="h-2 w-2 rounded-full bg-black"></span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-bold text-black font-heading">1</span>
+            <span class="text-xs text-neutral-500">khách hàng</span>
+          </div>
+        </div>
+
+        <div class="card-wireframe p-4 bg-white">
+          <div class="flex items-center justify-between text-neutral-500 text-xs font-mono uppercase tracking-wider">
+            <span>Đã thu hồi</span>
+            <span class="h-2 w-2 rounded-full bg-neutral-300"></span>
+          </div>
+          <div class="mt-2 flex items-baseline gap-2">
+            <span class="text-2xl font-bold text-black font-heading">0</span>
+            <span class="text-xs text-neutral-400">chặn truy cập</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Option A Split Layout: Left Data Ledger (65%) + Right Fast Issue Box (35%) -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_390px] gap-6 items-start">
+        
+        <!-- Left: Customer License Ledger -->
+        <div class="card-wireframe p-5 bg-white space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200">
+            <div>
+              <h2 class="text-sm font-semibold text-black">Danh sách License khách hàng (1)</h2>
+              <p class="text-xs text-neutral-500">Toàn bộ license đã cấp trên web, tra cứu mã đơn và tải lại file.</p>
+            </div>
+            
+            <!-- Quick Filter Pills -->
+            <div class="flex items-center gap-1 bg-neutral-100 p-0.5 rounded-lg text-xs">
+              <button class="px-2.5 py-1 rounded-md bg-white text-black font-medium shadow-2xs">Tất cả (1)</button>
+              <button class="px-2.5 py-1 rounded-md text-neutral-500 hover:text-black">Hoạt động (1)</button>
+              <button class="px-2.5 py-1 rounded-md text-neutral-500 hover:text-black">Đã thu hồi (0)</button>
+            </div>
+          </div>
+
+          <!-- Search Input -->
+          <div class="relative">
+            <input type="text" placeholder="Tìm theo email, tên khách hoặc mã đơn hàng..." class="w-full h-9 pl-9 pr-3 text-xs bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-black transition-colors">
+            <svg class="w-3.5 h-3.5 absolute left-3 top-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+
+          <!-- License Item Row (Clean Card View) -->
+          <div class="rounded-xl border border-zinc-200 p-4 space-y-3 bg-white hover:border-black/30 transition-colors">
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex items-start gap-3">
+                <div class="h-9 w-9 rounded-xl bg-neutral-100 flex items-center justify-center font-bold text-xs text-black border border-zinc-200">
+                  <svg class="w-4 h-4 text-black" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="text-xs font-semibold text-black">khachhang@gmail.com</span>
+                    <span class="px-1.5 py-0.2 rounded bg-neutral-100 text-[10.5px] font-mono border border-zinc-200 text-neutral-700">Starter</span>
+                    <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
+                      <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Đã kích hoạt
+                    </span>
+                  </div>
+                  <div class="text-[11.5px] text-neutral-500 mt-1 flex items-center gap-2">
+                    <span>Khách: <strong>Nguyễn Văn A (#ORD-2026-08)</strong></span>
+                    <span>•</span>
+                    <span class="font-mono text-neutral-400">ID: scweb-8f92a1...</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Action Buttons -->
+              <div class="flex items-center gap-1.5 shrink-0">
+                <button class="h-8 px-3 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-black hover:bg-neutral-50 inline-flex items-center gap-1.5 shadow-2xs">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                  <span>Tải file license</span>
+                </button>
+                <button class="h-8 px-2.5 rounded-xl border border-zinc-200 text-xs font-medium text-rose-600 hover:bg-rose-50" title="Thu hồi bản quyền">
+                  Thu hồi
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-zinc-100 flex items-center justify-between text-[11px] text-neutral-400 font-mono">
+              <span>Cấp ngày: 08/11/2026 19:45</span>
+              <span>Thiết bị: Windows PC (Khách đã đăng nhập)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Fast Issuance Box (Sticky) -->
+        <div id="issue-form-a" class="card-wireframe p-5 bg-white space-y-4 sticky top-20">
+          <div class="flex items-center gap-2 pb-3 border-b border-zinc-200">
+            <span class="h-2 w-2 rounded-full bg-black"></span>
+            <div>
+              <h2 class="text-sm font-semibold text-black">Cấp license bản web mới</h2>
+              <p class="text-xs text-neutral-500">Tạo file .scweblicense gửi cho khách.</p>
+            </div>
+          </div>
+
+          <form class="space-y-3.5 text-xs">
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Email nhận bản quyền</label>
+              <input type="email" placeholder="customer@example.com" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-black">
+            </div>
+
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Tên khách hoặc Mã đơn hàng</label>
+              <input type="text" placeholder="e.g. John Doe / #ORD-2026" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-black">
+            </div>
+
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Phiên bản gói</label>
+              <select class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white focus:outline-none focus:border-black">
+                <option>Starter</option>
+                <option>Professional</option>
+                <option>Business</option>
+              </select>
+            </div>
+
+            <div class="p-3 rounded-xl bg-neutral-50 border border-zinc-200 flex items-start gap-2.5">
+              <input type="checkbox" id="check-a" class="mt-0.5 rounded border-zinc-300 text-black focus:ring-0">
+              <label for="check-a" class="text-[11.5px] text-neutral-600 leading-relaxed cursor-pointer">
+                Đã xác minh khách thanh toán thành công qua ngân hàng / cổng thanh toán.
+              </label>
+            </div>
+
+            <button type="button" class="w-full h-10 rounded-xl bg-black text-white font-medium hover:bg-neutral-800 transition-colors shadow-xs inline-flex items-center justify-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
+              <span>Tạo & Tải license ngay</span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: TWO-COLUMN WORKBENCH (Linear / GitHub Admin style)               -->
+    <!-- ========================================================================= -->
+    <div id="option-b" class="space-y-6 hidden">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div>
+          <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Quản trị hệ thống</div>
+          <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Bàn làm việc License (Workbench)</h1>
+          <p class="text-xs text-neutral-500 mt-1">Cấu hình cấp phép và tra cứu song song 2 cột, tối ưu cho thao tác liên tục.</p>
+        </div>
+      </div>
+
+      <!-- Workbench Layout: Left Form (380px) + Right Ledger Table -->
+      <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6 items-start">
+        
+        <!-- Left Column: Dedicated Issuance Card -->
+        <div class="card-wireframe p-5 bg-white space-y-4 sticky top-20">
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+            <h2 class="text-sm font-semibold text-black">1. Tạo License mới</h2>
+            <span class="text-[11px] font-mono text-neutral-400">Offline RSA</span>
+          </div>
+
+          <div class="space-y-3.5 text-xs">
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Email khách hàng (*)</label>
+              <input type="email" placeholder="customer@example.com" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+            </div>
+
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Tên khách hoặc mã đơn hàng</label>
+              <input type="text" placeholder="John Doe / #ORD-2026" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+            </div>
+
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Gói bản quyền</label>
+              <select class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+                <option>Starter (Tiêu chuẩn)</option>
+                <option>Professional (Chuyên nghiệp)</option>
+                <option>Business (Doanh nghiệp)</option>
+              </select>
+            </div>
+
+            <div class="p-3 rounded-xl bg-neutral-50 border border-zinc-200 flex items-start gap-2.5">
+              <input type="checkbox" id="check-b" class="mt-0.5 rounded border-zinc-300 text-black">
+              <label for="check-b" class="text-[11.5px] text-neutral-600 leading-relaxed cursor-pointer">
+                Đã nhận tiền thanh toán từ khách hàng.
+              </label>
+            </div>
+
+            <button type="button" class="w-full h-10 rounded-xl bg-black text-white font-medium hover:bg-neutral-800 transition-colors shadow-xs">
+              Tạo License (.scweblicense)
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Ledger & Stats -->
+        <div class="space-y-6">
+          
+          <!-- Quick Stat Strip (4 Tiles) -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="card-wireframe p-3 bg-white text-center">
+              <span class="text-[10.5px] font-mono text-neutral-400 uppercase">Tổng cấp</span>
+              <div class="text-xl font-bold text-black mt-0.5">1</div>
+            </div>
+            <div class="card-wireframe p-3 bg-white text-center">
+              <span class="text-[10.5px] font-mono text-neutral-400 uppercase">Hiệu lực</span>
+              <div class="text-xl font-bold text-emerald-600 mt-0.5">1</div>
+            </div>
+            <div class="card-wireframe p-3 bg-white text-center">
+              <span class="text-[10.5px] font-mono text-neutral-400 uppercase">Kích hoạt</span>
+              <div class="text-xl font-bold text-black mt-0.5">1</div>
+            </div>
+            <div class="card-wireframe p-3 bg-white text-center">
+              <span class="text-[10.5px] font-mono text-neutral-400 uppercase">Thu hồi</span>
+              <div class="text-xl font-bold text-neutral-400 mt-0.5">0</div>
+            </div>
+          </div>
+
+          <!-- Main Table Card -->
+          <div class="card-wireframe p-5 bg-white space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <h3 class="text-sm font-semibold text-black">2. Lịch sử license đã cấp</h3>
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Làm mới danh sách</button>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs">
+                <thead>
+                  <tr class="border-b border-zinc-200 text-neutral-400 font-mono text-[11px] uppercase">
+                    <th class="pb-2 font-medium">Khách hàng</th>
+                    <th class="pb-2 font-medium">Gói</th>
+                    <th class="pb-2 font-medium">Ngày cấp</th>
+                    <th class="pb-2 font-medium">Kích hoạt</th>
+                    <th class="pb-2 font-medium text-right">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-zinc-100">
+                  <tr class="hover:bg-neutral-50/50">
+                    <td class="py-3">
+                      <div class="font-semibold text-black">khachhang@gmail.com</div>
+                      <div class="text-[11px] text-neutral-400">Nguyễn Văn A · #ORD-2026-08</div>
+                    </td>
+                    <td class="py-3">
+                      <span class="px-2 py-0.5 rounded-md bg-neutral-100 font-mono text-[10.5px] text-neutral-700 border border-zinc-200">Starter</span>
+                    </td>
+                    <td class="py-3 text-neutral-500 font-mono text-[11px]">08/11/2026</td>
+                    <td class="py-3">
+                      <span class="inline-flex items-center gap-1 text-[11px] text-emerald-600 font-medium">
+                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Đã kích hoạt
+                      </span>
+                    </td>
+                    <td class="py-3 text-right">
+                      <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-black hover:bg-neutral-50 shadow-2xs mr-1">Tải file</button>
+                      <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-rose-600 hover:bg-rose-50">Thu hồi</button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: FULL LEDGER & MODAL DIALOG (Notion / Raycast style)             -->
+    <!-- ========================================================================= -->
+    <div id="option-c" class="space-y-6 hidden">
+      
+      <!-- Top Title + Action Bar -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div>
+          <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Quản trị hệ thống</div>
+          <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Quản lý License</h1>
+          <p class="text-xs text-neutral-500 mt-1">Bảng dữ liệu tập trung toàn màn hình. Mở popup khi cần cấp mã mới.</p>
+        </div>
+        <button onclick="document.getElementById('modal-c').classList.remove('hidden')" class="h-9 px-4 text-xs font-medium rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs inline-flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+          <span>+ Cấp license khách hàng</span>
+        </button>
+      </div>
+
+      <!-- 4 Monochrome KPI Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div class="card-wireframe p-4 bg-white">
+          <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Tổng license</span>
+          <div class="text-2xl font-bold text-black mt-1 font-heading">1</div>
+          <span class="text-[11px] text-neutral-400 mt-0.5 block">Cấp qua web</span>
+        </div>
+        <div class="card-wireframe p-4 bg-white">
+          <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Đang hiệu lực</span>
+          <div class="text-2xl font-bold text-black mt-1 font-heading">1</div>
+          <span class="text-[11px] text-neutral-500 mt-0.5 block">100% hoạt động</span>
+        </div>
+        <div class="card-wireframe p-4 bg-white">
+          <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Tài khoản kích hoạt</span>
+          <div class="text-2xl font-bold text-black mt-1 font-heading">1</div>
+          <span class="text-[11px] text-neutral-500 mt-0.5 block">Khách hàng</span>
+        </div>
+        <div class="card-wireframe p-4 bg-white">
+          <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Đã thu hồi</span>
+          <div class="text-2xl font-bold text-black mt-1 font-heading">0</div>
+          <span class="text-[11px] text-neutral-400 mt-0.5 block">Chặn truy cập</span>
+        </div>
+      </div>
+
+      <!-- Full-Width Data Ledger Card -->
+      <div class="card-wireframe p-5 bg-white space-y-4">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200">
+          <div class="relative w-full sm:w-80">
+            <input type="text" placeholder="Tìm theo email, tên khách hoặc mã đơn..." class="w-full h-9 pl-9 pr-3 text-xs bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-black">
+            <svg class="w-3.5 h-3.5 absolute left-3 top-3 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <select class="h-9 px-3 rounded-xl border border-zinc-200 text-xs bg-white">
+              <option>Tất cả trạng thái</option>
+              <option>Hiệu lực</option>
+              <option>Đã thu hồi</option>
+            </select>
+            <button class="h-9 px-3 rounded-xl border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Làm mới</button>
+          </div>
+        </div>
+
+        <!-- Full Table -->
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead>
+              <tr class="border-b border-zinc-200 text-neutral-400 font-mono text-[11px] uppercase">
+                <th class="pb-2.5 font-medium">Khách hàng</th>
+                <th class="pb-2.5 font-medium">Gói License</th>
+                <th class="pb-2.5 font-medium">Ngày cấp</th>
+                <th class="pb-2.5 font-medium">Trạng thái kích hoạt</th>
+                <th class="pb-2.5 font-medium text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-100">
+              <tr class="hover:bg-neutral-50/50">
+                <td class="py-3.5">
+                  <div class="font-semibold text-black">khachhang@gmail.com</div>
+                  <div class="text-[11px] text-neutral-400 font-mono">Nguyễn Văn A · #ORD-2026-08</div>
+                </td>
+                <td class="py-3.5">
+                  <span class="px-2 py-0.5 rounded-md bg-neutral-100 font-mono text-[11px] text-neutral-800 border border-zinc-200 font-medium">Starter Edition</span>
+                </td>
+                <td class="py-3.5 text-neutral-500 font-mono text-[11.5px]">08/11/2026 19:45</td>
+                <td class="py-3.5">
+                  <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-[11px] text-emerald-700 font-medium border border-emerald-200/60">
+                    <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Đã kích hoạt thiết bị
+                  </span>
+                </td>
+                <td class="py-3.5 text-right space-x-1.5">
+                  <button class="h-8 px-3 rounded-xl border border-zinc-200 text-xs font-medium text-black hover:bg-neutral-50 shadow-2xs">Tải lại license</button>
+                  <button class="h-8 px-2.5 rounded-xl border border-zinc-200 text-xs font-medium text-rose-600 hover:bg-rose-50">Thu hồi</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Demo Modal Dialog for Option C -->
+      <div id="modal-c" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 hidden">
+        <div class="card-wireframe w-full max-w-lg p-6 bg-white space-y-4 shadow-xl">
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+            <div>
+              <h3 class="text-base font-semibold text-black">Cấp license mới cho khách hàng</h3>
+              <p class="text-xs text-neutral-500">Mã hóa file .scweblicense độc quyền.</p>
+            </div>
+            <button onclick="document.getElementById('modal-c').classList.add('hidden')" class="text-neutral-400 hover:text-black text-sm">&times;</button>
+          </div>
+
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Email khách</label>
+              <input type="email" placeholder="customer@example.com" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+            </div>
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Tên khách / Mã đơn</label>
+              <input type="text" placeholder="John Doe / #ORD-2026" class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+            </div>
+            <div>
+              <label class="block font-medium text-neutral-600 mb-1">Gói</label>
+              <select class="w-full h-9 px-3 rounded-xl border border-zinc-200 bg-white">
+                <option>Starter</option>
+                <option>Professional</option>
+                <option>Business</option>
+              </select>
+            </div>
+            <div class="p-3 rounded-xl bg-neutral-50 border border-zinc-200 flex items-start gap-2">
+              <input type="checkbox" id="check-c" class="mt-0.5 rounded border-zinc-300">
+              <label for="check-c" class="text-[11px] text-neutral-600 leading-relaxed">Tôi đã xác minh chuyển khoản thành công từ khách hàng này.</label>
+            </div>
+          </div>
+
+          <div class="flex justify-end gap-2 pt-2 border-t border-zinc-200">
+            <button onclick="document.getElementById('modal-c').classList.add('hidden')" class="h-9 px-3.5 rounded-xl border border-zinc-200 text-xs font-medium text-neutral-600 hover:bg-neutral-50">Hủy</button>
+            <button onclick="document.getElementById('modal-c').classList.add('hidden')" class="h-9 px-4 rounded-xl bg-black text-white text-xs font-medium hover:bg-neutral-800 shadow-xs">Tạo & Tải license</button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function switchOption(opt) {
+      document.getElementById('option-a').classList.add('hidden');
+      document.getElementById('option-b').classList.add('hidden');
+      document.getElementById('option-c').classList.add('hidden');
+
+      document.getElementById('btn-opt-a').classList.remove('active');
+      document.getElementById('btn-opt-b').classList.remove('active');
+      document.getElementById('btn-opt-c').classList.remove('active');
+
+      if (opt === 'a') {
+        document.getElementById('option-a').classList.remove('hidden');
+        document.getElementById('btn-opt-a').classList.add('active');
+      } else if (opt === 'b') {
+        document.getElementById('option-b').classList.remove('hidden');
+        document.getElementById('btn-opt-b').classList.add('active');
+      } else if (opt === 'c') {
+        document.getElementById('option-c').classList.remove('hidden');
+        document.getElementById('btn-opt-c').classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

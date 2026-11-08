@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Layout Alternatives for Autopilot Sources - Socialchoice</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+      :root {
+        --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--app-font);
+        background: #fbfbfa;
+        color: #181818;
+      }
+      .tab-active {
+        background: #181818 !important;
+        color: #ffffff !important;
+      }
+    </style>
+  </head>
+  <body class="p-4 sm:p-6 lg:p-8 max-w-[1560px] mx-auto min-h-screen">
+    <!-- Switcher -->
+    <header class="mb-6 p-5 rounded-3xl bg-white border border-neutral-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-bold uppercase">Layout Redesign</span>
+          <span class="text-xs text-neutral-400">·</span>
+          <span class="text-xs font-semibold text-neutral-700">Khu vực: Nguồn lưu trữ liên kết & Header Autopilot</span>
+        </div>
+        <h1 class="text-lg font-bold text-neutral-900 mt-1">3 Phương án Layout mới (Gọn gàng & Không bị thừa khoảng trống)</h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 bg-neutral-100 p-1.5 rounded-2xl border border-neutral-200">
+        <button onclick="setTab(1)" id="btn-1" class="tab-btn tab-active px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer">
+          Layout 1: Studio Bar & Source Pills (Khuyên dùng)
+        </button>
+        <button onclick="setTab(2)" id="btn-2" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-neutral-600 transition-all cursor-pointer">
+          Layout 2: Filter Tabs trực tiếp (Gộp vào bộ lọc)
+        </button>
+        <button onclick="setTab(3)" id="btn-3" class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-neutral-600 transition-all cursor-pointer">
+          Layout 3: Compact List & Drawer thu gọn
+        </button>
+      </div>
+    </header>
+
+    <main class="space-y-6">
+      <!-- ================= LAYOUT 1 ================= -->
+      <section id="layout-1" class="space-y-5">
+        <div class="p-3.5 rounded-xl bg-neutral-900 text-white text-xs flex items-center justify-between">
+          <span class="font-semibold">💡 Layout 1: Tích hợp toàn bộ Header + Brand + 3 Nguồn Drive vào 1 Cụm Studio duy nhất, nguồn hiển thị dạng thẻ mỏng (Pills) nằm ngang đều đẹp, không bị lẻ bóng.</span>
+          <span class="text-neutral-400 text-[11px]">Tiết kiệm 65% chiều cao màn hình</span>
+        </div>
+
+        <!-- Integrated Studio Card -->
+        <div class="p-5 bg-white border border-neutral-200/90 rounded-3xl shadow-2xs space-y-4">
+          <!-- Top Row: Title, Brand & Main Actions -->
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-neutral-100">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <div class="flex items-center gap-2">
+                  <h2 class="text-sm font-bold text-neutral-900">Thư viện tài sản Autopilot</h2>
+                  <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    Đã kết nối
+                  </span>
+                </div>
+                <p class="text-[11px] text-neutral-500 mt-0.5">
+                  Tệp gốc giữ tại Google Drive. Đồng bộ tự động & gợi ý bài viết AI khi bạn duyệt.
+                </p>
+              </div>
+            </div>
+
+            <!-- Header Controls -->
+            <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-neutral-200 bg-neutral-50">
+                <i data-lucide="tag" class="w-3.5 h-3.5 text-neutral-400"></i>
+                <span class="text-xs text-neutral-500">Thương hiệu:</span>
+                <span class="text-xs font-bold text-neutral-900">Test</span>
+              </div>
+
+              <!-- Queue Pill (Gọn nhẹ trong header) -->
+              <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-100 border border-neutral-200 text-xs font-mono text-neutral-700">
+                <i data-lucide="list-ordered" class="w-3.5 h-3.5 text-neutral-500"></i>
+                <span>5 tác vụ</span>
+                <button class="ml-1 text-[10px] font-bold bg-neutral-900 text-white px-1.5 py-0.5 rounded cursor-pointer hover:bg-neutral-800">
+                  Chạy
+                </button>
+              </div>
+
+              <button class="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer">
+                <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+                <span>+ Thêm nguồn Drive</span>
+              </button>
+
+              <button class="h-9 w-9 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 flex items-center justify-center text-neutral-700 cursor-pointer shadow-2xs">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Bottom Row: Source Cards Row (Gọn gàng, đều tăm tắp) -->
+          <div>
+            <div class="flex items-center justify-between mb-2.5">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-neutral-400 font-mono">
+                Các thư mục Google Drive đang liên kết (3)
+              </span>
+              <span class="text-[11px] text-neutral-400 font-mono">Quét tự động</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <!-- Source 1 -->
+              <div class="p-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/50 hover:bg-white hover:border-neutral-300 transition-all flex items-center justify-between gap-3 shadow-2xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                  </span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-neutral-900 truncate">đ</h4>
+                    <p class="text-[10px] text-neutral-400 font-mono truncate">01 thg 11 · Active</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button class="h-7 px-2 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-[11px] font-semibold text-neutral-700 flex items-center gap-1 shadow-2xs cursor-pointer">
+                    <i data-lucide="rotate-cw" class="w-2.5 h-2.5"></i> Quét
+                  </button>
+                  <button class="h-7 w-7 rounded-lg hover:bg-rose-50 text-neutral-400 hover:text-rose-600 flex items-center justify-center cursor-pointer">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Source 2 -->
+              <div class="p-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/50 hover:bg-white hover:border-neutral-300 transition-all flex items-center justify-between gap-3 shadow-2xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                  </span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-neutral-900 truncate">dddd</h4>
+                    <p class="text-[10px] text-neutral-400 font-mono truncate">01 thg 11 · Active</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button class="h-7 px-2 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-[11px] font-semibold text-neutral-700 flex items-center gap-1 shadow-2xs cursor-pointer">
+                    <i data-lucide="rotate-cw" class="w-2.5 h-2.5"></i> Quét
+                  </button>
+                  <button class="h-7 w-7 rounded-lg hover:bg-rose-50 text-neutral-400 hover:text-rose-600 flex items-center justify-center cursor-pointer">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Source 3 -->
+              <div class="p-3 rounded-2xl border border-neutral-200/80 bg-neutral-50/50 hover:bg-white hover:border-neutral-300 transition-all flex items-center justify-between gap-3 shadow-2xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                  <span class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
+                    <i data-lucide="hard-drive" class="w-4 h-4"></i>
+                  </span>
+                  <div class="min-w-0">
+                    <h4 class="text-xs font-bold text-neutral-900 truncate">ttt</h4>
+                    <p class="text-[10px] text-neutral-400 font-mono truncate">01 thg 11 · Active</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1 shrink-0">
+                  <button class="h-7 px-2 rounded-lg bg-white border border-neutral-200 hover:bg-neutral-50 text-[11px] font-semibold text-neutral-700 flex items-center gap-1 shadow-2xs cursor-pointer">
+                    <i data-lucide="rotate-cw" class="w-2.5 h-2.5"></i> Quét
+                  </button>
+                  <button class="h-7 w-7 rounded-lg hover:bg-rose-50 text-neutral-400 hover:text-rose-600 flex items-center justify-center cursor-pointer">
+                    <i data-lucide="x" class="w-3 h-3"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Source 4: Add New Card (Vừa khít 4 cột trên 1 hàng!) -->
+              <div class="p-3 rounded-2xl border border-dashed border-neutral-300 hover:border-neutral-900 bg-white hover:bg-neutral-50 transition-all flex items-center justify-center gap-2 text-center cursor-pointer">
+                <i data-lucide="plus" class="w-4 h-4 text-neutral-700"></i>
+                <span class="text-xs font-bold text-neutral-800">+ Thêm thư mục mới</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex items-center justify-between">
+          <div class="relative w-80">
+            <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            <input type="text" placeholder="Tìm tệp trong các thư mục Drive..." class="h-9 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 pl-9 pr-3 text-xs" />
+          </div>
+          <span class="text-xs font-mono text-neutral-500">62 tệp đồng bộ</span>
+        </div>
+      </section>
+
+      <!-- ================= LAYOUT 2 ================= -->
+      <section id="layout-2" class="hidden space-y-5">
+        <div class="p-3.5 rounded-xl bg-neutral-900 text-white text-xs flex items-center justify-between">
+          <span class="font-semibold">💡 Layout 2: Gộp nguồn thành Thanh Lọc Tab (Filter Pills). Người dùng có thể bấm vào nguồn nào để lọc xem riêng tệp của nguồn đó!</span>
+          <span class="text-neutral-400 text-[11px]">Trải nghiệm như Google Drive Folders</span>
+        </div>
+
+        <!-- Header Bar -->
+        <div class="p-4 bg-white border border-neutral-200/90 rounded-2xl shadow-2xs flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center">
+              <i data-lucide="sparkles" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <h2 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Thư viện tài sản Autopilot</h2>
+              <p class="text-[11px] text-neutral-500">Đồng bộ từ 3 thư mục Google Drive đang hoạt động.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button class="h-8 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-semibold text-neutral-700 flex items-center gap-1.5 shadow-2xs">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Đồng bộ tất cả
+            </button>
+            <button class="h-8 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5">
+              <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> + Thêm nguồn Drive
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Bar with Source Tabs Directly Integrated -->
+        <div class="p-3 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <!-- Folder Pills -->
+          <div class="flex items-center gap-1.5 overflow-x-auto">
+            <span class="text-xs font-bold text-neutral-400 uppercase font-mono mr-1">Nguồn:</span>
+            <button class="h-8 px-3 rounded-xl bg-neutral-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-2xs">
+              <span>Tất cả</span>
+              <span class="bg-neutral-800 text-[10px] font-mono px-1 rounded">62</span>
+            </button>
+            <button class="h-8 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-medium flex items-center gap-1.5">
+              <i data-lucide="folder" class="w-3 h-3 text-neutral-400"></i>
+              <span>đ</span>
+              <span class="text-[10px] font-mono text-neutral-400">24</span>
+            </button>
+            <button class="h-8 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-medium flex items-center gap-1.5">
+              <i data-lucide="folder" class="w-3 h-3 text-neutral-400"></i>
+              <span>dddd</span>
+              <span class="text-[10px] font-mono text-neutral-400">18</span>
+            </button>
+            <button class="h-8 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-medium flex items-center gap-1.5">
+              <i data-lucide="folder" class="w-3 h-3 text-neutral-400"></i>
+              <span>ttt</span>
+              <span class="text-[10px] font-mono text-neutral-400">20</span>
+            </button>
+            <button class="h-8 px-2.5 rounded-xl border border-dashed border-neutral-300 hover:border-neutral-900 text-neutral-600 text-xs font-medium flex items-center gap-1">
+              <i data-lucide="plus" class="w-3 h-3"></i>
+            </button>
+          </div>
+
+          <!-- Search -->
+          <div class="relative w-64">
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+            <input type="text" placeholder="Tìm kiếm tệp..." class="h-8 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 pl-8 pr-2.5 text-xs" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= LAYOUT 3 ================= -->
+      <section id="layout-3" class="hidden space-y-5">
+        <div class="p-3.5 rounded-xl bg-neutral-900 text-white text-xs flex items-center justify-between">
+          <span class="font-semibold">💡 Layout 3: Dạng bảng thu gọn (Collapsible Accordion / Compact Table), có nút bấm mở rộng / thu gọn danh sách nguồn theo ý muốn.</span>
+          <span class="text-neutral-400 text-[11px]">Dành cho chuyên gia cần quản lý nhiều nguồn</span>
+        </div>
+
+        <!-- Collapsible Table Panel -->
+        <div class="bg-white border border-neutral-200/90 rounded-2xl shadow-2xs overflow-hidden">
+          <div class="p-4 border-b border-neutral-100 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <i data-lucide="hard-drive" class="w-4 h-4 text-neutral-700"></i>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-900">Nguồn lưu trữ liên kết (3)</h3>
+              <span class="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">Hoạt động bình thường</span>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <button class="h-8 px-3 rounded-xl bg-neutral-900 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs">
+                <i data-lucide="plus" class="w-3 h-3"></i> Thêm nguồn mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Compact Table Rows -->
+          <div class="divide-y divide-neutral-100 text-xs">
+            <div class="p-3.5 flex items-center justify-between hover:bg-neutral-50/70 transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="folder" class="w-3.5 h-3.5"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-neutral-900">đ</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono">Google Drive (Public) · ID: #src_01</p>
+                </div>
+              </div>
+              <div class="text-[11px] font-mono text-neutral-500">Lần cuối: 01 thg 11, 2026</div>
+              <div class="flex items-center gap-2">
+                <button class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-[11px] font-medium flex items-center gap-1">
+                  <i data-lucide="rotate-cw" class="w-3 h-3"></i> Quét lại
+                </button>
+                <button class="h-7 px-2 rounded-lg text-dangerFg hover:bg-rose-50 text-xs">Ngắt kết nối</button>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex items-center justify-between hover:bg-neutral-50/70 transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="folder" class="w-3.5 h-3.5"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-neutral-900">dddd</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono">Google Drive (Public) · ID: #src_02</p>
+                </div>
+              </div>
+              <div class="text-[11px] font-mono text-neutral-500">Lần cuối: 01 thg 11, 2026</div>
+              <div class="flex items-center gap-2">
+                <button class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-[11px] font-medium flex items-center gap-1">
+                  <i data-lucide="rotate-cw" class="w-3 h-3"></i> Quét lại
+                </button>
+                <button class="h-7 px-2 rounded-lg text-dangerFg hover:bg-rose-50 text-xs">Ngắt kết nối</button>
+              </div>
+            </div>
+
+            <div class="p-3.5 flex items-center justify-between hover:bg-neutral-50/70 transition-colors">
+              <div class="flex items-center gap-3">
+                <span class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="folder" class="w-3.5 h-3.5"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-neutral-900">ttt</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono">Google Drive (Public) · ID: #src_03</p>
+                </div>
+              </div>
+              <div class="text-[11px] font-mono text-neutral-500">Lần cuối: 01 thg 11, 2026</div>
+              <div class="flex items-center gap-2">
+                <button class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-[11px] font-medium flex items-center gap-1">
+                  <i data-lucide="rotate-cw" class="w-3 h-3"></i> Quét lại
+                </button>
+                <button class="h-7 px-2 rounded-lg text-dangerFg hover:bg-rose-50 text-xs">Ngắt kết nối</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      lucide.createIcons();
+      function setTab(num) {
+        [1, 2, 3].forEach(n => {
+          const sec = document.getElementById(`layout-${n}`);
+          const btn = document.getElementById(`btn-${n}`);
+          if (n === num) {
+            sec.classList.remove('hidden');
+            btn.classList.add('tab-active');
+            btn.classList.remove('text-neutral-600');
+          } else {
+            sec.classList.add('hidden');
+            btn.classList.remove('tab-active');
+            btn.classList.add('text-neutral-600');
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

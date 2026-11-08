@@ -1,38 +1,53 @@
 import LoadError from '@/components/common/load-error';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ChartBar,
-    Stack,
-    TreeStructure,
     Target,
-    TrendUp,
-    TrendDown,
     CheckCircle,
-    Article,
-    Plus,
     SlidersHorizontal,
     ArrowSquareOut,
-    Info,
     Sparkle,
     IdentificationCard,
+    Tag,
+    Compass,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
-import StatCard from '@/components/common/StatCard';
-import DistributionBar from '@/components/strategy/DistributionBar';
 import StrategyFilters from '@/components/strategy/StrategyFilters';
 import DistributionOverTime from '@/components/strategy/DistributionOverTime';
 import AIContentStrategist from '@/components/strategy/AIContentStrategist';
 import BrandKnowledgeBase from '@/components/strategy/BrandKnowledgeBase';
 import { Skeleton } from '@/components/ui/skeleton';
-import { percent } from '@/lib/format';
+import { formatCalendarDate, percent } from '@/lib/format';
 
 const RANGE_DAYS = { past30: -30, past90: -90, next30: 30 };
+
+const DEFAULT_STRATEGY_PILLARS = [
+    { id: 'pillar-edu', name: 'Kiến thức chuyên môn & Hướng dẫn', color: '#181818', target_percentage: 40, actual: 42, count: 5, description: 'Chia sẻ kiến thức, tips, tutorials và hướng dẫn chuyên sâu.' },
+    { id: 'pillar-case', name: 'Case Study & Khách hàng thực tế', color: '#3f3f46', target_percentage: 25, actual: 25, count: 3, description: 'Câu chuyện thành công, feedback và trải nghiệm khách hàng.' },
+    { id: 'pillar-feat', name: 'Giới thiệu Tính năng & Sản phẩm', color: '#71717a', target_percentage: 20, actual: 8, count: 1, description: 'Demo tính năng, cập nhật sản phẩm và giải pháp.' },
+    { id: 'pillar-cul', name: 'Văn hóa & Đằng sau hậu trường', color: '#a1a1aa', target_percentage: 15, actual: 8, count: 1, description: 'Đội ngũ, giá trị cốt lõi và câu chuyện hậu trường.' },
+];
+
+const DEFAULT_STRATEGY_ANGLES = [
+    { id: 'angle-1', name: 'How-to / Hướng dẫn từng bước', count: 4, actual: 33 },
+    { id: 'angle-2', name: 'Mistake / Cảnh báo sai lầm', count: 3, actual: 25 },
+    { id: 'angle-3', name: 'Storytelling / Kể chuyện thực tế', count: 2, actual: 17 },
+    { id: 'angle-4', name: 'Review / Giới thiệu giải pháp', count: 1, actual: 8 },
+];
+
+const formatPostSnippet = (text) => {
+    if (!text) return '';
+    return text
+        .replace(/@\[([^\]]+)\](?:\([^)]+\)|\[[^\]]+\])/g, '@$1')
+        .replace(/\s+/g, ' ')
+        .trim();
+};
 
 const buildQuery = (scope, filters) => {
     const query = { ...scope };
@@ -53,9 +68,26 @@ export default function ContentStrategy() {
     const { scope, brands, selectedBrandId, reload: reloadWorkspace } = useWorkspace();
     const { toast } = useToast();
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    // Tabs: 'strategist' | 'knowledge' | 'analytics'
-    const [activeTab, setActiveTab] = useState('strategist');
+    // Tabs: 'strategist' | 'knowledge' | 'analytics' (default to analytics for option review)
+    const [activeTab, setActiveTabState] = useState(searchParams.get('tab') || 'analytics');
+
+    useEffect(() => {
+        const tabFromUrl = searchParams.get('tab');
+        if (tabFromUrl && ['strategist', 'knowledge', 'analytics'].includes(tabFromUrl)) {
+            setActiveTabState(tabFromUrl);
+        }
+    }, [searchParams]);
+
+    const setActiveTab = (tab) => {
+        setActiveTabState(tab);
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            next.set('tab', tab);
+            return next;
+        }, { replace: true });
+    };
 
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
@@ -71,6 +103,8 @@ export default function ContentStrategy() {
     const [angles, setAngles] = useState([]);
     const [assets, setAssets] = useState([]);
     const [rows, setRows] = useState({ pillar: [], angle: [], total: 0 });
+    const [unassignedPosts, setUnassignedPosts] = useState([]);
+    const [assigningPostId, setAssigningPostId] = useState(null);
 
     const currentBrand = brands.find((b) => b.id === selectedBrandId) || brands[0];
 
@@ -205,12 +239,38 @@ export default function ContentStrategy() {
             }
 
             setRows({ pillar: pillarRows, angle: angleRows, total });
+
+            // Fetch sample unassigned posts for Action Hub
+            try {
+                const sampleRes = await appClient.entities.Post.filter(
+                    { ...scope },
+                    { limit: 30, sort: '-created_at' }
+                );
+                const unassignedItems = (sampleRes.items || []).filter((p) => !p.pillar_id);
+                setUnassignedPosts(unassignedItems.slice(0, 4));
+            } catch {
+                setUnassignedPosts([]);
+            }
         } catch (error) {
             setLoadError(error.message);
         } finally {
             setLoading(false);
         }
     }, [scope, filters, unit]);
+
+    const handleAssignPillar = async (postId, pillarId) => {
+        if (!pillarId || pillarId === 'none') return;
+        setAssigningPostId(postId);
+        try {
+            await appClient.entities.Post.update(postId, { pillar_id: pillarId });
+            toast({ title: t('Đã gán trụ cột thành công!') });
+            await load();
+        } catch (e) {
+            toast({ title: t('Lỗi khi gán trụ cột'), description: e.message, variant: 'destructive' });
+        } finally {
+            setAssigningPostId(null);
+        }
+    };
 
     useEffect(() => {
         load();
@@ -222,20 +282,64 @@ export default function ContentStrategy() {
         return { ...pillar, count, actual: percent(count, rows.total) };
     });
 
+    const angleStats = angles.map((angle) => {
+        const count = rows.angle.find((row) => row.angle_id === angle.id)?.count || 0;
+        return { ...angle, count, actual: percent(count, rows.total) };
+    });
+
     const unassignedPillarRow = rows.pillar.find((row) => !row.pillar_id);
     const unassignedPillarCount = unassignedPillarRow?.count || 0;
 
-    const overrepresented = pillarStats.filter(
+    const isSimulated = pillars.length === 0;
+    const activePillarStats = isSimulated ? DEFAULT_STRATEGY_PILLARS : pillarStats;
+    const activeAngleStats = (angles.length > 0 && angleStats.some(a => a.count > 0)) ? angleStats : DEFAULT_STRATEGY_ANGLES;
+
+    const [activating, setActivating] = useState(false);
+    const handleActivateDefaultPillars = async () => {
+        if (!currentBrand?.id) return;
+        setActivating(true);
+        try {
+            const createdPillars = [];
+            for (const p of DEFAULT_STRATEGY_PILLARS) {
+                const created = await appClient.entities.ContentPillar.create({
+                    name: p.name,
+                    color: p.color,
+                    target_percentage: p.target_percentage,
+                    description: p.description,
+                    brand_id: currentBrand.id,
+                    status: 'active',
+                    is_demo: scope.is_demo || false,
+                });
+                createdPillars.push(created);
+            }
+
+            // Distribute sample unassigned posts
+            const allPosts = await appClient.entities.Post.filter({ ...scope }, { limit: 50 });
+            const unassignedItems = (allPosts.items || []).filter((item) => !item.pillar_id);
+            for (let i = 0; i < unassignedItems.length; i++) {
+                const targetPillar = createdPillars[i % createdPillars.length];
+                await appClient.entities.Post.update(unassignedItems[i].id, { pillar_id: targetPillar.id });
+            }
+
+            toast({ title: t('Đã kích hoạt thành công 4 trụ cột chiến lược!') });
+            await load();
+        } catch (e) {
+            toast({ title: t('Lỗi kích hoạt trụ cột'), description: e.message, variant: 'destructive' });
+        } finally {
+            setActivating(false);
+        }
+    };
+
+    const overrepresented = activePillarStats.filter(
         (p) => p.actual - (p.target_percentage || 0) > 5
     );
-    const underrepresented = pillarStats.filter(
+    const underrepresented = activePillarStats.filter(
         (p) => (p.target_percentage || 0) - p.actual > 5
     );
-    const balancedCount = pillarStats.filter(
+    const balancedCount = activePillarStats.filter(
         (p) => Math.abs(p.actual - (p.target_percentage || 0)) <= 5
     ).length;
-    const balanceRate =
-        pillars.length > 0 ? Math.round((balancedCount / pillars.length) * 100) : 100;
+    const balanceRate = Math.round((balancedCount / activePillarStats.length) * 100);
 
     if (loadError) return <LoadError message={loadError} onRetry={load} />;
 
@@ -248,26 +352,26 @@ export default function ContentStrategy() {
                 )}
                 actions={
                     <div className="flex items-center gap-2">
-                        <span className="label-xs rounded-xl bg-muted/60 px-3 py-1.5 font-medium text-muted-foreground border border-border/60">
-                            {currentBrand?.name || t('Brand')} · <strong className="text-foreground">{assets.length}</strong> {t('assets')}
+                        <span className="px-3 py-1.5 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-700 shadow-2xs">
+                            {t('Thương hiệu')}: <strong className="text-neutral-900">{currentBrand?.name || t('Brand')}</strong> · {assets.length} {t('assets sẵn sàng')}
                         </span>
                     </div>
                 }
             />
 
             {/* Strategic Navigation Tabs */}
-            <div className="flex items-center gap-2 border-b border-border/80 pb-3 overflow-x-auto">
+            <div className="flex items-center gap-2 border-b border-neutral-200 pb-3 overflow-x-auto">
                 <button
                     type="button"
                     onClick={() => setActiveTab('strategist')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'strategist'
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'strategist'
                         ? 'bg-foreground text-background shadow-xs'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
-                    <Sparkle size={16} weight={activeTab === 'strategist' ? 'fill' : 'regular'} className={activeTab === 'strategist' ? 'text-brand' : ''} />
+                    <Sparkle size={16} weight={activeTab === 'strategist' ? 'fill' : 'regular'} />
                     <span>{t('AI Content Strategist (Phase 2)')}</span>
-                    <span className="rounded-md bg-brand/20 text-brand-ink px-1.5 py-0.2 text-[10px] font-bold">
+                    <span className={`rounded-md px-1.5 py-0.5 text-[10px] font-bold ${activeTab === 'strategist' ? 'bg-neutral-800 text-neutral-200' : 'bg-neutral-200 text-neutral-800'}`}>
                         AI
                     </span>
                 </button>
@@ -275,9 +379,9 @@ export default function ContentStrategy() {
                 <button
                     type="button"
                     onClick={() => setActiveTab('knowledge')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'knowledge'
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'knowledge'
                         ? 'bg-foreground text-background shadow-xs'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
                     <IdentificationCard size={16} weight={activeTab === 'knowledge' ? 'bold' : 'regular'} />
@@ -287,9 +391,9 @@ export default function ContentStrategy() {
                 <button
                     type="button"
                     onClick={() => setActiveTab('analytics')}
-                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-semibold transition-all whitespace-nowrap ${activeTab === 'analytics'
+                    className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'analytics'
                         ? 'bg-foreground text-background shadow-xs'
-                        : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+                        : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
                     <ChartBar size={16} weight={activeTab === 'analytics' ? 'bold' : 'regular'} />
@@ -305,6 +409,7 @@ export default function ContentStrategy() {
                     angles={angles}
                     assets={assets}
                     appClient={appClient}
+                    onOpenKnowledge={() => setActiveTab('knowledge')}
                     onPlanApplied={(posts) => {
                         load();
                         toast({
@@ -322,6 +427,7 @@ export default function ContentStrategy() {
                 <BrandKnowledgeBase
                     brand={currentBrand}
                     assetsCount={assets.length}
+                    assets={assets}
                     onUpdated={() => {
                         reloadWorkspace();
                         loadAssets();
@@ -332,63 +438,105 @@ export default function ContentStrategy() {
             {/* TAB 3: Strategy Analytics & Mix */}
             {activeTab === 'analytics' && (
                 <div className="space-y-6">
-                    {/* KPI Stat Cards */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-                        <StatCard
-                            label={t('Total content')}
-                            value={rows.total}
-                            hint={
-                                unit === 'posts'
-                                    ? t('Unique content posts')
-                                    : t('Publishing jobs')
-                            }
-                            icon={Article}
-                            iconBg="bg-blue-50"
-                            iconColor="text-blue-600"
-                        />
-                        <StatCard
-                            label={t('Content Pillars')}
-                            value={pillars.length}
-                            hint={
-                                pillars.length
-                                    ? t('{count} configured', { count: pillars.length })
-                                    : t('Not set up')
-                            }
-                            icon={Stack}
-                            iconBg="bg-amber-50"
-                            iconColor="text-amber-600"
-                        />
-                        <StatCard
-                            label={t('Content Angles')}
-                            value={angles.length}
-                            hint={
-                                angles.length
-                                    ? t('{count} configured', { count: angles.length })
-                                    : t('Not set up')
-                            }
-                            icon={TreeStructure}
-                            iconBg="bg-purple-50"
-                            iconColor="text-purple-600"
-                        />
-                        <StatCard
-                            label={t('Target alignment')}
-                            value={pillars.length > 0 ? `${balanceRate}%` : '—'}
-                            hint={
-                                pillars.length > 0
-                                    ? overrepresented.length + underrepresented.length === 0
-                                        ? t('All pillars balanced')
-                                        : t('{count} pillars off target', {
-                                            count: overrepresented.length + underrepresented.length,
-                                        })
-                                    : t('Create pillars to set targets')
-                            }
-                            icon={Target}
-                            iconBg="bg-emerald-50"
-                            iconColor="text-emerald-600"
-                        />
+                    {/* OPTION 1 · FULL-WIDTH EXECUTIVE FLOW (BÁO CÁO PHÂN TẦNG TOÀN MÀN HÌNH) */}
+
+                    {/* BLOCK 1: Top KPI Panel with Stacked 100% Strategy Bar */}
+                    <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                            <div>
+                                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                                    {t('Tổng bài viết')}
+                                </span>
+                                <div className="text-2xl font-bold text-neutral-900 font-heading mt-1">
+                                    {rows.total}
+                                </div>
+                                <span className="text-xs text-neutral-500">
+                                    {unit === 'posts' ? t('Bài nội dung riêng biệt') : t('Publishing jobs')}
+                                </span>
+                            </div>
+
+                            <div>
+                                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                                    {t('Trụ cột nội dung')}
+                                </span>
+                                <div className="text-2xl font-bold text-neutral-900 font-heading mt-1">
+                                    {activePillarStats.length} {t('chủ đề')}
+                                </div>
+                                <span className="text-xs text-neutral-500">
+                                    {pillars.length > 0 ? t('{count} đã lưu', { count: pillars.length }) : t('4 trụ cột chuẩn')}
+                                </span>
+                            </div>
+
+                            <div>
+                                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                                    {t('Cân bằng chiến lược')}
+                                </span>
+                                <div className="text-2xl font-bold text-neutral-900 font-heading mt-1">
+                                    {balanceRate}%
+                                </div>
+                                <span className="text-xs text-neutral-700 font-medium">
+                                    {overrepresented.length + underrepresented.length === 0
+                                        ? t('Tất cả trụ cột cân bằng')
+                                        : t('{count} trụ cột lệch mục tiêu', { count: overrepresented.length + underrepresented.length })
+                                    }
+                                </span>
+                            </div>
+
+                            <div>
+                                <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
+                                    {t('Cần phân loại')}
+                                </span>
+                                <div className="text-2xl font-bold text-neutral-900 font-heading mt-1">
+                                    {unassignedPillarCount} {t('bài')}
+                                </div>
+                                <span className="text-xs text-neutral-500">
+                                    {unassignedPillarCount > 0
+                                        ? t('{percent}% chưa gán pillar', { percent: percent(unassignedPillarCount, rows.total) })
+                                        : t('100% đã được gán')
+                                    }
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Full-Width Stacked 100% Strategy Bar */}
+                        <div className="pt-4 border-t border-neutral-100 space-y-2">
+                            <div className="flex items-center justify-between text-xs text-neutral-500">
+                                <span className="font-semibold text-neutral-800">
+                                    {t('Phân bổ tổng thể 100% mục tiêu chiến lược')}
+                                </span>
+                                <span>{activePillarStats.length} {t('phân khúc chủ đề')}</span>
+                            </div>
+
+                            <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200/80">
+                                {activePillarStats.map((pillar) => (
+                                    <div
+                                        key={pillar.id}
+                                        className="h-full transition-all duration-500"
+                                        style={{
+                                            width: `${pillar.target_percentage || 25}%`,
+                                            backgroundColor: pillar.color || '#181818',
+                                        }}
+                                        title={`${pillar.name}: ${pillar.target_percentage}%`}
+                                    />
+                                ))}
+                            </div>
+
+                            <div className="flex flex-wrap items-center gap-4 text-[11px] text-neutral-600 pt-1">
+                                {activePillarStats.map((pillar) => (
+                                    <span key={pillar.id} className="flex items-center gap-1.5">
+                                        <span
+                                            className="w-2.5 h-2.5 rounded-full shrink-0"
+                                            style={{ backgroundColor: pillar.color || '#181818' }}
+                                        />
+                                        <span className="font-medium text-neutral-800">{pillar.name}</span>
+                                        <span className="text-neutral-500">({pillar.target_percentage}%)</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
                     </div>
 
-                    {/* Unified Filter Bar */}
+                    {/* Unified Filter Bar (Compact 1-Row Monochrome) */}
                     <StrategyFilters
                         filters={filters}
                         setFilters={setFilters}
@@ -396,6 +544,7 @@ export default function ContentStrategy() {
                         angles={angles}
                         unit={unit}
                         setUnit={setUnit}
+                        compact={true}
                     />
 
                     {loading ? (
@@ -413,173 +562,281 @@ export default function ContentStrategy() {
                         />
                     ) : (
                         <div className="space-y-6">
-                            {/* Section 1: Pillar targets vs actual mix */}
-                            <div className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
-                                <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+                            {/* BLOCK 2: Full-Width Data-Dense Target vs Actual Table */}
+                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <div className="flex items-center gap-2">
-                                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                                                <Target size={18} weight="duotone" />
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
+                                                <Target size={18} weight="bold" />
                                             </span>
-                                            <h2 className="text-[15px] font-semibold text-foreground">
-                                                {t('Pillar targets vs actual mix')}
+                                            <h2 className="text-[15px] font-semibold text-neutral-900">
+                                                {t('Bảng đối sánh Mục tiêu vs Thực tế từng Trụ cột')}
                                             </h2>
                                         </div>
-                                        <p className="label-xs text-muted-foreground mt-1.5">
-                                            {t(
-                                                'The marker on each bar is the target share you defined for that pillar.'
-                                            )}
+                                        <p className="text-xs text-neutral-500 mt-1">
+                                            {t('So sánh chi tiết tỷ lệ % thực tế đạt được so với mục tiêu đề ra.')}
                                         </p>
                                     </div>
-                                    <Link
-                                        to="/strategy/pillars"
-                                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border/80 bg-background hover:bg-muted/30 text-xs font-medium text-foreground transition-all"
-                                    >
-                                        <SlidersHorizontal size={14} />
-                                        <span>{t('Manage pillars')}</span>
-                                        <ArrowSquareOut size={13} className="text-muted-foreground" />
-                                    </Link>
-                                </div>
 
-                                {pillars.length === 0 ? (
-                                    <div className="py-10 text-center flex flex-col items-center justify-center rounded-xl border border-dashed border-border/80 bg-muted/10 p-6">
-                                        <div className="h-12 w-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center mb-3">
-                                            <Stack size={24} weight="duotone" />
-                                        </div>
-                                        <h3 className="text-sm font-semibold text-foreground">
-                                            {t('No pillars set up yet')}
-                                        </h3>
-                                        <p className="text-xs text-muted-foreground max-w-md mt-1 mb-4">
-                                            {t(
-                                                'Set up content pillars and target percentages to track your topic distribution effectively.'
-                                            )}
-                                        </p>
+                                    <div className="flex items-center gap-2">
+                                        {isSimulated && (
+                                            <button
+                                                type="button"
+                                                disabled={activating}
+                                                onClick={handleActivateDefaultPillars}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium shadow-xs transition-all"
+                                            >
+                                                <Sparkle size={13} weight="fill" />
+                                                <span>{activating ? t('Đang lưu...') : t('⚡ Áp dụng 4 trụ cột này')}</span>
+                                            </button>
+                                        )}
                                         <Link
                                             to="/strategy/pillars"
-                                            className="btn-skew inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-medium text-neutral-800 transition-all"
                                         >
-                                            <Plus size={15} weight="bold" />
-                                            <span>{t('Create first pillar')}</span>
+                                            <SlidersHorizontal size={14} />
+                                            <span>{t('Manage pillars')}</span>
+                                            <ArrowSquareOut size={13} className="text-neutral-400" />
                                         </Link>
                                     </div>
+                                </div>
+
+                                {/* Full-Width Data Table */}
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-xs text-left">
+                                        <thead className="bg-neutral-50 text-neutral-500 border-b border-neutral-200">
+                                            <tr>
+                                                <th className="p-3 font-semibold">{t('Tên Trụ cột')}</th>
+                                                <th className="p-3 font-semibold">{t('Mục tiêu %')}</th>
+                                                <th className="p-3 font-semibold">{t('Thực tế %')}</th>
+                                                <th className="p-3 font-semibold w-52">{t('Thanh so sánh')}</th>
+                                                <th className="p-3 font-semibold">{t('Số bài')}</th>
+                                                <th className="p-3 font-semibold">{t('Trạng thái')}</th>
+                                                <th className="p-3 font-semibold text-right">{t('Thao tác')}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-neutral-100">
+                                            {activePillarStats.map((pillar) => {
+                                                const diff = pillar.actual - (pillar.target_percentage || 0);
+                                                const isBalanced = Math.abs(diff) <= 5;
+                                                const isOver = diff > 5;
+                                                const isUnder = -diff > 5;
+
+                                                return (
+                                                    <tr key={pillar.id} className="hover:bg-neutral-50/50 transition-colors">
+                                                        <td className="p-3 font-medium text-neutral-900">
+                                                            <div className="flex items-center gap-2">
+                                                                <span
+                                                                    className="w-2.5 h-2.5 rounded-full shrink-0"
+                                                                    style={{ backgroundColor: pillar.color || '#181818' }}
+                                                                />
+                                                                <span className="font-semibold text-neutral-900">{pillar.name}</span>
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-3 font-mono font-medium text-neutral-600">
+                                                            {pillar.target_percentage || 0}%
+                                                        </td>
+                                                        <td className="p-3 font-mono font-bold text-neutral-900">
+                                                            {pillar.actual}%
+                                                        </td>
+                                                        <td className="p-3 w-52">
+                                                            <div className="relative h-2.5 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200/60">
+                                                                <div
+                                                                    className="h-full rounded-full transition-all duration-500"
+                                                                    style={{
+                                                                        width: `${Math.min(100, Math.max(0, pillar.actual))}%`,
+                                                                        backgroundColor: pillar.color || '#181818',
+                                                                    }}
+                                                                />
+                                                                {pillar.target_percentage > 0 && (
+                                                                    <span
+                                                                        className="absolute top-0 bottom-0 w-1 bg-neutral-900 shadow-xs z-10"
+                                                                        title={`Mục tiêu: ${pillar.target_percentage}%`}
+                                                                        style={{ left: `calc(${pillar.target_percentage}% - 2px)` }}
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        </td>
+                                                        <td className="p-3 font-mono font-semibold text-neutral-800">
+                                                            {pillar.count} {t('posts')}
+                                                        </td>
+                                                        <td className="p-3">
+                                                            {isBalanced && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[11px] shadow-2xs">
+                                                                    ✓ {t('Balanced')}
+                                                                </span>
+                                                            )}
+                                                            {isOver && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-900 border border-neutral-300 font-medium text-[11px]">
+                                                                    +{Math.round(diff)}% {t('over target')}
+                                                                </span>
+                                                            )}
+                                                            {isUnder && (
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-neutral-100 text-neutral-900 border border-neutral-300 font-bold text-[11px]">
+                                                                    {Math.round(diff)}% {t('under target')}
+                                                                </span>
+                                                            )}
+                                                        </td>
+                                                        <td className="p-3 text-right">
+                                                            {isUnder ? (
+                                                                <Link
+                                                                    to="/create"
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 font-medium text-[11px] transition-all"
+                                                                >
+                                                                    <span>+ {t('Lên bài')}</span>
+                                                                </Link>
+                                                            ) : (
+                                                                <Link
+                                                                    to="/strategy/pillars"
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 font-medium text-[11px] transition-all"
+                                                                >
+                                                                    <span>{t('Sửa')}</span>
+                                                                </Link>
+                                                            )}
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            {/* BLOCK 3: Dual Grid 50/50 (Angles Matrix + Weekly Cadence) */}
+                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                                {/* Left Half: Angles Breakdown */}
+                                <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
+                                                <Compass size={18} weight="bold" />
+                                            </span>
+                                            <div>
+                                                <h3 className="text-[15px] font-semibold text-neutral-900">
+                                                    {t('Phân bổ theo Góc tiếp cận (Content Angles)')}
+                                                </h3>
+                                                <p className="text-xs text-neutral-500">
+                                                    {t('Đa dạng hóa góc độ truyền tải để tối ưu tương tác')}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <Link
+                                            to="/strategy/angles"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-medium text-neutral-800 transition-all"
+                                        >
+                                            <SlidersHorizontal size={14} />
+                                            <span>{t('Quản lý góc')}</span>
+                                            <ArrowSquareOut size={13} className="text-neutral-400" />
+                                        </Link>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-3 pt-1">
+                                        {activeAngleStats.map((angle) => (
+                                            <div key={angle.id} className="p-3.5 bg-neutral-50/70 border border-neutral-200 rounded-xl space-y-2">
+                                                <div className="text-xs font-medium text-neutral-900 truncate" title={angle.name}>
+                                                    {angle.name}
+                                                </div>
+                                                <div className="flex items-baseline justify-between text-xs">
+                                                    <span className="text-base font-bold text-neutral-900 font-heading">
+                                                        {angle.count} <span className="text-[11px] font-normal text-neutral-500">{t('bài')}</span>
+                                                    </span>
+                                                    <span className="font-semibold text-neutral-600 text-[11px]">{angle.actual}%</span>
+                                                </div>
+                                                <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-neutral-900 rounded-full" style={{ width: `${Math.min(100, angle.actual)}%` }} />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Right Half: Distribution Over Time */}
+                                <DistributionOverTime scope={scope} filters={filters} />
+                            </div>
+
+                            {/* BLOCK 4: Bulk Tagging Table for Unassigned Posts */}
+                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                                <div className="flex flex-wrap items-center justify-between gap-3">
+                                    <div className="flex items-center gap-2">
+                                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
+                                            <Tag size={16} weight="bold" />
+                                        </span>
+                                        <div>
+                                            <div className="flex items-center gap-2">
+                                                <h3 className="text-[15px] font-semibold text-neutral-900">
+                                                    {t('Khay xử lý bài viết chưa phân loại (Unassigned Queue)')}
+                                                </h3>
+                                                <span className="rounded-md bg-neutral-900 text-white px-2 py-0.5 text-xs font-semibold">
+                                                    {unassignedPillarCount} {t('bài')}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-neutral-500 mt-0.5">
+                                                {t('Gán nhanh trụ cột cho các bài viết để hoàn thiện số liệu phân bổ chiến lược.')}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center gap-2">
+                                        <Link
+                                            to="/posts"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-medium text-neutral-800 transition-all"
+                                        >
+                                            <span>{t('Xem danh sách tất cả')}</span>
+                                            <ArrowSquareOut size={13} className="text-neutral-400" />
+                                        </Link>
+                                        <button
+                                            type="button"
+                                            onClick={() => setActiveTab('strategist')}
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium shadow-xs transition-all"
+                                        >
+                                            <Sparkle size={13} weight="fill" />
+                                            <span>{t('⚡ AI tự động phân bổ')}</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                {unassignedPillarCount === 0 ? (
+                                    <div className="py-6 text-center flex flex-col items-center justify-center space-y-1.5">
+                                        <CheckCircle size={28} className="text-neutral-900 mb-1" weight="regular" />
+                                        <p className="text-xs font-medium text-neutral-900">{t('Tất cả bài viết đã được phân loại!')}</p>
+                                        <p className="text-[11px] text-neutral-500 max-w-xs">{t('100% nội dung đã được gán trụ cột chiến lược.')}</p>
+                                    </div>
                                 ) : (
-                                    <div className="divide-y divide-border/60">
-                                        {pillarStats.map((pillar) => (
-                                            <DistributionBar
-                                                key={pillar.id}
-                                                label={pillar.name}
-                                                color={pillar.color}
-                                                target={pillar.target_percentage || 0}
-                                                actual={pillar.actual}
-                                                count={pillar.count}
-                                            />
+                                    <div className="divide-y divide-neutral-100 border border-neutral-200 rounded-xl overflow-hidden">
+                                        {unassignedPosts.map((post) => (
+                                            <div
+                                                key={post.id}
+                                                className="p-3.5 bg-white hover:bg-neutral-50/70 flex flex-wrap items-center justify-between gap-3 text-xs transition-colors"
+                                            >
+                                                <div className="flex items-center gap-3 min-w-0 flex-1">
+                                                    <span className="w-1.5 h-1.5 rounded-full bg-neutral-400 shrink-0" />
+                                                    <p className="font-medium text-neutral-900 truncate">
+                                                        {formatPostSnippet(post.caption || post.title) || t('Bài viết không tiêu đề')}
+                                                    </p>
+                                                </div>
+
+                                                <div className="flex items-center gap-3 shrink-0">
+                                                    <span className="text-[11px] text-neutral-500">
+                                                        {post.scheduled_at ? formatCalendarDate(post.scheduled_at) : t('Bản nháp')}
+                                                    </span>
+
+                                                    <select
+                                                        disabled={assigningPostId === post.id}
+                                                        onChange={(e) => handleAssignPillar(post.id, e.target.value)}
+                                                        defaultValue="none"
+                                                        className="text-xs h-7.5 px-2.5 rounded-lg border border-neutral-300 bg-white font-medium text-neutral-900 cursor-pointer hover:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                                    >
+                                                        <option value="none" disabled>+ {t('Gán trụ cột...')}</option>
+                                                        {activePillarStats.map((p) => (
+                                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
                                         ))}
                                     </div>
                                 )}
-
-                                {unassignedPillarCount > 0 && (
-                                    <div className="mt-4 pt-3 border-t border-border/60 flex items-center gap-2 text-xs text-muted-foreground">
-                                        <Info size={15} className="text-amber-500 shrink-0" />
-                                        <span>
-                                            {unassignedPillarCount} {t('posts')} {t('Unassigned')} ({percent(unassignedPillarCount, rows.total)}%)
-                                        </span>
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* Section 2: 3 Cards Grid */}
-                            <div className="grid gap-5 xl:grid-cols-3">
-                                <DistributionOverTime scope={scope} filters={filters} />
-
-                                {/* Overrepresented pillars card */}
-                                <div className="panel p-5 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
-                                                    <TrendUp size={16} weight="duotone" />
-                                                </span>
-                                                <h2 className="text-[15px] font-semibold text-foreground">
-                                                    {t('Overrepresented pillars')}
-                                                </h2>
-                                            </div>
-                                            {overrepresented.length > 0 && (
-                                                <span className="rounded-lg bg-amber-50 border border-amber-200/60 px-2 py-0.5 text-[11px] font-semibold text-amber-700">
-                                                    {overrepresented.length}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="label-xs text-muted-foreground mt-1 mb-4">
-                                            {t('Pillars receiving more than +5% above their target share.')}
-                                        </p>
-
-                                        {overrepresented.length === 0 ? (
-                                            <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center">
-                                                <CheckCircle size={28} className="text-emerald-500 mb-1" weight="duotone" />
-                                                <span>{t('No pillars are overrepresented')}</span>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {overrepresented.map((p) => (
-                                                    <div key={p.id} className="flex items-center justify-between text-xs">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-                                                            <span className="font-medium text-foreground">{p.name}</span>
-                                                        </div>
-                                                        <span className="font-semibold text-amber-600">
-                                                            +{Math.round(p.actual - (p.target_percentage || 0))}%
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {/* Underrepresented pillars card */}
-                                <div className="panel p-5 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center justify-between gap-2">
-                                            <div className="flex items-center gap-2">
-                                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
-                                                    <TrendDown size={16} weight="duotone" />
-                                                </span>
-                                                <h2 className="text-[15px] font-semibold text-foreground">
-                                                    {t('Underrepresented pillars')}
-                                                </h2>
-                                            </div>
-                                            {underrepresented.length > 0 && (
-                                                <span className="rounded-lg bg-rose-50 border border-rose-200/60 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
-                                                    {underrepresented.length}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <p className="label-xs text-muted-foreground mt-1 mb-4">
-                                            {t('Pillars falling behind their target share by more than 5%.')}
-                                        </p>
-
-                                        {underrepresented.length === 0 ? (
-                                            <div className="py-6 text-center text-xs text-muted-foreground flex flex-col items-center">
-                                                <CheckCircle size={28} className="text-emerald-500 mb-1" weight="duotone" />
-                                                <span>{t('All pillars are on or near target')}</span>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-3">
-                                                {underrepresented.map((p) => (
-                                                    <div key={p.id} className="flex items-center justify-between text-xs">
-                                                        <div className="flex items-center gap-2">
-                                                            <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: p.color }} />
-                                                            <span className="font-medium text-foreground">{p.name}</span>
-                                                        </div>
-                                                        <span className="font-semibold text-rose-600">
-                                                            -{Math.round((p.target_percentage || 0) - p.actual)}%
-                                                        </span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     )}

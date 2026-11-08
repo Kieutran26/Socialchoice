@@ -20,6 +20,7 @@ export default function StrategyFilters({
     angles = [],
     unit = 'posts',
     setUnit,
+    compact = false,
 }) {
     const { t } = useTranslation();
     const desktop = isDesktop();
@@ -53,6 +54,145 @@ export default function StrategyFilters({
         });
         if (setUnit) setUnit('posts');
     };
+
+    if (compact) {
+        return (
+            <div className="p-3 mb-6 bg-white border border-neutral-200 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="flex flex-wrap items-center gap-2.5">
+                    <div className="flex items-center gap-1.5 text-neutral-500 font-semibold mr-1">
+                        <SlidersHorizontal size={15} weight="bold" className="text-neutral-900" />
+                        <span>{t('Bộ lọc')}:</span>
+                        {hasActiveFilters && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-neutral-900 text-white">
+                                {activeCount}
+                            </span>
+                        )}
+                    </div>
+
+                    {/* Period Filter */}
+                    <div className="relative">
+                        <select
+                            aria-label={t('Period')}
+                            value={filters.range}
+                            onChange={(e) => setFilters({ ...filters, range: e.target.value })}
+                            className="h-8.5 rounded-xl border border-neutral-200 bg-neutral-50/50 pl-2.5 pr-7 text-xs font-medium text-neutral-800 transition-all hover:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 appearance-none cursor-pointer"
+                        >
+                            <option value="all">📅 {t('All dates')}</option>
+                            <option value="past30">📅 {t('Past 30 days')}</option>
+                            <option value="past90">📅 {t('Past 90 days')}</option>
+                            <option value="next30">📅 {t('Next 30 days')}</option>
+                        </select>
+                        <CaretDown
+                            size={12}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                        />
+                    </div>
+
+                    {/* Count Unit */}
+                    <div className="relative">
+                        <select
+                            aria-label={t('Count')}
+                            value={unit}
+                            onChange={(e) => setUnit(e.target.value)}
+                            className="h-8.5 rounded-xl border border-neutral-200 bg-neutral-50/50 pl-2.5 pr-7 text-xs font-medium text-neutral-800 transition-all hover:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 appearance-none cursor-pointer"
+                        >
+                            <option value="posts"># {t('Unique content posts')}</option>
+                            {!desktop && <option value="jobs"># {t('Publishing jobs')}</option>}
+                        </select>
+                        <CaretDown
+                            size={12}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                        />
+                    </div>
+
+                    {/* Platform Filter */}
+                    <div className="relative">
+                        <select
+                            aria-label={t('Platform')}
+                            value={filters.platform}
+                            onChange={(e) => setFilters({ ...filters, platform: e.target.value })}
+                            className="h-8.5 rounded-xl border border-neutral-200 bg-neutral-50/50 pl-2.5 pr-7 text-xs font-medium text-neutral-800 transition-all hover:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 appearance-none cursor-pointer"
+                        >
+                            <option value="all">🌐 {t('All platforms')}</option>
+                            {PLATFORMS.map((platform) => (
+                                <option key={platform.value} value={platform.value}>
+                                    {PLATFORM_LABEL[platform.value] || platform.short || platform.value}
+                                </option>
+                            ))}
+                        </select>
+                        <CaretDown
+                            size={12}
+                            className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                        />
+                    </div>
+
+                    {/* Pillar Filter (if configured) */}
+                    {pillars.length > 0 && (
+                        <div className="relative">
+                            <select
+                                aria-label={t('Pillar')}
+                                value={filters.pillar_id}
+                                onChange={(e) =>
+                                    setFilters({
+                                        ...filters,
+                                        pillar_id: e.target.value,
+                                        angle_id: 'all',
+                                    })
+                                }
+                                className="h-8.5 rounded-xl border border-neutral-200 bg-neutral-50/50 pl-2.5 pr-7 text-xs font-medium text-neutral-800 transition-all hover:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 appearance-none cursor-pointer"
+                            >
+                                <option value="all">📚 {t('All pillars')}</option>
+                                {pillars.map((pillar) => (
+                                    <option key={pillar.id} value={pillar.id}>
+                                        {pillar.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <CaretDown
+                                size={12}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                            />
+                        </div>
+                    )}
+
+                    {/* Angle Filter (if configured) */}
+                    {filteredAngles.length > 0 && (
+                        <div className="relative">
+                            <select
+                                aria-label={t('Angle')}
+                                value={filters.angle_id}
+                                onChange={(e) => setFilters({ ...filters, angle_id: e.target.value })}
+                                className="h-8.5 rounded-xl border border-neutral-200 bg-neutral-50/50 pl-2.5 pr-7 text-xs font-medium text-neutral-800 transition-all hover:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 appearance-none cursor-pointer"
+                            >
+                                <option value="all">🧭 {t('All angles')}</option>
+                                {filteredAngles.map((angle) => (
+                                    <option key={angle.id} value={angle.id}>
+                                        {angle.name}
+                                    </option>
+                                ))}
+                            </select>
+                            <CaretDown
+                                size={12}
+                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none"
+                            />
+                        </div>
+                    )}
+                </div>
+
+                {hasActiveFilters && (
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleReset}
+                        className="h-8 px-2.5 text-xs text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 gap-1.5 rounded-lg"
+                    >
+                        <ArrowCounterClockwise size={13} />
+                        <span>{t('Reset')}</span>
+                    </Button>
+                )}
+            </div>
+        );
+    }
 
     return (
         <div className="panel p-4 mb-6 space-y-3 bg-card border border-border/80 rounded-2xl shadow-2xs">

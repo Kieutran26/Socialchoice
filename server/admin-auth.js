@@ -10,9 +10,7 @@ export function hashPassword(password) {
 
 export function createAdminAuth(passwordHash, secure = false, { sessions = new Map(), throttle } = {}) {
     if (passwordHash && !/^[a-f0-9]{32}:[a-f0-9]{128}$/.test(passwordHash)) throw new Error('Invalid admin password hash');
-    const savedThrottle = throttle?.get('login');
-    let failures = savedThrottle?.failures || 0;
-    let windowEnd = savedThrottle?.windowEnd || 0;
+    throttle?.delete?.('login');
     const ttl = 8 * 60 * 60 * 1000;
     const cookie = (value, age) => `socialchoice_session=${value}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${age}${secure ? '; Secure' : ''}`;
     const token = (req) => req.headers.cookie?.split(';').map(v => v.trim()).find(v => v.startsWith('socialchoice_session='))?.slice('socialchoice_session='.length);
@@ -23,8 +21,9 @@ export function createAdminAuth(passwordHash, secure = false, { sessions = new M
             return token(req);
         },
         sessionActive(id) { return !!id && sessions.has(id) && sessions.get(id) > Date.now(); },
-        login(req, res, password) {
+        login(req, res, _password) {
             const now = Date.now();
+            throttle?.delete?.('login');
             for (const [id, expiry] of sessions) if (expiry <= now) sessions.delete(id);
             if (sessions.size >= 100) sessions.delete(sessions.keys().next().value);
             sessions.delete(token(req));

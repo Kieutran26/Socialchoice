@@ -602,7 +602,7 @@ export default function CreateTemplate() {
                             type="button"
                             onClick={handleSave}
                             disabled={saving || uploading}
-                            className="btn-skew w-full h-11 text-xs font-semibold cursor-pointer justify-center"
+                            className="btn-skew w-full h-10 text-xs font-medium cursor-pointer justify-center"
                         >
                             <FloppyDisk size={16} weight="bold" />
                             <span>{saving ? t('Saving…') : t('Save template')}</span>

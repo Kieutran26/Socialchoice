@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Option Layout Dạng Lưới (Grid View) - Socialchoice</title>
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+    .tooltip-card {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 50;
+    }
+    .tooltip-trigger:hover .tooltip-card {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(-2px);
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER / OPTION SWITCHER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Wireframe Options: Dạng Lưới (Grid View)</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Interactive Prototype
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">So sánh 3 phong cách card lưới cho trang Tất cả bài viết · Stacked Avatars · Tooltip trắng · Chuẩn UI</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2">
+        <button id="opt-btn-a" class="ctrl-pill active" onclick="switchOption('a')">
+          <i class="ph-bold ph-image"></i>
+          <span>Option A: Visual Story Card (Tràn viền Media & Quick Actions)</span>
+        </button>
+        <button id="opt-btn-b" class="ctrl-pill" onclick="switchOption('b')">
+          <i class="ph-bold ph-cards"></i>
+          <span>Option B: Compact Strategy Card (Cân đối bài Text, Thumbnail góc)</span>
+        </button>
+        <button id="opt-btn-c" class="ctrl-pill" onclick="switchOption('c')">
+          <i class="ph-bold ph-device-mobile-camera"></i>
+          <span>Option C: Live Feed Mockup (Mô phỏng Feed thực tế)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-[1700px] mx-auto p-6 space-y-6">
+
+    <!-- SUBHEADER / DESCRIPTION BANNER -->
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-image"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option A: Visual Story Card (Tập trung thị giác - Chuẩn Sprout / Buffer)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Hình ảnh/video tỷ lệ 16:9 tràn viền trên đầu thẻ. Hover vào ảnh hiện thanh thao tác nhanh mờ (Xem trước, Sửa, Nhân bản). Chân thẻ gọn gàng với Stacked Avatars + Tooltip trắng.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium text-zinc-500">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-100 text-zinc-700">
+          <i class="ph ph-grid-four text-zinc-900"></i> Dạng hiển thị: 3 Cột Grid Responsive
+        </span>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: VISUAL STORY CARD                                               -->
+    <!-- ========================================================================= -->
+    <div id="option-a" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      
+      <!-- Card 1: Có ảnh lớn + Video tag -->
+      <article class="group relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden">
+        <div>
+          <!-- Media Container tràn viền 16:9 -->
+          <div class="relative w-full aspect-[16/9] bg-zinc-900 overflow-hidden cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <!-- Gradient Overlay khi hover -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button class="h-8 px-3 rounded-lg bg-white/90 backdrop-blur-md text-zinc-900 text-xs font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-eye"></i> Xem trước
+              </button>
+              <button class="h-8 px-3 rounded-lg bg-white/90 backdrop-blur-md text-zinc-900 text-xs font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-pencil-simple"></i> Sửa
+              </button>
+            </div>
+            <!-- Badges góc trên: Status & Media type -->
+            <div class="absolute top-3 left-3 flex items-center gap-1.5">
+              <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
+                <i class="ph-fill ph-video-camera text-amber-400"></i> Video
+              </span>
+            </div>
+            <div class="absolute top-3 right-3">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/95 backdrop-blur-md text-red-600 shadow-sm flex items-center gap-1.5">
+                <span class="size-1.5 rounded-full bg-red-500"></span> Đã hủy
+              </span>
+            </div>
+          </div>
+
+          <!-- Body Info -->
+          <div class="p-4 space-y-2.5">
+            <div class="flex items-center gap-2 text-[11px] text-zinc-500">
+              <span class="flex items-center gap-1 font-semibold text-zinc-900">
+                <span class="size-2 rounded-full bg-blue-500"></span> Test
+              </span>
+              <span>·</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 font-medium">Chiến lược AI</span>
+            </div>
+
+            <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-1 group-hover:text-amber-600 transition-colors cursor-pointer">
+              [AI] tạo lịch bài này vào ngày h với nộidu
+            </h3>
+            <p class="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+              TẠO LỊCH BÀI NÀY VÀO NGÀY H VỚI NỘI DUNG: I WILL USE CHATGPT TO GROWTH MY WEBAPP — Góc chia sẻ từ Test trong thời đại số hiện nay...
+            </p>
+          </div>
+        </div>
+
+        <!-- Footer: Stacked Avatars + Schedule -->
+        <div class="px-4 py-3 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between">
+          <!-- Stacked Avatars with White Tooltip -->
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <img src="https://graph.facebook.com/100088888888888/picture?type=large" onerror="this.style.display='none'" class="size-full object-cover">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-zinc-700 bg-zinc-100">_T</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-threads-logo text-[9px] text-zinc-900"></i>
+                </span>
+              </div>
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white bg-blue-600">DE</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-facebook-logo text-[9px] text-[#1877F2]"></i>
+                </span>
+              </div>
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white bg-pink-600">IG</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-instagram-logo text-[9px] text-[#E4405F]"></i>
+                </span>
+              </div>
+              <div class="relative size-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs">
+                +5
+              </div>
+            </div>
+
+            <!-- White Tooltip -->
+            <div class="tooltip-card rounded-xl bg-white text-zinc-900 p-3 text-[11px] shadow-xl border border-zinc-200/80 min-w-[210px]">
+              <div class="flex items-center justify-between pb-1.5 border-b border-zinc-100">
+                <span class="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">Kênh nhận bài</span>
+                <span class="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-1.5 py-0.5 rounded-full">8</span>
+              </div>
+              <div class="divide-y divide-zinc-100 mt-1 max-h-40 overflow-y-auto">
+                <div class="py-1 flex items-center gap-2">
+                  <i class="ph-fill ph-threads-logo text-xs text-zinc-900"></i>
+                  <span class="font-semibold text-zinc-800">_ticrn</span>
+                  <span class="text-[10px] text-zinc-400 ml-auto">Threads</span>
+                </div>
+                <div class="py-1 flex items-center gap-2">
+                  <i class="ph-fill ph-facebook-logo text-xs text-[#1877F2]"></i>
+                  <span class="font-semibold text-zinc-800">Deszy</span>
+                  <span class="text-[10px] text-zinc-400 ml-auto">Facebook</span>
+                </div>
+                <div class="py-1 flex items-center gap-2">
+                  <i class="ph-fill ph-instagram-logo text-xs text-[#E4405F]"></i>
+                  <span class="font-semibold text-zinc-800">deszy_creative</span>
+                  <span class="text-[10px] text-zinc-400 ml-auto">Instagram</span>
+                </div>
+              </div>
+              <div class="absolute -bottom-1.5 left-1/2 -translate-x-1/2 size-3 bg-white border-b border-r border-zinc-200/80 rotate-45"></div>
+            </div>
+          </div>
+
+          <!-- Schedule Time -->
+          <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+            <i class="ph ph-calendar-blank text-zinc-400"></i>
+            <span>09:00 05 thg 11</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 2: Có ảnh ngang banner -->
+      <article class="group relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden">
+        <div>
+          <div class="relative w-full aspect-[16/9] bg-blue-900 overflow-hidden cursor-pointer">
+            <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80" alt="" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button class="h-8 px-3 rounded-lg bg-white/90 backdrop-blur-md text-zinc-900 text-xs font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-eye"></i> Xem trước
+              </button>
+              <button class="h-8 px-3 rounded-lg bg-white/90 backdrop-blur-md text-zinc-900 text-xs font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-pencil-simple"></i> Sửa
+              </button>
+            </div>
+            <div class="absolute top-3 left-3">
+              <span class="px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
+                <i class="ph-fill ph-images text-blue-400"></i> 3 ảnh
+              </span>
+            </div>
+            <div class="absolute top-3 right-3">
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-white/95 backdrop-blur-md text-zinc-600 shadow-sm flex items-center gap-1.5">
+                <span class="size-1.5 rounded-full bg-zinc-400"></span> Bản nháp
+              </span>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-2.5">
+            <div class="flex items-center gap-2 text-[11px] text-zinc-500">
+              <span class="flex items-center gap-1 font-semibold text-zinc-900">
+                <span class="size-2 rounded-full bg-emerald-500"></span> Test
+              </span>
+              <span>·</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 font-medium">Báo cáo tuần</span>
+            </div>
+
+            <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-1 group-hover:text-amber-600 transition-colors cursor-pointer">
+              bb
+            </h3>
+            <p class="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+              Tổng hợp phân tích chỉ số chuyển đổi tuần qua và các nội dung viral trên nền tảng Facebook & TikTok...
+            </p>
+          </div>
+        </div>
+
+        <div class="px-4 py-3 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between">
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white bg-pink-600">IG</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-instagram-logo text-[9px] text-[#E4405F]"></i>
+                </span>
+              </div>
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white bg-blue-600">DE</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-facebook-logo text-[9px] text-[#1877F2]"></i>
+                </span>
+              </div>
+              <div class="relative size-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs">
+                +1
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+            <i class="ph ph-calendar-blank text-zinc-400"></i>
+            <span>15:58 04 thg 11</span>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card 3: Bài viết chỉ có Text (Thiết kế Placeholder trang nhã) -->
+      <article class="group relative flex flex-col justify-between rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden">
+        <div>
+          <!-- Placeholder Text pattern trang nhã thay vì để trống -->
+          <div class="relative w-full aspect-[16/9] bg-gradient-to-br from-zinc-100 to-zinc-50 border-b border-zinc-100 p-5 flex flex-col justify-between cursor-pointer">
+            <div class="flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded-md bg-white text-zinc-600 text-[10px] font-bold border border-zinc-200/80 flex items-center gap-1">
+                <i class="ph-bold ph-text-align-left text-zinc-500"></i> Bài viết văn bản
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-2xs flex items-center gap-1.5">
+                <span class="size-1.5 rounded-full bg-emerald-500"></span> Đã đăng
+              </span>
+            </div>
+            <div class="italic text-zinc-400 text-xs line-clamp-3">
+              “Bài viết thử nghiệm đăng theo lịch từ Socialchoice. Đây là bài kiểm tra kỹ thuật kết nối đa kênh...”
+            </div>
+            <!-- Quick Actions Overlay -->
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-xs opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <button class="h-8 px-3 rounded-lg bg-white text-zinc-900 text-xs font-bold hover:bg-zinc-100 shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-eye"></i> Xem trước
+              </button>
+              <button class="h-8 px-3 rounded-lg bg-white text-zinc-900 text-xs font-bold hover:bg-zinc-100 shadow-md flex items-center gap-1 cursor-pointer">
+                <i class="ph-bold ph-pencil-simple"></i> Sửa
+              </button>
+            </div>
+          </div>
+
+          <div class="p-4 space-y-2.5">
+            <div class="flex items-center gap-2 text-[11px] text-zinc-500">
+              <span class="flex items-center gap-1 font-semibold text-zinc-900">
+                <span class="size-2 rounded-full bg-blue-500"></span> Test
+              </span>
+              <span>·</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 font-medium">Kỹ thuật</span>
+            </div>
+
+            <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-1 group-hover:text-amber-600 transition-colors cursor-pointer">
+              Kiểm tra đăng theo lịch — Socialchoice
+            </h3>
+            <p class="text-xs text-zinc-500 line-clamp-2 leading-relaxed">
+              Bài viết thử nghiệm đăng theo lịch từ Socialchoice. Đã kiểm tra webhook và phản hồi từ Meta API thành công.
+            </p>
+          </div>
+        </div>
+
+        <div class="px-4 py-3 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between">
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-7 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-200">
+                <span class="absolute inset-0 flex items-center justify-center font-bold text-[10px] text-white bg-blue-600">DE</span>
+                <span class="absolute -bottom-0.5 -right-0.5 size-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-facebook-logo text-[9px] text-[#1877F2]"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 text-xs font-semibold text-zinc-600">
+            <i class="ph ph-calendar-blank text-zinc-400"></i>
+            <span>14:40 13 thg 10</span>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: COMPACT STRATEGY CARD                                           -->
+    <!-- ========================================================================= -->
+    <div id="option-b" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      
+      <!-- Card B1 -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+        <div class="space-y-3">
+          <!-- Top Row: Brand + Status Pill + Checkbox -->
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-blue-500"></span>
+              <span class="text-xs font-bold text-zinc-900">Test</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 text-[10px] font-medium">Chiến lược AI</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
+              Đã hủy
+            </span>
+          </div>
+
+          <!-- Middle: 2-Column Content + Thumbnail Vuông -->
+          <div class="flex items-start gap-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-2 group-hover:text-amber-600 transition-colors cursor-pointer leading-snug">
+                [AI] tạo lịch bài này vào ngày h với nộidu
+              </h3>
+              <p class="text-xs text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                TẠO LỊCH BÀI NÀY VÀO NGÀY H VỚI NỘI DUNG: I WILL USE CHATGPT TO GROWTH MY WEBAPP...
+              </p>
+            </div>
+            <!-- Thumbnail góc vuông 64x64 -->
+            <div class="relative size-16 rounded-xl overflow-hidden shrink-0 border border-zinc-200 bg-zinc-100">
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=200&auto=format&fit=crop&q=80" alt="" class="size-full object-cover">
+              <span class="absolute bottom-1 right-1 size-4 rounded bg-black/70 text-white text-[9px] flex items-center justify-center font-bold">
+                <i class="ph-fill ph-video-camera"></i>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: Stacked Avatars + Schedule + Action Buttons -->
+        <div class="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between">
+          <!-- Stacked Avatars -->
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-6.5 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-zinc-100 flex items-center justify-center font-bold text-[9px] text-zinc-800">
+                _T
+                <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-white shadow-2xs flex items-center justify-center">
+                  <i class="ph-fill ph-threads-logo text-[8px] text-zinc-900"></i>
+                </span>
+              </div>
+              <div class="relative size-6.5 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-blue-600 text-white flex items-center justify-center font-bold text-[9px]">
+                DE
+                <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-white shadow-2xs flex items-center justify-center">
+                  <i class="ph-fill ph-facebook-logo text-[8px] text-[#1877F2]"></i>
+                </span>
+              </div>
+              <div class="relative size-6.5 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[9px] flex items-center justify-center shadow-2xs">
+                +6
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs text-zinc-500">
+            <span class="font-medium">09:00 05/11</span>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Xem trước">
+                <i class="ph-bold ph-eye"></i>
+              </button>
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Chỉnh sửa">
+                <i class="ph-bold ph-pencil-simple"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card B2 -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-emerald-500"></span>
+              <span class="text-xs font-bold text-zinc-900">Test</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 text-[10px] font-medium">Báo cáo tuần</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-zinc-100 text-zinc-600 border border-zinc-200">
+              Bản nháp
+            </span>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-2 group-hover:text-amber-600 transition-colors cursor-pointer leading-snug">
+                bb — Phân tích tương tác mạng xã hội
+              </h3>
+              <p class="text-xs text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                bb nội dung thử nghiệm với các định dạng carousel ảnh trên Instagram và fanpage...
+              </p>
+            </div>
+            <div class="relative size-16 rounded-xl overflow-hidden shrink-0 border border-zinc-200 bg-zinc-100">
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=200&auto=format&fit=crop&q=80" alt="" class="size-full object-cover">
+              <span class="absolute bottom-1 right-1 px-1 rounded bg-black/70 text-white text-[8px] flex items-center justify-center font-bold">
+                3 ảnh
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between">
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-6.5 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-pink-600 text-white flex items-center justify-center font-bold text-[9px]">
+                IG
+                <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-white shadow-2xs flex items-center justify-center">
+                  <i class="ph-fill ph-instagram-logo text-[8px] text-[#E4405F]"></i>
+                </span>
+              </div>
+              <div class="relative size-6.5 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-blue-600 text-white flex items-center justify-center font-bold text-[9px]">
+                DE
+                <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-white shadow-2xs flex items-center justify-center">
+                  <i class="ph-fill ph-facebook-logo text-[8px] text-[#1877F2]"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs text-zinc-500">
+            <span class="font-medium">15:58 04/11</span>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Xem trước">
+                <i class="ph-bold ph-eye"></i>
+              </button>
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Chỉnh sửa">
+                <i class="ph-bold ph-pencil-simple"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card B3: Text Post gọn nhẹ -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between">
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="size-2 rounded-full bg-blue-500"></span>
+              <span class="text-xs font-bold text-zinc-900">Test</span>
+              <span class="px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-600 text-[10px] font-medium">Kỹ thuật</span>
+            </div>
+            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Đã đăng
+            </span>
+          </div>
+
+          <div class="flex items-start gap-3">
+            <div class="flex-1 min-w-0">
+              <h3 class="font-heading font-bold text-sm text-zinc-900 line-clamp-2 group-hover:text-amber-600 transition-colors cursor-pointer leading-snug">
+                Kiểm tra đăng theo lịch — Socialchoice
+              </h3>
+              <p class="text-xs text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                Bài viết thử nghiệm đăng theo lịch từ Socialchoice. Đây là bài kiểm tra kỹ thuật...
+              </p>
+            </div>
+            <!-- Icon thay cho ảnh -->
+            <div class="size-16 rounded-xl bg-zinc-50 border border-zinc-200/80 flex items-center justify-center text-zinc-400 shrink-0">
+              <i class="ph ph-text-align-left text-2xl"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="pt-3 mt-3 border-t border-zinc-100 flex items-center justify-between">
+          <div class="relative tooltip-trigger inline-flex items-center cursor-pointer">
+            <div class="flex items-center -space-x-2">
+              <div class="relative size-6.5 rounded-full ring-2 ring-white shadow-2xs overflow-hidden bg-blue-600 text-white flex items-center justify-center font-bold text-[9px]">
+                DE
+                <span class="absolute -bottom-0.5 -right-0.5 size-3 rounded-full bg-white shadow-2xs flex items-center justify-center">
+                  <i class="ph-fill ph-facebook-logo text-[8px] text-[#1877F2]"></i>
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-3 text-xs text-zinc-500">
+            <span class="font-medium">14:40 13/10</span>
+            <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Xem trước">
+                <i class="ph-bold ph-eye"></i>
+              </button>
+              <button class="p-1.5 rounded-lg hover:bg-zinc-100 text-zinc-600 hover:text-zinc-900 cursor-pointer" title="Chỉnh sửa">
+                <i class="ph-bold ph-pencil-simple"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: LIVE FEED MOCKUP CARD                                           -->
+    <!-- ========================================================================= -->
+    <div id="option-c" class="hidden grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      
+      <!-- Card C1: Social Post Mockup -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden flex flex-col justify-between">
+        <div>
+          <!-- Feed Header: Avatar + Channel Name + Time + Status -->
+          <div class="p-3.5 border-b border-zinc-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="relative size-9 rounded-full ring-1 ring-zinc-200 overflow-hidden bg-zinc-100 flex items-center justify-center font-bold text-xs">
+                _T
+                <span class="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-threads-logo text-[10px] text-zinc-900"></i>
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-zinc-900">_ticrn</span>
+                  <span class="text-[10px] text-zinc-400 font-mono">Threads</span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-zinc-500">
+                  <span>09:00 05 thg 11</span>
+                  <span>·</span>
+                  <span class="text-red-500 font-medium">Đã hủy</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- More Actions dropdown -->
+            <button class="size-7 rounded-lg hover:bg-zinc-100 text-zinc-500 flex items-center justify-center cursor-pointer">
+              <i class="ph-bold ph-dots-three text-base"></i>
+            </button>
+          </div>
+
+          <!-- Feed Caption -->
+          <div class="p-3.5 space-y-2">
+            <p class="text-xs text-zinc-800 leading-relaxed font-normal">
+              🚀 <strong>[AI] tạo lịch bài này</strong>: I will use ChatGPT to grow my web app. Khám phá cách tự động hóa lịch bài đa kênh ngay hôm nay!
+            </p>
+          </div>
+
+          <!-- Feed Media (Ảnh bo viền trong post) -->
+          <div class="px-3.5 pb-3">
+            <div class="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200/80 bg-zinc-900">
+              <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=800&auto=format&fit=crop&q=80" alt="" class="size-full object-cover">
+              <div class="absolute bottom-2 right-2 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
+                <i class="ph-fill ph-play"></i> 0:45
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feed Footer: Phân phối kèm theo + Quick Bar -->
+        <div class="px-3.5 py-2.5 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] text-zinc-400">Đăng kèm:</span>
+            <div class="flex items-center -space-x-1.5">
+              <span class="size-5 rounded-full bg-blue-600 text-white text-[8px] font-bold flex items-center justify-center ring-1 ring-white" title="Facebook Deszy">
+                <i class="ph-fill ph-facebook-logo"></i>
+              </span>
+              <span class="size-5 rounded-full bg-pink-600 text-white text-[8px] font-bold flex items-center justify-center ring-1 ring-white" title="Instagram deszy_creative">
+                <i class="ph-fill ph-instagram-logo"></i>
+              </span>
+              <span class="size-5 rounded-full bg-zinc-200 text-zinc-700 text-[8px] font-bold flex items-center justify-center ring-1 ring-white">
+                +6
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 font-semibold text-[11px] flex items-center gap-1 cursor-pointer">
+              <i class="ph-bold ph-pencil-simple"></i> Sửa bài
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card C2 -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden flex flex-col justify-between">
+        <div>
+          <div class="p-3.5 border-b border-zinc-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="relative size-9 rounded-full ring-1 ring-zinc-200 overflow-hidden bg-pink-600 text-white flex items-center justify-center font-bold text-xs">
+                IG
+                <span class="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-instagram-logo text-[10px] text-[#E4405F]"></i>
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-zinc-900">deszy_creative</span>
+                  <span class="text-[10px] text-zinc-400 font-mono">Instagram</span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-zinc-500">
+                  <span>15:58 04 thg 11</span>
+                  <span>·</span>
+                  <span class="text-zinc-600 font-medium">Bản nháp</span>
+                </div>
+              </div>
+            </div>
+            <button class="size-7 rounded-lg hover:bg-zinc-100 text-zinc-500 flex items-center justify-center cursor-pointer">
+              <i class="ph-bold ph-dots-three text-base"></i>
+            </button>
+          </div>
+
+          <div class="p-3.5 space-y-2">
+            <p class="text-xs text-zinc-800 leading-relaxed font-normal">
+              📊 <strong>Báo cáo hiệu suất nội dung tuần</strong>. Số liệu tăng trưởng lượt xem kênh và tỷ lệ giữ chân người xem.
+            </p>
+          </div>
+
+          <div class="px-3.5 pb-3">
+            <div class="relative w-full aspect-video rounded-xl overflow-hidden border border-zinc-200/80 bg-zinc-100">
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80" alt="" class="size-full object-cover">
+              <div class="absolute top-2 right-2 px-2 py-0.5 rounded-md bg-black/60 text-white text-[10px] font-bold">
+                1/3
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-3.5 py-2.5 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+          <div class="flex items-center gap-1.5">
+            <span class="text-[11px] text-zinc-400">Đăng kèm:</span>
+            <div class="flex items-center -space-x-1.5">
+              <span class="size-5 rounded-full bg-blue-600 text-white text-[8px] font-bold flex items-center justify-center ring-1 ring-white" title="Facebook">
+                <i class="ph-fill ph-facebook-logo"></i>
+              </span>
+              <span class="size-5 rounded-full bg-zinc-200 text-zinc-700 text-[8px] font-bold flex items-center justify-center ring-1 ring-white">
+                +1
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1">
+            <button class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 font-semibold text-[11px] flex items-center gap-1 cursor-pointer">
+              <i class="ph-bold ph-pencil-simple"></i> Sửa bài
+            </button>
+          </div>
+        </div>
+      </article>
+
+      <!-- Card C3 -->
+      <article class="group rounded-2xl border border-zinc-200 bg-white shadow-2xs hover:shadow-lg transition-all overflow-hidden flex flex-col justify-between">
+        <div>
+          <div class="p-3.5 border-b border-zinc-100 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="relative size-9 rounded-full ring-1 ring-zinc-200 overflow-hidden bg-blue-600 text-white flex items-center justify-center font-bold text-xs">
+                DE
+                <span class="absolute -bottom-0.5 -right-0.5 size-4 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                  <i class="ph-fill ph-facebook-logo text-[10px] text-[#1877F2]"></i>
+                </span>
+              </div>
+              <div>
+                <div class="flex items-center gap-1.5">
+                  <span class="text-xs font-bold text-zinc-900">Deszy Fanpage</span>
+                  <span class="text-[10px] text-zinc-400 font-mono">Facebook</span>
+                </div>
+                <div class="flex items-center gap-1 text-[11px] text-zinc-500">
+                  <span>14:40 13 thg 10</span>
+                  <span>·</span>
+                  <span class="text-emerald-600 font-medium">Đã đăng</span>
+                </div>
+              </div>
+            </div>
+            <button class="size-7 rounded-lg hover:bg-zinc-100 text-zinc-500 flex items-center justify-center cursor-pointer">
+              <i class="ph-bold ph-dots-three text-base"></i>
+            </button>
+          </div>
+
+          <div class="p-4 space-y-3">
+            <p class="text-xs text-zinc-800 leading-relaxed font-normal">
+              Bài viết thử nghiệm đăng theo lịch từ Socialchoice. Đã kiểm tra tính năng kết nối tự động và thông báo trạng thái qua email / notification.
+            </p>
+            <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200/80 text-[11px] text-zinc-500 flex items-center gap-2">
+              <i class="ph-fill ph-check-circle text-emerald-600 text-base"></i>
+              <span>Đã xuất bản thành công lên Facebook Graph API</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="px-3.5 py-2.5 bg-zinc-50/80 border-t border-zinc-100 flex items-center justify-between text-xs text-zinc-500">
+          <span class="text-[11px] text-zinc-400">1 kênh duy nhất</span>
+          <div class="flex items-center gap-1">
+            <button class="px-2.5 py-1 rounded-lg bg-white border border-zinc-200 text-zinc-700 hover:bg-zinc-100 font-semibold text-[11px] flex items-center gap-1 cursor-pointer">
+              <i class="ph-bold ph-eye"></i> Xem bài
+            </button>
+          </div>
+        </div>
+      </article>
+
+    </div>
+
+  </main>
+
+  <script>
+    const optionsInfo = {
+      a: {
+        title: "Option A: Visual Story Card (Tập trung thị giác - Chuẩn Sprout / Buffer)",
+        desc: "Hình ảnh/video tỷ lệ 16:9 tràn viền trên đầu thẻ. Hover vào ảnh hiện thanh thao tác nhanh mờ (Xem trước, Sửa, Nhân bản). Chân thẻ gọn gàng với Stacked Avatars + Tooltip trắng.",
+        icon: "ph-image"
+      },
+      b: {
+        title: "Option B: Compact Strategy Card (Công thái học - Chuẩn Notion / Linear)",
+        desc: "Bố cục tinh gọn, thumbnail vuông 64x64px nằm ở góc phải, tối ưu hiển thị bài viết nhiều chữ. Không bị khoảng trống vô nghĩa nếu bài không có ảnh. Phù hợp quản trị nội dung dày đặc.",
+        icon: "ph-cards"
+      },
+      c: {
+        title: "Option C: Live Feed Mockup (Mô phỏng Feed thực tế - Trực quan 100%)",
+        desc: "Mô phỏng chân thực như bài đăng trên Facebook / Threads / Instagram: Header có Avatar thật + Tên + Giờ, Body có caption thực tế + Media bo viền, chân thẻ có danh sách kênh phụ.",
+        icon: "ph-device-mobile-camera"
+      }
+    };
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(k => {
+        const btn = document.getElementById(`opt-btn-${k}`);
+        const view = document.getElementById(`option-${k}`);
+        if (k === opt) {
+          btn.classList.add('active');
+          view.classList.remove('hidden');
+        } else {
+          btn.classList.remove('active');
+          view.classList.add('hidden');
+        }
+      });
+
+      const info = optionsInfo[opt];
+      document.getElementById('intro-title').textContent = info.title;
+      document.getElementById('intro-desc').textContent = info.desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${info.icon}"></i>`;
+    }
+  </script>
+</body>
+</html>

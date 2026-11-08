@@ -1801,7 +1801,7 @@ export default function CreatePost() {
 
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                         {/* Date & Time Picker */}
-                        <div className="flex h-9 items-center gap-2 rounded-lg border border-zinc-200 bg-white px-2.5 text-[13px]">
+                        <div className="flex h-9 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-2.5 text-xs shadow-xs">
                             <CalendarBlank size={16} className="text-zinc-400 shrink-0" />
                             <input
                                 type="date"
@@ -1828,7 +1828,7 @@ export default function CreatePost() {
                             disabled={!canSubmit || saving}
                             onClick={() => submit('schedule')}
                             title={t(`Lên lịch ${form.date} ${form.time}`)}
-                            className="flex h-9 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-3 text-[13px] font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                            className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer shadow-xs"
                         >
                             <CalendarBlank size={16} />
                             <span>{t('Thêm vào lịch')}</span>
@@ -1839,9 +1839,9 @@ export default function CreatePost() {
                             type="button"
                             disabled={!canSubmit || saving}
                             onClick={() => submit('publish')}
-                            className="flex h-9 items-center gap-2 rounded-xl bg-zinc-900 px-5 text-[13px] font-bold text-white shadow-xs transition hover:bg-zinc-800 active:translate-y-px disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 disabled:shadow-none cursor-pointer"
+                            className="btn-skew disabled:opacity-40 disabled:cursor-not-allowed"
                         >
-                            <PaperPlaneTilt size={16} weight="fill" />
+                            <PaperPlaneTilt size={16} weight="bold" />
                             <span>
                                 {t('Đăng ngay')}
                                 {selectedAccounts.length > 0 ? ` · ${selectedAccounts.length} kênh` : ''}

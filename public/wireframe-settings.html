@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe - 3 Option Trang Cài Đặt (Socialchoice Settings)</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+  <style type="text/tailwindcss">
+    :root {
+      --app-font: 'Space Grotesk', -apple-system, sans-serif;
+      --heading-font: 'Mona Sans', -apple-system, sans-serif;
+      --background: #fbfbfb;
+      --surface: #ffffff;
+      --foreground: #18181b;
+      --muted: #71717a;
+      --border: #e4e4e7;
+    }
+    body {
+      font-family: var(--app-font);
+      background: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: var(--heading-font);
+    }
+    .wf-bar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      height: 52px;
+      padding: 0 20px;
+      background: #ffffff;
+      border-bottom: 1px solid #e4e4e7;
+      font-size: 13px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+    .wf-btn {
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-weight: 500;
+      font-size: 12.5px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      border: 1px solid transparent;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .wf-btn.active {
+      background: #18181b;
+      color: #ffffff;
+      border-color: #18181b;
+    }
+    .wf-btn:not(.active) {
+      background: #f4f4f5;
+      color: #71717a;
+    }
+    .wf-btn:not(.active):hover {
+      background: #e4e4e7;
+      color: #18181b;
+    }
+    .card-wireframe {
+      background: #ffffff;
+      border: 1px solid #e4e4e7;
+      border-radius: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+    }
+  </style>
+</head>
+<body class="bg-[#fbfbfb] text-[#18181b]">
+
+  <!-- Top Controller Bar -->
+  <header class="wf-bar">
+    <div class="flex items-center gap-2 font-bold text-xs uppercase tracking-wider text-muted-foreground mr-2">
+      <span class="h-2 w-2 rounded-full bg-black"></span>
+      <span>Cài đặt Wireframes:</span>
+    </div>
+
+    <div class="flex items-center gap-1.5 bg-[#f4f4f5] p-1 rounded-xl">
+      <button class="wf-btn active" id="btn-opt-a" onclick="switchOption('a')">
+        <span>Option A · Vertical Category Sidebar</span>
+      </button>
+      <button class="wf-btn" id="btn-opt-b" onclick="switchOption('b')">
+        <span>Option B · Grouped Domain Matrix</span>
+      </button>
+      <button class="wf-btn" id="btn-opt-c" onclick="switchOption('c')">
+        <span>Option C · Split Canvas & Live HUD</span>
+      </button>
+    </div>
+
+    <div class="ml-auto text-xs text-muted-foreground flex items-center gap-3">
+      <span class="hidden md:inline">Phong cách: <strong>Monochrome (Đen - Trắng)</strong></span>
+      <span class="text-neutral-300">|</span>
+      <a href="/settings" class="text-black font-medium hover:underline flex items-center gap-1">
+        <span>Quay lại trang thật &rarr;</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main View Container -->
+  <main class="max-w-[1340px] mx-auto p-4 sm:p-6 lg:p-8">
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: VERTICAL CATEGORY SIDEBAR (Linear / Stripe style)               -->
+    <!-- ========================================================================= -->
+    <div id="option-a" class="space-y-6">
+      
+      <!-- Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div>
+          <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Cài đặt</div>
+          <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Cài đặt không gian làm việc</h1>
+          <p class="text-xs text-neutral-500 mt-1">Cấu hình mô hình AI, thông tin thương hiệu, phân phối tự động và tài khoản sở hữu.</p>
+        </div>
+        <div class="flex items-center gap-2.5">
+          <div class="relative w-64">
+            <input type="text" placeholder="Tìm nhanh cấu hình..." class="w-full h-9 pl-8 pr-3 text-xs bg-white border border-zinc-200 rounded-xl focus:outline-none focus:border-black transition-colors">
+            <svg class="w-3.5 h-3.5 absolute left-2.5 top-2.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+          </div>
+          <button class="h-9 px-3.5 text-xs font-medium rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs">
+            Lưu thay đổi
+          </button>
+        </div>
+      </div>
+
+      <!-- Option A Layout: Left Sidebar + Right Content Canvas -->
+      <div class="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
+        
+        <!-- Left Navigation Sidebar -->
+        <nav class="card-wireframe p-2.5 space-y-4 sticky top-20 bg-white">
+          <div>
+            <div class="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400 font-mono">Cốt lõi & Trợ lý</div>
+            <div class="mt-1 space-y-0.5">
+              <a href="#ai-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-semibold bg-black text-white">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                  <span>Mô hình AI & API</span>
+                </span>
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+              </a>
+              <a href="#pub-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z"></path></svg>
+                  <span>Hệ thống đăng bài</span>
+                </span>
+                <span class="text-[10px] font-mono text-neutral-400">Sẵn sàng</span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400 font-mono">Quản lý nội dung</div>
+            <div class="mt-1 space-y-0.5">
+              <a href="#brands-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+                  <span>Thương hiệu</span>
+                </span>
+                <span class="px-1.5 py-0.2 rounded-md bg-neutral-100 text-[10px] font-mono text-neutral-600">2</span>
+              </a>
+              <a href="#sig-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                  <span>Chữ ký bài viết</span>
+                </span>
+              </a>
+              <a href="#shortlinks-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                  <span>Rút gọn liên kết</span>
+                </span>
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <div class="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-neutral-400 font-mono">Hệ thống & Tài khoản</div>
+            <div class="mt-1 space-y-0.5">
+              <a href="#pref-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path></svg>
+                  <span>Tùy chọn chung</span>
+                </span>
+                <span class="text-[10px] font-mono text-neutral-400">VI</span>
+              </a>
+              <a href="#data-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"></path></svg>
+                  <span>Dữ liệu & Demo</span>
+                </span>
+              </a>
+              <a href="#lic-sec" class="flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-black transition-colors">
+                <span class="flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                  <span>Bản quyền</span>
+                </span>
+                <span class="px-1.5 py-0.2 rounded-md bg-neutral-100 text-[10px] font-mono">Pro</span>
+              </a>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Right Content Section (Option A Focus) -->
+        <div class="space-y-6">
+          
+          <!-- Section 1: AI Settings (Sleek Clean Card) -->
+          <div class="card-wireframe p-5 bg-white space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <div class="flex items-center gap-2.5">
+                <div class="h-8 w-8 rounded-xl bg-neutral-100 flex items-center justify-center text-black">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                </div>
+                <div>
+                  <h2 class="text-sm font-semibold text-black">Cấu hình Mô hình AI (OpenRouter & Custom Keys)</h2>
+                  <p class="text-xs text-neutral-500">API Key được mã hóa cục bộ. Hệ thống gọi AI theo hạn mức tài khoản của bạn.</p>
+                </div>
+              </div>
+              <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border border-neutral-200 text-[11px] font-medium text-neutral-800 bg-neutral-50">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span> Đang hoạt động
+              </span>
+            </div>
+
+            <!-- Active Key Box -->
+            <div class="rounded-xl border border-zinc-200 bg-neutral-50/50 p-3.5 flex items-center justify-between gap-3">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-semibold text-black">OpenRouter</span>
+                  <span class="text-[11px] font-mono text-neutral-500">openai/gpt-4o-mini</span>
+                </div>
+                <div class="text-[11px] font-mono text-neutral-400 mt-0.5">API key: sk-or-v1-•••••••••••••••• (Đã lưu & mã hóa)</div>
+              </div>
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 bg-white hover:bg-neutral-50 transition-colors">
+                Kiểm tra kết nối
+              </button>
+            </div>
+
+            <!-- Provider & Model Form -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block font-medium text-neutral-600 mb-1">Nhà cung cấp AI</label>
+                <div class="h-9 px-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-neutral-800">
+                  <span>OpenRouter (Gemini / Claude / GPT)</span>
+                  <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+              <div>
+                <label class="block font-medium text-neutral-600 mb-1">Mã Model mặc định</label>
+                <div class="h-9 px-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-neutral-800">
+                  <span>OpenAI: GPT-4o-mini</span>
+                  <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Brands Management (Clean Minimalist Cards) -->
+          <div class="card-wireframe p-5 bg-white space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <div>
+                <h2 class="text-sm font-semibold text-black">Danh sách Thương hiệu (2)</h2>
+                <p class="text-xs text-neutral-500">Phân nhóm tài khoản mạng xã hội, trụ cột nội dung và tài sản đăng bài.</p>
+              </div>
+              <button class="h-8 px-3 rounded-xl bg-black text-white text-xs font-medium hover:bg-neutral-800 transition-colors inline-flex items-center gap-1.5 shadow-2xs">
+                <span>+ Thêm thương hiệu</span>
+              </button>
+            </div>
+
+            <div class="space-y-2.5">
+              <div class="rounded-xl border border-zinc-200 p-3.5 flex items-center justify-between bg-white hover:border-black/30 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="h-9 w-9 rounded-xl bg-black text-white text-xs font-bold flex items-center justify-center">T</div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-semibold text-black">Test Brand</span>
+                      <span class="px-1.5 py-0.2 rounded bg-neutral-100 text-[10px] font-mono text-neutral-600">8 đích đăng</span>
+                      <span class="px-1.5 py-0.2 rounded bg-neutral-100 text-[10px] font-mono text-neutral-600">Asia/Ho_Chi_Minh</span>
+                    </div>
+                    <p class="text-[11.5px] text-neutral-500 mt-0.5">Thương hiệu thử nghiệm chính thức của workspace.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Sửa</button>
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Lưu trữ</button>
+                </div>
+              </div>
+
+              <div class="rounded-xl border border-zinc-200 p-3.5 flex items-center justify-between bg-white hover:border-black/30 transition-colors">
+                <div class="flex items-center gap-3">
+                  <div class="h-9 w-9 rounded-xl bg-neutral-200 text-neutral-800 text-xs font-bold flex items-center justify-center">D</div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <span class="text-xs font-semibold text-black">Deszy Creative</span>
+                      <span class="px-1.5 py-0.2 rounded bg-neutral-100 text-[10px] font-mono text-neutral-600">2 đích đăng</span>
+                      <span class="px-1.5 py-0.2 rounded bg-neutral-100 text-[10px] font-mono text-neutral-600">Asia/Ho_Chi_Minh</span>
+                    </div>
+                    <p class="text-[11.5px] text-neutral-500 mt-0.5">Agency truyền thông & sáng tạo nội dung đa kênh.</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-1">
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Sửa</button>
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Lưu trữ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: GROUPED DOMAIN MATRIX (Vercel / GitHub Settings style)           -->
+    <!-- ========================================================================= -->
+    <div id="option-b" class="space-y-8 hidden">
+      
+      <!-- Top Title + 4 Minimalist Monochrome Stat Indicators -->
+      <div>
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-zinc-200">
+          <div>
+            <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Cài đặt</div>
+            <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Tổng quan cài đặt hệ thống</h1>
+            <p class="text-xs text-neutral-500 mt-1">Phân vùng cấu hình trực quan theo 3 miền chức năng, không cần chuyển tab.</p>
+          </div>
+          <button class="h-9 px-4 text-xs font-medium rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs">
+            Lưu tất cả cấu hình
+          </button>
+        </div>
+
+        <!-- 4 Monochrome Stat Tiles -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-4">
+          <div class="card-wireframe p-3.5 bg-white">
+            <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Thương hiệu</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xl font-bold text-black">2</span>
+              <span class="text-[11px] text-neutral-500">đang hoạt động</span>
+            </div>
+          </div>
+          <div class="card-wireframe p-3.5 bg-white">
+            <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Đích đăng kết nối</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xl font-bold text-black">8</span>
+              <span class="text-[11px] text-neutral-500">Facebook, IG, TikTok...</span>
+            </div>
+          </div>
+          <div class="card-wireframe p-3.5 bg-white">
+            <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Tác vụ đang chờ</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xl font-bold text-black">0</span>
+              <span class="text-[11px] text-neutral-500">hàng đợi trống</span>
+            </div>
+          </div>
+          <div class="card-wireframe p-3.5 bg-white">
+            <span class="text-[11px] font-mono text-neutral-400 uppercase tracking-wider block">Mô hình AI</span>
+            <div class="flex items-baseline gap-2 mt-1">
+              <span class="text-xl font-bold text-black">Active</span>
+              <span class="text-[11px] text-neutral-500">OpenRouter</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DOMAIN 1: TRÍ TUỆ NHÂN TẠO & HỆ THỐNG ĐĂNG TỰ ĐỘNG -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-black"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-neutral-600">Miền 1: Trí tuệ nhân tạo & Đăng bài tự động</h2>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <!-- AI Engine Card -->
+          <div class="card-wireframe p-5 bg-white space-y-3 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-black">Mô hình AI & Khóa API</h3>
+                <span class="px-2 py-0.5 rounded-full border border-zinc-200 bg-neutral-50 text-[10.5px] font-mono">OpenRouter API</span>
+              </div>
+              <p class="text-xs text-neutral-500 leading-relaxed mb-4">Mã hóa an toàn trong workspace. Không lưu trữ mật khẩu hay truyền raw token qua browser.</p>
+              <div class="p-3 rounded-xl border border-zinc-200 bg-neutral-50 text-xs space-y-1.5">
+                <div class="flex justify-between"><span class="text-neutral-500">Model:</span><span class="font-mono font-medium">openai/gpt-4o-mini</span></div>
+                <div class="flex justify-between"><span class="text-neutral-500">Trạng thái:</span><span class="text-neutral-800 font-medium">Sẵn sàng phản hồi</span></div>
+              </div>
+            </div>
+            <div class="flex gap-2 pt-2 border-t border-zinc-200">
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50 w-full">Đổi API Key</button>
+              <button class="h-8 px-3 rounded-lg bg-black text-white text-xs font-medium hover:bg-neutral-800 w-full">Kiểm tra kết nối</button>
+            </div>
+          </div>
+
+          <!-- Auto Publishing Engine Card -->
+          <div class="card-wireframe p-5 bg-white space-y-3 flex flex-col justify-between">
+            <div>
+              <div class="flex items-center justify-between mb-3">
+                <h3 class="text-sm font-semibold text-black">Hệ thống phân phối tự động (Engine)</h3>
+                <span class="px-2 py-0.5 rounded-full border border-zinc-200 bg-neutral-50 text-[10.5px] font-mono">Cron Active</span>
+              </div>
+              <p class="text-xs text-neutral-500 leading-relaxed mb-4">Tiến trình chạy ngầm gửi bài đăng đúng lịch hẹn kể cả khi đã tắt trình duyệt.</p>
+              <div class="p-3 rounded-xl border border-zinc-200 bg-neutral-50 text-xs space-y-1.5">
+                <div class="flex justify-between"><span class="text-neutral-500">Kênh đã liên kết:</span><span class="font-mono font-medium">8 kênh</span></div>
+                <div class="flex justify-between"><span class="text-neutral-500">Lịch đăng tiếp theo:</span><span class="font-mono text-neutral-400">— (Không có bài chờ)</span></div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-zinc-200">
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-800 hover:bg-neutral-50 w-full">Kiểm tra khả năng đăng bài</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOMAIN 2: THƯƠNG HIỆU & TIỆN ÍCH NỘI DUNG -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-black"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-neutral-600">Miền 2: Thương hiệu & Tiện ích nội dung</h2>
+        </div>
+
+        <div class="card-wireframe p-5 bg-white space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+            <div>
+              <h3 class="text-sm font-semibold text-black">Thương hiệu & Đích đăng trực thuộc</h3>
+              <p class="text-xs text-neutral-500">Quản lý múi giờ và phân nhóm tài sản cho từng khách hàng hoặc dự án.</p>
+            </div>
+            <button class="h-8 px-3 rounded-xl bg-black text-white text-xs font-medium hover:bg-neutral-800 transition-colors">+ Thêm thương hiệu</button>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-neutral-50/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-black">Test Brand</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white border border-zinc-200">8 kênh kết nối</span>
+              </div>
+              <p class="text-[11.5px] text-neutral-500">Múi giờ Asia/Ho_Chi_Minh · 0 bài viết đã lên lịch</p>
+            </div>
+
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-neutral-50/40 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-black">Deszy Creative</span>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-white border border-zinc-200">2 kênh kết nối</span>
+              </div>
+              <p class="text-[11.5px] text-neutral-500">Múi giờ Asia/Ho_Chi_Minh · 0 bài viết đã lên lịch</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Signatures & Shortlinks -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="card-wireframe p-4 bg-white space-y-2">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-semibold text-black">Chữ ký bài viết (Signatures)</h4>
+              <button class="text-xs text-black font-medium hover:underline">Quản lý &rarr;</button>
+            </div>
+            <p class="text-[11.5px] text-neutral-500">Tự động chèn lời kết, hashtag hoặc thông tin liên hệ vào cuối bài viết.</p>
+          </div>
+          <div class="card-wireframe p-4 bg-white space-y-2">
+            <div class="flex justify-between items-center">
+              <h4 class="text-xs font-semibold text-black">Rút gọn liên kết (Shortlinks)</h4>
+              <button class="text-xs text-black font-medium hover:underline">Quản lý &rarr;</button>
+            </div>
+            <p class="text-[11.5px] text-neutral-500">Tự động thu ngắn URL bài đăng qua domain tùy chỉnh và theo dõi click.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- DOMAIN 3: HỆ THỐNG & KHÔNG GIAN LÀM VIỆC -->
+      <section class="space-y-3">
+        <div class="flex items-center gap-2">
+          <span class="h-2 w-2 rounded-full bg-black"></span>
+          <h2 class="text-xs font-bold uppercase tracking-wider font-mono text-neutral-600">Miền 3: Ngôn ngữ, Dữ liệu & Bản quyền</h2>
+        </div>
+
+        <div class="card-wireframe p-5 bg-white grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div class="space-y-2">
+            <h4 class="text-xs font-semibold text-black">Ngôn ngữ hiển thị</h4>
+            <select class="w-full h-9 px-3 rounded-xl border border-zinc-200 text-xs bg-white">
+              <option>Tiếng Việt</option>
+              <option>English</option>
+            </select>
+            <p class="text-[11px] text-neutral-400">Áp dụng cho toàn bộ giao diện làm việc.</p>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-xs font-semibold text-black">Dữ liệu thử nghiệm (Demo)</h4>
+            <div class="flex items-center gap-2">
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Tạo lại mẫu</button>
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 text-xs font-medium text-neutral-700 hover:bg-neutral-50">Xóa dữ liệu mẫu</button>
+            </div>
+            <p class="text-[11px] text-neutral-400">Dữ liệu mẫu độc lập, không ảnh hưởng kênh thật.</p>
+          </div>
+
+          <div class="space-y-2">
+            <h4 class="text-xs font-semibold text-black">Bản quyền phần mềm</h4>
+            <div class="text-xs font-mono font-medium text-black">Socialchoice Pro v0.7.0</div>
+            <p class="text-[11px] text-neutral-400">Giấy phép sở hữu vĩnh viễn (Local Workspace).</p>
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: SPLIT CANVAS & LIVE HUD (Figma / Notion Inspector style)         -->
+    <!-- ========================================================================= -->
+    <div id="option-c" class="space-y-6 hidden">
+      
+      <!-- Top Title + Minimalist Monochrome Segmented Tabs -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-zinc-200">
+        <div>
+          <div class="text-xs text-neutral-400 font-mono mb-1">Socialchoice / Cài đặt</div>
+          <h1 class="font-heading text-2xl font-bold tracking-tight text-black">Cài đặt</h1>
+          <p class="text-xs text-neutral-500 mt-1">Giao diện điều khiển tập trung kèm bảng giám sát trạng thái thời gian thực.</p>
+        </div>
+        <button class="h-9 px-4 text-xs font-medium rounded-xl bg-black text-white hover:bg-neutral-800 transition-colors shadow-xs">
+          Lưu thiết lập
+        </button>
+      </div>
+
+      <!-- Monochrome Horizontal Tabs -->
+      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-zinc-200">
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-semibold bg-black text-white shadow-2xs">Tất cả</button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100">Cấu hình AI & Trợ lý</button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100 flex items-center gap-1.5">
+          <span>Thương hiệu</span>
+          <span class="px-1.5 py-0.2 rounded-md bg-neutral-200 text-[10px] font-mono">2</span>
+        </button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100">Hệ thống đăng bài</button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100">Chữ ký (Signatures)</button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100">Rút gọn liên kết</button>
+        <button class="px-3.5 py-1.5 rounded-xl text-xs font-medium text-neutral-600 hover:bg-neutral-100">Tùy chọn chung</button>
+      </div>
+
+      <!-- Split Layout: Main Work Canvas (Left 68%) + Live Inspector HUD (Right 32%) -->
+      <div class="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+        
+        <!-- Main Form Area -->
+        <div class="space-y-6">
+          
+          <!-- AI Section Card -->
+          <div class="card-wireframe p-5 bg-white space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <h3 class="text-sm font-semibold text-black">Mô hình AI dùng API Key của bạn</h3>
+              <span class="px-2 py-0.5 rounded-full border border-zinc-200 bg-neutral-50 text-[10.5px] font-mono">OpenRouter</span>
+            </div>
+
+            <div class="rounded-xl border border-zinc-200 bg-neutral-50/40 p-3.5 flex items-center justify-between">
+              <div>
+                <div class="text-xs font-semibold text-black">OpenRouter: openai/gpt-4o-mini</div>
+                <div class="text-[11px] font-mono text-neutral-500 mt-0.5">Khóa API: sk-or-•••••••••••• (Đã lưu & mã hóa)</div>
+              </div>
+              <button class="h-8 px-3 rounded-lg border border-zinc-200 bg-white text-xs font-medium hover:bg-neutral-50">Kiểm tra kết nối</button>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div>
+                <label class="block text-neutral-500 font-medium mb-1">Nhà cung cấp</label>
+                <div class="h-9 px-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
+                  <span>OpenRouter</span>
+                  <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+              <div>
+                <label class="block text-neutral-500 font-medium mb-1">Mã Model</label>
+                <div class="h-9 px-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between">
+                  <span>openai/gpt-4o-mini</span>
+                  <svg class="w-3.5 h-3.5 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Brands Card -->
+          <div class="card-wireframe p-5 bg-white space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-zinc-200">
+              <h3 class="text-sm font-semibold text-black">Thương hiệu & Phân quyền</h3>
+              <button class="h-8 px-3 rounded-xl bg-black text-white text-xs font-medium hover:bg-neutral-800">+ Thêm thương hiệu</button>
+            </div>
+
+            <div class="divide-y divide-zinc-200">
+              <div class="py-3 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-semibold text-black">Test Brand</div>
+                  <div class="text-[11px] text-neutral-500">8 đích đăng · Múi giờ Asia/Ho_Chi_Minh</div>
+                </div>
+                <div class="flex gap-1.5">
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs hover:bg-neutral-50">Sửa</button>
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs hover:bg-neutral-50">Lưu trữ</button>
+                </div>
+              </div>
+
+              <div class="py-3 flex items-center justify-between">
+                <div>
+                  <div class="text-xs font-semibold text-black">Deszy Creative</div>
+                  <div class="text-[11px] text-neutral-500">2 đích đăng · Múi giờ Asia/Ho_Chi_Minh</div>
+                </div>
+                <div class="flex gap-1.5">
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs hover:bg-neutral-50">Sửa</button>
+                  <button class="h-7 px-2.5 rounded-lg border border-zinc-200 text-xs hover:bg-neutral-50">Lưu trữ</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Live Inspector HUD -->
+        <div class="space-y-4 sticky top-20">
+          
+          <!-- System Status HUD -->
+          <div class="card-wireframe p-5 bg-white space-y-3.5">
+            <div class="flex items-center justify-between pb-2.5 border-b border-zinc-200">
+              <h4 class="text-xs font-bold uppercase tracking-wider font-mono text-neutral-600">Giám sát hệ thống (HUD)</h4>
+              <span class="h-2 w-2 rounded-full bg-emerald-500" title="Hoạt động"></span>
+            </div>
+
+            <div class="space-y-2.5 text-xs">
+              <div class="flex justify-between items-center py-1 border-b border-zinc-100">
+                <span class="text-neutral-500">Tiến trình đăng:</span>
+                <span class="font-medium text-black">Tự động (Cron)</span>
+              </div>
+              <div class="flex justify-between items-center py-1 border-b border-zinc-100">
+                <span class="text-neutral-500">Kênh kết nối thật:</span>
+                <span class="font-mono font-bold text-black">8 kênh</span>
+              </div>
+              <div class="flex justify-between items-center py-1 border-b border-zinc-100">
+                <span class="text-neutral-500">Tác vụ đang chờ:</span>
+                <span class="font-mono font-medium text-black">0 bài</span>
+              </div>
+              <div class="flex justify-between items-center py-1 border-b border-zinc-100">
+                <span class="text-neutral-500">Trí tuệ nhân tạo:</span>
+                <span class="font-medium text-neutral-800">gpt-4o-mini</span>
+              </div>
+              <div class="flex justify-between items-center py-1">
+                <span class="text-neutral-500">Không gian:</span>
+                <span class="font-mono text-[11px] text-neutral-600">Local Workspace</span>
+              </div>
+            </div>
+
+            <button class="w-full h-8 mt-2 rounded-xl border border-zinc-200 bg-white text-xs font-medium text-neutral-800 hover:bg-neutral-50 transition-colors">
+              Chạy kiểm tra toàn bộ
+            </button>
+          </div>
+
+          <!-- Quick Owner Profile Card -->
+          <div class="card-wireframe p-4 bg-white space-y-3">
+            <div class="flex items-center gap-3">
+              <div class="h-9 w-9 rounded-xl bg-black text-white text-xs font-bold flex items-center justify-center">WO</div>
+              <div class="min-w-0">
+                <div class="text-xs font-semibold text-black truncate">Local workspace owner</div>
+                <div class="text-[11px] text-neutral-400 font-mono truncate">Asia/Ho_Chi_Minh</div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-zinc-200 flex justify-between items-center text-xs">
+              <span class="text-neutral-500">Ngôn ngữ:</span>
+              <span class="font-medium text-black">Tiếng Việt</span>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+  <script>
+    function switchOption(opt) {
+      document.getElementById('option-a').classList.add('hidden');
+      document.getElementById('option-b').classList.add('hidden');
+      document.getElementById('option-c').classList.add('hidden');
+
+      document.getElementById('btn-opt-a').classList.remove('active');
+      document.getElementById('btn-opt-b').classList.remove('active');
+      document.getElementById('btn-opt-c').classList.remove('active');
+
+      if (opt === 'a') {
+        document.getElementById('option-a').classList.remove('hidden');
+        document.getElementById('btn-opt-a').classList.add('active');
+      } else if (opt === 'b') {
+        document.getElementById('option-b').classList.remove('hidden');
+        document.getElementById('btn-opt-b').classList.add('active');
+      } else if (opt === 'c') {
+        document.getElementById('option-c').classList.remove('hidden');
+        document.getElementById('btn-opt-c').classList.add('active');
+      }
+    }
+  </script>
+</body>
+</html>

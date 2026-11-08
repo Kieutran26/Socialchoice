@@ -59,38 +59,38 @@ export default function DistributionOverTime({ scope, filters }) {
     const max = Math.max(1, ...rows.map((r) => r.count));
 
     return (
-        <section className="panel p-5 flex flex-col justify-between">
+        <section className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs flex flex-col justify-between">
             <div>
                 <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
-                            <CalendarBlank size={16} weight="duotone" />
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-800">
+                            <CalendarBlank size={16} weight="bold" />
                         </span>
-                        <h2 className="text-[15px] font-semibold text-foreground">
+                        <h2 className="text-[14px] font-semibold text-neutral-900">
                             {t('Scheduled content per week')}
                         </h2>
                     </div>
                     {rows.length > 0 && (
-                        <span className="rounded-lg bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+                        <span className="rounded-lg bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 border border-neutral-200">
                             {rows.length} {t('weeks')}
                         </span>
                     )}
                 </div>
-                <p className="label-xs text-muted-foreground mt-1.5">
+                <p className="text-xs text-neutral-500 mt-1">
                     {t('Unique content posts with a calendar date.')}
                 </p>
 
-                {error && <p role="alert" className="mt-3 text-xs text-dangerFg">{t(error)}</p>}
+                {error && <p role="alert" className="mt-3 text-xs text-neutral-800 bg-neutral-100 p-2 rounded-lg">{t(error)}</p>}
 
                 {!loading && !rows.length && (
                     <div className="py-8 text-center flex flex-col items-center justify-center">
-                        <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center text-muted-foreground mb-2">
-                            <ClockCountdown size={20} weight="duotone" />
+                        <div className="h-10 w-10 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-500 mb-2">
+                            <ClockCountdown size={20} weight="regular" />
                         </div>
-                        <p className="text-xs font-medium text-foreground">
+                        <p className="text-xs font-medium text-neutral-800">
                             {t('No scheduled content in this view.')}
                         </p>
-                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                        <p className="text-[11px] text-neutral-500 mt-0.5">
                             {t('Posts with scheduled dates will appear here by week.')}
                         </p>
                     </div>
@@ -101,17 +101,17 @@ export default function DistributionOverTime({ scope, filters }) {
                         {rows.map((r) => (
                             <div key={r.bucket} className="space-y-1.5 group">
                                 <div className="flex items-center justify-between text-xs">
-                                    <span className="font-medium text-foreground flex items-center gap-1.5">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-primary/80" />
+                                    <span className="font-medium text-neutral-800 flex items-center gap-1.5">
+                                        <span className="h-1.5 w-1.5 rounded-full bg-neutral-900" />
                                         {formatCalendarDate(r.bucket)}
                                     </span>
-                                    <span className="font-mono text-xs font-semibold text-muted-foreground group-hover:text-foreground transition-colors">
+                                    <span className="font-mono text-xs font-semibold text-neutral-500 group-hover:text-neutral-900 transition-colors">
                                         {formatNumber(r.count)} {t('posts')}
                                     </span>
                                 </div>
-                                <div className="h-2 w-full bg-muted/70 rounded-full overflow-hidden">
+                                <div className="h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200/50">
                                     <div
-                                        className="h-full bg-brand rounded-full transition-all duration-300 group-hover:brightness-95"
+                                        className="h-full bg-neutral-900 rounded-full transition-all duration-300"
                                         style={{ width: `${(r.count / max) * 100}%` }}
                                     />
                                 </div>

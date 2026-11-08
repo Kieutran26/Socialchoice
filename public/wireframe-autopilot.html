@@ -1,0 +1,726 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 Option Layouts: Tài sản Autopilot (Cloud Asset Library) - Socialchoice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        --heading-font: "Mona Sans", "Space Grotesk", sans-serif;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--app-font);
+        background: #fbfbfa;
+        color: #181818;
+        -webkit-font-smoothing: antialiased;
+      }
+      .tab-btn-active {
+        background: #181818 !important;
+        color: #ffffff !important;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+
+  <body class="p-4 sm:p-6 lg:p-8 max-w-[1600px] mx-auto min-h-screen">
+    <!-- Top Controller: Options Switcher -->
+    <header class="mb-6 p-5 rounded-3xl bg-white border border-neutral-200/90 shadow-2xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-bold tracking-wider uppercase">
+            UI/UX Concept Review
+          </span>
+          <span class="text-xs text-neutral-400">·</span>
+          <span class="text-xs font-semibold text-neutral-700">Tab: Tài sản Autopilot (Google Drive / Storage)</span>
+        </div>
+        <h1 class="text-lg font-bold text-neutral-900 mt-1">
+          3 Phương án Layout cho Tab "Tài sản Autopilot"
+        </h1>
+        <p class="text-xs text-neutral-500 mt-0.5">
+          Chọn phương án hiển thị tối ưu luồng kết nối Google Drive, quản lý nguồn và quét AI gợi ý bài viết.
+        </p>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2 bg-neutral-100 p-1.5 rounded-2xl border border-neutral-200/70">
+        <button
+          onclick="selectOption('A')"
+          id="btn-opt-A"
+          class="tab-btn tab-btn-active px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Option A</span>
+          <span class="text-[10px] opacity-75 font-normal">(Bento Hub & Action Grid)</span>
+        </button>
+
+        <button
+          onclick="selectOption('B')"
+          id="btn-opt-B"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-neutral-600 hover:text-neutral-900 transition-all cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Option B</span>
+          <span class="text-[10px] opacity-75 font-normal">(Two-Column Drive Explorer)</span>
+        </button>
+
+        <button
+          onclick="selectOption('C')"
+          id="btn-opt-C"
+          class="tab-btn px-4 py-2 rounded-xl text-xs font-bold text-neutral-600 hover:text-neutral-900 transition-all cursor-pointer flex items-center gap-1.5"
+        >
+          <span>Option C</span>
+          <span class="text-[10px] opacity-75 font-normal">(3-Stage Kanban Pipeline)</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Content Sections -->
+    <main>
+      <!-- ================= OPTION A ================= -->
+      <section id="option-A" class="space-y-6">
+        <!-- Explainer Card -->
+        <div class="p-4 rounded-2xl bg-neutral-900 text-white text-xs flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-white/20 text-white font-bold text-[10px]">OPTION A</span>
+            <span class="font-semibold">Cloud Sync Hub & Action Stream (Bento Grid)</span>
+            <span class="text-neutral-400">— Tích hợp sẵn bộ chọn Thương hiệu ngay đầu, danh thiếp nguồn Drive nhỏ gọn và lưới ảnh đính kèm gợi ý AI trực tiếp.</span>
+          </div>
+          <span class="text-[11px] text-neutral-400">Được đề xuất cho thao tác nhanh 1-Click</span>
+        </div>
+
+        <!-- Integrated Header & Brand Selector -->
+        <div class="p-5 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <span class="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0">
+              <i data-lucide="sparkles" class="w-5 h-5"></i>
+            </span>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-sm font-bold text-neutral-900">Thư viện tài sản Autopilot</h2>
+                <span class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 border border-emerald-200">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                  Đã kết nối Drive & Storage
+                </span>
+              </div>
+              <p class="text-[11px] text-neutral-500 mt-0.5">
+                Tệp gốc lưu tại Google Drive hoặc S3/R2. Đồng bộ siêu tốc, tự động phân tích góc viết và duyệt trước khi đăng.
+              </p>
+            </div>
+          </div>
+
+          <!-- Brand Switcher & Actions -->
+          <div class="flex items-center gap-2.5">
+            <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl border border-neutral-200 bg-neutral-50/70">
+              <i data-lucide="tag" class="w-3.5 h-3.5 text-neutral-400"></i>
+              <span class="text-xs font-medium text-neutral-500">Thương hiệu:</span>
+              <select class="bg-transparent text-xs font-bold text-neutral-900 focus:outline-none cursor-pointer">
+                <option selected>Socialchoice Brand</option>
+                <option>Delphi Tools</option>
+                <option>Eco Green Lab</option>
+              </select>
+            </div>
+
+            <button class="h-9 px-3.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-semibold text-neutral-700 flex items-center gap-1.5 cursor-pointer shadow-2xs">
+              <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+              <span>Đồng bộ tất cả</span>
+            </button>
+
+            <button class="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer">
+              <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i>
+              <span>+ Thêm nguồn Drive</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Connected Sources Bento Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Source Card 1 -->
+          <div class="p-4 rounded-2xl bg-white border border-neutral-200/80 shadow-2xs flex flex-col justify-between hover:border-neutral-300 transition-all">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
+                  <i data-lucide="folder" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h4 class="text-xs font-bold text-neutral-900">Ảnh Sản Phẩm Mùa Thu 2026</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono mt-0.5">Google Drive Public Folder</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+                Active
+              </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500 font-mono">
+              <span><strong>48</strong> tệp ảnh/video</span>
+              <button class="text-xs font-medium text-neutral-900 hover:underline flex items-center gap-1 cursor-pointer">
+                <i data-lucide="rotate-cw" class="w-3 h-3"></i> Quét lại
+              </button>
+            </div>
+          </div>
+
+          <!-- Source Card 2 -->
+          <div class="p-4 rounded-2xl bg-white border border-neutral-200/80 shadow-2xs flex flex-col justify-between hover:border-neutral-300 transition-all">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-center gap-2.5">
+                <span class="w-8 h-8 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                  <i data-lucide="video" class="w-4 h-4"></i>
+                </span>
+                <div>
+                  <h4 class="text-xs font-bold text-neutral-900">Video Feedback & Testimonial</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono mt-0.5">Google Drive Shared Folder</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 font-semibold border border-emerald-200/60">
+                Active
+              </span>
+            </div>
+            <div class="mt-4 pt-3 border-t border-neutral-100 flex items-center justify-between text-[11px] text-neutral-500 font-mono">
+              <span><strong>14</strong> video MP4</span>
+              <button class="text-xs font-medium text-neutral-900 hover:underline flex items-center gap-1 cursor-pointer">
+                <i data-lucide="rotate-cw" class="w-3 h-3"></i> Quét lại
+              </button>
+            </div>
+          </div>
+
+          <!-- Add Source Quick Card -->
+          <div class="p-4 rounded-2xl border border-dashed border-neutral-300 hover:border-neutral-900 bg-neutral-50/50 hover:bg-white flex flex-col items-center justify-center text-center cursor-pointer transition-all group min-h-[105px]">
+            <div class="w-8 h-8 rounded-full bg-neutral-200/70 group-hover:bg-neutral-900 group-hover:text-white flex items-center justify-center text-neutral-700 transition-colors">
+              <i data-lucide="plus" class="w-4 h-4"></i>
+            </div>
+            <p class="text-xs font-bold text-neutral-800 mt-2">Liên kết thư mục Drive mới</p>
+            <p class="text-[10px] text-neutral-400">Dán link Google Drive chia sẻ để đồng bộ</p>
+          </div>
+        </div>
+
+        <!-- Filter & Search Toolbar -->
+        <div class="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
+          <div class="flex items-center gap-3 flex-1 min-w-[240px]">
+            <div class="relative flex-1 max-w-sm">
+              <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+              <input
+                type="text"
+                placeholder="Tìm tệp trong Drive đã đồng bộ..."
+                class="h-9 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 pl-9 pr-3 text-xs focus:bg-white focus:outline-none focus:border-neutral-900"
+              />
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="h-9 px-3 rounded-xl bg-neutral-900 text-white text-xs font-semibold shadow-2xs">Tất cả (62)</button>
+              <button class="h-9 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 text-xs font-medium">Chỉ ảnh (48)</button>
+              <button class="h-9 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-600 text-xs font-medium">Video (14)</button>
+            </div>
+          </div>
+
+          <div class="text-xs text-neutral-500 font-mono">
+            Đã phân tích AI: <strong class="text-neutral-900">58/62 tệp</strong> (93%)
+          </div>
+        </div>
+
+        <!-- Synced Asset Grid with AI Insight Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Asset Card 1 -->
+          <div class="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group">
+            <div class="relative aspect-video w-full bg-neutral-100 overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono font-bold">DRIVE · JPG</span>
+              <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex items-center gap-1 shadow-xs">
+                <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI Đã quét
+              </span>
+            </div>
+            <div class="p-3.5 space-y-2.5">
+              <div>
+                <h4 class="text-xs font-bold text-neutral-900 truncate">Giày Sneaker Đỏ Mùa Thu 2026.jpg</h4>
+                <p class="text-[10px] text-neutral-400 font-mono mt-0.5">2.4 MB · Thư mục: Ảnh Sản Phẩm</p>
+              </div>
+
+              <!-- AI Hook Preview -->
+              <div class="p-2 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-700 space-y-1">
+                <div class="flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                  <i data-lucide="lightbulb" class="w-3 h-3"></i> GỢI Ý GÓC VIẾT:
+                </div>
+                <p class="line-clamp-2 text-[11px] text-neutral-600">"Nổi bật mọi bước chân với sắc đỏ thể thao đậm chất năng động..."</p>
+              </div>
+
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">#Sport #Fall2026</span>
+                <button class="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
+                  <i data-lucide="feather" class="w-3 h-3"></i> Tạo bài viết
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asset Card 2 -->
+          <div class="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group">
+            <div class="relative aspect-video w-full bg-neutral-100 overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono font-bold">DRIVE · PNG</span>
+              <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[9px] font-bold flex items-center gap-1 shadow-xs">
+                <i data-lucide="sparkles" class="w-2.5 h-2.5"></i> AI Đã quét
+              </span>
+            </div>
+            <div class="p-3.5 space-y-2.5">
+              <div>
+                <h4 class="text-xs font-bold text-neutral-900 truncate">Smart Watch Minimalist Studio.png</h4>
+                <p class="text-[10px] text-neutral-400 font-mono mt-0.5">1.8 MB · Thư mục: Ảnh Sản Phẩm</p>
+              </div>
+
+              <!-- AI Hook Preview -->
+              <div class="p-2 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-700 space-y-1">
+                <div class="flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                  <i data-lucide="lightbulb" class="w-3 h-3"></i> GỢI Ý GÓC VIẾT:
+                </div>
+                <p class="line-clamp-2 text-[11px] text-neutral-600">"Tối giản nhưng đầy uy lực. Trợ lý công nghệ trên cổ tay bạn..."</p>
+              </div>
+
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">#Minimal #Tech</span>
+                <button class="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs">
+                  <i data-lucide="feather" class="w-3 h-3"></i> Tạo bài viết
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asset Card 3 (Video) -->
+          <div class="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group">
+            <div class="relative aspect-video w-full bg-neutral-900 overflow-hidden flex items-center justify-center">
+              <img src="https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop" class="w-full h-full object-cover opacity-80" />
+              <div class="w-10 h-10 rounded-full bg-white/90 text-neutral-900 flex items-center justify-center shadow-lg">
+                <i data-lucide="play" class="w-4 h-4 ml-0.5"></i>
+              </div>
+              <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono font-bold">DRIVE · MP4</span>
+              <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-bold flex items-center gap-1 shadow-xs">
+                <i data-lucide="check" class="w-2.5 h-2.5"></i> Đã có bài
+              </span>
+            </div>
+            <div class="p-3.5 space-y-2.5">
+              <div>
+                <h4 class="text-xs font-bold text-neutral-900 truncate">Unboxing_Phone_16Pro_Shorts.mp4</h4>
+                <p class="text-[10px] text-neutral-400 font-mono mt-0.5">14.2 MB · 00:28s · Video Feedback</p>
+              </div>
+
+              <div class="p-2 rounded-xl bg-emerald-50/70 border border-emerald-100 text-[11px] text-emerald-900 space-y-1">
+                <div class="flex items-center gap-1 text-[10px] font-bold text-emerald-700">
+                  <i data-lucide="check-circle" class="w-3 h-3"></i> TRẠNG THÁI:
+                </div>
+                <p class="text-[11px] text-emerald-800">Đã lên lịch đăng lúc 19:30 ngày mai trên Facebook & TikTok.</p>
+              </div>
+
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">2 drafts</span>
+                <button class="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="eye" class="w-3 h-3"></i> Xem bài viết
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Asset Card 4 (Need AI Scan) -->
+          <div class="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group">
+            <div class="relative aspect-video w-full bg-neutral-100 overflow-hidden">
+              <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+              <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded bg-black/60 text-white text-[10px] font-mono font-bold">DRIVE · JPG</span>
+              <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-full bg-neutral-600 text-white text-[9px] font-bold">
+                Mới đồng bộ
+              </span>
+            </div>
+            <div class="p-3.5 space-y-2.5">
+              <div>
+                <h4 class="text-xs font-bold text-neutral-900 truncate">Tai_Nghe_Chong_On_Sony_Black.jpg</h4>
+                <p class="text-[10px] text-neutral-400 font-mono mt-0.5">3.1 MB · Thư mục: Ảnh Sản Phẩm</p>
+              </div>
+
+              <div class="p-2 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-500">
+                <p class="text-[11px] text-neutral-500">Tệp vừa tải về từ Drive, chưa phân tích nội dung hình ảnh.</p>
+              </div>
+
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">Chưa gắn tag</span>
+                <button class="h-7 px-3 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center gap-1.5 cursor-pointer">
+                  <i data-lucide="sparkles" class="w-3 h-3 text-amber-600"></i> Quét AI
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= OPTION B ================= -->
+      <section id="option-B" class="hidden space-y-6">
+        <!-- Explainer Card -->
+        <div class="p-4 rounded-2xl bg-neutral-900 text-white text-xs flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-white/20 text-white font-bold text-[10px]">OPTION B</span>
+            <span class="font-semibold">Two-Column Drive Explorer & Inspector Drawer</span>
+            <span class="text-neutral-400">— Cột trái duyệt cây thư mục Drive y hệt Google Drive/Finder, cột phải xem lưới tệp kèm bảng chi tiết phân tích AI khi click.</span>
+          </div>
+          <span class="text-[11px] text-neutral-400">Phù hợp kho dữ liệu lớn, nhiều thư mục phân loại</span>
+        </div>
+
+        <!-- Integrated Header -->
+        <div class="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+              <i data-lucide="hard-drive" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <h2 class="text-sm font-bold text-neutral-900">Quản lý nguồn tài sản Google Drive</h2>
+              <p class="text-[11px] text-neutral-500">Cây thư mục đồng bộ trực tiếp với Google Drive theo thời gian thực.</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <button class="h-8 px-3 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-xs font-semibold text-neutral-700 flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-3 h-3"></i> Làm mới cây thư mục
+            </button>
+            <button class="h-8 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer">
+              <i data-lucide="folder-plus" class="w-3.5 h-3.5"></i> + Thư mục Drive mới
+            </button>
+          </div>
+        </div>
+
+        <!-- Two Column Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+          <!-- Left Column: Source Folders Navigation (4 Cols) -->
+          <div class="lg:col-span-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs p-4 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-neutral-100">
+              <span class="text-xs font-bold uppercase text-neutral-400 tracking-wider font-mono">Thư mục nguồn (3)</span>
+              <span class="text-[10px] text-neutral-500 font-mono">62 tệp</span>
+            </div>
+
+            <!-- Folder items -->
+            <div class="space-y-1.5">
+              <div class="p-3 rounded-xl bg-neutral-900 text-white flex items-center justify-between cursor-pointer">
+                <div class="flex items-center gap-2.5">
+                  <i data-lucide="folder" class="w-4 h-4 text-amber-400"></i>
+                  <div>
+                    <p class="text-xs font-bold leading-none">Ảnh Sản Phẩm Mùa Thu</p>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-1">Google Drive · 48 tệp</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-neutral-800 text-neutral-300">Đang xem</span>
+              </div>
+
+              <div class="p-3 rounded-xl hover:bg-neutral-50 border border-transparent hover:border-neutral-200 flex items-center justify-between cursor-pointer transition-all">
+                <div class="flex items-center gap-2.5">
+                  <i data-lucide="folder" class="w-4 h-4 text-neutral-400"></i>
+                  <div>
+                    <p class="text-xs font-bold text-neutral-800 leading-none">Video Feedback & Testimonial</p>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-1">Google Drive · 14 tệp</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono text-neutral-400">14 tệp</span>
+              </div>
+
+              <div class="p-3 rounded-xl hover:bg-neutral-50 border border-transparent hover:border-neutral-200 flex items-center justify-between cursor-pointer transition-all">
+                <div class="flex items-center gap-2.5">
+                  <i data-lucide="folder" class="w-4 h-4 text-neutral-400"></i>
+                  <div>
+                    <p class="text-xs font-bold text-neutral-800 leading-none">Banner Quảng Cáo & Khuyến Mãi</p>
+                    <p class="text-[10px] text-neutral-400 font-mono mt-1">R2 Bucket · 0 tệp</p>
+                  </div>
+                </div>
+                <span class="text-[10px] font-mono text-neutral-400">Trống</span>
+              </div>
+            </div>
+
+            <!-- Storage Quota Widget -->
+            <div class="p-3 rounded-xl bg-neutral-50 border border-neutral-100 text-xs space-y-2">
+              <div class="flex items-center justify-between text-[11px] text-neutral-500">
+                <span>Dung lượng đã đồng bộ</span>
+                <span class="font-mono font-bold text-neutral-800">420 MB / 5 GB</span>
+              </div>
+              <div class="w-full bg-neutral-200 h-1.5 rounded-full overflow-hidden">
+                <div class="bg-neutral-900 h-full w-[12%]"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right Column: Files & Live Inspector (8 Cols) -->
+          <div class="lg:col-span-8 space-y-4">
+            <!-- Search & Breadcrumb -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex items-center justify-between gap-3">
+              <div class="flex items-center gap-2 text-xs text-neutral-500 font-mono">
+                <i data-lucide="folder-open" class="w-4 h-4 text-neutral-400"></i>
+                <span class="text-neutral-400">Drive /</span>
+                <strong class="text-neutral-900 font-sans">Ảnh Sản Phẩm Mùa Thu</strong>
+                <span class="text-neutral-400 font-mono">(48 tệp)</span>
+              </div>
+
+              <div class="relative w-64">
+                <i data-lucide="search" class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+                <input
+                  type="text"
+                  placeholder="Lọc tệp..."
+                  class="h-8 w-full rounded-xl border border-neutral-200 bg-neutral-50/50 pl-8 pr-2.5 text-xs focus:bg-white focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <!-- Selected File Inspector Panel (Side-by-side or Top Banner) -->
+            <div class="p-5 bg-white border-2 border-neutral-900 rounded-2xl shadow-xs grid grid-cols-1 md:grid-cols-12 gap-5">
+              <div class="md:col-span-4 aspect-square rounded-xl bg-neutral-100 overflow-hidden relative border border-neutral-200">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop" class="w-full h-full object-cover" />
+                <span class="absolute left-2 top-2 px-2 py-0.5 rounded bg-black/70 text-white text-[9px] font-mono">ĐANG CHỌN</span>
+              </div>
+
+              <div class="md:col-span-8 flex flex-col justify-between space-y-3">
+                <div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-[10px] font-mono text-amber-600 bg-amber-50 px-2 py-0.5 rounded font-bold border border-amber-200">
+                      ✨ AI Vision Phân Tích
+                    </span>
+                    <span class="text-xs text-neutral-400 font-mono">2.4 MB · 1920x1080</span>
+                  </div>
+                  <h3 class="text-sm font-bold text-neutral-900 mt-1.5">Giày Sneaker Đỏ Mùa Thu 2026.jpg</h3>
+                  <p class="text-xs text-neutral-600 mt-2 leading-relaxed">
+                    <strong>Nhận diện ảnh:</strong> Sản phẩm giày thể thao màu đỏ phối trắng, góc chụp năng động từ dưới lên, phù hợp các chiến dịch khuyến mãi hoặc bài post truyền cảm hứng tập luyện thể thao.
+                  </p>
+                </div>
+
+                <div class="pt-3 border-t border-neutral-100 flex items-center justify-between">
+                  <div class="text-[11px] text-neutral-500 font-mono">
+                    Gợi ý: <strong>Facebook, Instagram, Threads</strong>
+                  </div>
+                  <button class="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="feather" class="w-3.5 h-3.5"></i>
+                    <span>Tạo bài viết từ ảnh này</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Other Thumbnails List -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div class="p-2 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:border-neutral-900 cursor-pointer transition-all">
+                <div class="aspect-video rounded-lg overflow-hidden bg-neutral-100 mb-1.5">
+                  <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400&auto=format&fit=crop" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-[11px] font-bold text-neutral-800 truncate">Smart Watch Studio.png</p>
+                <p class="text-[9px] text-neutral-400 font-mono">1.8 MB</p>
+              </div>
+
+              <div class="p-2 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:border-neutral-900 cursor-pointer transition-all">
+                <div class="aspect-video rounded-lg overflow-hidden bg-neutral-100 mb-1.5">
+                  <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400&auto=format&fit=crop" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-[11px] font-bold text-neutral-800 truncate">Tai_Nghe_Sony.jpg</p>
+                <p class="text-[9px] text-neutral-400 font-mono">3.1 MB</p>
+              </div>
+
+              <div class="p-2 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:border-neutral-900 cursor-pointer transition-all">
+                <div class="aspect-video rounded-lg overflow-hidden bg-neutral-100 mb-1.5">
+                  <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=400&auto=format&fit=crop" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-[11px] font-bold text-neutral-800 truncate">Kinh_Mat_Thoi_Trang.jpg</p>
+                <p class="text-[9px] text-neutral-400 font-mono">2.0 MB</p>
+              </div>
+
+              <div class="p-2 bg-white border border-neutral-200/80 rounded-xl shadow-2xs hover:border-neutral-900 cursor-pointer transition-all">
+                <div class="aspect-video rounded-lg overflow-hidden bg-neutral-100 mb-1.5">
+                  <img src="https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400&auto=format&fit=crop" class="w-full h-full object-cover" />
+                </div>
+                <p class="text-[11px] font-bold text-neutral-800 truncate">Smartwatch_Strap.png</p>
+                <p class="text-[9px] text-neutral-400 font-mono">1.2 MB</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= OPTION C ================= -->
+      <section id="option-C" class="hidden space-y-6">
+        <!-- Explainer Card -->
+        <div class="p-4 rounded-2xl bg-neutral-900 text-white text-xs flex flex-wrap items-center justify-between gap-3 shadow-xs">
+          <div class="flex items-center gap-2">
+            <span class="px-2 py-0.5 rounded bg-white/20 text-white font-bold text-[10px]">OPTION C</span>
+            <span class="font-semibold">3-Stage Automation Kanban Pipeline</span>
+            <span class="text-neutral-400">— Tổ chức thành 3 bước quy trình: (1) Nguồn Drive ➔ (2) Chờ AI quét & phân tích ➔ (3) Sẵn sàng duyệt & lên lịch đăng.</span>
+          </div>
+          <span class="text-[11px] text-neutral-400">Tuyệt vời cho quy trình nhóm có phân quyền duyệt bài</span>
+        </div>
+
+        <!-- 3 Columns Kanban -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+          <!-- Column 1: Connected Cloud Sources -->
+          <div class="bg-neutral-50/70 border border-neutral-200/80 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-800">1. Nguồn kết nối (3)</h3>
+              </div>
+              <button class="text-neutral-500 hover:text-neutral-900 cursor-pointer">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <!-- Card 1 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded">Google Drive</span>
+                <span class="text-[10px] text-neutral-400 font-mono">Active</span>
+              </div>
+              <h4 class="text-xs font-bold text-neutral-900">Ảnh Sản Phẩm Mùa Thu 2026</h4>
+              <p class="text-[11px] text-neutral-500">48 tệp ảnh đồng bộ tự động mỗi 6 giờ.</p>
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between text-[10px] text-neutral-400">
+                <span>Lần cuối: 10 phút trước</span>
+                <button class="text-neutral-900 font-bold hover:underline cursor-pointer">Sync ngay</button>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-bold text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">Google Drive</span>
+                <span class="text-[10px] text-neutral-400 font-mono">Active</span>
+              </div>
+              <h4 class="text-xs font-bold text-neutral-900">Video Feedback Khách Hàng</h4>
+              <p class="text-[11px] text-neutral-500">14 tệp video phỏng vấn người dùng thực tế.</p>
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between text-[10px] text-neutral-400">
+                <span>Lần cuối: 2 giờ trước</span>
+                <button class="text-neutral-900 font-bold hover:underline cursor-pointer">Sync ngay</button>
+              </div>
+            </div>
+
+            <button class="w-full py-2.5 rounded-xl border border-dashed border-neutral-300 hover:border-neutral-900 bg-white hover:bg-neutral-50 text-xs font-bold text-neutral-700 flex items-center justify-center gap-1.5 cursor-pointer transition">
+              <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+              <span>+ Thêm thư mục Drive mới</span>
+            </button>
+          </div>
+
+          <!-- Column 2: Synced & Waiting for AI Review -->
+          <div class="bg-neutral-50/70 border border-neutral-200/80 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-amber-500"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-800">2. Chờ AI quét & gợi ý (4)</h3>
+              </div>
+              <span class="text-[10px] font-mono text-neutral-400">Cần phân tích</span>
+            </div>
+
+            <!-- Card 1 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2">
+              <div class="flex items-center gap-2.5">
+                <img src="https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=200&auto=format&fit=crop" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h4 class="text-xs font-bold text-neutral-900 truncate">Tai_Nghe_Sony.jpg</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono">3.1 MB · Drive</p>
+                </div>
+              </div>
+              <p class="text-[11px] text-neutral-600">Đã đồng bộ xong metadata. Bấm để AI quét chủ đề & viết caption.</p>
+              <button class="w-full h-8 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Quét AI & Lên ý tưởng
+              </button>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2">
+              <div class="flex items-center gap-2.5">
+                <img src="https://images.unsplash.com/photo-1572635196237-14b3f281503f?w=200&auto=format&fit=crop" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+                <div class="min-w-0">
+                  <h4 class="text-xs font-bold text-neutral-900 truncate">Kinh_Mat_Thoi_Trang.jpg</h4>
+                  <p class="text-[10px] text-neutral-400 font-mono">2.0 MB · Drive</p>
+                </div>
+              </div>
+              <p class="text-[11px] text-neutral-600">Chưa gắn nhãn sản phẩm và chưa có góc bài đăng.</p>
+              <button class="w-full h-8 rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer">
+                <i data-lucide="sparkles" class="w-3.5 h-3.5"></i> Quét AI & Lên ý tưởng
+              </button>
+            </div>
+          </div>
+
+          <!-- Column 3: Ready to Publish / Scheduled -->
+          <div class="bg-neutral-50/70 border border-neutral-200/80 rounded-2xl p-4 space-y-3">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                <h3 class="text-xs font-bold uppercase tracking-wider text-neutral-800">3. Sẵn sàng lên lịch (12)</h3>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-bold">12 bài</span>
+            </div>
+
+            <!-- Card 1 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2.5">
+              <div class="flex items-center gap-2.5">
+                <img src="https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=200&auto=format&fit=crop" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+                <div class="min-w-0">
+                  <span class="text-[9px] font-bold font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">ĐÃ DUYỆT Ý TƯỞNG</span>
+                  <h4 class="text-xs font-bold text-neutral-900 truncate mt-1">Sneaker Đỏ Năng Động</h4>
+                </div>
+              </div>
+              <p class="text-[11px] text-neutral-600 line-clamp-2">"Nổi bật mọi bước chân với sắc đỏ thể thao đậm chất năng động..."</p>
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">Target: FB / Ins</span>
+                <button class="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-bold flex items-center gap-1 shadow-2xs cursor-pointer">
+                  <span>Lên lịch đăng</span>
+                  <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="p-3 bg-white border border-neutral-200/80 rounded-xl shadow-2xs space-y-2.5">
+              <div class="flex items-center gap-2.5">
+                <img src="https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=200&auto=format&fit=crop" class="w-12 h-12 rounded-lg object-cover shrink-0" />
+                <div class="min-w-0">
+                  <span class="text-[9px] font-bold font-mono text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded">ĐÃ DUYỆT Ý TƯỞNG</span>
+                  <h4 class="text-xs font-bold text-neutral-900 truncate mt-1">Smartwatch Minimalist</h4>
+                </div>
+              </div>
+              <p class="text-[11px] text-neutral-600 line-clamp-2">"Tối giản nhưng đầy uy lực. Trợ lý công nghệ trên cổ tay bạn..."</p>
+              <div class="pt-2 border-t border-neutral-100 flex items-center justify-between">
+                <span class="text-[10px] text-neutral-400 font-mono">Target: Threads</span>
+                <button class="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-bold flex items-center gap-1 shadow-2xs cursor-pointer">
+                  <span>Lên lịch đăng</span>
+                  <i data-lucide="arrow-right" class="w-3 h-3"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Selection Bar -->
+    <div class="mt-8 p-4 rounded-2xl bg-white border border-neutral-200 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div class="flex items-center gap-2 text-neutral-600">
+        <i data-lucide="info" class="w-4 h-4 text-neutral-400"></i>
+        <span>Bạn thích phong cách nào nhất? Trả lời <strong>"chọn A"</strong>, <strong>"chọn B"</strong> hoặc <strong>"chọn C"</strong> để áp dụng ngay vào mã nguồn.</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="selectOption('A')" class="px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-100 font-bold">Chọn A (Bento Grid)</button>
+        <button onclick="selectOption('B')" class="px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-100 font-bold">Chọn B (Drive Explorer)</button>
+        <button onclick="selectOption('C')" class="px-3 py-1.5 rounded-lg border border-neutral-200 hover:bg-neutral-100 font-bold">Chọn C (Kanban Pipeline)</button>
+      </div>
+    </div>
+
+    <script>
+      lucide.createIcons();
+
+      function selectOption(opt) {
+        ['A', 'B', 'C'].forEach(o => {
+          const sec = document.getElementById(`option-${o}`);
+          const btn = document.getElementById(`btn-opt-${o}`);
+          if (o === opt) {
+            sec.classList.remove('hidden');
+            btn.classList.add('tab-btn-active');
+            btn.classList.remove('text-neutral-600');
+          } else {
+            sec.classList.add('hidden');
+            btn.classList.remove('tab-btn-active');
+            btn.classList.add('text-neutral-600');
+          }
+        });
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+    </script>
+  </body>
+</html>

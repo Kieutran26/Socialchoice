@@ -40,22 +40,15 @@ export default function LicenseCustomerHistory({
                     : 'unknown') === activation)
     );
 
-    const getEditionBadge = (edition) => {
-        const ed = (edition || 'starter').toLowerCase();
-        if (ed === 'business') {
-            return 'bg-amber-50 text-amber-700 border-amber-200/60';
-        }
-        if (ed === 'professional') {
-            return 'bg-purple-50 text-purple-700 border-purple-200/60';
-        }
-        return 'bg-blue-50 text-blue-700 border-blue-200/60';
+    const getEditionBadge = () => {
+        return 'bg-muted/60 text-foreground border-border/80 font-mono';
     };
 
     return (
         <section className="panel min-w-0 p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                         <ClockCounterClockwise size={18} weight="duotone" />
                     </span>
                     <div>

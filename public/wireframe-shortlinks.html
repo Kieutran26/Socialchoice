@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="vi" data-mau="xam">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 Option Layouts: Rút gọn liên kết (Shortlinks) - Socialchoice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        --heading-font: "Mona Sans", "Space Grotesk", sans-serif;
+        --primary: #181818;
+        --primary-hover: #262626;
+        --background: #fbfbfa;
+        --surface: #ffffff;
+        --foreground: #181818;
+        --muted: #71717a;
+        --border: #e4e4e7;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--app-font);
+        background: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .tab-active {
+        background: #181818 !important;
+        color: #ffffff !important;
+      }
+    </style>
+  </head>
+
+  <body class="p-4 sm:p-6 lg:p-8 max-w-[1560px] mx-auto min-h-screen">
+    <!-- Top Controller Bar: Options Switcher -->
+    <header class="mb-6 p-4 rounded-2xl bg-white border border-neutral-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-bold tracking-wider uppercase">
+            UI/UX Concept Review
+          </span>
+          <span class="text-xs text-neutral-400">·</span>
+          <span class="text-xs font-semibold text-neutral-700">Màn hình: Rút gọn liên kết (Shortlinks)</span>
+        </div>
+        <h1 class="text-lg font-bold text-neutral-900 mt-1">
+          3 Phương án Layout cho Trang Rút Gọn Liên Kết (Shortlinks)
+        </h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          onclick="switchOption('opt-a')"
+          id="btn-opt-a"
+          class="tab-btn tab-active px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option A: Conversion Studio (Bento Grid Studio — Khuyên dùng)
+        </button>
+        <button
+          onclick="switchOption('opt-b')"
+          id="btn-opt-b"
+          class="tab-btn bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option B: Split Workbench (Hai cột Master 35% / Detail 65%)
+        </button>
+        <button
+          onclick="switchOption('opt-c')"
+          id="btn-opt-c"
+          class="tab-btn bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option C: Campaign Analytics Dashboard (Quản trị theo Chiến dịch)
+        </button>
+      </div>
+    </header>
+
+    <!-- Subheader: Page Identity & Brand Selector -->
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-4">
+      <div>
+        <h2 class="text-base font-bold text-neutral-900">Rút gọn liên kết (Shortlinks)</h2>
+        <p class="text-xs text-neutral-500 mt-0.5">
+          Rút gọn liên kết, quản lý các đường link chuyển đổi và đo lường chi tiết số lượt click từ mạng xã hội.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 text-xs">
+          <span class="text-neutral-500 font-medium">Thương hiệu:</span>
+          <span class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white font-semibold text-neutral-900 text-xs">
+            Test
+          </span>
+        </div>
+        <button class="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Tạo bài viết</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: CONVERSION STUDIO (BENTO GRID STUDIO - RECOMMENDED)              -->
+    <!-- ========================================================================= -->
+    <section id="opt-a" class="option-panel space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option A:</strong> Tích hợp thanh tạo Shortlink nhanh 1 dòng gọn gàng, 3 thẻ KPI màu pastel trực quan, và bảng quản lý liên kết hiện đại với badge nhận diện mạng xã hội chuẩn.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Conversion Studio (Linear/Dub.co style)</span>
+      </div>
+
+      <!-- Compact Top Control: Inline Shortener & Settings Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        <!-- Quick Shortener Bar (8 cols) -->
+        <div class="lg:col-span-8 bg-white border border-neutral-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-7 h-7 rounded-lg bg-neutral-900 text-white flex items-center justify-center">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+              </span>
+              <div>
+                <h3 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Tạo Shortlink Nhanh</h3>
+                <p class="text-[11px] text-neutral-500">Dán URL đích để tạo liên kết rút gọn kèm tracking chuyển đổi ngay lập tức.</p>
+              </div>
+            </div>
+
+            <!-- Settings Trigger Pill -->
+            <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-neutral-100 text-[11px] text-neutral-600 font-medium">
+              <i data-lucide="sliders-horizontal" class="w-3 h-3 text-neutral-500"></i>
+              <span>Tự động rút gọn: <strong>Hỏi mỗi lần đăng</strong></span>
+            </div>
+          </div>
+
+          <!-- Input Fields Group -->
+          <div class="space-y-3">
+            <div class="relative">
+              <i data-lucide="globe" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+              <input
+                type="text"
+                value="https://example.com/bai-viet-hay-san-pham-moi-thang-11"
+                placeholder="Nhập hoặc dán URL đích (https://...)"
+                class="w-full h-10 pl-9 pr-4 rounded-xl border border-neutral-200 text-xs font-medium focus:outline-none focus:border-neutral-900 bg-neutral-50/50"
+              />
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+              <div class="sm:col-span-6 relative">
+                <input
+                  type="text"
+                  value="PromoThang11"
+                  placeholder="Tên chiến dịch (VD: PromoThang11)"
+                  class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-medium focus:outline-none focus:border-neutral-900"
+                />
+              </div>
+
+              <div class="sm:col-span-3">
+                <select class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-medium bg-white cursor-pointer focus:outline-none">
+                  <option>Tất cả kênh</option>
+                  <option>Facebook</option>
+                  <option>Instagram</option>
+                  <option>LinkedIn</option>
+                  <option>Threads</option>
+                  <option>TikTok</option>
+                </select>
+              </div>
+
+              <div class="sm:col-span-3">
+                <button class="w-full h-9 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition">
+                  <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+                  <span>Rút gọn ngay</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active Result Banner Example -->
+          <div class="p-3 rounded-xl border border-emerald-200/90 bg-emerald-50/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+            <div class="flex items-center gap-2 min-w-0">
+              <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
+              <span class="font-mono font-bold text-neutral-900 truncate">https://socialchoice.site/s/tzBU...</span>
+              <span class="text-neutral-400">trỏ tới</span>
+              <span class="text-neutral-600 truncate max-w-xs font-mono text-[11px]">https://kolvo.app/chatgpt-business...</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="px-2.5 py-1 rounded-lg bg-neutral-900 text-white font-semibold text-[11px] flex items-center gap-1">
+                <i data-lucide="check" class="w-3 h-3 text-emerald-400"></i>
+                <span>Đã sao chép</span>
+              </button>
+              <button class="p-1 rounded-lg border border-neutral-200 bg-white text-neutral-600 hover:text-neutral-900">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 Light Gray (Nền xám) Metrics Cards (4 cols) -->
+        <div class="lg:col-span-4 grid grid-cols-1 gap-3">
+          <!-- Total Clicks -->
+          <div class="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+            <div>
+              <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Tổng Lượt Nhấp (Clicks)</span>
+              <span class="text-2xl font-bold font-mono text-neutral-900 mt-0.5 block">142</span>
+              <span class="text-[11px] text-neutral-500 mt-0.5 block">Tăng +18% so với tuần trước</span>
+            </div>
+            <span class="w-10 h-10 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs">
+              <i data-lucide="mouse-pointer-click" class="w-5 h-5"></i>
+            </span>
+          </div>
+
+          <!-- Active Links -->
+          <div class="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+            <div>
+              <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Shortlink Đang Hoạt Động</span>
+              <span class="text-2xl font-bold font-mono text-neutral-900 mt-0.5 block">8 <span class="text-xs text-neutral-400 font-normal">/ 10 link</span></span>
+              <span class="text-[11px] text-neutral-500 mt-0.5 block">Tỷ lệ hoạt động 80%</span>
+            </div>
+            <span class="w-10 h-10 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs">
+              <i data-lucide="activity" class="w-5 h-5"></i>
+            </span>
+          </div>
+
+          <!-- Top Converting Channel -->
+          <div class="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+            <div>
+              <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Kênh Chuyển Đổi Hàng Đầu</span>
+              <span class="text-base font-bold text-neutral-900 mt-0.5 block flex items-center gap-1.5">
+                <span class="w-2 h-2 rounded-full bg-neutral-900"></span>
+                Threads & LinkedIn
+              </span>
+              <span class="text-[11px] text-neutral-500 mt-0.5 block">Chiếm 64% tổng lượng click</span>
+            </div>
+            <span class="w-10 h-10 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs">
+              <i data-lucide="trending-up" class="w-5 h-5"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Links Management Table -->
+      <div class="bg-white border border-neutral-200/80 rounded-2xl shadow-2xs overflow-hidden">
+        <div class="p-4 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-3 bg-neutral-50/60">
+          <div>
+            <h3 class="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
+              <span>Danh sách Shortlink của thương hiệu</span>
+              <span class="text-[10.5px] font-mono px-2 py-0.5 rounded-md bg-neutral-200 text-neutral-700 font-bold">8 links</span>
+            </h3>
+            <p class="text-[11px] text-neutral-500 mt-0.5">Theo dõi lượt click và quản lý từng liên kết theo chiến dịch.</p>
+          </div>
+
+          <div class="flex items-center gap-2.5">
+            <!-- Channel Filter Pills -->
+            <div class="hidden sm:inline-flex items-center p-0.5 bg-neutral-100 rounded-lg border border-neutral-200/70 text-xs">
+              <button class="px-2.5 py-1 rounded-md text-[11px] font-semibold bg-white text-neutral-900 shadow-2xs">Tất cả</button>
+              <button class="px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-900">Facebook</button>
+              <button class="px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-900">Threads</button>
+              <button class="px-2.5 py-1 rounded-md text-[11px] text-neutral-600 hover:text-neutral-900">LinkedIn</button>
+            </div>
+
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400"></i>
+              <input
+                type="text"
+                placeholder="Tìm link, chiến dịch..."
+                class="h-8 pl-8 pr-3 text-xs rounded-xl border border-neutral-200 bg-white w-48 focus:outline-none focus:border-neutral-900"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs border-collapse">
+            <thead>
+              <tr class="border-b border-neutral-100 bg-neutral-50/80 text-neutral-500 font-semibold text-[11px]">
+                <th class="p-3.5 pl-5">Shortlink</th>
+                <th class="p-3.5">URL Đích</th>
+                <th class="p-3.5">Chiến dịch</th>
+                <th class="p-3.5">Kênh mạng xã hội</th>
+                <th class="p-3.5 w-32 text-center">Lượt click</th>
+                <th class="p-3.5 pr-5 w-36 text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-neutral-100">
+              <tr class="hover:bg-neutral-50/60 transition-colors">
+                <td class="p-3.5 pl-5 font-mono font-bold text-neutral-900">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>https://socialchoice.site/s/tzBU...</span>
+                    <button class="text-neutral-400 hover:text-neutral-900" title="Sao chép"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </td>
+                <td class="p-3.5 text-neutral-500 font-mono text-[11px] max-w-xs truncate">
+                  <div class="flex items-center gap-1.5">
+                    <span class="truncate">https://kolvo.app/chatgpt-business?utm_source=threads</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-neutral-400 shrink-0"></i>
+                  </div>
+                </td>
+                <td class="p-3.5">
+                  <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200/80 text-[11px] font-medium text-neutral-800">
+                    PromoThang11
+                  </span>
+                </td>
+                <td class="p-3.5">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border bg-neutral-900 text-white border-neutral-800">
+                    <i data-lucide="at-sign" class="w-3 h-3"></i>
+                    <span>Threads</span>
+                  </span>
+                </td>
+                <td class="p-3.5 text-center">
+                  <span class="inline-block px-2.5 py-0.5 rounded-md font-mono text-[11px] font-bold border bg-blue-50 text-blue-700 border-blue-200">
+                    84 clicks
+                  </span>
+                </td>
+                <td class="p-3.5 pr-5 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5 shrink-0">
+                    <button class="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-semibold whitespace-nowrap shrink-0 inline-flex items-center gap-1 shadow-2xs">
+                      <i data-lucide="copy" class="w-3 h-3"></i>
+                      <span>Sao chép</span>
+                    </button>
+                    <button class="h-7 px-2 rounded-lg text-neutral-400 hover:text-rose-600 text-[11px] font-medium whitespace-nowrap shrink-0">
+                      Tắt
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-neutral-50/60 transition-colors">
+                <td class="p-3.5 pl-5 font-mono font-bold text-neutral-900">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>https://socialchoice.site/s/k9xL...</span>
+                    <button class="text-neutral-400 hover:text-neutral-900"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </td>
+                <td class="p-3.5 text-neutral-500 font-mono text-[11px] max-w-xs truncate">
+                  <div class="flex items-center gap-1.5">
+                    <span class="truncate">https://landingpage.com/webinar-ai-marketing</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-neutral-400 shrink-0"></i>
+                  </div>
+                </td>
+                <td class="p-3.5">
+                  <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200/80 text-[11px] font-medium text-neutral-800">
+                    WebinarFree
+                  </span>
+                </td>
+                <td class="p-3.5">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border bg-blue-50 text-blue-700 border-blue-200">
+                    <i data-lucide="linkedin" class="w-3 h-3"></i>
+                    <span>LinkedIn</span>
+                  </span>
+                </td>
+                <td class="p-3.5 text-center">
+                  <span class="inline-block px-2.5 py-0.5 rounded-md font-mono text-[11px] font-bold border bg-blue-50 text-blue-700 border-blue-200">
+                    38 clicks
+                  </span>
+                </td>
+                <td class="p-3.5 pr-5 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5 shrink-0">
+                    <button class="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-semibold whitespace-nowrap shrink-0 inline-flex items-center gap-1 shadow-2xs">
+                      <i data-lucide="copy" class="w-3 h-3"></i>
+                      <span>Sao chép</span>
+                    </button>
+                    <button class="h-7 px-2 rounded-lg text-neutral-400 hover:text-rose-600 text-[11px] font-medium whitespace-nowrap shrink-0">
+                      Tắt
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <tr class="hover:bg-neutral-50/60 transition-colors">
+                <td class="p-3.5 pl-5 font-mono font-bold text-neutral-900">
+                  <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    <span>https://socialchoice.site/s/m3Wq...</span>
+                    <button class="text-neutral-400 hover:text-neutral-900"><i data-lucide="copy" class="w-3.5 h-3.5"></i></button>
+                  </div>
+                </td>
+                <td class="p-3.5 text-neutral-500 font-mono text-[11px] max-w-xs truncate">
+                  <div class="flex items-center gap-1.5">
+                    <span class="truncate">https://store.brand.vn/products/special-bundle</span>
+                    <i data-lucide="external-link" class="w-3 h-3 text-neutral-400 shrink-0"></i>
+                  </div>
+                </td>
+                <td class="p-3.5">
+                  <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-200/80 text-[11px] font-medium text-neutral-800">
+                    ProductSale
+                  </span>
+                </td>
+                <td class="p-3.5">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10.5px] font-semibold border bg-pink-50 text-pink-700 border-pink-200">
+                    <i data-lucide="instagram" class="w-3 h-3"></i>
+                    <span>Instagram</span>
+                  </span>
+                </td>
+                <td class="p-3.5 text-center">
+                  <span class="inline-block px-2.5 py-0.5 rounded-md font-mono text-[11px] font-bold border bg-blue-50 text-blue-700 border-blue-200">
+                    20 clicks
+                  </span>
+                </td>
+                <td class="p-3.5 pr-5 text-right whitespace-nowrap">
+                  <div class="flex items-center justify-end gap-1.5 shrink-0">
+                    <button class="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-semibold whitespace-nowrap shrink-0 inline-flex items-center gap-1 shadow-2xs">
+                      <i data-lucide="copy" class="w-3 h-3"></i>
+                      <span>Sao chép</span>
+                    </button>
+                    <button class="h-7 px-2 rounded-lg text-neutral-400 hover:text-rose-600 text-[11px] font-medium whitespace-nowrap shrink-0">
+                      Tắt
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: SPLIT WORKBENCH (MASTER 35% CREATOR & DETAIL 65% MANAGER)        -->
+    <!-- ========================================================================= -->
+    <section id="opt-b" class="option-panel hidden space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option B:</strong> Tách biệt chuyên sâu: Cột trái (35%) làm trung tâm Tạo link & Cài đặt tự động; Cột phải (65%) dành trọn vẹn cho việc theo dõi Analytics chuyển đổi và danh sách link.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Split Workbench (35% / 65%)</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left: Full Creator & Config Panel (4 cols / 35%) -->
+        <div class="lg:col-span-5 space-y-4">
+          <!-- Create Form Card -->
+          <div class="bg-white border border-neutral-200/90 rounded-2xl p-5 shadow-2xs space-y-4">
+            <div class="flex items-center gap-2 pb-3 border-b border-neutral-100">
+              <span class="w-7 h-7 rounded-lg bg-neutral-900 text-white flex items-center justify-center">
+                <i data-lucide="plus" class="w-4 h-4"></i>
+              </span>
+              <div>
+                <h3 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Tạo Shortlink mới</h3>
+                <p class="text-[11px] text-neutral-500">Gắn tracking và mã chuyển đổi tự động</p>
+              </div>
+            </div>
+
+            <div class="space-y-3.5">
+              <div>
+                <label class="text-xs font-bold text-neutral-900 block mb-1">URL Đích (Destination URL) *</label>
+                <input
+                  type="text"
+                  placeholder="https://example.com/bai-viet"
+                  class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-medium focus:outline-none focus:border-neutral-900 bg-neutral-50/50"
+                />
+              </div>
+
+              <div>
+                <label class="text-xs font-bold text-neutral-900 block mb-1">Tên chiến dịch (Campaign)</label>
+                <input
+                  type="text"
+                  placeholder="VD: PromoThang11, RaMatSP..."
+                  class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-medium focus:outline-none focus:border-neutral-900"
+                />
+              </div>
+
+              <div>
+                <label class="text-xs font-bold text-neutral-900 block mb-1">Kênh mạng xã hội mục tiêu</label>
+                <select class="w-full h-9 px-3 rounded-xl border border-neutral-200 text-xs font-medium bg-white cursor-pointer focus:outline-none">
+                  <option>Tất cả kênh (General)</option>
+                  <option>Facebook</option>
+                  <option>Instagram</option>
+                  <option>LinkedIn</option>
+                  <option>Threads</option>
+                  <option>TikTok</option>
+                </select>
+              </div>
+
+              <button class="w-full h-9 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold flex items-center justify-center gap-1.5 shadow-xs cursor-pointer transition">
+                <i data-lucide="link" class="w-3.5 h-3.5"></i>
+                <span>Tạo liên kết rút gọn</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Configuration Card -->
+          <div class="bg-white border border-neutral-200/90 rounded-2xl p-4 shadow-2xs space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-neutral-100">
+              <span class="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-1.5">
+                <i data-lucide="settings" class="w-3.5 h-3.5 text-neutral-500"></i>
+                Cài đặt Shortlink tự động
+              </span>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+            <p class="text-[11px] text-neutral-500 leading-relaxed">
+              Kiểm soát cách hệ thống tự động xử lý và rút gọn liên kết khi AI soạn thảo bài viết.
+            </p>
+            <select class="w-full h-8 px-2.5 rounded-lg border border-neutral-200 text-xs font-medium bg-neutral-50 focus:outline-none cursor-pointer">
+              <option>Hỏi mỗi lần đăng (Mặc định)</option>
+              <option>Luôn tự động rút gọn tất cả link</option>
+              <option>Không bao giờ rút gọn</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Right: Analytics & Links List (7 cols / 65%) -->
+        <div class="lg:col-span-7 space-y-4">
+          <!-- 2 Stat Boxes -->
+          <div class="grid grid-cols-2 gap-3.5">
+            <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs">
+              <span class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider block">Tổng Lượt Nhấp</span>
+              <span class="text-2xl font-bold font-mono text-neutral-900 mt-1 block">142</span>
+              <span class="text-[11px] text-emerald-600 font-medium mt-0.5 block">↑ 8 links hoạt động</span>
+            </div>
+            <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs">
+              <span class="text-[11px] font-bold text-neutral-500 uppercase tracking-wider block">Kênh chuyển đổi tốt nhất</span>
+              <span class="text-base font-bold text-neutral-900 mt-1 block">Threads</span>
+              <span class="text-[11px] text-neutral-500 mt-0.5 block">84 clicks (59%)</span>
+            </div>
+          </div>
+
+          <!-- Links Table Card -->
+          <div class="bg-white border border-neutral-200/90 rounded-2xl shadow-2xs overflow-hidden">
+            <div class="p-3.5 border-b border-neutral-100 flex items-center justify-between bg-neutral-50/50">
+              <h4 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Danh sách Shortlink đang chạy</h4>
+              <span class="text-[11px] font-mono text-neutral-500">8 links</span>
+            </div>
+
+            <div class="divide-y divide-neutral-100">
+              <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-neutral-50/50">
+                <div class="min-w-0 space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-xs text-neutral-900">https://socialchoice.site/s/tzBU...</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-neutral-100 font-medium">PromoThang11</span>
+                  </div>
+                  <p class="text-[11px] text-neutral-500 truncate max-w-sm">https://kolvo.app/chatgpt-business?utm_source=threads</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="font-mono font-bold text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">84 clicks</span>
+                  <button class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-xs font-medium hover:bg-neutral-50">Sao chép</button>
+                </div>
+              </div>
+
+              <div class="p-3.5 flex items-center justify-between gap-3 hover:bg-neutral-50/50">
+                <div class="min-w-0 space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-mono font-bold text-xs text-neutral-900">https://socialchoice.site/s/k9xL...</span>
+                    <span class="px-1.5 py-0.5 rounded text-[10px] bg-neutral-100 font-medium">WebinarFree</span>
+                  </div>
+                  <p class="text-[11px] text-neutral-500 truncate max-w-sm">https://landingpage.com/webinar-ai-marketing</p>
+                </div>
+                <div class="flex items-center gap-3 shrink-0">
+                  <span class="font-mono font-bold text-xs text-blue-700 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded">38 clicks</span>
+                  <button class="h-7 px-2.5 rounded-lg border border-neutral-200 bg-white text-xs font-medium hover:bg-neutral-50">Sao chép</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: CAMPAIGN ANALYTICS DASHBOARD (GROUPED BY CAMPAIGNS)              -->
+    <!-- ========================================================================= -->
+    <section id="opt-c" class="option-panel hidden space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option C:</strong> Quản trị Shortlink theo từng Chiến dịch (Campaign). Nút "Tạo Shortlink mới" dạng Modal Dialog tinh gọn giúp toàn bộ màn hình tập trung cho việc đo lường ROI từng chiến dịch.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Campaign Hub & ROI Matrix</span>
+      </div>
+
+      <!-- 4 Compact Top Cards -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs">
+          <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Tổng Lượt Nhấp</span>
+          <span class="text-2xl font-bold font-mono text-neutral-900 mt-1 block">142</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs">
+          <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Chiến dịch Đang chạy</span>
+          <span class="text-2xl font-bold font-mono text-neutral-900 mt-1 block">3</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs">
+          <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Tổng Shortlinks</span>
+          <span class="text-2xl font-bold font-mono text-neutral-900 mt-1 block">8</span>
+        </div>
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs flex items-center justify-between">
+          <div>
+            <span class="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">Kênh Số 1</span>
+            <span class="text-lg font-bold text-neutral-900 mt-1 block">Threads (59%)</span>
+          </div>
+          <button class="h-8 px-3 rounded-xl bg-neutral-900 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer">
+            <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+            <span>Tạo Link</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Campaign Folders / Groups -->
+      <div class="space-y-4">
+        <!-- Campaign 1 -->
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-neutral-100">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#93C5FD]"></span>
+              <h4 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Chiến dịch: PromoThang11</h4>
+              <span class="px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10.5px] font-mono font-bold">84 clicks</span>
+            </div>
+            <span class="text-xs text-neutral-500">2 links đang chạy</span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="p-3 rounded-xl border border-neutral-100 bg-neutral-50/60 flex items-center justify-between text-xs">
+              <div class="space-y-0.5">
+                <span class="font-mono font-bold text-neutral-900">https://socialchoice.site/s/tzBU...</span>
+                <p class="text-[11px] text-neutral-500">Kênh: <strong>Threads</strong> · Đích: kolvo.app/chatgpt-business</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-bold text-blue-700">84 clicks</span>
+                <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white font-medium text-[11px]">Sao chép</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Campaign 2 -->
+        <div class="p-4 rounded-2xl bg-white border border-neutral-200 shadow-2xs space-y-3">
+          <div class="flex items-center justify-between pb-3 border-b border-neutral-100">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3.5 h-3.5 rounded-full bg-[#C4B5FD]"></span>
+              <h4 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Chiến dịch: WebinarFree</h4>
+              <span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 text-[10.5px] font-mono font-bold">38 clicks</span>
+            </div>
+            <span class="text-xs text-neutral-500">1 link đang chạy</span>
+          </div>
+
+          <div class="space-y-2">
+            <div class="p-3 rounded-xl border border-neutral-100 bg-neutral-50/60 flex items-center justify-between text-xs">
+              <div class="space-y-0.5">
+                <span class="font-mono font-bold text-neutral-900">https://socialchoice.site/s/k9xL...</span>
+                <p class="text-[11px] text-neutral-500">Kênh: <strong>LinkedIn</strong> · Đích: landingpage.com/webinar</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <span class="font-mono font-bold text-purple-700">38 clicks</span>
+                <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white font-medium text-[11px]">Sao chép</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      function switchOption(optId) {
+        document.querySelectorAll('.option-panel').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('tab-active');
+          btn.classList.add('bg-neutral-100', 'text-neutral-700');
+        });
+
+        document.getElementById(optId).classList.remove('hidden');
+        const activeBtn = document.getElementById('btn-' + optId);
+        activeBtn.classList.add('tab-active');
+        activeBtn.classList.remove('bg-neutral-100', 'text-neutral-700');
+        lucide.createIcons();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+      });
+    </script>
+  </body>
+</html>

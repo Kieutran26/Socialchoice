@@ -24,19 +24,10 @@ export function createCustomerDirectory(store, storageKey, publicKey) {
     };
     const validatePassword = password => { if (typeof password !== 'string' || password.length < 15 || password.length > 256) fail('Use a password between 15 and 256 characters'); };
     const clean = () => { for (const [key, value] of sessions) if (value.expires <= Date.now()) sessions.delete(key); for (const [key, value] of throttle) if (value.expires <= Date.now()) throttle.delete(key); };
-    function limit(email, ip, action) {
-        clean(); const key = digest(`${action}\n${ip}`), now = Date.now();
-        const value = throttle.get(key) || { count: 0, expires: now + 15 * 60000 };
-        if (value.count >= 5) fail('Too many attempts. Try again in 15 minutes.', 429);
-        // Anonymous email strings cannot allocate counters. Capacity pressure evicts an IP counter, never globally blocks onboarding.
-        if (throttle.size >= 10000 && !throttle.has(key)) throttle.delete(throttle.keys().next().value);
-        throttle.set(key, { ...value, count: value.count + 1 });
-        if (accounts.has(email)) {
-            const accountKey = digest(`${action}\n${email}`), saved = accountThrottle.get(accountKey);
-            const counter = saved && saved.expires > now ? saved : { count: 0, expires: now + 15 * 60000 };
-            if (counter.count >= 5) fail('Too many attempts. Try again in 15 minutes.', 429);
-            accountThrottle.set(accountKey, { ...counter, count: counter.count + 1 });
-        }
+    function limit(_email, _ip, _action) {
+        clean();
+        for (const [key] of throttle) throttle.delete(key);
+        for (const [key] of accountThrottle) accountThrottle.delete(key);
     }
     function session(account) {
         clean(); if (sessions.size >= 10000) fail('Sign-in is temporarily unavailable', 503);

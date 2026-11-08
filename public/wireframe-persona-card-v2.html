@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Phương Án Chuyên Nghiệp: Brand Persona & Directives - Socialchoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f8f9fa;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1500px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Thiết Kế Chuyên Nghiệp: Brand Guidelines & AI Directives</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Enterprise Grade
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">Chuẩn hóa giao diện cột phải theo tiêu chuẩn Linear / Notion / Vercel / Typeface</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="opt-btn-a" class="ctrl-pill active" onclick="switchOption('a')">
+          <i class="ph-bold ph-book-bookmark"></i>
+          <span>Option 1: Enterprise Brand Guidelines Sheet (Chuẩn Brand Book)</span>
+        </button>
+        <button id="opt-btn-b" class="ctrl-pill" onclick="switchOption('b')">
+          <i class="ph-bold ph-shield-check"></i>
+          <span>Option 2: AI Brand Directives & Guardrails (Chỉ thị & Rào chắn AI)</span>
+        </button>
+        <button id="opt-btn-c" class="ctrl-pill" onclick="switchOption('c')">
+          <i class="ph-bold ph-chart-polar"></i>
+          <span>Option 3: Brand Intelligence Matrix (Ma trận tri thức & Tài nguyên)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DESCRIPTION BANNER -->
+  <div class="max-w-[1500px] mx-auto px-6 pt-5">
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-zinc-900 text-amber-400 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-book-bookmark"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option 1: Enterprise Brand Guidelines Sheet (Chuẩn Brand Book Doanh Nghiệp)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Không dùng khối đen thô cứng, mà sử dụng bảng chỉ dẫn thương hiệu chuẩn mực: viền mảnh 1px, typography tinh xảo, phân tách trường rõ ràng và tích hợp thư viện ảnh thực tế dạng grid sang trọng.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-800 font-semibold shadow-2xs">
+          <i class="ph-bold ph-seal-check text-emerald-600"></i> Tiêu chuẩn SaaS Quốc Tế
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CANVAS -->
+  <main class="max-w-[1500px] mx-auto p-6">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+
+      <!-- LEFT SIDEBAR CONTEXT (MINI FORM PREVIEW FOR SCALE) -->
+      <div class="lg:col-span-5 p-6 rounded-2xl bg-white border border-zinc-200 shadow-2xs space-y-4 opacity-60 pointer-events-none">
+        <div class="flex items-center justify-between border-b border-zinc-100 pb-3">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-500">Biểu mẫu thiết lập (Cột trái)</h3>
+          <span class="text-[11px] text-zinc-400 font-mono">live synced</span>
+        </div>
+        <div class="space-y-3 text-xs">
+          <div>
+            <span class="font-bold text-zinc-700 block mb-1">Sản phẩm chủ lực</span>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">cà phê</div>
+          </div>
+          <div>
+            <span class="font-bold text-zinc-700 block mb-1">Đối tượng mục tiêu</span>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">giới trẻ</div>
+          </div>
+          <div>
+            <span class="font-bold text-zinc-700 block mb-1">Giọng điệu thương hiệu</span>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng</div>
+          </div>
+          <div>
+            <span class="font-bold text-zinc-700 block mb-1">Tần suất đăng</span>
+            <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-zinc-800">3 bài / tuần (Thứ 2, Thứ 4, Thứ 6)</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: 3 RADICAL REDESIGNS (7 COLS) -->
+      <div class="lg:col-span-7">
+
+        <!-- ========================================================================= -->
+        <!-- OPTION 1: ENTERPRISE BRAND GUIDELINES SHEET                               -->
+        <!-- ========================================================================= -->
+        <div id="option-a" class="space-y-5">
+          
+          <!-- Unified Master Brand Guidelines Container -->
+          <div class="rounded-2xl bg-white border border-zinc-200/90 shadow-2xs overflow-hidden">
+            
+            <!-- Top Card Header: Brand Identity Bar -->
+            <div class="p-5 border-b border-zinc-100 bg-zinc-50/50 flex flex-wrap items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="size-11 rounded-xl bg-zinc-900 text-white font-bold text-sm flex items-center justify-center shadow-2xs shrink-0 tracking-wider">
+                  TE
+                </div>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h3 class="text-sm font-bold text-zinc-900">Test · Brand Guidelines Specification</h3>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
+                      ACTIVE SPEC
+                    </span>
+                  </div>
+                  <p class="text-xs text-zinc-500 mt-0.5">Định vị thương hiệu chính thức đang hướng dẫn cho AI Content Strategist</p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2">
+                <span class="text-xs font-mono font-medium text-zinc-500 bg-white px-2.5 py-1 rounded-lg border border-zinc-200">
+                  Asia/Ho_Chi_Minh
+                </span>
+                <span class="text-xs font-bold text-zinc-900 bg-zinc-100 px-2.5 py-1 rounded-lg">
+                  5/5 Tiêu chí
+                </span>
+              </div>
+            </div>
+
+            <!-- Structured Metadata Matrix (No dark boxes, clean editorial hierarchy) -->
+            <div class="divide-y divide-zinc-100 text-xs">
+              
+              <!-- Row 1: Định vị & Sản phẩm -->
+              <div class="p-4.5 grid grid-cols-1 sm:grid-cols-12 gap-3 hover:bg-zinc-50/40 transition">
+                <div class="sm:col-span-4 flex items-center gap-2 text-zinc-500 font-medium">
+                  <i class="ph-bold ph-package text-amber-500 text-sm shrink-0"></i>
+                  <span class="font-bold uppercase tracking-wider text-[11px] text-zinc-700">Định vị & Sản phẩm</span>
+                </div>
+                <div class="sm:col-span-8 space-y-1">
+                  <div class="flex items-center gap-2">
+                    <span class="font-bold text-zinc-900 text-sm">Cà phê</span>
+                    <span class="px-2 py-0.5 rounded-full bg-zinc-100 text-zinc-600 text-[11px]">Sản phẩm chủ lực</span>
+                  </div>
+                  <p class="text-zinc-500 text-xs leading-relaxed">
+                    Định vị cốt lõi: Phong cách <strong class="text-zinc-800">nhẹ nhàng</strong>, tập trung vào trải nghiệm hương vị tự nhiên và thói quen thưởng thức hằng ngày.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Row 2: Độc giả & Chân dung khách hàng -->
+              <div class="p-4.5 grid grid-cols-1 sm:grid-cols-12 gap-3 hover:bg-zinc-50/40 transition">
+                <div class="sm:col-span-4 flex items-center gap-2 text-zinc-500 font-medium">
+                  <i class="ph-bold ph-user-focus text-blue-500 text-sm shrink-0"></i>
+                  <span class="font-bold uppercase tracking-wider text-[11px] text-zinc-700">Khách hàng mục tiêu</span>
+                </div>
+                <div class="sm:col-span-8 space-y-1.5">
+                  <div class="flex flex-wrap items-center gap-1.5">
+                    <span class="px-2.5 py-1 rounded-lg bg-blue-50 border border-blue-200/70 text-blue-800 text-xs font-bold">
+                      Giới trẻ (20 – 32 tuổi)
+                    </span>
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-700 text-xs font-medium">
+                      Dân văn phòng & Sáng tạo
+                    </span>
+                  </div>
+                  <p class="text-zinc-500 text-xs leading-relaxed">
+                    Đặc điểm: Ưa thích sự tối giản, có thói quen làm việc tại quán hoặc tự pha chế cà phê tại nhà.
+                  </p>
+                </div>
+              </div>
+
+              <!-- Row 3: Giọng văn & Bản sắc ngôn từ -->
+              <div class="p-4.5 grid grid-cols-1 sm:grid-cols-12 gap-3 hover:bg-zinc-50/40 transition">
+                <div class="sm:col-span-4 flex items-center gap-2 text-zinc-500 font-medium">
+                  <i class="ph-bold ph-chat-teardrop-text text-purple-500 text-sm shrink-0"></i>
+                  <span class="font-bold uppercase tracking-wider text-[11px] text-zinc-700">Giọng điệu (Tone of Voice)</span>
+                </div>
+                <div class="sm:col-span-8 space-y-2">
+                  <div class="flex flex-wrap gap-1.5">
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-[11px] shadow-2xs">
+                      Chân thực
+                    </span>
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-[11px] shadow-2xs">
+                      Ấm áp
+                    </span>
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-[11px] shadow-2xs">
+                      Đam mê hương vị
+                    </span>
+                    <span class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold text-[11px] shadow-2xs">
+                      Truyền cảm hứng
+                    </span>
+                  </div>
+                  <p class="text-zinc-500 text-[11.5px] italic">
+                    “Câu từ mộc mạc, gần gũi, không khoa trương kỹ thuật, khơi gợi cảm hứng bắt đầu ngày mới.”
+                  </p>
+                </div>
+              </div>
+
+              <!-- Row 4: Mục tiêu KPI & Tần suất đăng -->
+              <div class="p-4.5 grid grid-cols-1 sm:grid-cols-12 gap-3 hover:bg-zinc-50/40 transition">
+                <div class="sm:col-span-4 flex items-center gap-2 text-zinc-500 font-medium">
+                  <i class="ph-bold ph-target text-emerald-500 text-sm shrink-0"></i>
+                  <span class="font-bold uppercase tracking-wider text-[11px] text-zinc-700">Mục tiêu & Tần suất</span>
+                </div>
+                <div class="sm:col-span-8 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <span class="font-bold text-zinc-900 text-xs block">Tăng đơn hàng trực tiếp & chuyển đổi doanh số</span>
+                    <span class="text-zinc-500 text-[11px]">Tập trung CTA dẫn link sản phẩm và voucher trải nghiệm</span>
+                  </div>
+                  <span class="px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-800 font-mono font-bold text-xs border border-zinc-200">
+                    3 bài / tuần
+                  </span>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Integrated Asset Quota & Live Preview Section -->
+            <div class="p-5 bg-zinc-50/70 border-t border-zinc-200/80 space-y-3">
+              <div class="flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <i class="ph-bold ph-images text-emerald-600 text-base"></i>
+                  <span class="font-bold text-zinc-900">Thư viện tài nguyên đính kèm</span>
+                  <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                    39/20 Assets (Đạt 195% Quota)
+                  </span>
+                </div>
+                <span class="text-zinc-400 text-[11px]">AI tự động ghép ảnh theo ngữ cảnh</span>
+              </div>
+
+              <!-- 6 Mini Image Thumbnails Grid -->
+              <div class="grid grid-cols-6 gap-2">
+                <div class="aspect-square rounded-xl overflow-hidden border border-zinc-200 shadow-2xs bg-white">
+                  <img src="https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=200&q=80" class="w-full h-full object-cover" alt="asset">
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden border border-zinc-200 shadow-2xs bg-white">
+                  <img src="https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=200&q=80" class="w-full h-full object-cover" alt="asset">
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden border border-zinc-200 shadow-2xs bg-white">
+                  <img src="https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=200&q=80" class="w-full h-full object-cover" alt="asset">
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden border border-zinc-200 shadow-2xs bg-white">
+                  <img src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=200&q=80" class="w-full h-full object-cover" alt="asset">
+                </div>
+                <div class="aspect-square rounded-xl overflow-hidden border border-zinc-200 shadow-2xs bg-white">
+                  <img src="https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=200&q=80" class="w-full h-full object-cover" alt="asset">
+                </div>
+                <div class="aspect-square rounded-xl border border-dashed border-zinc-300 bg-white flex flex-col items-center justify-center text-zinc-600 hover:bg-zinc-100 cursor-pointer">
+                  <span class="text-xs font-bold font-mono">+34</span>
+                  <span class="text-[9px] uppercase font-bold text-zinc-400">Xem tất cả</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer: System Integrity Assurance -->
+            <div class="px-5 py-3 bg-white border-t border-zinc-100 flex items-center justify-between text-[11px] text-zinc-500">
+              <span class="flex items-center gap-1.5 text-emerald-700 font-medium">
+                <i class="ph-bold ph-shield-check text-sm text-emerald-600"></i> Dữ liệu đồng bộ trực tiếp với Lịch xuất bản 30 ngày
+              </span>
+              <span class="font-mono text-zinc-400">Spec Version: 2026.11</span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- OPTION 2: AI BRAND DIRECTIVES & GUARDRAILS                                -->
+        <!-- ========================================================================= -->
+        <div id="option-b" class="hidden space-y-5">
+          
+          <div class="rounded-2xl bg-white border border-zinc-200 shadow-2xs p-6 space-y-5">
+            
+            <!-- Directives Header -->
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+              <div class="flex items-center gap-3">
+                <div class="size-10 rounded-xl bg-amber-400 text-zinc-950 font-bold flex items-center justify-center shadow-2xs">
+                  <i class="ph-bold ph-shield-check text-xl"></i>
+                </div>
+                <div>
+                  <h3 class="text-sm font-bold text-zinc-900">AI Brand Directives & Content Guardrails</h3>
+                  <p class="text-xs text-zinc-500">Bộ quy chuẩn và rào chắn kiểm soát chất lượng bài viết của AI</p>
+                </div>
+              </div>
+              <span class="px-2.5 py-1 rounded-full bg-zinc-900 text-white font-mono text-[10px] font-bold">
+                ENFORCED
+              </span>
+            </div>
+
+            <!-- Core Directives Card -->
+            <div class="p-4 rounded-xl bg-zinc-50 border border-zinc-200/80 space-y-2 text-xs">
+              <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">CHỈ THỊ CỐT LÕI (CORE DIRECTIVE)</span>
+              <p class="text-zinc-800 font-medium leading-relaxed">
+                Đóng vai Content Strategist của thương hiệu <strong class="text-zinc-950">Test</strong>. Định vị phong cách <strong class="text-zinc-950">nhẹ nhàng</strong>, lấy sản phẩm <strong class="text-zinc-950">cà phê</strong> làm tâm điểm kết nối với <strong class="text-zinc-950">giới trẻ</strong>.
+              </p>
+            </div>
+
+            <!-- Do's and Don'ts Matrix -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              <!-- Do's -->
+              <div class="p-4 rounded-xl bg-emerald-50/50 border border-emerald-200 space-y-2">
+                <span class="font-bold text-emerald-800 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                  <i class="ph-bold ph-check-circle text-emerald-600"></i> Nguyên tắc NÊN (Do's)
+                </span>
+                <ul class="space-y-1.5 text-[11px] text-emerald-950 leading-relaxed">
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Duy trì giọng văn chân thực, ấm áp và truyền cảm hứng.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Lồng ghép lời kêu gọi mua hàng (CTA) khéo léo vào cuối bài.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-emerald-600 font-bold">•</span>
+                    <span>Tần suất xuất bản: chuẩn xác 3 bài / tuần (T2, T4, T6).</span>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Don'ts -->
+              <div class="p-4 rounded-xl bg-rose-50/50 border border-rose-200 space-y-2">
+                <span class="font-bold text-rose-800 flex items-center gap-1.5 text-[11px] uppercase tracking-wider">
+                  <i class="ph-bold ph-x-circle text-rose-600"></i> Rào chắn KHÔNG NÊN (Don'ts)
+                </span>
+                <ul class="space-y-1.5 text-[11px] text-rose-950 leading-relaxed">
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-rose-600 font-bold">•</span>
+                    <span>Không dùng từ giật gân, phóng đại hay hối thúc thô bạo.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-rose-600 font-bold">•</span>
+                    <span>Không dùng quá nhiều thuật ngữ kỹ thuật pha chế phức tạp.</span>
+                  </li>
+                  <li class="flex items-start gap-1.5">
+                    <span class="text-rose-600 font-bold">•</span>
+                    <span>Không xuất bản nội dung không gắn ảnh thương hiệu.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Assets Readiness Status -->
+            <div class="p-4 rounded-xl border border-zinc-200 bg-white flex items-center justify-between text-xs">
+              <div class="flex items-center gap-3">
+                <span class="size-9 rounded-xl bg-zinc-100 flex items-center justify-center text-zinc-900 font-bold">
+                  <i class="ph-bold ph-images text-lg"></i>
+                </span>
+                <div>
+                  <h4 class="font-bold text-zinc-900">Kho tài nguyên kết nối: 39 assets</h4>
+                  <p class="text-[11px] text-zinc-500">Đã kích hoạt tính năng tự động lọc ảnh tương ứng theo chủ đề bài viết</p>
+                </div>
+              </div>
+              <span class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">
+                100% Sẵn sàng
+              </span>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- ========================================================================= -->
+        <!-- OPTION 3: BRAND INTELLIGENCE MATRIX                                       -->
+        <!-- ========================================================================= -->
+        <div id="option-c" class="hidden space-y-5">
+          
+          <div class="rounded-2xl bg-white border border-zinc-200 shadow-2xs p-6 space-y-6">
+            
+            <!-- Header: Consistency Index -->
+            <div class="flex items-center justify-between pb-4 border-b border-zinc-100">
+              <div>
+                <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400">BẢNG PHÂN TÍCH TRI THỨC</span>
+                <h3 class="text-base font-bold text-zinc-900 mt-0.5">Brand Intelligence & Alignment Index</h3>
+              </div>
+              <div class="text-right">
+                <span class="text-2xl font-bold font-mono text-zinc-900">98%</span>
+                <span class="text-[10px] font-bold text-emerald-600 block uppercase">Độ đồng bộ cao</span>
+              </div>
+            </div>
+
+            <!-- 4 Modern Stat Blocks Grid -->
+            <div class="grid grid-cols-2 gap-3.5">
+              <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-1">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Sản phẩm cốt lõi</span>
+                <p class="text-sm font-bold text-zinc-900">Cà phê</p>
+                <span class="text-[11px] text-zinc-500 block">Phong cách: nhẹ nhàng</span>
+              </div>
+
+              <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-1">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Tệp độc giả</span>
+                <p class="text-sm font-bold text-zinc-900">Giới trẻ</p>
+                <span class="text-[11px] text-zinc-500 block">Độ tuổi: 20 – 32</span>
+              </div>
+
+              <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-1">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Giọng điệu chủ đạo</span>
+                <p class="text-sm font-bold text-zinc-900">Chân thực & Ấm áp</p>
+                <span class="text-[11px] text-zinc-500 block">Truyền cảm hứng hương vị</span>
+              </div>
+
+              <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-1">
+                <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Tần suất xuất bản</span>
+                <p class="text-sm font-bold text-zinc-900">3 bài / tuần</p>
+                <span class="text-[11px] text-zinc-500 block">Mục tiêu: Đơn hàng & KPI</span>
+              </div>
+            </div>
+
+            <!-- Media Health Bar -->
+            <div class="p-4 rounded-xl border border-zinc-200 bg-white space-y-2.5">
+              <div class="flex items-center justify-between text-xs">
+                <span class="font-bold text-zinc-800">Kho tài nguyên (39 assets)</span>
+                <span class="font-mono text-emerald-700 font-bold">39/20 (+195%)</span>
+              </div>
+              <div class="w-full h-2 rounded-full bg-zinc-100 overflow-hidden">
+                <div class="h-full bg-emerald-500 rounded-full w-full"></div>
+              </div>
+              <p class="text-[11px] text-zinc-400">Đã đủ số lượng hình ảnh tối thiểu để AI tự động lên lịch và gắn ảnh chuẩn xác cho 30 ngày.</p>
+            </div>
+
+            <!-- Action -->
+            <button class="w-full py-2.5 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-2xs">
+              <i class="ph-bold ph-file-arrow-down text-amber-400"></i>
+              <span>Xuất bản tóm tắt Brand Guidelines (PDF / Markdown)</span>
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+
+  <script>
+    const META = {
+      a: {
+        title: 'Option 1: Enterprise Brand Guidelines Sheet (Chuẩn Brand Book Doanh Nghiệp)',
+        desc: 'Loại bỏ hoàn toàn các khối đen nặng nề, dùng bảng chỉ dẫn thương hiệu chuẩn mực: viền mảnh 1px, typography tinh xảo, phân tách trường rõ ràng và dải ảnh 6 ô mini sang trọng.',
+        icon: 'ph-book-bookmark'
+      },
+      b: {
+        title: 'Option 2: AI Brand Directives & Guardrails (Chỉ thị & Rào chắn AI)',
+        desc: 'Thiết kế theo chuẩn Anthropic / OpenAI: Chia rõ Chỉ thị cốt lõi, Bảng nguyên tắc NÊN (Do\'s) và Rào chắn KHÔNG NÊN (Don\'ts), giúp người dùng an tâm tuyệt đối về chất lượng bài viết của AI.',
+        icon: 'ph-shield-check'
+      },
+      c: {
+        title: 'Option 3: Brand Intelligence Matrix (Ma trận tri thức & Tài nguyên)',
+        desc: 'Thiết kế theo phong cách Sprout Social / HubSpot: Đo lường độ đồng bộ thương hiệu (98%), 4 khối chỉ số KPI tinh gọn và thanh đo tiến độ tài nguyên chuẩn xác.',
+        icon: 'ph-chart-polar'
+      }
+    };
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(k => {
+        document.getElementById('option-' + k).classList.toggle('hidden', k !== opt);
+        document.getElementById('opt-btn-' + k).classList.toggle('active', k === opt);
+      });
+      document.getElementById('intro-title').textContent = META[opt].title;
+      document.getElementById('intro-desc').textContent = META[opt].desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${META[opt].icon}"></i>`;
+    }
+  </script>
+</body>
+</html>

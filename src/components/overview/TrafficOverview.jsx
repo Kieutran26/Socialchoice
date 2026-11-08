@@ -6,7 +6,6 @@ import {
     LinkSimple,
     ArrowUpRight,
     Globe,
-    Sparkle,
     Plus,
     ChartLineUp,
 } from '@phosphor-icons/react';
@@ -23,7 +22,7 @@ import {
     CartesianGrid,
 } from 'recharts';
 
-export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, timezone }) {
+export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, timezone: _timezone }) {
     const { t } = useTranslation();
 
     // Calculate aggregated daily clicks for the last 7 days
@@ -66,7 +65,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
                 <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#ffd631]/20 text-[#2b2100]">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
                         <CursorClick size={18} weight="bold" />
                     </div>
                     <div>
@@ -147,7 +146,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                 <div className="lg:col-span-7 flex flex-col justify-between rounded-xl border border-border/70 p-4 bg-card">
                     <div className="flex items-center justify-between mb-3">
                         <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                            <ChartLineUp size={15} className="text-[#ffd631]" weight="bold" />
+                            <ChartLineUp size={15} className="text-foreground" weight="bold" />
                             {t("Xu hướng lượt nhấp 7 ngày gần nhất")}
                         </span>
                         <span className="text-[11px] text-muted-foreground">Theo ngày</span>
@@ -160,7 +159,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                 <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    cursor={{ fill: 'rgba(255, 214, 49, 0.15)' }}
+                                    cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
                                     contentStyle={{
                                         backgroundColor: '#ffffff',
                                         borderRadius: '10px',
@@ -170,7 +169,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                     }}
                                     formatter={(value) => [`${value} lượt nhấp`, 'Traffic']}
                                 />
-                                <Bar dataKey="clicks" fill="#ffd631" radius={[6, 6, 0, 0]} maxBarSize={36} />
+                                <Bar dataKey="clicks" fill="#18181b" radius={[6, 6, 0, 0]} maxBarSize={36} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -181,7 +180,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                     <div>
                         <div className="flex items-center justify-between mb-3">
                             <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                <LinkSimple size={15} className="text-[#ffd631]" weight="bold" />
+                                <LinkSimple size={15} className="text-foreground" weight="bold" />
                                 {t("Top Link hút Traffic")}
                             </span>
                             <span className="text-[11px] text-muted-foreground">Clicks</span>
@@ -195,8 +194,8 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                 <p className="text-[11px] text-muted-foreground/80 max-w-xs mx-auto">
                                     {t("Gắn link vào bài viết trong bộ soạn thảo để tự động đo lường traffic đổ về website.")}
                                 </p>
-                                <Link to="/create" className="btn-skew inline-flex text-xs py-1.5 px-3 mt-2">
-                                    <Plus size={13} weight="bold" /> {t("Tạo bài viết có UTM")}
+                                <Link to="/create" className="btn-skew mt-2">
+                                    <Plus size={15} weight="bold" /> {t("Tạo bài viết có UTM")}
                                 </Link>
                             </div>
                         ) : (
@@ -245,7 +244,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                             {/* Progress bar */}
                                             <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
                                                 <div
-                                                    className="h-full rounded-full bg-[#ffd631]"
+                                                    className="h-full rounded-full bg-foreground"
                                                     style={{ width: `${pct}%` }}
                                                 />
                                             </div>

@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>3 Option Mới: Popup Chi Tiết Bài Viết (Post Detail Inspector) - Socialchoice</title>
+  <!-- Google Fonts & Tailwind CSS CDN -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  
+  <style type="text/tailwindcss">
+    @theme inline {
+      --font-body: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      --font-heading: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+  </style>
+
+  <style>
+    body {
+      font-family: 'Space Grotesk', system-ui, -apple-system, sans-serif;
+      background: #f4f4f5;
+      color: #18181b;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, h4, .font-heading {
+      font-family: 'Mona Sans', 'Space Grotesk', system-ui, sans-serif;
+    }
+    .ctrl-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .ctrl-pill.active {
+      background: #18181b;
+      color: #ffffff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+    }
+    .ctrl-pill:not(.active) {
+      background: #ffffff;
+      color: #52525b;
+      border: 1px solid #e4e4e7;
+    }
+    .ctrl-pill:not(.active):hover {
+      background: #f4f4f5;
+      color: #18181b;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f4f4f5;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #d4d4d8;
+      border-radius: 9999px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #a1a1aa;
+    }
+    /* Phone frame simulation */
+    .phone-mockup {
+      width: 250px;
+      height: 460px;
+      background: #000;
+      border-radius: 34px;
+      padding: 8px;
+      box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.25), 0 0 0 2px #d4d4d8;
+      position: relative;
+    }
+    .phone-inner {
+      width: 100%;
+      height: 100%;
+      background: #fff;
+      border-radius: 26px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .phone-notch {
+      width: 70px;
+      height: 15px;
+      background: #000;
+      border-radius: 15px;
+      position: absolute;
+      top: 6px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 30;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-16">
+
+  <!-- TOP HEADER / OPTION SWITCHER -->
+  <header class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-zinc-200 px-6 py-3 shadow-2xs">
+    <div class="max-w-[1700px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-zinc-900 text-white font-bold text-sm shadow-2xs">
+          SC
+        </span>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-sm font-bold text-zinc-900 uppercase tracking-wider">3 Option Mới: Popup Chi Tiết Bài Viết (Post Detail)</h1>
+            <span class="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+              Interactive Prototype
+            </span>
+          </div>
+          <p class="text-xs text-zinc-500 mt-0.5">Giải quyết triệt để vấn đề 2 thanh cuộn chồng chéo, giao diện nặng nề & form dài</p>
+        </div>
+      </div>
+
+      <!-- OPTION SELECTOR TABS -->
+      <div class="flex items-center gap-2 flex-wrap">
+        <button id="opt-btn-1" class="ctrl-pill active" onclick="switchOption(1)">
+          <i class="ph-bold ph-sidebar-simple"></i>
+          <span>Option 1: Quick-Action Drawer (Trượt phải · Accordion gọn gàng)</span>
+        </button>
+        <button id="opt-btn-2" class="ctrl-pill" onclick="switchOption(2)">
+          <i class="ph-bold ph-device-mobile"></i>
+          <span>Option 2: Studio QA Reviewer (Mô hình Điện thoại Live Feed + Bảng QA)</span>
+        </button>
+        <button id="opt-btn-3" class="ctrl-pill" onclick="switchOption(3)">
+          <i class="ph-bold ph-cards"></i>
+          <span>Option 3: Tabbed Clean Modal (Modal 1 cột · 3 Tab độc lập không cuộn)</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- DESCRIPTION BANNER -->
+  <div class="max-w-[1700px] mx-auto px-6 pt-5">
+    <div id="option-intro" class="p-4 rounded-2xl bg-white border border-zinc-200/80 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div id="intro-icon" class="size-10 rounded-xl bg-amber-500/10 text-amber-600 flex items-center justify-center font-bold text-xl">
+          <i class="ph-bold ph-sidebar-simple"></i>
+        </div>
+        <div>
+          <h2 id="intro-title" class="text-base font-bold text-zinc-900">Option 1: Quick-Action Drawer (Ngăn trượt phải có Accordion thu gọn)</h2>
+          <p id="intro-desc" class="text-xs text-zinc-500 mt-0.5">Đưa các nút hành động lên thanh trên cùng. Xem trước bài viết trực quan. Các form dài (Đổi lịch, Tái đăng định kỳ) được thu gọn trong Accordion, chỉ mở khi cần.</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-2 text-xs font-medium">
+        <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-100 text-zinc-700 font-semibold shadow-2xs">
+          <i class="ph-bold ph-check text-emerald-600"></i> Không bị 2 thanh cuộn che chữ · Không che lịch
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CANVAS / PREVIEW WRAPPER -->
+  <main class="max-w-[1700px] mx-auto p-6">
+
+    <!-- ========================================================================= -->
+    <!-- OPTION 1: QUICK-ACTION DRAWER (SLIDE-OVER VỚI ACCORDION GỌN)              -->
+    <!-- ========================================================================= -->
+    <div id="option-1" class="relative rounded-2xl border border-zinc-200 bg-white overflow-hidden shadow-sm min-h-[750px] flex">
+      
+      <!-- Mock Background Calendar -->
+      <div class="flex-1 p-6 opacity-30 blur-[0.5px] pointer-events-none select-none">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-heading font-bold text-lg text-zinc-900">Lịch nội dung — Tháng 11 năm 2026</h3>
+          <div class="h-8 w-28 bg-zinc-200 rounded-lg"></div>
+        </div>
+        <div class="grid grid-cols-7 gap-2">
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">2</span></div>
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">3</span></div>
+          <div class="h-28 border-2 border-blue-500 rounded-xl p-2 bg-blue-50/20">
+            <span class="text-xs font-bold text-blue-600">4</span>
+            <div class="p-1 rounded bg-white shadow-2xs text-[10px] font-bold text-blue-600 mt-2 border border-blue-200">15:58 · bb</div>
+          </div>
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">5</span></div>
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">6</span></div>
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">7</span></div>
+          <div class="h-28 border border-zinc-200 rounded-xl p-2 bg-zinc-50"><span class="text-xs font-bold text-zinc-400">8</span></div>
+        </div>
+      </div>
+
+      <!-- Right Drawer (~520px width) -->
+      <div class="w-full max-w-[540px] border-l border-zinc-200 bg-white shadow-2xl flex flex-col z-20">
+        
+        <!-- Sticky Header with Quick Action Bar -->
+        <div class="p-4 px-6 border-b border-zinc-200 bg-white shrink-0 space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                Bản nháp
+              </span>
+              <span class="text-xs font-mono text-zinc-400">#3E4404</span>
+            </div>
+            <button class="size-8 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 flex items-center justify-center transition cursor-pointer">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Hero Action Toolbar Right Under Header -->
+          <div class="flex items-center justify-between gap-2 pt-1">
+            <div class="flex items-center gap-2">
+              <button class="px-3.5 py-1.5 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs flex items-center gap-1.5 cursor-pointer">
+                <i class="ph-bold ph-pencil-simple"></i>
+                <span>Sửa bài viết</span>
+              </button>
+              <button class="px-3 py-1.5 rounded-xl border border-zinc-200 hover:bg-zinc-50 text-xs font-bold text-zinc-700 flex items-center gap-1.5 cursor-pointer">
+                <i class="ph-bold ph-copy"></i>
+                <span>Nhân bản</span>
+              </button>
+            </div>
+            <button class="p-1.5 rounded-lg text-red-600 hover:bg-red-50 text-xs font-bold flex items-center gap-1 cursor-pointer" title="Xóa bài">
+              <i class="ph-bold ph-trash"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Scrollable Body with Clean Single Scrollbar -->
+        <div class="flex-1 overflow-y-auto p-6 space-y-5 custom-scrollbar">
+          
+          <!-- Post Summary Card -->
+          <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50/50 space-y-2.5">
+            <div class="flex items-center justify-between text-xs">
+              <span class="font-semibold text-zinc-500">Lịch dự kiến</span>
+              <span class="text-[11px] font-mono text-zinc-400">Asia/Ho_Chi_Minh</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="ph-bold ph-calendar-check text-base text-zinc-800"></i>
+                <span class="font-bold text-sm font-mono text-zinc-900">15:58 · Thứ Tư, 04/11/2026</span>
+              </div>
+              <button onclick="toggleAccordion('acc-reschedule')" class="text-xs font-bold text-blue-600 hover:underline">
+                Đổi giờ
+              </button>
+            </div>
+          </div>
+
+          <!-- Target Social Channels Pills -->
+          <div class="space-y-2">
+            <div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Đích đăng bài (2)</div>
+            <div class="grid grid-cols-2 gap-2">
+              <div class="p-2.5 rounded-xl border border-zinc-200 bg-white flex items-center gap-2 shadow-2xs">
+                <span class="size-6 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs shrink-0"><i class="ph-fill ph-instagram-logo"></i></span>
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-zinc-900 truncate">deszy_creative</div>
+                  <div class="text-[10px] text-zinc-400">Instagram</div>
+                </div>
+              </div>
+              <div class="p-2.5 rounded-xl border border-zinc-200 bg-white flex items-center gap-2 shadow-2xs">
+                <span class="size-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs shrink-0"><i class="ph-fill ph-facebook-logo"></i></span>
+                <div class="min-w-0">
+                  <div class="text-xs font-bold text-zinc-900 truncate">Deszy Fanpage</div>
+                  <div class="text-[10px] text-zinc-400">Facebook</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Realistic Social Preview Card (Compact) -->
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs font-semibold text-zinc-500 uppercase tracking-wider">
+              <span>Xem trước hiển thị (Instagram)</span>
+              <span class="text-[10px] font-mono lowercase text-zinc-400">Caption: 2 ký tự</span>
+            </div>
+            <div class="rounded-xl border border-zinc-200 bg-white shadow-2xs overflow-hidden">
+              <div class="p-2.5 border-b border-zinc-100 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <div class="size-6 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[10px] font-bold">D</div>
+                  <span class="font-bold text-zinc-900">deszy_creative</span>
+                </div>
+                <i class="ph-bold ph-dots-three text-zinc-400"></i>
+              </div>
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80" alt="" class="w-full h-44 object-cover">
+              <div class="p-3 text-xs space-y-1">
+                <div class="flex items-center gap-3 text-sm text-zinc-700 pb-1">
+                  <i class="ph ph-heart"></i>
+                  <i class="ph ph-chat-circle"></i>
+                  <i class="ph ph-paper-plane-tilt"></i>
+                </div>
+                <div><span class="font-bold text-zinc-900">deszy_creative</span> <span class="ml-1 text-zinc-700">bb</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 1: Form Đổi lịch (Thu gọn) -->
+          <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <button onclick="toggleAccordion('acc-reschedule')" class="w-full p-3 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-between text-xs font-bold text-zinc-800 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i class="ph-bold ph-clock text-amber-500"></i> Cài đặt đổi ngày & giờ đăng
+              </span>
+              <i id="icon-acc-reschedule" class="ph-bold ph-caret-down transition-transform"></i>
+            </button>
+            <div id="acc-reschedule" class="hidden p-4 space-y-3 border-t border-zinc-200 text-xs">
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Ngày đăng</label>
+                  <input type="date" value="2026-11-04" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Giờ đăng</label>
+                  <input type="time" value="15:58" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+              </div>
+              <button class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white font-bold hover:bg-black">
+                Lưu thời gian mới
+              </button>
+            </div>
+          </div>
+
+          <!-- Accordion 2: Tái đăng nội dung định kỳ (Thu gọn) -->
+          <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <button onclick="toggleAccordion('acc-recurring')" class="w-full p-3 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-between text-xs font-bold text-zinc-800 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i class="ph-bold ph-arrows-clockwise text-blue-500"></i> Tái đăng nội dung định kỳ (Recurring)
+              </span>
+              <i id="icon-acc-recurring" class="ph-bold ph-caret-down transition-transform"></i>
+            </button>
+            <div id="acc-recurring" class="hidden p-4 space-y-3 border-t border-zinc-200 text-xs">
+              <div>
+                <label class="block text-[11px] text-zinc-500 mb-1">Chu kỳ lặp lại</label>
+                <select class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                  <option>Mỗi 2 tuần</option>
+                  <option>Mỗi tháng</option>
+                  <option>Không lặp lại</option>
+                </select>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Ngày bắt đầu</label>
+                  <input type="date" value="2026-11-21" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Giới hạn số lần</label>
+                  <input type="number" value="0" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Accordion 3: Lịch sử đăng bài (Thu gọn) -->
+          <div class="border border-zinc-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+            <button onclick="toggleAccordion('acc-history')" class="w-full p-3 bg-zinc-50 hover:bg-zinc-100 flex items-center justify-between text-xs font-bold text-zinc-800 cursor-pointer">
+              <span class="flex items-center gap-2">
+                <i class="ph-bold ph-clock-counter-clockwise text-zinc-500"></i> Lịch sử xuất bản & Nhật ký
+              </span>
+              <i id="icon-acc-history" class="ph-bold ph-caret-down transition-transform"></i>
+            </button>
+            <div id="acc-history" class="hidden p-4 space-y-2 border-t border-zinc-200 text-xs text-zinc-500">
+              <p>Chưa ghi nhận lần xuất bản nào (Bài viết đang ở trạng thái Bản nháp).</p>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION 2: STUDIO QA REVIEWER (PHONE MOCKUP + BẢNG QA ĐIỀU KHIỂN)           -->
+    <!-- ========================================================================= -->
+    <div id="option-2" class="hidden">
+      <div class="p-6 bg-zinc-900/10 rounded-2xl flex justify-center items-center">
+        
+        <!-- Wide Studio Box (~1240px) -->
+        <div class="w-full max-w-[1240px] rounded-3xl border border-zinc-200 bg-white shadow-2xl overflow-hidden flex flex-col">
+          
+          <!-- Top Studio Header -->
+          <div class="p-4 px-6 border-b border-zinc-200 bg-zinc-50 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="size-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center text-xs font-bold">
+                <i class="ph-bold ph-device-mobile"></i>
+              </span>
+              <div>
+                <h3 class="font-heading font-bold text-sm text-zinc-900">Content Studio: Kiểm duyệt trước khi đăng (QA Review)</h3>
+                <span class="text-[10px] text-zinc-500">Bài viết #3E4404 · Bản nháp</span>
+              </div>
+            </div>
+            <button class="size-8 rounded-lg bg-white border border-zinc-200 text-zinc-600 hover:bg-zinc-100 flex items-center justify-center transition cursor-pointer">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Split Body: Phone Simulator on Left (4 cols = 33%) + Control Board on Right (8 cols = 67%) -->
+          <div class="grid grid-cols-1 md:grid-cols-12 min-h-[580px]">
+            
+            <!-- Left: Phone Simulator (4 cols = ~33%) -->
+            <div class="md:col-span-4 bg-zinc-100 p-6 flex flex-col items-center justify-start border-r border-zinc-200">
+              
+              <!-- Platform Switcher Pills -->
+              <div class="mb-4 flex items-center bg-white border border-zinc-200 rounded-xl p-0.5 text-xs shadow-2xs">
+                <button class="px-3 py-1 rounded-lg bg-zinc-900 text-white font-bold shadow-2xs">Instagram</button>
+                <button class="px-3 py-1 rounded-lg text-zinc-600 hover:text-zinc-900 font-medium">Facebook</button>
+                <button class="px-3 py-1 rounded-lg text-zinc-600 hover:text-zinc-900 font-medium">Threads</button>
+              </div>
+
+              <!-- Realistic Phone Mockup -->
+              <div class="phone-mockup">
+                <div class="phone-inner">
+                  <div class="phone-notch"></div>
+                  
+                  <!-- Phone Top Status Bar -->
+                  <div class="pt-8 px-4 pb-2 flex items-center justify-between text-[10px] font-bold text-zinc-800">
+                    <span>09:41</span>
+                    <div class="flex items-center gap-1">
+                      <i class="ph-fill ph-wifi-high"></i>
+                      <i class="ph-fill ph-battery-full"></i>
+                    </div>
+                  </div>
+
+                  <!-- Instagram App Bar -->
+                  <div class="px-4 py-2 border-b border-zinc-100 flex items-center justify-between text-xs">
+                    <span class="font-bold text-zinc-900">Instagram</span>
+                    <div class="flex items-center gap-3 text-sm">
+                      <i class="ph ph-heart"></i>
+                      <i class="ph ph-chat-circle"></i>
+                    </div>
+                  </div>
+
+                  <!-- Feed Post in Phone -->
+                  <div class="overflow-y-auto flex-1 custom-scrollbar">
+                    <div class="p-3 flex items-center justify-between text-xs">
+                      <div class="flex items-center gap-2">
+                        <div class="size-7 rounded-full bg-gradient-to-tr from-amber-500 to-pink-600 p-[1px]">
+                          <div class="size-full bg-white rounded-full flex items-center justify-center text-[10px] font-bold">D</div>
+                        </div>
+                        <div>
+                          <span class="font-bold text-zinc-900 block leading-tight">deszy_creative</span>
+                          <span class="text-[9px] text-zinc-400">Được tài trợ</span>
+                        </div>
+                      </div>
+                      <i class="ph-bold ph-dots-three text-zinc-400"></i>
+                    </div>
+
+                    <!-- Media -->
+                    <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80" alt="" class="w-full h-44 object-cover">
+
+                    <!-- Actions -->
+                    <div class="p-3 space-y-1.5 text-xs">
+                      <div class="flex items-center justify-between text-sm pb-1">
+                        <div class="flex items-center gap-3">
+                          <i class="ph ph-heart"></i>
+                          <i class="ph ph-chat-circle"></i>
+                          <i class="ph ph-paper-plane-tilt"></i>
+                        </div>
+                        <i class="ph ph-bookmark"></i>
+                      </div>
+                      <div class="text-[11px] leading-relaxed">
+                        <span class="font-bold">deszy_creative</span>
+                        <span class="ml-1 text-zinc-700">bb</span>
+                      </div>
+                      <div class="text-[10px] text-zinc-400 uppercase pt-1">4 phút trước</div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Right: Control Board & QA Checklist (8 cols = ~67%) -->
+            <div class="md:col-span-8 p-6 flex flex-col justify-between space-y-5">
+              
+              <div class="space-y-5">
+                <!-- Title & Meta -->
+                <div>
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                      Bản nháp
+                    </span>
+                    <span class="text-xs font-mono text-zinc-400">#3E4404</span>
+                  </div>
+                  <h3 class="font-heading font-bold text-xl text-zinc-900 leading-tight">bb</h3>
+                  <p class="text-xs text-zinc-400 mt-0.5">Thời gian dự kiến: 15:58 · Thứ Tư, 04/11/2026 (Asia/Ho_Chi_Minh)</p>
+                </div>
+
+                <!-- QA Verification Checklist -->
+                <div class="p-4 rounded-2xl bg-zinc-50 border border-zinc-200 space-y-2.5">
+                  <div class="text-xs font-bold text-zinc-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <i class="ph-bold ph-shield-check text-emerald-600"></i> Tiêu chuẩn chất lượng xuất bản (QA Checklist)
+                  </div>
+                  <div class="space-y-1.5 text-xs">
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-zinc-200/80">
+                      <span class="flex items-center gap-2 text-zinc-700">
+                        <i class="ph-bold ph-check-circle text-emerald-600"></i> Kích thước ảnh 1280x720 (Đạt chuẩn 16:9)
+                      </span>
+                      <span class="text-[10px] font-bold text-emerald-700">Hợp lệ</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-zinc-200/80">
+                      <span class="flex items-center gap-2 text-zinc-700">
+                        <i class="ph-bold ph-check-circle text-emerald-600"></i> Độ dài Caption (2 ký tự / 2,200 tối đa)
+                      </span>
+                      <span class="text-[10px] font-bold text-emerald-700">An toàn</span>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-white border border-zinc-200/80">
+                      <span class="flex items-center gap-2 text-zinc-700">
+                        <i class="ph-bold ph-check-circle text-emerald-600"></i> Trạng thái kết nối tài khoản đích (2/2)
+                      </span>
+                      <span class="text-[10px] font-bold text-emerald-700">Sẵn sàng</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Target Accounts & Live Results -->
+                <div class="space-y-2">
+                  <div class="text-xs font-semibold text-zinc-500 uppercase tracking-wider">Kênh xuất bản đồng thời</div>
+                  <div class="space-y-2">
+                    <div class="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between shadow-2xs">
+                      <div class="flex items-center gap-2.5">
+                        <span class="size-7 rounded-full bg-pink-600 text-white flex items-center justify-center text-xs"><i class="ph-fill ph-instagram-logo"></i></span>
+                        <div>
+                          <div class="text-xs font-bold text-zinc-900">deszy_creative</div>
+                          <div class="text-[10px] text-zinc-400">Instagram · prepared</div>
+                        </div>
+                      </div>
+                      <span class="text-[11px] font-mono text-zinc-500">15:58 04/11</span>
+                    </div>
+
+                    <div class="p-3 rounded-xl border border-zinc-200 bg-white flex items-center justify-between shadow-2xs">
+                      <div class="flex items-center gap-2.5">
+                        <span class="size-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs"><i class="ph-fill ph-facebook-logo"></i></span>
+                        <div>
+                          <div class="text-xs font-bold text-zinc-900">Deszy - Trang Facebook</div>
+                          <div class="text-[10px] text-zinc-400">Facebook Page · prepared</div>
+                        </div>
+                      </div>
+                      <span class="text-[11px] font-mono text-zinc-500">15:58 04/11</span>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <!-- Action Bottom Bar -->
+              <div class="pt-4 border-t border-zinc-200 flex items-center justify-between">
+                <button class="text-xs font-bold text-red-600 hover:text-red-700">Xóa bài</button>
+                <div class="flex items-center gap-2">
+                  <button class="px-4 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-xs font-bold text-zinc-700">
+                    Nhân bản
+                  </button>
+                  <button class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center gap-1.5">
+                    <i class="ph-bold ph-pencil-simple"></i> Sửa bài viết
+                  </button>
+                </div>
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION 3: TABBED CLEAN MODAL (1 CỘT GỌN · 3 TAB KHÔNG CUỘN)                -->
+    <!-- ========================================================================= -->
+    <div id="option-3" class="hidden">
+      <div class="p-6 bg-zinc-900/10 rounded-2xl flex justify-center items-center">
+        
+        <!-- Standard Card (~680px width) -->
+        <div class="w-full max-w-[680px] rounded-2xl border border-zinc-200 bg-white shadow-2xl overflow-hidden flex flex-col">
+          
+          <!-- Top Header -->
+          <div class="p-4 px-6 border-b border-zinc-200 flex items-center justify-between bg-white">
+            <div class="flex items-center gap-2.5">
+              <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-zinc-100 text-zinc-700 border border-zinc-200">
+                Bản nháp
+              </span>
+              <h3 class="font-heading font-bold text-lg text-zinc-900">bb</h3>
+              <span class="text-xs font-mono text-zinc-400">#3E4404</span>
+            </div>
+            <button class="size-8 rounded-lg bg-zinc-100 text-zinc-600 hover:bg-zinc-200 flex items-center justify-center transition cursor-pointer">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Tab Bar -->
+          <div class="flex items-center border-b border-zinc-200 px-6 bg-zinc-50/60 text-xs font-bold text-zinc-500 gap-6">
+            <button id="opt3-tab-btn-1" onclick="switchOpt3Tab(1)" class="py-3 border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1.5 cursor-pointer">
+              <i class="ph-bold ph-eye"></i>
+              <span>1. Xem trước bài viết</span>
+            </button>
+            <button id="opt3-tab-btn-2" onclick="switchOpt3Tab(2)" class="py-3 border-b-2 border-transparent hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer">
+              <i class="ph-bold ph-clock"></i>
+              <span>2. Lên lịch & Định kỳ</span>
+            </button>
+            <button id="opt3-tab-btn-3" onclick="switchOpt3Tab(3)" class="py-3 border-b-2 border-transparent hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer">
+              <i class="ph-bold ph-share-network"></i>
+              <span>3. Kênh & Lịch sử</span>
+            </button>
+          </div>
+
+          <!-- Tab 1: Preview & Content (Default View) -->
+          <div id="opt3-content-1" class="p-6 space-y-4">
+            <!-- Schedule info bar -->
+            <div class="p-3 rounded-xl bg-zinc-50 border border-zinc-200 flex items-center justify-between text-xs">
+              <div class="flex items-center gap-2">
+                <i class="ph-bold ph-calendar text-zinc-700 text-sm"></i>
+                <span class="font-bold text-zinc-900 font-mono">15:58 · Thứ Tư, 04/11/2026</span>
+              </div>
+              <button onclick="switchOpt3Tab(2)" class="text-blue-600 font-bold hover:underline">
+                Đổi giờ đăng
+              </button>
+            </div>
+
+            <!-- Preview Card -->
+            <div class="rounded-xl border border-zinc-200 bg-white overflow-hidden shadow-2xs">
+              <div class="p-3 border-b border-zinc-100 flex items-center justify-between text-xs">
+                <div class="flex items-center gap-2">
+                  <span class="size-6 rounded-full bg-pink-600 text-white flex items-center justify-center text-[10px]"><i class="ph-fill ph-instagram-logo"></i></span>
+                  <span class="font-bold text-zinc-900">deszy_creative</span>
+                </div>
+                <span class="text-[10px] text-zinc-400">Instagram Feed</span>
+              </div>
+              <img src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&auto=format&fit=crop&q=80" alt="" class="w-full h-48 object-cover">
+              <div class="p-3 text-xs">
+                <span class="font-bold text-zinc-900">deszy_creative</span>
+                <span class="ml-1 text-zinc-700 font-mono">bb</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 2: Schedule & Recurring -->
+          <div id="opt3-content-2" class="hidden p-6 space-y-4">
+            <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50 space-y-3">
+              <h4 class="font-bold text-xs text-zinc-900 uppercase">Thay đổi thời gian đăng bài</h4>
+              <div class="grid grid-cols-2 gap-3 text-xs">
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Ngày xuất bản</label>
+                  <input type="date" value="2026-11-04" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Giờ xuất bản</label>
+                  <input type="time" value="15:58" class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-xl border border-zinc-200 bg-zinc-50 space-y-3">
+              <h4 class="font-bold text-xs text-zinc-900 uppercase">Cấu hình lặp lại định kỳ (Recurring)</h4>
+              <div class="text-xs space-y-2">
+                <div>
+                  <label class="block text-[11px] text-zinc-500 mb-1">Chu kỳ tái đăng</label>
+                  <select class="w-full h-8 px-2 rounded-lg border border-zinc-300 bg-white">
+                    <option>Mỗi 2 tuần</option>
+                    <option>Mỗi tháng</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tab 3: Channels & Logs -->
+          <div id="opt3-content-3" class="hidden p-6 space-y-3">
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-white space-y-1 shadow-2xs text-xs">
+              <div class="flex items-center justify-between font-bold">
+                <span class="flex items-center gap-2"><i class="ph-fill ph-instagram-logo text-pink-600"></i> deszy_creative</span>
+                <span class="px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 text-[10px]">prepared</span>
+              </div>
+              <div class="text-[11px] text-zinc-500">Caption: bb</div>
+            </div>
+            <div class="p-3.5 rounded-xl border border-zinc-200 bg-white space-y-1 shadow-2xs text-xs">
+              <div class="flex items-center justify-between font-bold">
+                <span class="flex items-center gap-2"><i class="ph-fill ph-facebook-logo text-blue-600"></i> Deszy - Trang Facebook</span>
+                <span class="px-2 py-0.5 rounded bg-zinc-100 text-zinc-600 text-[10px]">prepared</span>
+              </div>
+              <div class="text-[11px] text-zinc-500">Caption: bb</div>
+            </div>
+          </div>
+
+          <!-- Bottom Footer -->
+          <div class="p-4 px-6 border-t border-zinc-200 bg-white flex items-center justify-between">
+            <button class="text-xs font-bold text-red-600 hover:text-red-700">Xóa</button>
+            <div class="flex items-center gap-2">
+              <button class="px-3.5 py-2 rounded-xl border border-zinc-200 bg-white hover:bg-zinc-50 text-xs font-bold text-zinc-700">
+                Nhân bản
+              </button>
+              <button class="px-4 py-2 rounded-xl bg-zinc-900 hover:bg-black text-white text-xs font-bold shadow-2xs flex items-center gap-1.5">
+                <i class="ph-bold ph-pencil-simple"></i> Sửa bài viết
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const optionsInfo = {
+      1: {
+        title: "Option 1: Quick-Action Drawer (Ngăn trượt phải có Accordion thu gọn)",
+        desc: "Đưa các nút hành động lên thanh trên cùng. Xem trước bài viết trực quan. Các form dài (Đổi lịch, Tái đăng định kỳ) được thu gọn trong Accordion, chỉ mở khi cần.",
+        icon: "ph-sidebar-simple"
+      },
+      2: {
+        title: "Option 2: Studio QA Reviewer (Mô hình Điện thoại Live Feed + Bảng QA)",
+        desc: "Bên trái là mô hình chiếc điện thoại mô phỏng chính xác bài viết trên Instagram / Facebook; bên phải là bảng kiểm tra tiêu chuẩn QA và tài khoản đích.",
+        icon: "ph-device-mobile"
+      },
+      3: {
+        title: "Option 3: Tabbed Clean Modal (Modal 1 cột · 3 Tab độc lập không cuộn)",
+        desc: "Modal 1 cột rộng vừa phải (~680px) chia 3 Tab độc lập: Tab 1 xem trước, Tab 2 lên lịch & định kỳ, Tab 3 kênh & lịch sử. Giải quyết triệt để vấn đề cuộn chồng chéo.",
+        icon: "ph-cards"
+      }
+    };
+
+    function switchOption(opt) {
+      [1, 2, 3].forEach(k => {
+        const btn = document.getElementById(`opt-btn-${k}`);
+        const view = document.getElementById(`option-${k}`);
+        if (k === opt) {
+          btn.classList.add('active');
+          view.classList.remove('hidden');
+        } else {
+          btn.classList.remove('active');
+          view.classList.add('hidden');
+        }
+      });
+
+      const info = optionsInfo[opt];
+      document.getElementById('intro-title').textContent = info.title;
+      document.getElementById('intro-desc').textContent = info.desc;
+      document.getElementById('intro-icon').innerHTML = `<i class="ph-bold ${info.icon}"></i>`;
+    }
+
+    function toggleAccordion(id) {
+      const el = document.getElementById(id);
+      const icon = document.getElementById('icon-' + id);
+      if (el.classList.contains('hidden')) {
+        el.classList.remove('hidden');
+        if (icon) icon.classList.add('rotate-180');
+      } else {
+        el.classList.add('hidden');
+        if (icon) icon.classList.remove('rotate-180');
+      }
+    }
+
+    function switchOpt3Tab(tabNum) {
+      [1, 2, 3].forEach(n => {
+        const btn = document.getElementById(`opt3-tab-btn-${n}`);
+        const content = document.getElementById(`opt3-content-${n}`);
+        if (n === tabNum) {
+          btn.className = 'py-3 border-b-2 border-zinc-900 text-zinc-900 flex items-center gap-1.5 cursor-pointer font-bold';
+          content.classList.remove('hidden');
+        } else {
+          btn.className = 'py-3 border-b-2 border-transparent text-zinc-500 hover:text-zinc-900 flex items-center gap-1.5 cursor-pointer font-medium';
+          content.classList.add('hidden');
+        }
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="vi" data-mau="xam">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 Option Layouts: Trụ cột nội dung (Content Pillars) - Socialchoice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        --heading-font: "Mona Sans", "Space Grotesk", sans-serif;
+        --primary: #181818;
+        --primary-hover: #262626;
+        --background: #fbfbfa;
+        --surface: #ffffff;
+        --foreground: #181818;
+        --muted: #71717a;
+        --border: #e4e4e7;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--app-font);
+        background: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .tab-active {
+        background: #181818 !important;
+        color: #ffffff !important;
+      }
+    </style>
+  </head>
+
+  <body class="p-4 sm:p-6 lg:p-8 max-w-[1560px] mx-auto min-h-screen">
+    <!-- Top Controller Bar: Options Switcher -->
+    <header class="mb-6 p-4 rounded-2xl bg-white border border-neutral-200 shadow-xs flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-bold tracking-wider uppercase">
+            UI/UX Concept Review
+          </span>
+          <span class="text-xs text-neutral-400">·</span>
+          <span class="text-xs font-semibold text-neutral-700">Màn hình: Trụ cột nội dung (Content Pillars)</span>
+        </div>
+        <h1 class="text-lg font-bold text-neutral-900 mt-1">
+          3 Phương án Layout cho Quản lý Trụ cột Nội dung (Content Pillars)
+        </h1>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          onclick="switchOption('opt-a')"
+          id="btn-opt-a"
+          class="tab-btn tab-active px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option A: Bento Strategy Cards (Lưới thẻ 2 cột)
+        </button>
+        <button
+          onclick="switchOption('opt-b')"
+          id="btn-opt-b"
+          class="tab-btn bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option B: Interactive Allocator Table (Bảng phân bổ thông minh)
+        </button>
+        <button
+          onclick="switchOption('opt-c')"
+          id="btn-opt-c"
+          class="tab-btn bg-neutral-100 hover:bg-neutral-200 text-neutral-700 px-3.5 py-2 rounded-xl text-xs font-semibold border border-neutral-200 cursor-pointer transition"
+        >
+          Option C: Split Studio Master/Detail (Danh sách + Chi tiết)
+        </button>
+      </div>
+    </header>
+
+    <!-- Subheader: Page Identity -->
+    <div class="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-neutral-200 pb-4">
+      <div>
+        <h2 class="text-base font-bold text-neutral-900">Trụ cột nội dung (Content Pillars)</h2>
+        <p class="text-xs text-neutral-500 mt-0.5">
+          Xác định các chủ đề trọng tâm của thương hiệu và đặt tỷ lệ % mục tiêu phân bổ nội dung.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <span class="text-xs text-neutral-500">Thương hiệu: <strong>Test</strong></span>
+        <button class="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer transition">
+          <i data-lucide="plus" class="w-4 h-4"></i>
+          <span>Thêm trụ cột mới</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: BENTO STRATEGY CARDS (LƯỚI THẺ MA TRẬN 2 CỘT) -->
+    <!-- ========================================================================= -->
+    <section id="opt-a" class="option-panel space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option A (Khuyên dùng):</strong> Thay vì danh sách dọc đơn điệu, chuyển sang lưới thẻ Bento 2 cột tương tác cao. Có thanh tổng quan Stacked 100% trên cùng, từng thẻ trụ cột thể hiện rõ nét tiến độ thực tế vs mục tiêu, góc khai thác và thao tác nhanh.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Bento Grid 2 Cột</span>
+      </div>
+
+      <!-- Top Strategy HUD Bar -->
+      <div class="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900 border border-neutral-200">
+              <i data-lucide="layers" class="w-4 h-4"></i>
+            </span>
+            <div>
+              <h3 class="text-sm font-bold text-neutral-900">Phân bổ tổng thể 100% mục tiêu chiến lược</h3>
+              <p class="text-xs text-neutral-500">5 trụ cột đang hoạt động · Cân bằng hoàn hảo 100%</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-900 text-white font-mono text-xs font-semibold">
+              100% Mục tiêu
+            </span>
+            <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-800 font-mono text-xs font-semibold border border-neutral-200">
+              39 bài viết
+            </span>
+          </div>
+        </div>
+
+        <!-- Stacked 100% Bar -->
+        <div class="h-3 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200">
+          <div class="h-full bg-neutral-900" style="width: 20%" title="Brand Awareness: 20%"></div>
+          <div class="h-full bg-neutral-700" style="width: 20%" title="Community Engagement: 20%"></div>
+          <div class="h-full bg-neutral-500" style="width: 20%" title="Customer Stories: 20%"></div>
+          <div class="h-full bg-neutral-400" style="width: 20%" title="Product Education: 20%"></div>
+          <div class="h-full bg-neutral-300" style="width: 20%" title="Behind the Scenes: 20%"></div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-4 text-[11px] text-neutral-600">
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-neutral-900"></span>Brand Awareness (20%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-neutral-700"></span>Community Engagement (20%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-neutral-500"></span>Customer Stories (20%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-neutral-400"></span>Product Education (20%)</span>
+          <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-neutral-300"></span>Behind the Scenes (20%)</span>
+        </div>
+      </div>
+
+      <!-- Bento Grid (2 Columns) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Card 1 -->
+        <div class="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs hover:border-neutral-300 transition-all space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-neutral-900 shrink-0"></span>
+              <div>
+                <h4 class="text-sm font-bold text-neutral-900">Brand Awareness</h4>
+                <p class="text-xs text-neutral-500 mt-0.5 line-clamp-1">Trụ cột nhận diện thương hiệu đề xuất bởi AI</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10px]">
+              ✓ Cân bằng
+            </span>
+          </div>
+
+          <!-- Progress comparison bar -->
+          <div class="space-y-1.5">
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="text-neutral-500 text-[11px]">Thực tế: <strong class="text-neutral-900 font-bold">21%</strong> (8 bài)</span>
+              <span class="text-neutral-500 text-[11px]">Mục tiêu: <strong class="text-neutral-900">20%</strong></span>
+            </div>
+            <div class="relative h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
+              <div class="h-full bg-neutral-900 rounded-full" style="width: 21%"></div>
+              <div class="absolute top-0 bottom-0 w-0.5 bg-neutral-950 z-10" style="left: 20%"></div>
+            </div>
+          </div>
+
+          <!-- Card Footer Metrics & Actions -->
+          <div class="flex items-center justify-between pt-3 border-t border-neutral-100 text-xs">
+            <div class="flex items-center gap-3 text-neutral-600 text-[11px]">
+              <span class="flex items-center gap-1"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> 4 góc</span>
+              <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> 8 bài</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Sửa</button>
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Lưu trữ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs hover:border-neutral-300 transition-all space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-neutral-700 shrink-0"></span>
+              <div>
+                <h4 class="text-sm font-bold text-neutral-900">Community Engagement</h4>
+                <p class="text-xs text-neutral-500 mt-0.5 line-clamp-1">Tương tác và kết nối cộng đồng</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-300 text-neutral-900 font-bold text-[10px]">
+              -10% Thiếu hụt
+            </span>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="text-neutral-500 text-[11px]">Thực tế: <strong class="text-neutral-900 font-bold">10%</strong> (4 bài)</span>
+              <span class="text-neutral-500 text-[11px]">Mục tiêu: <strong class="text-neutral-900">20%</strong></span>
+            </div>
+            <div class="relative h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
+              <div class="h-full bg-neutral-700 rounded-full" style="width: 10%"></div>
+              <div class="absolute top-0 bottom-0 w-0.5 bg-neutral-950 z-10" style="left: 20%"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-neutral-100 text-xs">
+            <div class="flex items-center gap-3 text-neutral-600 text-[11px]">
+              <span class="flex items-center gap-1"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> 2 góc</span>
+              <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> 4 bài</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Sửa</button>
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Lưu trữ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs hover:border-neutral-300 transition-all space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-neutral-500 shrink-0"></span>
+              <div>
+                <h4 class="text-sm font-bold text-neutral-900">Customer Stories</h4>
+                <p class="text-xs text-neutral-500 mt-0.5 line-clamp-1">Trải nghiệm và câu chuyện thành công của khách hàng</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10px]">
+              ✓ Cân bằng
+            </span>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="text-neutral-500 text-[11px]">Thực tế: <strong class="text-neutral-900 font-bold">15%</strong> (6 bài)</span>
+              <span class="text-neutral-500 text-[11px]">Mục tiêu: <strong class="text-neutral-900">20%</strong></span>
+            </div>
+            <div class="relative h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
+              <div class="h-full bg-neutral-500 rounded-full" style="width: 15%"></div>
+              <div class="absolute top-0 bottom-0 w-0.5 bg-neutral-950 z-10" style="left: 20%"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-neutral-100 text-xs">
+            <div class="flex items-center gap-3 text-neutral-600 text-[11px]">
+              <span class="flex items-center gap-1"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> 4 góc</span>
+              <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> 6 bài</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Sửa</button>
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Lưu trữ</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs hover:border-neutral-300 transition-all space-y-4">
+          <div class="flex items-start justify-between gap-3">
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 rounded-full bg-neutral-400 shrink-0"></span>
+              <div>
+                <h4 class="text-sm font-bold text-neutral-900">Product Education</h4>
+                <p class="text-xs text-neutral-500 mt-0.5 line-clamp-1">Hướng dẫn sử dụng và đào tạo chuyên sâu</p>
+              </div>
+            </div>
+            <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10px]">
+              ✓ Cân bằng
+            </span>
+          </div>
+
+          <div class="space-y-1.5">
+            <div class="flex items-baseline justify-between text-xs">
+              <span class="text-neutral-500 text-[11px]">Thực tế: <strong class="text-neutral-900 font-bold">21%</strong> (8 bài)</span>
+              <span class="text-neutral-500 text-[11px]">Mục tiêu: <strong class="text-neutral-900">20%</strong></span>
+            </div>
+            <div class="relative h-2 w-full bg-neutral-100 rounded-full overflow-hidden border border-neutral-200">
+              <div class="h-full bg-neutral-400 rounded-full" style="width: 21%"></div>
+              <div class="absolute top-0 bottom-0 w-0.5 bg-neutral-950 z-10" style="left: 20%"></div>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between pt-3 border-t border-neutral-100 text-xs">
+            <div class="flex items-center gap-3 text-neutral-600 text-[11px]">
+              <span class="flex items-center gap-1"><i data-lucide="git-branch" class="w-3.5 h-3.5"></i> 5 góc</span>
+              <span class="flex items-center gap-1"><i data-lucide="file-text" class="w-3.5 h-3.5"></i> 8 bài</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Sửa</button>
+              <button class="px-2.5 py-1 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-medium">Lưu trữ</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: INTERACTIVE ALLOCATOR TABLE (BẢNG QUẢN TRỊ PHÂN BỔ THÔNG MINH) -->
+    <!-- ========================================================================= -->
+    <section id="opt-b" class="option-panel hidden space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option B:</strong> Tối ưu theo dạng Bảng dữ liệu chuyên nghiệp có Slider chỉnh trực tiếp Mục tiêu % tại chỗ, không cần mở modal popup. Phù hợp người thích tốc độ và phân tích dữ liệu so sánh.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Data Allocator Table</span>
+      </div>
+
+      <!-- Quick KPI Strip -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs">
+          <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">Tổng số trụ cột</span>
+          <div class="text-xl font-bold text-neutral-900 mt-1">5 Chủ đề</div>
+          <p class="text-[11px] text-neutral-500">Đang hoạt động trên thương hiệu</p>
+        </div>
+        <div class="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs">
+          <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">Tổng tỷ trọng mục tiêu</span>
+          <div class="text-xl font-bold text-neutral-900 mt-1">100%</div>
+          <p class="text-[11px] text-neutral-500">Phân bổ cân bằng hoàn hảo</p>
+        </div>
+        <div class="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs">
+          <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider text-[10px]">Tổng bài viết đã gán</span>
+          <div class="text-xl font-bold text-neutral-900 mt-1">39 bài</div>
+          <p class="text-[11px] text-neutral-500">Dựa trên lịch và kho nội dung</p>
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="bg-white border border-neutral-200 rounded-2xl shadow-2xs overflow-hidden">
+        <div class="p-4 border-b border-neutral-100 flex items-center justify-between">
+          <h4 class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Bảng cấu hình trọng số trụ cột</h4>
+          <span class="text-xs text-neutral-500">Kéo thanh trượt để cập nhật mục tiêu % trực tiếp</span>
+        </div>
+
+        <table class="w-full text-left text-xs border-collapse">
+          <thead>
+            <tr class="border-b border-neutral-200 bg-neutral-50/70 text-neutral-500 font-semibold text-[11px] uppercase tracking-wider">
+              <th class="p-3.5">Trụ cột nội dung</th>
+              <th class="p-3.5 w-28">Góc tiếp cận</th>
+              <th class="p-3.5 w-24">Số bài viết</th>
+              <th class="p-3.5 w-52">Điều chỉnh Mục tiêu %</th>
+              <th class="p-3.5 w-28">Thực tế %</th>
+              <th class="p-3.5 w-32">Trạng thái</th>
+              <th class="p-3.5 w-24 text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-100">
+            <tr class="hover:bg-neutral-50/50">
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-neutral-900 shrink-0"></span>
+                  <div>
+                    <span class="font-bold text-neutral-900">Brand Awareness</span>
+                    <p class="text-[11px] text-neutral-500">Nhận diện thương hiệu</p>
+                  </div>
+                </div>
+              </td>
+              <td class="p-3.5 font-medium text-neutral-700">4 góc</td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">8 bài</td>
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <input type="range" min="0" max="100" value="20" class="w-28 accent-neutral-900 cursor-pointer" />
+                  <span class="font-mono font-bold text-neutral-900 text-xs">20%</span>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">21%</td>
+              <td class="p-3.5">
+                <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10px]">✓ Cân bằng</span>
+              </td>
+              <td class="p-3.5 text-right">
+                <button class="text-neutral-800 hover:underline font-medium text-[11px]">Sửa</button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-neutral-50/50">
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-neutral-700 shrink-0"></span>
+                  <div>
+                    <span class="font-bold text-neutral-900">Community Engagement</span>
+                    <p class="text-[11px] text-neutral-500">Kết nối cộng đồng</p>
+                  </div>
+                </div>
+              </td>
+              <td class="p-3.5 font-medium text-neutral-700">2 góc</td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">4 bài</td>
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <input type="range" min="0" max="100" value="20" class="w-28 accent-neutral-900 cursor-pointer" />
+                  <span class="font-mono font-bold text-neutral-900 text-xs">20%</span>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">10%</td>
+              <td class="p-3.5">
+                <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-300 text-neutral-900 font-bold text-[10px]">-10% Thiếu</span>
+              </td>
+              <td class="p-3.5 text-right">
+                <button class="text-neutral-800 hover:underline font-medium text-[11px]">Sửa</button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-neutral-50/50">
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2.5 h-2.5 rounded-full bg-neutral-500 shrink-0"></span>
+                  <div>
+                    <span class="font-bold text-neutral-900">Customer Stories</span>
+                    <p class="text-[11px] text-neutral-500">Câu chuyện khách hàng</p>
+                  </div>
+                </div>
+              </td>
+              <td class="p-3.5 font-medium text-neutral-700">4 góc</td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">6 bài</td>
+              <td class="p-3.5">
+                <div class="flex items-center gap-2">
+                  <input type="range" min="0" max="100" value="20" class="w-28 accent-neutral-900 cursor-pointer" />
+                  <span class="font-mono font-bold text-neutral-900 text-xs">20%</span>
+                </div>
+              </td>
+              <td class="p-3.5 font-mono font-bold text-neutral-900">15%</td>
+              <td class="p-3.5">
+                <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10px]">✓ Cân bằng</span>
+              </td>
+              <td class="p-3.5 text-right">
+                <button class="text-neutral-800 hover:underline font-medium text-[11px]">Sửa</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: SPLIT STUDIO MASTER/DETAIL (DANH SÁCH TRÁI + THANH TRA PHẢI) -->
+    <!-- ========================================================================= -->
+    <section id="opt-c" class="option-panel hidden space-y-6">
+      <div class="p-3 bg-neutral-100 border border-neutral-200 rounded-xl text-xs text-neutral-600 flex items-center justify-between">
+        <span><strong>Ý tưởng Option C:</strong> Áp dụng cấu trúc Split Studio đồng bộ với Brand Knowledge Base. Cột trái là danh sách trụ cột dạng list tinh tế; Cột phải là thanh tra chi tiết (Pillar Inspector) cho phép xem sâu các góc khai thác và bài viết mẫu.</span>
+        <span class="font-mono text-neutral-400 text-[11px]">Bố cục: Split Studio 60% / 40%</span>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        <!-- Left: Pillars List (7 cols / 58%) -->
+        <div class="lg:col-span-7 bg-white border border-neutral-200 rounded-2xl shadow-2xs divide-y divide-neutral-100 overflow-hidden">
+          <div class="p-4 bg-neutral-50/60 border-b border-neutral-100 flex items-center justify-between">
+            <span class="text-xs font-bold text-neutral-900 uppercase tracking-wider">Danh sách 5 Trụ cột</span>
+            <span class="text-xs text-neutral-500">Nhấp vào một trụ cột để xem thanh tra chi tiết</span>
+          </div>
+
+          <!-- Item 1 (Active) -->
+          <div class="p-4 bg-neutral-50 border-l-4 border-neutral-900 cursor-pointer space-y-2">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-neutral-900"></span>
+                <h4 class="text-sm font-bold text-neutral-900">Brand Awareness</h4>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-semibold">ĐANG CHỌN</span>
+            </div>
+            <p class="text-xs text-neutral-500">Mục tiêu 20% · Thực tế 21% (8 bài viết · 4 góc tiếp cận)</p>
+          </div>
+
+          <!-- Item 2 -->
+          <div class="p-4 hover:bg-neutral-50/60 cursor-pointer space-y-2 transition">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-neutral-700"></span>
+                <h4 class="text-sm font-bold text-neutral-900">Community Engagement</h4>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-neutral-100 border border-neutral-300 text-neutral-800 text-[10px] font-bold">-10% Thiếu</span>
+            </div>
+            <p class="text-xs text-neutral-500">Mục tiêu 20% · Thực tế 10% (4 bài viết · 2 góc tiếp cận)</p>
+          </div>
+
+          <!-- Item 3 -->
+          <div class="p-4 hover:bg-neutral-50/60 cursor-pointer space-y-2 transition">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-neutral-500"></span>
+                <h4 class="text-sm font-bold text-neutral-900">Customer Stories</h4>
+              </div>
+              <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-semibold">✓ Cân bằng</span>
+            </div>
+            <p class="text-xs text-neutral-500">Mục tiêu 20% · Thực tế 15% (6 bài viết · 4 góc tiếp cận)</p>
+          </div>
+        </div>
+
+        <!-- Right: Inspector Panel (5 cols / 42% - Sticky) -->
+        <div class="lg:col-span-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs p-5 space-y-5 sticky top-20">
+          <div class="border-b border-neutral-100 pb-3 flex items-center justify-between">
+            <div>
+              <span class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider block">PILLAR INSPECTOR</span>
+              <h3 class="text-base font-bold text-neutral-900 mt-0.5">Brand Awareness</h3>
+            </div>
+            <button class="px-3 py-1.5 rounded-xl bg-neutral-900 text-white text-xs font-semibold">Chỉnh sửa</button>
+          </div>
+
+          <!-- Metadata Spec -->
+          <div class="space-y-3 text-xs">
+            <div>
+              <span class="text-neutral-500 block text-[11px]">Mô tả định hướng:</span>
+              <p class="text-neutral-800 font-medium mt-0.5">Trụ cột nhận diện thương hiệu nhằm gia tăng mức độ phủ sóng và thấu hiểu giá trị sản phẩm.</p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3 pt-2">
+              <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200">
+                <span class="text-neutral-500 text-[10px] uppercase font-bold block">Tỷ trọng mục tiêu</span>
+                <span class="text-lg font-bold text-neutral-900">20%</span>
+              </div>
+              <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200">
+                <span class="text-neutral-500 text-[10px] uppercase font-bold block">Tỷ lệ thực tế</span>
+                <span class="text-lg font-bold text-neutral-900">21% (8 bài)</span>
+              </div>
+            </div>
+
+            <!-- Angles list inside pillar -->
+            <div class="pt-2 space-y-2">
+              <span class="text-neutral-500 text-[11px] font-bold block uppercase tracking-wider">4 Góc tiếp cận (Angles):</span>
+              <div class="space-y-1.5">
+                <div class="p-2 bg-neutral-50/80 rounded-lg border border-neutral-200 text-neutral-800 text-[11px] flex justify-between">
+                  <span>How-to / Hướng dẫn chuyên sâu</span>
+                  <span class="font-mono text-neutral-500">3 bài</span>
+                </div>
+                <div class="p-2 bg-neutral-50/80 rounded-lg border border-neutral-200 text-neutral-800 text-[11px] flex justify-between">
+                  <span>Cảnh báo sai lầm thường gặp</span>
+                  <span class="font-mono text-neutral-500">2 bài</span>
+                </div>
+                <div class="p-2 bg-neutral-50/80 rounded-lg border border-neutral-200 text-neutral-800 text-[11px] flex justify-between">
+                  <span>Storytelling / Đằng sau thương hiệu</span>
+                  <span class="font-mono text-neutral-500">2 bài</span>
+                </div>
+                <div class="p-2 bg-neutral-50/80 rounded-lg border border-neutral-200 text-neutral-800 text-[11px] flex justify-between">
+                  <span>Review / So sánh tính năng</span>
+                  <span class="font-mono text-neutral-500">1 bài</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Switcher Script -->
+    <script>
+      function switchOption(id) {
+        document.querySelectorAll('.option-panel').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+          btn.classList.remove('tab-active');
+          btn.classList.add('bg-neutral-100', 'text-neutral-700');
+        });
+
+        document.getElementById(id).classList.remove('hidden');
+        const activeBtn = document.getElementById('btn-' + id);
+        activeBtn.classList.add('tab-active');
+        activeBtn.classList.remove('bg-neutral-100', 'text-neutral-700');
+      }
+
+      lucide.createIcons();
+    </script>
+  </body>
+</html>

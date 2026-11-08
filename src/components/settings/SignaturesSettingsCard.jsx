@@ -230,7 +230,7 @@ export default function SignaturesSettingsCard() {
                         return (
                             <div
                                 key={sig.id}
-                                className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-surface/50 p-4 transition-all hover:border-[#ffd631]/60 hover:shadow-xs"
+                                className="group relative flex flex-col justify-between rounded-xl border border-border/70 bg-surface/50 p-4 transition-all hover:border-[#18181b]/60 hover:shadow-xs"
                             >
                                 <div className="space-y-2">
                                     <div className="flex items-start justify-between gap-2">
@@ -332,7 +332,7 @@ export default function SignaturesSettingsCard() {
                                     value={formData.name}
                                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     placeholder={t('Ví dụ: Chữ ký Fanpage chính, Footer Hotline...')}
-                                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#ffd631]"
+                                    className="w-full h-9 rounded-xl border border-border bg-background px-3 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#18181b]"
                                 />
                             </div>
 
@@ -346,7 +346,7 @@ export default function SignaturesSettingsCard() {
                                         <select
                                             value={formData.platform}
                                             onChange={(e) => setFormData({ ...formData, platform: e.target.value, account_id: '' })}
-                                            className="w-full h-9 rounded-xl border border-border bg-background px-3 pr-8 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#ffd631] cursor-pointer appearance-none"
+                                            className="w-full h-9 rounded-xl border border-border bg-background px-3 pr-8 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#18181b] cursor-pointer appearance-none"
                                         >
                                             {PLATFORM_OPTIONS.map((opt) => (
                                                 <option key={opt.value} value={opt.value}>
@@ -366,7 +366,7 @@ export default function SignaturesSettingsCard() {
                                         <select
                                             value={formData.account_id}
                                             onChange={(e) => setFormData({ ...formData, account_id: e.target.value })}
-                                            className="w-full h-9 rounded-xl border border-border bg-background px-3 pr-8 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#ffd631] cursor-pointer appearance-none"
+                                            className="w-full h-9 rounded-xl border border-border bg-background px-3 pr-8 text-xs font-medium text-foreground focus:outline-none focus:ring-1 focus:ring-[#18181b] cursor-pointer appearance-none"
                                         >
                                             <option value="">{t('Tất cả tài khoản')}</option>
                                             {availableAccounts.map((acc) => (
@@ -396,7 +396,7 @@ export default function SignaturesSettingsCard() {
                                     value={formData.content}
                                     onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                                     placeholder={t('Ví dụ:\n---\n📞 Hotline/Zalo: 0909 123 456\n🌐 Website: socialchoice.site\n#socialchoice #marketing')}
-                                    className="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed text-foreground focus:outline-none focus:ring-1 focus:ring-[#ffd631] resize-none"
+                                    className="w-full rounded-xl border border-border bg-background p-3 text-xs leading-relaxed text-foreground focus:outline-none focus:ring-1 focus:ring-[#18181b] resize-none"
                                 />
                             </div>
 
@@ -406,7 +406,7 @@ export default function SignaturesSettingsCard() {
                                     type="checkbox"
                                     checked={formData.is_default}
                                     onChange={(e) => setFormData({ ...formData, is_default: e.target.checked })}
-                                    className="rounded border-border text-[#ffd631] focus:ring-[#ffd631] h-4 w-4"
+                                    className="rounded border-border text-[#18181b] focus:ring-[#18181b] h-4 w-4"
                                 />
                                 <span className="text-xs text-foreground font-medium">
                                     {t('Đặt làm chữ ký mặc định cho kênh này')}

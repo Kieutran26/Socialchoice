@@ -1,0 +1,536 @@
+<!doctype html>
+<html lang="vi" data-mau="xam">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>3 Option Layouts: Cơ sở tri thức thương hiệu (Brand Knowledge Base) - Socialchoice</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Mona+Sans:wght@500;600;700&display=swap" rel="stylesheet" />
+
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+      :root {
+        --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+        --heading-font: "Mona Sans", "Space Grotesk", sans-serif;
+        --primary: #181818;
+        --primary-hover: #262626;
+        --background: #fbfbfa;
+        --surface: #ffffff;
+        --foreground: #181818;
+        --muted: #71717a;
+        --border: #e4e4e7;
+      }
+
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        font-family: var(--app-font);
+        background: var(--background);
+        color: var(--foreground);
+        -webkit-font-smoothing: antialiased;
+      }
+
+      .btn-black {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: #181818;
+        color: #ffffff;
+        font-weight: 500;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        border: none;
+        transition: background-color 0.12s ease;
+      }
+      .btn-black:hover { background: #2e2e2e; }
+
+      .btn-outline {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 13px;
+        border-radius: 10px;
+        background: #ffffff;
+        color: #181818;
+        border: 1px solid #e4e4e7;
+        font-weight: 500;
+        font-size: 12px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.12s ease;
+      }
+      .btn-outline:hover { background: #f4f4f5; }
+
+      .panel-card {
+        background: #ffffff;
+        border: 1px solid #e4e4e7;
+        border-radius: 16px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+      }
+
+      .wf-toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 20px;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(8px);
+        border-bottom: 1px solid #e4e4e7;
+      }
+      .wf-pill-group {
+        display: inline-flex;
+        padding: 3px;
+        background: #f4f4f5;
+        border-radius: 10px;
+        border: 1px solid #e4e4e7;
+      }
+      .wf-pill-group a {
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #71717a;
+        text-decoration: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .wf-pill-group a[aria-current="page"] {
+        background: #181818;
+        color: #ffffff;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      }
+    </style>
+  </head>
+  <body class="min-h-screen pb-16">
+
+    <!-- TOP TOOLBAR: SWITCH BETWEEN 3 OPTIONS -->
+    <header class="wf-toolbar">
+      <div class="flex items-center gap-2 mr-2">
+        <span class="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white font-bold text-xs">
+          SC
+        </span>
+        <span class="font-bold text-xs text-neutral-900">Brand Knowledge Base · 3 Layout Options</span>
+      </div>
+
+      <nav class="wf-pill-group" data-wf-param="v">
+        <a data-value="a">Option A · Split Studio (Form + Live Spec)</a>
+        <a data-value="b">Option B · Tabbed Dossier (Phân hệ Tab Chuyên sâu)</a>
+        <a data-value="c">Option C · Brand Book Canvas (Notion Document)</a>
+      </nav>
+
+      <div class="ml-auto flex items-center gap-2 text-xs text-neutral-500">
+        <span>Gu: <strong class="text-neutral-900">Monochrome (Đen - Trắng - Xám)</strong></span>
+      </div>
+    </header>
+
+    <!-- MAIN CONTAINER -->
+    <main class="max-w-[1520px] mx-auto p-4 md:p-6 lg:p-8 space-y-6">
+
+      <!-- Breadcrumbs & Tabs -->
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-neutral-900 tracking-tight" style="font-family: var(--heading-font);">
+              Chiến lược nội dung (Content Strategy)
+            </h1>
+            <p class="text-xs text-neutral-500 mt-1 max-w-2xl">
+              Cơ sở tri thức thương hiệu là nguồn dữ liệu chuẩn để AI hiểu sản phẩm, khách hàng và giọng điệu trước khi lập lịch xuất bản.
+            </p>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-neutral-200 bg-white text-xs text-neutral-600 shadow-2xs">
+            <span class="w-2 h-2 rounded-full bg-neutral-900"></span>
+            <span>Thương hiệu: <strong class="text-neutral-900 font-semibold">Test</strong> · 39 assets sẵn sàng</span>
+          </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="flex items-center gap-1.5 p-1 bg-neutral-100 rounded-xl w-fit border border-neutral-200">
+          <span class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-neutral-500 font-medium">
+            <i data-lucide="sparkles" class="w-3.5 h-3.5"></i>
+            AI Content Strategist (Phase 2)
+            <span class="rounded bg-neutral-200 text-neutral-800 text-[10px] px-1 font-bold">AI</span>
+          </span>
+          <span class="inline-flex items-center gap-2 rounded-lg px-3.5 py-1.5 text-xs bg-white text-neutral-900 font-semibold shadow-2xs">
+            <i data-lucide="book-open" class="w-3.5 h-3.5 text-neutral-900"></i>
+            Cơ sở tri thức thương hiệu
+          </span>
+          <span class="inline-flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs text-neutral-500 font-medium">
+            <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+            Phân bổ & Mục tiêu (Analytics)
+          </span>
+        </div>
+      </div>
+
+      <!-- DYNAMIC STATE RENDER -->
+      <div id="state-container">
+        <!-- Injected via JavaScript -->
+      </div>
+    </main>
+
+    <script>
+      const params = new URLSearchParams(location.search);
+      const state = {
+        v: params.get("v") || "a"
+      };
+
+      function updateNav() {
+        for (const link of document.querySelectorAll("[data-wf-param='v'] a")) {
+          const val = link.dataset.value;
+          if (val === state.v) {
+            link.setAttribute("aria-current", "page");
+          } else {
+            link.removeAttribute("aria-current");
+          }
+          link.href = `?v=${val}`;
+        }
+      }
+      updateNav();
+
+      function render() {
+        const c = document.getElementById("state-container");
+
+        // =========================================================================
+        // OPTION A: Split-Screen Studio (2 Cột Song song - Editor & Live Spec Card)
+        // =========================================================================
+        if (state.v === "a") {
+          c.innerHTML = `
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+              
+              <!-- LEFT COLUMN (60%): Minimalist Form Editor -->
+              <div class="lg:col-span-7 space-y-6">
+                <div class="panel-card p-6 space-y-5">
+                  <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                    <div class="flex items-center gap-2">
+                      <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i>
+                      </span>
+                      <div>
+                        <h2 class="text-sm font-bold text-neutral-900">Biểu mẫu Tri thức Thương hiệu</h2>
+                        <p class="text-[11px] text-neutral-500">Chỉnh sửa thông tin bên dưới, thẻ Guideline bên phải sẽ cập nhật trực tiếp.</p>
+                      </div>
+                    </div>
+                    <button class="btn-black text-xs"><i data-lucide="save" class="w-3.5 h-3.5"></i> Lưu tri thức</button>
+                  </div>
+
+                  <!-- Field 1 & 2: Products & Audience -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-neutral-800 flex items-center gap-1.5">
+                        <i data-lucide="package" class="w-3.5 h-3.5 text-neutral-500"></i> Sản phẩm & Dịch vụ chủ lực
+                      </label>
+                      <textarea rows="3" class="w-full text-xs p-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 resize-none">cà phê</textarea>
+                      <p class="text-[10px] text-neutral-400">Dòng sản phẩm cốt lõi muốn ưu tiên quảng bá.</p>
+                    </div>
+
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-neutral-800 flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-3.5 h-3.5 text-neutral-500"></i> Khách hàng & Đối tượng mục tiêu
+                      </label>
+                      <textarea rows="3" class="w-full text-xs p-3 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900 resize-none">giới trẻ</textarea>
+                      <p class="text-[10px] text-neutral-400">Độ tuổi, phong cách sống, pain points của khách.</p>
+                    </div>
+                  </div>
+
+                  <!-- Field 3: Tone of Voice -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-semibold text-neutral-800 flex items-center gap-1.5">
+                      <i data-lucide="message-square" class="w-3.5 h-3.5 text-neutral-500"></i> Giọng điệu thương hiệu (Tone of Voice)
+                    </label>
+                    <input type="text" value="Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng" class="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-900 text-white text-[11px] font-medium cursor-pointer">✓ Chân thực</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Năng động</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Khoa học</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Hóm hỉnh</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Sang trọng</span>
+                    </div>
+                  </div>
+
+                  <!-- Field 4: Goals & KPI -->
+                  <div class="space-y-2">
+                    <label class="text-xs font-semibold text-neutral-800 flex items-center gap-1.5">
+                      <i data-lucide="target" class="w-3.5 h-3.5 text-neutral-500"></i> Mục tiêu Marketing & KPI
+                    </label>
+                    <input type="text" value="Tăng đơn hàng trực tiếp & chuyển đổi doanh số" class="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900">
+                    <div class="flex flex-wrap items-center gap-1.5 pt-1">
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-900 text-white text-[11px] font-medium cursor-pointer">✓ Tăng đơn hàng trực tiếp</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Nhận thức thương hiệu</span>
+                      <span class="px-2.5 py-1 rounded-lg bg-neutral-100 text-neutral-700 hover:bg-neutral-200 text-[11px] font-medium cursor-pointer">+ Tăng tương tác</span>
+                    </div>
+                  </div>
+
+                  <!-- Field 5 & 6: Frequency & Description -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-neutral-800">Tần suất đăng mong muốn</label>
+                      <select class="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50">
+                        <option>1 bài / ngày (Khuyên dùng cho lịch 30 ngày)</option>
+                        <option>2 bài / ngày</option>
+                        <option>3 bài / tuần</option>
+                      </select>
+                    </div>
+                    <div class="space-y-1.5">
+                      <label class="text-xs font-semibold text-neutral-800">Mô tả định vị cốt lõi</label>
+                      <input type="text" value="nhẹ nhàng" class="w-full text-xs p-2.5 rounded-xl border border-neutral-200 bg-neutral-50">
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT COLUMN (40%): Live Brand Guidelines Spec Card -->
+              <div class="lg:col-span-5 space-y-4">
+                <div class="panel-card p-6 space-y-4 sticky top-16">
+                  <!-- Header Card -->
+                  <div class="flex items-center justify-between border-b border-neutral-100 pb-3">
+                    <div class="flex items-center gap-3">
+                      <span class="w-9 h-9 rounded-xl bg-neutral-900 text-white font-bold text-sm flex items-center justify-center">
+                        TE
+                      </span>
+                      <div>
+                        <h3 class="text-sm font-bold text-neutral-900">Test · Brand Guidelines Spec</h3>
+                        <span class="text-[10px] text-neutral-500">Định vị chính thức hướng dẫn AI</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-semibold">5/5 TIÊU CHÍ</span>
+                  </div>
+
+                  <!-- Spec Items -->
+                  <div class="space-y-3 text-xs">
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-1">
+                      <span class="text-[10px] font-bold text-neutral-400 uppercase">Định vị & Sản phẩm</span>
+                      <p class="font-bold text-neutral-900 text-sm">cà phê</p>
+                      <p class="text-neutral-500 text-[11px]">Định vị cốt lõi: <em>nhẹ nhàng</em></p>
+                    </div>
+
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-1">
+                      <span class="text-[10px] font-bold text-neutral-400 uppercase">Độc giả mục tiêu</span>
+                      <div class="flex items-center gap-2 mt-0.5">
+                        <span class="px-2 py-0.5 rounded-md bg-neutral-200 text-neutral-800 font-semibold text-[11px]">giới trẻ</span>
+                      </div>
+                      <p class="text-neutral-500 text-[11px]">AI tự động điều chỉnh văn phong phù hợp thói quen giới trẻ.</p>
+                    </div>
+
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-1">
+                      <span class="text-[10px] font-bold text-neutral-400 uppercase">Giọng điệu (Tone of Voice)</span>
+                      <div class="flex flex-wrap gap-1.5 mt-1">
+                        <span class="px-2 py-0.5 rounded bg-neutral-900 text-white text-[10px] font-medium">Chân thực</span>
+                        <span class="px-2 py-0.5 rounded bg-neutral-900 text-white text-[10px] font-medium">ấm áp</span>
+                        <span class="px-2 py-0.5 rounded bg-neutral-900 text-white text-[10px] font-medium">đam mê hương vị</span>
+                      </div>
+                    </div>
+
+                    <!-- Media Assets Quota -->
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 space-y-2">
+                      <div class="flex items-center justify-between">
+                        <span class="text-[10px] font-bold text-neutral-400 uppercase">Thư viện tài nguyên ảnh</span>
+                        <span class="px-2 py-0.5 rounded bg-neutral-900 text-white text-[10px] font-semibold">39 Assets (195% Quota)</span>
+                      </div>
+                      <div class="grid grid-cols-4 gap-2 pt-1">
+                        <div class="h-12 rounded-lg bg-neutral-200 border border-neutral-300"></div>
+                        <div class="h-12 rounded-lg bg-neutral-200 border border-neutral-300"></div>
+                        <div class="h-12 rounded-lg bg-neutral-200 border border-neutral-300"></div>
+                        <div class="h-12 rounded-lg bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-[11px] text-neutral-600">+36</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="pt-2 text-center text-[11px] text-neutral-400">
+                    ✓ Dữ liệu đồng bộ trực tiếp với Lịch xuất bản 30 ngày
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          `;
+        }
+
+        // =========================================================================
+        // OPTION B: Tabbed Dossier (Phân hệ Tab Chuyên sâu)
+        // =========================================================================
+        else if (state.v === "b") {
+          c.innerHTML = `
+            <div class="space-y-6">
+              <!-- Top Executive Brand Hero Card -->
+              <div class="panel-card p-6 flex flex-wrap items-center justify-between gap-6">
+                <div class="flex items-center gap-4">
+                  <span class="w-14 h-14 rounded-2xl bg-neutral-900 text-white font-bold text-xl flex items-center justify-center shadow-xs">
+                    TE
+                  </span>
+                  <div>
+                    <div class="flex items-center gap-2.5">
+                      <h2 class="text-lg font-bold text-neutral-900">Hồ sơ Thương hiệu: Test</h2>
+                      <span class="px-2 py-0.5 rounded-full bg-neutral-900 text-white text-[10px] font-bold">5/5 TIÊU CHÍ (100%)</span>
+                    </div>
+                    <p class="text-xs text-neutral-500 mt-1">Định vị chính thức: <strong class="text-neutral-800">Cà phê nhẹ nhàng cho giới trẻ</strong> · Múi giờ Asia/Ho_Chi_Minh</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-3">
+                  <button class="btn-outline text-xs"><i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Nạp lại</button>
+                  <button class="btn-black text-xs"><i data-lucide="save" class="w-3.5 h-3.5"></i> Lưu toàn bộ hồ sơ</button>
+                </div>
+              </div>
+
+              <!-- 3 Sub-tabs Navigation Strip -->
+              <div class="flex items-center gap-2 border-b border-neutral-200 pb-3 text-xs font-semibold">
+                <button class="px-4 py-2 rounded-xl bg-neutral-900 text-white flex items-center gap-2">
+                  <i data-lucide="package" class="w-3.5 h-3.5"></i> 1. Định vị & Sản phẩm
+                </button>
+                <button class="px-4 py-2 rounded-xl bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 flex items-center gap-2">
+                  <i data-lucide="users" class="w-3.5 h-3.5"></i> 2. Khách hàng & Giọng điệu
+                </button>
+                <button class="px-4 py-2 rounded-xl bg-white border border-neutral-200 text-neutral-600 hover:bg-neutral-50 flex items-center gap-2">
+                  <i data-lucide="image" class="w-3.5 h-3.5"></i> 3. Kho tài nguyên & Kế hoạch (39)
+                </button>
+              </div>
+
+              <!-- Tab 1 Active Content Panel -->
+              <div class="panel-card p-6 space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-neutral-800 uppercase tracking-wider block">Tên thương hiệu</label>
+                    <input type="text" value="Test" class="w-full text-xs p-3 rounded-xl border border-neutral-200 bg-neutral-50">
+                  </div>
+                  <div class="space-y-2">
+                    <label class="text-xs font-bold text-neutral-800 uppercase tracking-wider block">Định vị cốt lõi (Slogan / Concept)</label>
+                    <input type="text" value="nhẹ nhàng" class="w-full text-xs p-3 rounded-xl border border-neutral-200 bg-neutral-50">
+                  </div>
+                </div>
+
+                <div class="space-y-2 pt-2 border-t border-neutral-100">
+                  <label class="text-xs font-bold text-neutral-800 uppercase tracking-wider block">Danh mục Sản phẩm & Dịch vụ trọng tâm</label>
+                  <textarea rows="4" class="w-full text-xs p-3 rounded-xl border border-neutral-200 bg-neutral-50 resize-none">cà phê nguyên chất, cold brew, trà trái cây nhiệt đới, không gian làm việc sáng tạo</textarea>
+                  <p class="text-[11px] text-neutral-400">Liệt kê cụ thể từng sản phẩm để AI tự động chọn làm chủ đề cho các bài viết sản phẩm.</p>
+                </div>
+
+                <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-200 flex items-center justify-between text-xs">
+                  <div>
+                    <h4 class="font-bold text-neutral-900">Trạng thái đồng bộ với AI Content Strategist</h4>
+                    <p class="text-neutral-500 text-[11px]">Thông tin đã sẵn sàng để lập kế hoạch 30 ngày.</p>
+                  </div>
+                  <button class="btn-black py-1.5 px-3 text-xs">Chuyển sang Tab 2: Khách hàng →</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        // =========================================================================
+        // OPTION C: Brand Book Document Canvas (Tài liệu Brand Guideline Notion-Style)
+        // =========================================================================
+        else if (state.v === "c") {
+          c.innerHTML = `
+            <div class="max-w-[920px] mx-auto space-y-6">
+              
+              <!-- Action Bar -->
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Tài liệu Brand Guidelines · Chỉnh sửa trực tiếp</span>
+                <div class="flex items-center gap-2">
+                  <button class="btn-outline text-xs"><i data-lucide="printer" class="w-3.5 h-3.5"></i> In / Xuất PDF</button>
+                  <button class="btn-black text-xs"><i data-lucide="check" class="w-3.5 h-3.5"></i> Lưu thay đổi</button>
+                </div>
+              </div>
+
+              <!-- Main Document Canvas Paper -->
+              <div class="panel-card p-8 md:p-12 space-y-8 shadow-sm border border-neutral-200">
+                
+                <!-- Document Title Header -->
+                <div class="border-b border-neutral-200 pb-6 space-y-3">
+                  <div class="w-12 h-12 rounded-xl bg-neutral-900 text-white font-bold text-lg flex items-center justify-center">
+                    TE
+                  </div>
+                  <div>
+                    <h1 class="text-2xl font-bold text-neutral-900 tracking-tight" style="font-family: var(--heading-font);">
+                      Brand Guidelines & Context Book
+                    </h1>
+                    <p class="text-xs text-neutral-500 mt-1">Hồ sơ định hướng nội dung chính thức của thương hiệu <strong>Test</strong> dành cho AI Strategist.</p>
+                  </div>
+                </div>
+
+                <!-- Section 1: Core Mission -->
+                <div class="space-y-3">
+                  <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span> 1. Định vị & Sản phẩm trọng tâm
+                  </h3>
+                  <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-200 space-y-2">
+                    <div class="text-xs text-neutral-500">Sản phẩm chủ lực:</div>
+                    <div class="text-sm font-semibold text-neutral-900">cà phê</div>
+                    <div class="text-xs text-neutral-500 pt-2 border-t border-neutral-200">Định vị cảm xúc:</div>
+                    <div class="text-sm font-semibold text-neutral-900">nhẹ nhàng, ấm cúng, thư giãn</div>
+                  </div>
+                </div>
+
+                <!-- Section 2: Persona -->
+                <div class="space-y-3">
+                  <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span> 2. Chân dung Khách hàng Mục tiêu (Persona)
+                  </h3>
+                  <div class="p-4 bg-neutral-50 rounded-xl border border-neutral-200 space-y-2">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2.5 py-1 rounded-md bg-neutral-900 text-white text-xs font-bold">giới trẻ</span>
+                      <span class="text-xs text-neutral-500">18 - 28 tuổi · Sinh viên & Dân văn phòng</span>
+                    </div>
+                    <p class="text-xs text-neutral-700 leading-relaxed pt-1">
+                      Thích không gian yên tĩnh, yêu thích gu cà phê thơm nhẹ, quan tâm đến hình ảnh trên mạng xã hội và phong cách sống hiện đại.
+                    </p>
+                  </div>
+                </div>
+
+                <!-- Section 3: Tone & Voice Matrix -->
+                <div class="space-y-3">
+                  <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span> 3. Nguyên tắc Giọng điệu (Tone of Voice)
+                  </h3>
+                  <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-center font-semibold">Chân thực</div>
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-center font-semibold">Ấm áp</div>
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-center font-semibold">Đam mê hương vị</div>
+                    <div class="p-3 bg-neutral-50 rounded-xl border border-neutral-200 text-center font-semibold">Truyền cảm hứng</div>
+                  </div>
+                </div>
+
+                <!-- Section 4: Attached Media Gallery -->
+                <div class="space-y-3 pt-2">
+                  <div class="flex items-center justify-between">
+                    <h3 class="text-xs font-bold text-neutral-400 uppercase tracking-wider flex items-center gap-2">
+                      <span class="w-1.5 h-1.5 rounded-full bg-neutral-900"></span> 4. Thư viện tư liệu ảnh (39 Assets)
+                    </h3>
+                    <a href="/media" class="text-xs font-semibold text-neutral-900 hover:underline">Quản lý thư viện →</a>
+                  </div>
+                  <div class="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                    <div class="h-20 rounded-xl bg-neutral-200 border border-neutral-300"></div>
+                    <div class="h-20 rounded-xl bg-neutral-200 border border-neutral-300"></div>
+                    <div class="h-20 rounded-xl bg-neutral-200 border border-neutral-300"></div>
+                    <div class="h-20 rounded-xl bg-neutral-200 border border-neutral-300"></div>
+                    <div class="h-20 rounded-xl bg-neutral-200 border border-neutral-300"></div>
+                    <div class="h-20 rounded-xl bg-neutral-100 border border-neutral-300 flex items-center justify-center font-bold text-xs text-neutral-600">+34</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          `;
+        }
+
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+      }
+
+      render();
+    </script>
+  </body>
+</html>

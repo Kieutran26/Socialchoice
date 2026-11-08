@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="vi" data-mau="mau">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Thiết kế Giao diện - Quản lý Tài khoản Mạng xã hội | Socialchoice</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    :root, html, body {
+      --app-font: "Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif;
+      --heading-font: "Mona Sans", -apple-system, BlinkMacSystemFont, sans-serif;
+      
+      /* SOCIALCHOICE BRAND TOKENS (CHUẨN FULL MÀU) */
+      --primary: #ffd631;
+      --primary-hover: #ffe059;
+      --primary-foreground: #2b2100;
+      
+      --brand-yellow: #ffd631;
+      --brand-yellow-hover: #ffe059;
+      --brand-yellow-ink: #2b2100;
+      --brand-yellow-dark: #d8b216;
+      
+      --background: #fbfbfb;
+      --surface: #ffffff;
+      --foreground: #1c1917;
+      --muted: #78716c;
+      --border: #e7e5e4;
+      --border-strong: #d6d3d1;
+      
+      --success-bg: #dcfce7;
+      --success-fg: #15803d;
+      --warn-bg: #fef9c3;
+      --warn-fg: #a16207;
+      --danger-bg: #fee2e2;
+      --danger-fg: #b91c1c;
+    }
+      
+      --background: #fbfbfb;
+      --surface: #ffffff;
+      --foreground: #1c1917;
+      --muted: #78716c;
+      --border: #e7e5e4;
+      --border-strong: #d6d3d1;
+      
+      --success-bg: #dcfce7;
+      --success-fg: #15803d;
+      --warn-bg: #fef9c3;
+      --warn-fg: #a16207;
+      --danger-bg: #fee2e2;
+      --danger-fg: #b91c1c;
+    }
+
+    body {
+      font-family: var(--app-font);
+      background-color: var(--background);
+      color: var(--foreground);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: var(--heading-font);
+    }
+
+    .btn-skew {
+      background-color: #ffd631;
+      color: #2b2100;
+      border: 1px solid #d8b216;
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 8px 16px;
+      font-size: 13.5px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 120ms ease;
+      cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .btn-skew:hover {
+      background-color: #ffe059;
+      transform: translateY(-1px);
+    }
+
+    /* Gọn chữ & Bỏ lặp */
+    body[data-gon="1"] [data-wf-gon] {
+      display: none !important;
+    }
+    body[data-bolap="1"] [data-wf-lap] {
+      display: none !important;
+    }
+
+    /* Mobile Frame */
+    .mobile-wrapper {
+      max-width: 390px;
+      margin: 20px auto;
+      border: 8px solid #334155;
+      border-radius: 40px;
+      overflow: hidden;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+      background: var(--background);
+      min-height: 844px;
+    }
+
+    /* Number tags for wireframe review */
+    .block-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      background: #3b82f6;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      margin-right: 6px;
+    }
+  </style>
+</head>
+<body data-option="a" data-mau="mau" data-kho="desktop" data-gon="0" data-bolap="0">
+
+  <!-- TOP TOOLBAR BANNER (THEO ĐÚNG CHUẨN UI-UX SKILL) -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-50 px-6 py-2.5 shadow-sm">
+    <div class="max-w-[1500px] mx-auto flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Phía trái: Bộ chọn Option wireframe -->
+      <div class="flex items-center gap-3">
+        <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Phương án:</span>
+        <div class="inline-flex rounded-lg bg-slate-100 p-1 border border-slate-200">
+          <button type="button" onclick="setOption('a')" id="btn-opt-a" class="px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white shadow-xs text-slate-900 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-amber-400"></span> Option A (Thẻ Tinh Gọn · Khuyên Dùng)
+          </button>
+          <button type="button" onclick="setOption('b')" id="btn-opt-b" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+            Option B (Master-Detail / Brand Rail)
+          </button>
+          <button type="button" onclick="setOption('c')" id="btn-opt-c" class="px-3 py-1 text-xs font-medium rounded-md transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5">
+            Option C (Unified Data Table)
+          </button>
+        </div>
+      </div>
+
+      <!-- Giữa: Các công tắc Gọn chữ, Bỏ lặp, Màu, Khổ -->
+      <div class="flex items-center gap-4">
+        <!-- Badge Phong cách Full Màu -->
+        <div class="flex items-center gap-1.5 text-xs">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-md bg-amber-100 text-amber-900 font-semibold border border-amber-200">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            Style chuẩn màu Socialchoice (Full-color Hi-Fi)
+          </span>
+        </div>
+
+        <!-- Công tắc Gọn chữ / Bỏ lặp -->
+        <div class="flex items-center gap-2 border-l border-slate-200 pl-4">
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+            <input type="checkbox" id="chk-gon" onchange="toggleGon(this.checked)" class="rounded text-amber-500">
+            Gọn chữ
+          </label>
+          <label class="flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer">
+            <input type="checkbox" id="chk-bolap" onchange="toggleBolap(this.checked)" class="rounded text-amber-500">
+            Bỏ lặp
+          </label>
+        </div>
+
+        <!-- Công tắc Khổ hiển thị -->
+        <div class="flex items-center gap-1.5 border-l border-slate-200 pl-4">
+          <div class="inline-flex rounded-lg bg-slate-100 p-0.5 border border-slate-200">
+            <button type="button" onclick="setKho('desktop')" id="btn-kho-desktop" class="px-2.5 py-1 text-xs rounded-md bg-white font-semibold text-slate-900 shadow-xs flex items-center gap-1">
+              <i class="ph ph-desktop"></i> Desktop
+            </button>
+            <button type="button" onclick="setKho('mobile')" id="btn-kho-mobile" class="px-2.5 py-1 text-xs rounded-md text-slate-600 flex items-center gap-1">
+              <i class="ph ph-device-mobile"></i> Mobile
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- KHUNG LÝ DO & ĐÁNH ĐỔI (THEO TỪNG OPTION) -->
+    <div class="max-w-[1500px] mx-auto mt-2 pt-2 border-t border-slate-100 text-xs text-slate-600 flex items-center justify-between" id="rationale-box">
+      <div>
+        <strong class="text-slate-800" id="rat-title">Option A — Clean Channel Hub:</strong>
+        <span id="rat-desc" class="ml-1 text-slate-600">Thẻ tinh giản loại bỏ 3 nút bấm trùng lặp ở chân card, dọn toàn bộ thao tác bảo trì vào menu '•••'. KPI thu gọn thành 1 thanh tóm tắt nhanh. Trực quan, thoáng đãng, chuyên nghiệp.</span>
+      </div>
+      <div class="text-slate-400 shrink-0 font-medium" id="rat-tradeoff">Đánh đổi: Người dùng cần 2 click (vào menu '•••') để kiểm tra quyền thay vì bấm trực tiếp trên card.</div>
+    </div>
+  </header>
+
+  <!-- NỘI DUNG CONTAINER -->
+  <main id="main-content" class="max-w-[1440px] mx-auto p-5 lg:p-8">
+
+    <!-- ========================================================================= -->
+    <!-- OPTION A: CLEAN CHANNEL HUB (KHUYÊN DÙNG) -->
+    <!-- ========================================================================= -->
+    <div id="view-opt-a" class="space-y-6">
+
+      <!-- Khối 1: Header + Compact Health Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
+        <div>
+          <div class="flex items-center gap-2 text-xs text-muted mb-1">
+            <span>Socialchoice</span>
+            <i class="ph ph-caret-right text-[10px]"></i>
+            <span class="text-foreground font-medium">Tài khoản mạng xã hội</span>
+          </div>
+          <h1 class="text-2xl font-bold tracking-tight text-foreground">Tài khoản mạng xã hội</h1>
+          <p class="text-xs text-muted mt-1" data-wf-gon>Quản lý và theo dõi trạng thái kết nối đa kênh theo từng thương hiệu.</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+          <!-- Compact Health summary (Thay thế 4 Card KPI cồng kềnh) -->
+          <div class="hidden xl:flex items-center gap-3 bg-white px-3.5 py-1.5 rounded-xl border border-border text-xs shadow-2xs" data-wf-lap>
+            <div class="flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+              <span class="font-medium text-foreground">8/8</span>
+              <span class="text-muted">Hoạt động tốt</span>
+            </div>
+            <span class="text-slate-300">|</span>
+            <div class="text-muted">
+              <span class="font-medium text-foreground">6</span> Nền tảng · <span class="font-medium text-foreground">1</span> Brand
+            </div>
+          </div>
+
+          <button class="btn-skew shadow-2xs">
+            <i class="ph-bold ph-plus text-sm"></i>
+            <span>Thêm kênh mới</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Khối 2: Toolbar tìm kiếm & lọc nền tảng -->
+      <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-2.5 rounded-xl border border-border shadow-2xs">
+        <div class="flex flex-wrap items-center gap-2 flex-1 min-w-[280px]">
+          <!-- Ô tìm kiếm -->
+          <div class="relative w-full sm:w-64">
+            <i class="ph ph-magnifying-glass absolute left-3 top-2.5 text-muted text-sm"></i>
+            <input type="text" placeholder="Tìm theo tên hoặc @username..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-lg border border-border bg-slate-50/50 focus:bg-white focus:outline-none focus:border-slate-400 transition-colors">
+          </div>
+
+          <!-- Filter Pills -->
+          <div class="flex flex-wrap items-center gap-1 text-xs">
+            <button class="px-2.5 py-1 rounded-lg font-semibold bg-amber-100 text-amber-900 border border-amber-200/50">Tất cả (8)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-threads-logo"></i> Threads (1)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-facebook-logo text-blue-600"></i> Facebook (3)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-instagram-logo text-pink-600"></i> Instagram (1)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-x-logo"></i> X (1)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-tiktok-logo"></i> TikTok (1)</button>
+            <button class="px-2.5 py-1 rounded-lg text-muted hover:text-foreground hover:bg-slate-100 transition-colors flex items-center gap-1"><i class="ph-fill ph-linkedin-logo text-sky-700"></i> LinkedIn (1)</button>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <!-- Dropdown lọc theo Thương hiệu -->
+          <select class="text-xs bg-slate-50 border border-border rounded-lg px-2.5 py-1.5 text-slate-700 font-medium">
+            <option>Tất cả thương hiệu</option>
+            <option selected>● Test (8 kênh)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Khối 3: Brand Group Header -->
+      <div class="flex items-center justify-between px-1">
+        <div class="flex items-center gap-2.5">
+          <span class="w-3 h-3 rounded-full bg-blue-600 ring-2 ring-white"></span>
+          <h2 class="text-base font-semibold text-foreground">Thương hiệu: Test</h2>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 font-medium">8 đích đăng</span>
+        </div>
+        <div class="text-xs text-emerald-600 font-medium flex items-center gap-1">
+          <i class="ph-fill ph-check-circle"></i> Tất cả kênh kết nối ổn định
+        </div>
+      </div>
+
+      <!-- Khối 4: Lưới Card Tài Khoản (Cards đã được tinh giản cực kỳ sang trọng) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+
+        <!-- Card 1: Threads (ticrn) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-800 relative">
+                  <i class="ph ph-threads-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white" title="Đã kết nối"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="ticrn">ticrn</h3>
+                  <p class="text-xs text-muted truncate">Threads Account</p>
+                </div>
+              </div>
+              <!-- Menu More Actions (Gom gọn các nút thừa) -->
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <!-- Identifier & Handle -->
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Username:</span>
+                <span class="font-mono font-medium text-slate-800">@_ticrn</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>ID:</span>
+                <span class="font-mono">2806284562414164</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Footer: Brand tag & Fast Action -->
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 2: Facebook Page (Deszy) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center shrink-0 text-blue-600 relative">
+                  <i class="ph-fill ph-facebook-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="Deszy">Deszy</h3>
+                  <p class="text-xs text-muted truncate">Trang Facebook</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Trang:</span>
+                <span class="font-medium text-slate-800 truncate">Deszy Official</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>ID:</span>
+                <span class="font-mono">427858497068282</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 3: Instagram (deszy creative) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-pink-50 border border-pink-200/60 flex items-center justify-center shrink-0 text-pink-600 relative">
+                  <i class="ph-fill ph-instagram-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="deszy creative">deszy creative</h3>
+                  <p class="text-xs text-muted truncate">Instagram Business</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Username:</span>
+                <span class="font-mono font-medium text-slate-800">@deszy_creative</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>Followers:</span>
+                <span class="font-medium text-slate-700">1,240</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 4: X / Twitter (Kieutran26) - Ví dụ 1 card có cảnh báo cần kết nối lại -->
+        <div class="bg-white rounded-2xl border-2 border-amber-300/80 p-4.5 shadow-xs relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-900 relative">
+                  <i class="ph-fill ph-x-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-amber-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="Kieutran26">Kieutran26</h3>
+                  <p class="text-xs text-amber-700 font-medium truncate">Token hết hạn</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <!-- Callout cảnh báo thông minh -->
+            <div class="bg-amber-50 rounded-lg p-2 mb-3 text-xs border border-amber-200/60 flex items-center justify-between">
+              <span class="text-amber-800 text-[11px]">Cần xác thực lại quyền</span>
+              <button class="px-2 py-1 bg-amber-200/80 hover:bg-amber-300 text-amber-900 rounded font-semibold text-[11px] transition-colors">
+                Nối lại
+              </button>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-amber-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-warning-circle"></i> Chưa thể đăng
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 5: TikTok (kiu.chun) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0 relative">
+                  <i class="ph-fill ph-tiktok-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="kiu.chun">kiu.chun</h3>
+                  <p class="text-xs text-muted truncate">TikTok Creator</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Username:</span>
+                <span class="font-mono font-medium text-slate-800">@kiu.chun</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>Quyền đăng:</span>
+                <span class="font-medium text-emerald-600">Đầy đủ</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 6: LinkedIn (Nguyen Ngoc Kieu Tran) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-sky-50 border border-sky-200/60 flex items-center justify-center shrink-0 text-sky-700 relative">
+                  <i class="ph-fill ph-linkedin-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="Nguyen Ngoc Kieu Tran">Nguyen Ngoc Kieu Tran</h3>
+                  <p class="text-xs text-muted truncate">LinkedIn Profile</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Loại tài khoản:</span>
+                <span class="font-medium text-slate-800">Cá nhân</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>Hạn Token:</span>
+                <span class="text-slate-600">60 ngày nữa</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 7: Facebook Page (NextChoice) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center shrink-0 text-blue-600 relative">
+                  <i class="ph-fill ph-facebook-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="NextChoice">NextChoice</h3>
+                  <p class="text-xs text-muted truncate">Trang Facebook</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Trang:</span>
+                <span class="font-medium text-slate-800 truncate">NextChoice Hub</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>ID:</span>
+                <span class="font-mono">342287581756586</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+        <!-- Card 8: Facebook Page (TalentChoice) -->
+        <div class="bg-white rounded-2xl border border-border p-4.5 shadow-2xs hover:border-slate-300 hover:shadow-xs transition-all relative group flex flex-col justify-between">
+          <div>
+            <div class="flex items-start justify-between gap-3 mb-3">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-11 h-11 rounded-xl bg-blue-50 border border-blue-200/60 flex items-center justify-center shrink-0 text-blue-600 relative">
+                  <i class="ph-fill ph-facebook-logo text-2xl"></i>
+                  <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-white"></span>
+                </div>
+                <div class="min-w-0">
+                  <h3 class="font-semibold text-sm text-foreground truncate" title="TalentChoice">TalentChoice</h3>
+                  <p class="text-xs text-muted truncate">Trang Facebook</p>
+                </div>
+              </div>
+              <button class="w-8 h-8 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center">
+                <i class="ph-bold ph-dots-three-vertical text-base"></i>
+              </button>
+            </div>
+
+            <div class="bg-slate-50/80 rounded-lg p-2.5 mb-3 space-y-1 text-xs">
+              <div class="flex items-center justify-between text-slate-600">
+                <span class="text-muted">Trang:</span>
+                <span class="font-medium text-slate-800 truncate">Talent Recruitment</span>
+              </div>
+              <div class="flex items-center justify-between text-slate-400 text-[11px]" data-wf-gon>
+                <span>ID:</span>
+                <span class="font-mono">1378836861982676</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-2 border-t border-slate-100 flex items-center justify-between text-xs">
+            <span class="inline-flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md font-medium">
+              <span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span> Test
+            </span>
+            <span class="text-emerald-600 text-[11px] font-medium flex items-center gap-1">
+              <i class="ph-fill ph-check-circle"></i> Đã kết nối
+            </span>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION B: MASTER-DETAIL / BRAND RAIL -->
+    <!-- ========================================================================= -->
+    <div id="view-opt-b" class="space-y-6 hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-4 border-b border-border">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-foreground">Quản lý Kênh theo Brand</h1>
+          <p class="text-xs text-muted mt-1">Phân tách rõ ràng giữa cấu hình Thương hiệu và các Kênh xã hội trực thuộc.</p>
+        </div>
+        <button class="btn-skew">
+          <i class="ph-bold ph-plus"></i> Thêm kênh mới
+        </button>
+      </div>
+
+      <!-- Layout 2 cột: Cột trái (Brand Rail) + Cột phải (Accounts) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Cột trái: Brand List (4 cols) -->
+        <div class="lg:col-span-4 bg-white rounded-2xl border border-border p-4 shadow-2xs space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <span class="text-xs font-bold uppercase tracking-wider text-muted">Thương hiệu (Brand)</span>
+            <button class="text-xs font-semibold text-amber-700 hover:underline">+ Tạo Brand</button>
+          </div>
+
+          <!-- Brand Items -->
+          <div class="space-y-1.5">
+            <!-- Brand Active -->
+            <div class="p-3 rounded-xl bg-amber-50/80 border border-amber-300/80 cursor-pointer flex items-center justify-between">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3.5 h-3.5 rounded-full bg-blue-600 ring-2 ring-white"></span>
+                <div>
+                  <h4 class="font-semibold text-sm text-slate-900">Test Workspace</h4>
+                  <p class="text-[11px] text-muted">8 kênh đang kết nối</p>
+                </div>
+              </div>
+              <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            </div>
+
+            <!-- Brand Sample 2 -->
+            <div class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-transparent cursor-pointer flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3.5 h-3.5 rounded-full bg-purple-600 ring-2 ring-white"></span>
+                <div>
+                  <h4 class="font-semibold text-sm text-slate-800">Deszy Agency</h4>
+                  <p class="text-[11px] text-muted">3 kênh đang kết nối</p>
+                </div>
+              </div>
+              <span class="text-xs text-slate-400">3</span>
+            </div>
+
+            <!-- Brand Sample 3 -->
+            <div class="p-3 rounded-xl bg-slate-50 hover:bg-slate-100 border border-transparent cursor-pointer flex items-center justify-between transition-colors">
+              <div class="flex items-center gap-2.5">
+                <span class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-2 ring-white"></span>
+                <div>
+                  <h4 class="font-semibold text-sm text-slate-800">NextChoice Lab</h4>
+                  <p class="text-[11px] text-muted">Chưa gán kênh</p>
+                </div>
+              </div>
+              <span class="text-xs text-slate-400">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cột phải: Chi tiết các kênh của Brand (8 cols) -->
+        <div class="lg:col-span-8 bg-white rounded-2xl border border-border p-5 shadow-2xs space-y-4">
+          <div class="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">Kênh thuộc thương hiệu: Test Workspace</h2>
+              <p class="text-xs text-muted">Tất cả bài viết được lên lịch cho thương hiệu này sẽ đăng qua các kênh dưới đây.</p>
+            </div>
+            <button class="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border hover:bg-slate-50">
+              Kiểm tra tất cả kênh
+            </button>
+          </div>
+
+          <!-- Danh sách thẻ ngang (Horizontal List Rows) -->
+          <div class="divide-y divide-slate-100">
+
+            <!-- Row 1: Facebook -->
+            <div class="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0">
+                  <i class="ph-fill ph-facebook-logo text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sm text-foreground">Deszy (Trang Facebook)</h4>
+                  <p class="text-xs text-muted">ID: 427858497068282 · Đang hoạt động</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-medium">Đã kết nối</span>
+                <button class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500"><i class="ph-bold ph-dots-three"></i></button>
+              </div>
+            </div>
+
+            <!-- Row 2: Instagram -->
+            <div class="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-pink-50 text-pink-600 flex items-center justify-center shrink-0">
+                  <i class="ph-fill ph-instagram-logo text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sm text-foreground">deszy creative (@deszy_creative)</h4>
+                  <p class="text-xs text-muted">Instagram Business · 1.2k followers</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-medium">Đã kết nối</span>
+                <button class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500"><i class="ph-bold ph-dots-three"></i></button>
+              </div>
+            </div>
+
+            <!-- Row 3: Threads -->
+            <div class="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-900 flex items-center justify-center shrink-0">
+                  <i class="ph ph-threads-logo text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sm text-foreground">ticrn (@_ticrn)</h4>
+                  <p class="text-xs text-muted">Threads Profile</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-medium">Đã kết nối</span>
+                <button class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500"><i class="ph-bold ph-dots-three"></i></button>
+              </div>
+            </div>
+
+            <!-- Row 4: TikTok -->
+            <div class="py-3 flex items-center justify-between gap-3 hover:bg-slate-50/60 px-2 rounded-lg transition-colors">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+                  <i class="ph-fill ph-tiktok-logo text-xl"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-sm text-foreground">kiu.chun (@kiu.chun)</h4>
+                  <p class="text-xs text-muted">TikTok Creator</p>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[11px] font-medium">Đã kết nối</span>
+                <button class="p-1.5 rounded-lg hover:bg-slate-200 text-slate-500"><i class="ph-bold ph-dots-three"></i></button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ========================================================================= -->
+    <!-- OPTION C: UNIFIED DATA TABLE & BATCH OPERATIONS -->
+    <!-- ========================================================================= -->
+    <div id="view-opt-c" class="space-y-5 hidden">
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-border">
+        <div>
+          <h1 class="text-2xl font-bold tracking-tight text-foreground">Bảng Vận Hành Kênh Mạng Xã Hội</h1>
+          <p class="text-xs text-muted mt-1">Quản lý mật độ cao, kiểm tra sức khỏe và thao tác hàng loạt cho nhiều tài khoản cùng lúc.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-1.5 rounded-lg border border-border text-xs font-medium hover:bg-slate-50 flex items-center gap-1.5">
+            <i class="ph ph-arrows-clockwise"></i> Kiểm tra hàng loạt
+          </button>
+          <button class="btn-skew">
+            <i class="ph-bold ph-plus"></i> Thêm kênh
+          </button>
+        </div>
+      </div>
+
+      <!-- Batch Action Floating / Toolbar Bar -->
+      <div class="bg-amber-50/80 border border-amber-200/80 rounded-xl p-3 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2">
+          <input type="checkbox" checked class="rounded text-amber-500">
+          <span class="font-semibold text-amber-950">Đã chọn 8/8 tài khoản</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button class="px-2.5 py-1 bg-white border border-amber-300 rounded-md font-medium text-slate-700 hover:bg-amber-100/50">
+            Gán lại thương hiệu
+          </button>
+          <button class="px-2.5 py-1 bg-white border border-amber-300 rounded-md font-medium text-slate-700 hover:bg-amber-100/50">
+            Kiểm tra quyền truy cập
+          </button>
+          <button class="px-2.5 py-1 bg-red-50 border border-red-200 rounded-md font-medium text-red-700 hover:bg-red-100">
+            Ngắt kết nối
+          </button>
+        </div>
+      </div>
+
+      <!-- Bảng Data Table -->
+      <div class="bg-white rounded-2xl border border-border overflow-hidden shadow-2xs">
+        <table class="w-full text-left text-xs">
+          <thead class="bg-slate-50 border-b border-border text-slate-500 font-semibold uppercase tracking-wider text-[11px]">
+            <tr>
+              <th class="p-3 w-8"><input type="checkbox" checked class="rounded"></th>
+              <th class="p-3">Kênh & Nền tảng</th>
+              <th class="p-3">Handle / ID</th>
+              <th class="p-3">Thương hiệu</th>
+              <th class="p-3">Trạng thái</th>
+              <th class="p-3">Lần kiểm tra cuối</th>
+              <th class="p-3 text-right">Thao tác</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100">
+
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph ph-threads-logo text-xl text-slate-900"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">ticrn</span>
+                  <span class="text-slate-400 text-[11px]">Threads</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">@_ticrn <span class="text-slate-400 text-[10px] block">2806284562414164</span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">Hoạt động</span></td>
+              <td class="p-3 text-slate-500">Vừa xong</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 text-slate-600 hover:text-slate-900 font-medium">Kiểm tra</button>
+                <button class="px-2 py-1 text-slate-400 hover:text-slate-700"><i class="ph-bold ph-dots-three"></i></button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph-fill ph-facebook-logo text-xl text-blue-600"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">Deszy</span>
+                  <span class="text-slate-400 text-[11px]">Trang Facebook</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">Deszy Official <span class="text-slate-400 text-[10px] block">427858497068282</span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">Hoạt động</span></td>
+              <td class="p-3 text-slate-500">10 phút trước</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 text-slate-600 hover:text-slate-900 font-medium">Kiểm tra</button>
+                <button class="px-2 py-1 text-slate-400 hover:text-slate-700"><i class="ph-bold ph-dots-three"></i></button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph-fill ph-instagram-logo text-xl text-pink-600"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">deszy creative</span>
+                  <span class="text-slate-400 text-[11px]">Instagram Business</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">@deszy_creative <span class="text-slate-400 text-[10px] block">17841459357937328</span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">Hoạt động</span></td>
+              <td class="p-3 text-slate-500">Hôm nay</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 text-slate-600 hover:text-slate-900 font-medium">Kiểm tra</button>
+                <button class="px-2 py-1 text-slate-400 hover:text-slate-700"><i class="ph-bold ph-dots-three"></i></button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-50/70 transition-colors bg-amber-50/30">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph-fill ph-x-logo text-xl text-slate-900"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">Kieutran26</span>
+                  <span class="text-slate-400 text-[11px]">X</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">@Kieutran26 <span class="text-slate-400 text-[10px] block">1263498548216578048</span></td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 font-medium flex items-center gap-1 w-fit"><i class="ph-fill ph-warning"></i> Cần cấp lại token</span></td>
+              <td class="p-3 text-amber-700 font-medium">Lỗi kết nối</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 bg-amber-200/80 hover:bg-amber-300 text-amber-900 font-semibold rounded text-xs">Kết nối lại</button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph-fill ph-tiktok-logo text-xl text-slate-900"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">kiu.chun</span>
+                  <span class="text-slate-400 text-[11px]">TikTok</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">@kiu.chun</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">Hoạt động</span></td>
+              <td class="p-3 text-slate-500">Hôm nay</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 text-slate-600 hover:text-slate-900 font-medium">Kiểm tra</button>
+                <button class="px-2 py-1 text-slate-400 hover:text-slate-700"><i class="ph-bold ph-dots-three"></i></button>
+              </td>
+            </tr>
+
+            <tr class="hover:bg-slate-50/70 transition-colors">
+              <td class="p-3"><input type="checkbox" checked class="rounded"></td>
+              <td class="p-3 flex items-center gap-2.5">
+                <i class="ph-fill ph-linkedin-logo text-xl text-sky-700"></i>
+                <div>
+                  <span class="font-semibold text-slate-900 block">Nguyen Ngoc Kieu Tran</span>
+                  <span class="text-slate-400 text-[11px]">LinkedIn</span>
+                </div>
+              </td>
+              <td class="p-3 font-mono text-slate-600">kieu-tran-683a48202</td>
+              <td class="p-3"><span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 font-medium"><span class="w-1.5 h-1.5 rounded-full bg-blue-600"></span>Test</span></td>
+              <td class="p-3"><span class="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 font-medium">Hoạt động</span></td>
+              <td class="p-3 text-slate-500">2 ngày trước</td>
+              <td class="p-3 text-right">
+                <button class="px-2 py-1 text-slate-600 hover:text-slate-900 font-medium">Kiểm tra</button>
+                <button class="px-2 py-1 text-slate-400 hover:text-slate-700"><i class="ph-bold ph-dots-three"></i></button>
+              </td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    const rationaleData = {
+      a: {
+        title: "Option A — Clean Channel Hub (Khuyên dùng):",
+        desc: "Thẻ tinh giản loại bỏ 3 nút bấm trùng lặp ở chân card, dọn toàn bộ thao tác bảo trì vào menu '•••'. KPI thu gọn thành 1 thanh tóm tắt nhanh. Trực quan, thoáng đãng, chuyên nghiệp.",
+        tradeoff: "Đánh đổi: Người dùng cần 2 click (vào menu '•••') để kiểm tra quyền thay vì bấm trực tiếp trên card."
+      },
+      b: {
+        title: "Option B — Master-Detail / Brand Rail:",
+        desc: "Chia 2 cột: Cột trái quản lý danh sách Thương hiệu (Brands), cột phải hiển thị các kênh thuộc Brand đó. Cực kỳ tối ưu cho Agency quản lý nhiều khách hàng.",
+        tradeoff: "Đánh đổi: Tốn diện tích bề ngang ở desktop; trên mobile cần chuyển sang chế độ swipe tab."
+      },
+      c: {
+        title: "Option C — Unified Data Table & Batch Ops:",
+        desc: "Bảng dữ liệu tương tác mật độ cao, tích hợp thao tác hàng loạt (Batch Actions: kiểm tra token 8 kênh cùng lúc, đổi brand hàng loạt). Tối ưu cho vận hành chuyên sâu.",
+        tradeoff: "Đánh đổi: Kém tính trực quan bằng ô card; phù hợp người dùng thích bảng biểu dạng Airtable/Notion."
+      }
+    };
+
+    function setOption(opt) {
+      document.body.setAttribute('data-option', opt);
+      ['a', 'b', 'c'].forEach(o => {
+        document.getElementById('view-opt-' + o).classList.toggle('hidden', o !== opt);
+        const btn = document.getElementById('btn-opt-' + o);
+        if (o === opt) {
+          btn.className = "px-3 py-1 text-xs font-semibold rounded-md transition-all bg-white shadow-xs text-slate-900 flex items-center gap-1.5";
+        } else {
+          btn.className = "px-3 py-1 text-xs font-medium rounded-md transition-all text-slate-600 hover:text-slate-900 flex items-center gap-1.5";
+        }
+      });
+      document.getElementById('rat-title').textContent = rationaleData[opt].title;
+      document.getElementById('rat-desc').textContent = rationaleData[opt].desc;
+      document.getElementById('rat-tradeoff').textContent = rationaleData[opt].tradeoff;
+    }
+
+    function setMau(mau) {
+      document.documentElement.setAttribute('data-mau', mau);
+      document.body.setAttribute('data-mau', mau);
+      document.getElementById('btn-mau-xam').className = mau === 'xam' ? "px-2.5 py-1 text-xs rounded-md bg-white font-semibold text-slate-900 shadow-xs" : "px-2.5 py-1 text-xs rounded-md text-slate-600";
+      document.getElementById('btn-mau-mau').className = mau === 'mau' ? "px-2.5 py-1 text-xs rounded-md bg-white font-semibold text-slate-900 shadow-xs" : "px-2.5 py-1 text-xs rounded-md text-slate-600";
+    }
+
+    function toggleGon(checked) {
+      document.body.setAttribute('data-gon', checked ? '1' : '0');
+    }
+
+    function toggleBolap(checked) {
+      document.body.setAttribute('data-bolap', checked ? '1' : '0');
+    }
+
+    function setKho(kho) {
+      document.body.setAttribute('data-kho', kho);
+      const main = document.getElementById('main-content');
+      if (kho === 'mobile') {
+        main.className = "mobile-wrapper p-4";
+        document.getElementById('btn-kho-desktop').className = "px-2.5 py-1 text-xs rounded-md text-slate-600 flex items-center gap-1";
+        document.getElementById('btn-kho-mobile').className = "px-2.5 py-1 text-xs rounded-md bg-white font-semibold text-slate-900 shadow-xs flex items-center gap-1";
+      } else {
+        main.className = "max-w-[1440px] mx-auto p-5 lg:p-8";
+        document.getElementById('btn-kho-desktop').className = "px-2.5 py-1 text-xs rounded-md bg-white font-semibold text-slate-900 shadow-xs flex items-center gap-1";
+        document.getElementById('btn-kho-mobile').className = "px-2.5 py-1 text-xs rounded-md text-slate-600 flex items-center gap-1";
+      }
+    }
+  </script>
+</body>
+</html>

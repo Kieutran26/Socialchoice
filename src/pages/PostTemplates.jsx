@@ -16,7 +16,13 @@ import {
     ListBullets,
     X,
     ArrowCounterClockwise,
+    DotsThree,
+    Quotes,
+    Globe,
+    TextT,
 } from '@phosphor-icons/react';
+import * as HoverCard from '@radix-ui/react-hover-card';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { appClient } from '@/api/app-client';
 import { useWorkspace } from '@/lib/workspace-context';
 import { referencedMediaIds } from '@/lib/publishing-content';
@@ -25,7 +31,8 @@ import { useToast } from '@/components/ui/use-toast';
 import PageHeader from '@/components/common/PageHeader';
 import EmptyState from '@/components/common/EmptyState';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
-import PlatformBadge from '@/components/common/PlatformBadge';
+import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
+import { getAccountAvatarUrl } from '@/lib/account-avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -263,100 +270,139 @@ export default function PostTemplates() {
                     'Reuse brand content as a new draft. Templates never keep publishing schedules or TikTok choices.'
                 )}
                 actions={
-                    <Link to="/templates/create" className="btn-skew">
+                    <Link
+                        to="/templates/create"
+                        className="btn-skew"
+                    >
                         <NotePencil size={16} weight="bold" />
                         {t('Compose a template')}
                     </Link>
                 }
             />
 
-            {/* Quick Format Filter Tabs */}
-            <div className="flex flex-wrap items-center gap-2 mb-4">
-                <button
-                    type="button"
-                    onClick={() => setFormatFilter('all')}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all ${
-                        formatFilter === 'all'
-                            ? 'bg-foreground text-background shadow-2xs font-semibold'
-                            : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                >
-                    {t('All templates')} ({counts.all})
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setFormatFilter('text')}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all ${
-                        formatFilter === 'text'
-                            ? 'bg-foreground text-background shadow-2xs font-semibold'
-                            : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                >
-                    <FileText size={14} weight="bold" className={formatFilter === 'text' ? 'text-brand' : 'text-amber-500'} />
-                    {t('Text only')} ({counts.text})
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setFormatFilter('image')}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all ${
-                        formatFilter === 'image'
-                            ? 'bg-foreground text-background shadow-2xs font-semibold'
-                            : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                >
-                    <Images size={14} weight="bold" className={formatFilter === 'image' ? 'text-brand' : 'text-blue-500'} />
-                    {t('With image')} ({counts.image})
-                </button>
-                <button
-                    type="button"
-                    onClick={() => setFormatFilter('video')}
-                    className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium cursor-pointer transition-all ${
-                        formatFilter === 'video'
-                            ? 'bg-foreground text-background shadow-2xs font-semibold'
-                            : 'bg-muted/70 text-muted-foreground hover:bg-muted hover:text-foreground'
-                    }`}
-                >
-                    <VideoCamera size={14} weight="bold" className={formatFilter === 'video' ? 'text-brand' : 'text-purple-500'} />
-                    {t('With video')} ({counts.video})
-                </button>
-            </div>
-
-            {/* Filter & Search Bar */}
-            <div className="panel p-3.5 mb-6 space-y-3 bg-card border border-border rounded-2xl shadow-2xs">
+            {/* Unified Smart Toolbar */}
+            <div className="panel p-3 mb-6 space-y-3 bg-card border border-border rounded-2xl shadow-2xs">
                 <div className="flex flex-wrap items-center justify-between gap-3">
-                    {/* Search Input */}
-                    <div className="relative flex-1 min-w-[240px] max-w-md">
-                        <MagnifyingGlass
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                        />
-                        <input
-                            type="text"
-                            aria-label={t('Search templates')}
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            placeholder={t('Search templates…')}
-                            className="w-full h-9 pl-9 pr-8 text-xs rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
-                        />
-                        {search && (
-                            <button
-                                type="button"
-                                onClick={() => setSearch('')}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                    {/* Left: Format Segmented Capsule Pills */}
+                    <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl overflow-x-auto scroll-slim">
+                        <button
+                            type="button"
+                            onClick={() => setFormatFilter('all')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+                                formatFilter === 'all'
+                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <span>{t('All templates')}</span>
+                            <span
+                                className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    formatFilter === 'all'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground'
+                                }`}
                             >
-                                <X size={14} />
-                            </button>
-                        )}
+                                {counts.all}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFormatFilter('text')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+                                formatFilter === 'text'
+                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <FileText size={13} weight="bold" className="text-amber-500" />
+                            <span>{t('Text only')}</span>
+                            <span
+                                className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    formatFilter === 'text'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground'
+                                }`}
+                            >
+                                {counts.text}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFormatFilter('image')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+                                formatFilter === 'image'
+                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <Images size={13} weight="bold" className="text-blue-500" />
+                            <span>{t('With image')}</span>
+                            <span
+                                className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    formatFilter === 'image'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground'
+                                }`}
+                            >
+                                {counts.image}
+                            </span>
+                        </button>
+                        <button
+                            type="button"
+                            onClick={() => setFormatFilter('video')}
+                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
+                                formatFilter === 'video'
+                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <VideoCamera size={13} weight="bold" className="text-purple-500" />
+                            <span>{t('With video')}</span>
+                            <span
+                                className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
+                                    formatFilter === 'video'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-muted text-muted-foreground'
+                                }`}
+                            >
+                                {counts.video}
+                            </span>
+                        </button>
                     </div>
 
-                    {/* Filter Selects & Controls */}
+                    {/* Right: Search + Quick Filters + View Toggle */}
                     <div className="flex items-center gap-2 flex-wrap ml-auto">
+                        {/* Search Input */}
+                        <div className="relative w-56 md:w-64">
+                            <MagnifyingGlass
+                                size={15}
+                                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                            />
+                            <input
+                                type="text"
+                                aria-label={t('Search templates')}
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                                placeholder={t('Search templates…')}
+                                className="w-full h-8.5 pl-8 pr-7 text-xs rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-all"
+                            />
+                            {search && (
+                                <button
+                                    type="button"
+                                    onClick={() => setSearch('')}
+                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
+                                >
+                                    <X size={13} />
+                                </button>
+                            )}
+                        </div>
+
                         {/* Brand Filter */}
                         {selectedBrandId === 'all' && brands.length > 1 && (
                             <select
                                 value={brandFilter}
                                 onChange={(e) => setBrandFilter(e.target.value)}
-                                className="h-9 px-3 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer"
                             >
                                 <option value="all">{t('All brands')}</option>
                                 {brands.map((b) => (
@@ -372,7 +418,7 @@ export default function PostTemplates() {
                             <select
                                 value={pillarFilter}
                                 onChange={(e) => setPillarFilter(e.target.value)}
-                                className="h-9 px-3 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer"
+                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer"
                             >
                                 <option value="all">{t('All pillars')}</option>
                                 {pillars.map((p) => (
@@ -389,9 +435,9 @@ export default function PostTemplates() {
                                 variant="ghost"
                                 size="sm"
                                 onClick={resetFilters}
-                                className="h-9 px-2.5 text-xs text-muted-foreground hover:text-foreground gap-1.5"
+                                className="h-8.5 px-2 text-xs text-muted-foreground hover:text-foreground gap-1"
                             >
-                                <ArrowCounterClockwise size={14} />
+                                <ArrowCounterClockwise size={13} />
                                 <span>{t('Clear filters')}</span>
                             </Button>
                         )}
@@ -402,25 +448,25 @@ export default function PostTemplates() {
                                 type="button"
                                 onClick={() => setViewMode('grid')}
                                 title={t('Grid view')}
-                                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all cursor-pointer ${
+                                className={`flex h-7.5 w-7.5 items-center justify-center rounded-lg transition-all cursor-pointer ${
                                     viewMode === 'grid'
                                         ? 'bg-white text-foreground shadow-2xs font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
-                                <SquaresFour size={16} weight={viewMode === 'grid' ? 'bold' : 'regular'} />
+                                <SquaresFour size={15} weight={viewMode === 'grid' ? 'bold' : 'regular'} />
                             </button>
                             <button
                                 type="button"
                                 onClick={() => setViewMode('table')}
                                 title={t('List view')}
-                                className={`flex h-8 w-8 items-center justify-center rounded-lg transition-all cursor-pointer ${
+                                className={`flex h-7.5 w-7.5 items-center justify-center rounded-lg transition-all cursor-pointer ${
                                     viewMode === 'table'
                                         ? 'bg-white text-foreground shadow-2xs font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
-                                <ListBullets size={16} weight={viewMode === 'table' ? 'bold' : 'regular'} />
+                                <ListBullets size={15} weight={viewMode === 'table' ? 'bold' : 'regular'} />
                             </button>
                         </div>
                     </div>
@@ -469,17 +515,18 @@ export default function PostTemplates() {
                                 {t('Clear filters')}
                             </Button>
                         ) : (
-                            <Button asChild className="btn-skew mt-3">
-                                <Link to="/templates/create">
-                                    <Plus size={16} weight="bold" /> {t('Compose a template')}
-                                </Link>
-                            </Button>
+                            <Link
+                                to="/templates/create"
+                                className="btn-skew mt-3"
+                            >
+                                <Plus size={16} weight="bold" /> {t('Compose a template')}
+                            </Link>
                         )}
                     </EmptyState>
                 )
             ) : viewMode === 'grid' ? (
-                /* Grid View (Dạng ô) */
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                /* Grid View (Dạng ô 4 cột chuẩn Option A) */
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-4 gap-4.5">
                     {filteredRows.map((template) => {
                         const brand = getBrand(template.brand_id);
                         const pillar = getPillar(template.pillar_id);
@@ -494,175 +541,344 @@ export default function PostTemplates() {
                         return (
                             <article
                                 key={template.id}
-                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card shadow-2xs hover:shadow-md hover:border-border/80 transition-all p-5 overflow-hidden"
+                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card shadow-2xs hover:shadow-lg transition-all duration-200 overflow-hidden h-full"
                             >
                                 <div>
-                                    {/* 1. Card Header: Format badge + Brand Pill */}
-                                    <div className="flex items-center justify-between gap-2 pb-3 border-b border-border/50 mb-3">
-                                        {format === 'video' ? (
-                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-purple-700 bg-purple-50 rounded-md px-2 py-0.5 border border-purple-200">
-                                                <VideoCamera size={13} weight="fill" />
-                                                <span>Video</span>
-                                            </span>
-                                        ) : format === 'image' ? (
-                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-700 bg-blue-50 rounded-md px-2 py-0.5 border border-blue-200">
-                                                <Images size={13} weight="fill" />
-                                                <span>{mediaIds.length} {t('photos')}</span>
-                                            </span>
-                                        ) : (
-                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-amber-700 bg-amber-50 rounded-md px-2 py-0.5 border border-amber-200">
-                                                <FileText size={13} weight="fill" />
-                                                <span>{t('Text post')}</span>
-                                            </span>
-                                        )}
-
-                                        {brand && (
-                                            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-foreground shrink-0 rounded-md bg-muted/60 px-2 py-0.5">
-                                                <span
-                                                    className="h-2 w-2 rounded-full shrink-0"
-                                                    style={{ backgroundColor: brand.color || '#9ca3af' }}
-                                                />
-                                                <span className="truncate max-w-[110px]">{brand.name}</span>
-                                            </span>
-                                        )}
-                                    </div>
-
-                                    {/* 2. Title & Subtitle */}
-                                    <div className="mb-2.5">
-                                        <h2 className="font-heading font-semibold text-base text-foreground break-words line-clamp-1 group-hover:text-primary transition-colors">
-                                            {template.name}
-                                        </h2>
-                                        {template.title && (
-                                            <p className="text-[11px] text-muted-foreground truncate mt-0.5">
-                                                {t('Default title')}: <span className="font-medium text-foreground/85">{template.title}</span>
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    {/* 3. Media Preview (if attached) */}
-                                    {firstMedia && (
-                                        <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border/80 bg-muted/60 my-2.5 group/media">
-                                            {isVideo ? (
-                                                <div className="relative w-full h-full">
+                                    {/* 1. TOP 16:9 BANNER */}
+                                    <div className="relative w-full aspect-[16/9] bg-muted/40 overflow-hidden border-b border-border/50 shrink-0">
+                                        {firstMedia ? (
+                                            isVideo ? (
+                                                <div
+                                                    className="relative w-full h-full cursor-pointer bg-zinc-900"
+                                                    onClick={() => startFromTemplate(template)}
+                                                >
                                                     <video
                                                         src={firstMedia.file_url}
-                                                        className="w-full h-full object-cover"
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                                         preload="metadata"
                                                     />
-                                                    <div className="absolute inset-0 bg-black/30 flex items-center justify-center text-white">
-                                                        <div className="h-9 w-9 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-xs">
-                                                            <Play size={15} weight="fill" className="ml-0.5" />
+                                                    <div className="absolute inset-0 bg-black/25 flex items-center justify-center text-white">
+                                                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-black/60 backdrop-blur-xs shadow-md group-hover:scale-110 transition-transform">
+                                                            <Play size={16} weight="fill" />
                                                         </div>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <img
-                                                    src={firstMedia.file_url}
-                                                    alt={template.name}
-                                                    className="w-full h-full object-cover transition-transform duration-300 group-hover/media:scale-105"
-                                                />
-                                            )}
-                                            {mediaIds.length > 1 && (
-                                                <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-md bg-black/70 px-2 py-0.5 text-[10px] font-bold text-white backdrop-blur-xs">
-                                                    <Images size={11} weight="bold" />
-                                                    <span>{mediaIds.length}</span>
+                                                <div
+                                                    className="w-full h-full cursor-pointer bg-zinc-100"
+                                                    onClick={() => startFromTemplate(template)}
+                                                >
+                                                    <img
+                                                        src={firstMedia.file_url}
+                                                        alt={template.name}
+                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                    />
                                                 </div>
-                                            )}
-                                        </div>
-                                    )}
+                                            )
+                                        ) : (
+                                            /* Typographic Text Canvas for text-only templates */
+                                            <div
+                                                className="relative w-full h-full p-4 pt-9 bg-gradient-to-br from-amber-50/40 via-zinc-50 to-zinc-100/50 border-border/40 flex flex-col justify-center cursor-pointer select-none"
+                                                onClick={() => startFromTemplate(template)}
+                                            >
+                                                <Quotes
+                                                    size={28}
+                                                    weight="duotone"
+                                                    className="absolute top-7 left-3 text-amber-200 pointer-events-none opacity-50"
+                                                />
+                                                <p className="relative text-xs text-zinc-700 italic line-clamp-3 leading-relaxed font-serif pl-3 border-l-2 border-amber-400">
+                                                    {template.caption ? `“${template.caption}”` : template.title || t('Chưa có nội dung văn bản...')}
+                                                </p>
+                                            </div>
+                                        )}
 
-                                    {/* 4. Caption Preview Quote */}
-                                    <div className="my-2.5 rounded-xl border border-border/40 bg-muted/30 p-3 text-xs leading-relaxed text-foreground/85">
-                                        <p className="line-clamp-3 whitespace-pre-wrap break-words font-body">
-                                            {template.caption ? (
-                                                `"${template.caption}"`
-                                            ) : (
-                                                <span className="italic text-muted-foreground">{t('No caption')}</span>
-                                            )}
-                                        </p>
+                                        {/* Top Badges Overlay (Format on left, 3-dots Menu on right) */}
+                                        <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10 pointer-events-none">
+                                            <div className="pointer-events-auto">
+                                                {format === 'video' ? (
+                                                    <span className="px-2 py-0.5 rounded-md bg-purple-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                        <VideoCamera size={11} weight="fill" />
+                                                        <span>Video</span>
+                                                    </span>
+                                                ) : format === 'image' ? (
+                                                    <span className="px-2 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                        <Images size={11} weight="bold" />
+                                                        <span>{mediaIds.length} {t('photos')}</span>
+                                                    </span>
+                                                ) : (
+                                                    <span className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-amber-700 text-[10px] font-bold border border-amber-200/80 shadow-2xs flex items-center gap-1">
+                                                        <FileText size={11} weight="bold" />
+                                                        <span>{t('Text post')}</span>
+                                                    </span>
+                                                )}
+                                            </div>
+
+                                            {/* Dropdown Menu (3-dots) */}
+                                            <div className="pointer-events-auto">
+                                                <DropdownMenu.Root>
+                                                    <DropdownMenu.Trigger asChild>
+                                                        <button
+                                                            type="button"
+                                                            className="h-7 w-7 rounded-lg bg-white/95 backdrop-blur-md text-zinc-700 hover:text-zinc-900 hover:bg-white flex items-center justify-center shadow-xs border border-zinc-200/60 cursor-pointer transition-colors"
+                                                            title={t('Options')}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <DotsThree size={18} weight="bold" />
+                                                        </button>
+                                                    </DropdownMenu.Trigger>
+                                                    <DropdownMenu.Portal>
+                                                        <DropdownMenu.Content
+                                                            side="bottom"
+                                                            align="end"
+                                                            sideOffset={4}
+                                                            className="z-50 min-w-[150px] rounded-xl bg-white p-1 text-xs shadow-xl border border-zinc-200/80 animate-in fade-in-0 zoom-in-95"
+                                                        >
+                                                            <DropdownMenu.Item
+                                                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer outline-none font-medium"
+                                                                onSelect={() => navigate(`/templates/create?edit=${template.id}`)}
+                                                            >
+                                                                <PencilSimple size={14} />
+                                                                <span>{t('Edit')}</span>
+                                                            </DropdownMenu.Item>
+                                                            <DropdownMenu.Item
+                                                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer outline-none font-medium"
+                                                                onSelect={() => {
+                                                                    setRename(template);
+                                                                    setName(template.name);
+                                                                    setError('');
+                                                                }}
+                                                            >
+                                                                <TextT size={14} />
+                                                                <span>{t('Rename')}</span>
+                                                            </DropdownMenu.Item>
+                                                            <DropdownMenu.Separator className="h-px bg-zinc-100 my-1" />
+                                                            <DropdownMenu.Item
+                                                                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-red-600 hover:bg-red-50 hover:text-red-700 cursor-pointer outline-none font-medium"
+                                                                onSelect={() => setRemove(template)}
+                                                            >
+                                                                <Trash size={14} />
+                                                                <span>{t('Delete')}</span>
+                                                            </DropdownMenu.Item>
+                                                        </DropdownMenu.Content>
+                                                    </DropdownMenu.Portal>
+                                                </DropdownMenu.Root>
+                                            </div>
+                                        </div>
+
+                                        {/* Hover Overlay Action (Dùng mẫu ngay) */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3 pointer-events-none group-hover:pointer-events-auto">
+                                            <button
+                                                type="button"
+                                                disabled={busy}
+                                                onClick={() => startFromTemplate(template)}
+                                                className="h-8 px-4 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
+                                            >
+                                                <CopySimple size={14} weight="bold" />
+                                                <span>{t('Dùng mẫu ngay')}</span>
+                                            </button>
+                                        </div>
                                     </div>
 
-                                    {/* 5. Destination Channels & Strategy Tags */}
-                                    <div className="flex flex-wrap items-center gap-1.5 my-2.5 min-h-[22px]">
-                                        {templateAccounts.slice(0, 3).map((acc) => (
-                                            <PlatformBadge
-                                                key={acc.id}
-                                                platform={acc.platform}
-                                                name={acc.name}
-                                                size="sm"
-                                            />
-                                        ))}
-                                        {templateAccounts.length > 3 && (
-                                            <span className="text-[10px] font-semibold text-muted-foreground bg-muted rounded-md px-1.5 py-0.5">
-                                                +{templateAccounts.length - 3}
+                                    {/* 2. BODY INFO */}
+                                    <div className="p-3.5 space-y-2">
+                                        {/* Brand & Content Pillar Tag */}
+                                        <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground truncate">
+                                            {brand && (
+                                                <span
+                                                    className="h-2 w-2 rounded-full shrink-0"
+                                                    style={{ backgroundColor: brand.color || '#9ca3af' }}
+                                                />
+                                            )}
+                                            <span className="font-semibold text-foreground truncate max-w-[100px]">
+                                                {brand?.name || '—'}
                                             </span>
-                                        )}
+                                            {pillar && (
+                                                <>
+                                                    <span className="text-muted-foreground/50">·</span>
+                                                    <span className="px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground text-[10px] font-medium truncate max-w-[120px]">
+                                                        {pillar.name}
+                                                        {angle?.name ? ` / ${angle.name}` : ''}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
 
-                                        {pillar && (
-                                            <span className="inline-flex items-center gap-1 text-[10px] font-medium text-foreground/80 bg-muted/60 px-2 py-0.5 rounded-md border border-border/40">
-                                                <Target size={11} className="text-muted-foreground" />
-                                                <span className="truncate max-w-[120px]">{pillar.name}</span>
-                                            </span>
-                                        )}
-                                        {angle && (
-                                            <span className="text-[10px] text-muted-foreground bg-muted/40 px-1.5 py-0.5 rounded-md truncate max-w-[100px]">
-                                                {angle.name}
-                                            </span>
+                                        {/* Template Name */}
+                                        <h3
+                                            onClick={() => startFromTemplate(template)}
+                                            className="font-heading font-bold text-sm text-foreground hover:text-brand-dark transition-colors line-clamp-1 cursor-pointer leading-snug"
+                                            title={template.name}
+                                        >
+                                            {template.name}
+                                        </h3>
+
+                                        {/* Template Subtitle / Default Title */}
+                                        {template.title ? (
+                                            <p className="text-[11px] text-muted-foreground truncate">
+                                                {t('Default title')}: <span className="font-medium text-foreground/80">{template.title}</span>
+                                            </p>
+                                        ) : firstMedia ? (
+                                            <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed">
+                                                {template.caption || <span className="italic text-muted-foreground/50">{t('No caption')}</span>}
+                                            </p>
+                                        ) : (
+                                            <p className="text-[11px] text-muted-foreground/70 truncate">
+                                                {angle?.name ? angle.name : t('Mẫu bài viết')}
+                                            </p>
                                         )}
                                     </div>
                                 </div>
 
-                                {/* 6. Action Footer */}
-                                <div className="flex items-center gap-2 pt-3 border-t border-border/50 mt-3">
-                                    <button
-                                        type="button"
-                                        disabled={busy}
-                                        onClick={() => startFromTemplate(template)}
-                                        className="btn-skew h-8 px-3 text-xs font-semibold gap-1.5 cursor-pointer flex-1 justify-center"
-                                        title={t('Create post from this template')}
-                                    >
-                                        <CopySimple size={14} weight="bold" />
-                                        <span>{t('Use template')}</span>
-                                    </button>
+                                {/* 3. CARD FOOTER */}
+                                <div className="px-3.5 py-2.5 bg-muted/20 border-t border-border/50 flex items-center justify-between gap-2 mt-auto">
+                                    {/* Stacked Avatars with Radix White Tooltip */}
+                                    {templateAccounts.length > 0 ? (
+                                        <HoverCard.Root openDelay={80} closeDelay={150}>
+                                            <HoverCard.Trigger asChild>
+                                                <div className="inline-flex items-center -space-x-2 cursor-pointer py-0.5 shrink-0">
+                                                    {templateAccounts.slice(0, 2).map((acc) => {
+                                                        const cfg = PLATFORM_CONFIG[acc.platform] || {
+                                                            icon: Globe,
+                                                            color: 'text-zinc-600',
+                                                            bg: 'bg-zinc-100',
+                                                            border: 'border-zinc-200',
+                                                        };
+                                                        const Icon = cfg.icon;
+                                                        const avatarUrl = getAccountAvatarUrl(acc);
 
-                                    <Button
-                                        asChild
-                                        variant="outline"
-                                        size="sm"
-                                        className="h-8 px-3 rounded-lg text-xs gap-1.5"
-                                        disabled={busy}
-                                    >
-                                        <Link to={`/templates/create?edit=${template.id}`}>
-                                            <PencilSimple size={13} />
-                                            <span>{t('Edit')}</span>
-                                        </Link>
-                                    </Button>
+                                                        return (
+                                                            <div
+                                                                key={acc.id}
+                                                                className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                                style={{ width: '28px', height: '28px' }}
+                                                            >
+                                                                <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
+                                                                    {avatarUrl ? (
+                                                                        <img
+                                                                            src={avatarUrl}
+                                                                            alt={acc.name}
+                                                                            className="h-full w-full object-cover block rounded-full"
+                                                                            style={{ width: '100%', height: '100%' }}
+                                                                            onError={(e) => {
+                                                                                e.currentTarget.style.display = 'none';
+                                                                            }}
+                                                                        />
+                                                                    ) : null}
+                                                                    <span
+                                                                        className={`h-full w-full flex items-center justify-center font-bold text-[10px] text-zinc-700 ${cfg.bg}`}
+                                                                        style={{ display: avatarUrl ? 'none' : 'flex' }}
+                                                                    >
+                                                                        {acc.name
+                                                                            ? acc.name.slice(0, 2).toUpperCase()
+                                                                            : <Icon size={12} weight="fill" className={cfg.color} />}
+                                                                    </span>
+                                                                </div>
+                                                                {/* Platform corner badge */}
+                                                                <span
+                                                                    className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white"
+                                                                    style={{ width: '14px', height: '14px' }}
+                                                                >
+                                                                    <Icon size={9} weight="fill" className={cfg.color} />
+                                                                </span>
+                                                            </div>
+                                                        );
+                                                    })}
 
-                                    <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        className="h-8 px-2 text-xs rounded-lg text-muted-foreground hover:text-foreground"
-                                        disabled={busy}
-                                        title={t('Rename')}
-                                        onClick={() => {
-                                            setRename(template);
-                                            setName(template.name);
-                                            setError('');
-                                        }}
-                                    >
-                                        {t('Rename')}
-                                    </Button>
+                                                    {templateAccounts.length > 2 && (
+                                                        <div
+                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                            style={{ width: '28px', height: '28px' }}
+                                                        >
+                                                            +{templateAccounts.length - 2}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </HoverCard.Trigger>
 
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-lg text-muted-foreground hover:text-dangerFg hover:bg-dangerBg/20 shrink-0"
-                                        disabled={busy}
-                                        title={t('Delete')}
-                                        onClick={() => setRemove(template)}
-                                    >
-                                        <Trash size={14} />
-                                    </Button>
+                                            {/* White Tooltip Portal */}
+                                            <HoverCard.Portal>
+                                                <HoverCard.Content
+                                                    side="top"
+                                                    align="start"
+                                                    sideOffset={8}
+                                                    className="z-50 flex flex-col gap-1.5 rounded-xl bg-white text-zinc-900 p-3 text-[11px] shadow-xl border border-zinc-200/80 min-w-[210px] max-w-[280px]"
+                                                >
+                                                    <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+                                                        <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+                                                            {t('Kênh áp dụng mẫu')}
+                                                        </span>
+                                                        <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-1.5 py-0.5 rounded-full">
+                                                            {templateAccounts.length}
+                                                        </span>
+                                                    </div>
+                                                    <div className="divide-y divide-zinc-100 max-h-56 overflow-y-auto scroll-slim">
+                                                        {templateAccounts.map((acc) => {
+                                                            const cfg = PLATFORM_CONFIG[acc.platform] || {
+                                                                icon: Globe,
+                                                                color: 'text-zinc-600',
+                                                                bg: 'bg-zinc-100',
+                                                            };
+                                                            const Icon = cfg.icon;
+                                                            const avUrl = getAccountAvatarUrl(acc);
+                                                            return (
+                                                                <div key={acc.id} className="py-1.5 flex items-center gap-2 truncate">
+                                                                    <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-zinc-100 ring-1 ring-zinc-200/80 flex items-center justify-center text-[10px] font-bold text-zinc-700">
+                                                                        {avUrl ? (
+                                                                            <img
+                                                                                src={avUrl}
+                                                                                alt=""
+                                                                                className="h-full w-full object-cover block"
+                                                                                onError={(e) => {
+                                                                                    e.currentTarget.style.display = 'none';
+                                                                                }}
+                                                                            />
+                                                                        ) : null}
+                                                                        <Icon size={12} weight="fill" className={cfg.color} />
+                                                                    </div>
+                                                                    <span className="font-semibold text-zinc-800 truncate flex-1">
+                                                                        {acc.name}
+                                                                    </span>
+                                                                    <span className="text-[10px] text-zinc-400 font-medium shrink-0 flex items-center gap-1">
+                                                                        <Icon size={11} weight="fill" className={cfg.color} />
+                                                                        {cfg.label || acc.platform}
+                                                                    </span>
+                                                                </div>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <HoverCard.Arrow className="fill-white" />
+                                                </HoverCard.Content>
+                                            </HoverCard.Portal>
+                                        </HoverCard.Root>
+                                    ) : (
+                                        <span className="text-muted-foreground text-[11px]">—</span>
+                                    )}
+
+                                    {/* Footer Actions */}
+                                    <div className="flex items-center gap-1.5 ml-auto">
+                                        <Button
+                                            asChild
+                                            variant="outline"
+                                            size="sm"
+                                            className="h-7 px-2.5 rounded-lg text-xs gap-1"
+                                            disabled={busy}
+                                        >
+                                            <Link to={`/templates/create?edit=${template.id}`}>
+                                                <PencilSimple size={12} />
+                                                <span>{t('Edit')}</span>
+                                            </Link>
+                                        </Button>
+                                        <button
+                                            type="button"
+                                            disabled={busy}
+                                            onClick={() => startFromTemplate(template)}
+                                            className="h-7 px-3 text-xs font-bold rounded-lg bg-zinc-900 text-white hover:bg-black gap-1.5 cursor-pointer flex items-center shadow-xs transition-colors"
+                                            title={t('Create post from this template')}
+                                        >
+                                            <CopySimple size={13} weight="bold" />
+                                            <span>{t('Use template')}</span>
+                                        </button>
+                                    </div>
                                 </div>
                             </article>
                         );
@@ -736,24 +952,124 @@ export default function PostTemplates() {
 
                                             {/* Column 3: Destinations */}
                                             <td className="p-3.5">
-                                                <div className="flex items-center gap-1 flex-wrap max-w-[160px]">
-                                                    {templateAccounts.slice(0, 3).map((acc) => (
-                                                        <PlatformBadge
-                                                            key={acc.id}
-                                                            platform={acc.platform}
-                                                            name={acc.name}
-                                                            size="sm"
-                                                        />
-                                                    ))}
-                                                    {templateAccounts.length > 3 && (
-                                                        <span className="text-[10px] font-semibold text-muted-foreground bg-muted rounded-md px-1 py-0.5">
-                                                            +{templateAccounts.length - 3}
-                                                        </span>
-                                                    )}
-                                                    {!templateAccounts.length && (
-                                                        <span className="text-muted-foreground text-[11px]">—</span>
-                                                    )}
-                                                </div>
+                                                {templateAccounts.length > 0 ? (
+                                                    <HoverCard.Root openDelay={80} closeDelay={150}>
+                                                        <HoverCard.Trigger asChild>
+                                                            <div className="inline-flex items-center -space-x-2 cursor-pointer py-0.5">
+                                                                {templateAccounts.slice(0, 3).map((acc) => {
+                                                                    const cfg = PLATFORM_CONFIG[acc.platform] || {
+                                                                        icon: Globe,
+                                                                        color: 'text-zinc-600',
+                                                                        bg: 'bg-zinc-100',
+                                                                        border: 'border-zinc-200',
+                                                                    };
+                                                                    const Icon = cfg.icon;
+                                                                    const avatarUrl = getAccountAvatarUrl(acc);
+
+                                                                    return (
+                                                                        <div
+                                                                            key={acc.id}
+                                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                                            style={{ width: '28px', height: '28px' }}
+                                                                        >
+                                                                            <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
+                                                                                {avatarUrl ? (
+                                                                                    <img
+                                                                                        src={avatarUrl}
+                                                                                        alt={acc.name}
+                                                                                        className="h-full w-full object-cover block rounded-full"
+                                                                                        style={{ width: '100%', height: '100%' }}
+                                                                                        onError={(e) => {
+                                                                                            e.currentTarget.style.display = 'none';
+                                                                                        }}
+                                                                                    />
+                                                                                ) : null}
+                                                                                <span
+                                                                                    className={`h-full w-full flex items-center justify-center font-bold text-[10px] text-zinc-700 ${cfg.bg}`}
+                                                                                    style={{ display: avatarUrl ? 'none' : 'flex' }}
+                                                                                >
+                                                                                    {acc.name
+                                                                                        ? acc.name.slice(0, 2).toUpperCase()
+                                                                                        : <Icon size={12} weight="fill" className={cfg.color} />}
+                                                                                </span>
+                                                                            </div>
+                                                                            <span
+                                                                                className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white"
+                                                                                style={{ width: '14px', height: '14px' }}
+                                                                            >
+                                                                                <Icon size={9} weight="fill" className={cfg.color} />
+                                                                            </span>
+                                                                        </div>
+                                                                    );
+                                                                })}
+
+                                                                {templateAccounts.length > 3 && (
+                                                                    <div
+                                                                        className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                                        style={{ width: '28px', height: '28px' }}
+                                                                    >
+                                                                        +{templateAccounts.length - 3}
+                                                                    </div>
+                                                                )}
+                                                            </div>
+                                                        </HoverCard.Trigger>
+                                                        <HoverCard.Portal>
+                                                            <HoverCard.Content
+                                                                side="top"
+                                                                align="center"
+                                                                sideOffset={8}
+                                                                className="z-50 flex flex-col gap-1.5 rounded-xl bg-white text-zinc-900 p-3 text-[11px] shadow-xl border border-zinc-200/80 min-w-[210px] max-w-[280px]"
+                                                            >
+                                                                <div className="flex items-center justify-between pb-1 border-b border-zinc-100">
+                                                                    <span className="text-[10px] uppercase font-bold text-zinc-500 tracking-wider">
+                                                                        {t('Kênh áp dụng mẫu')}
+                                                                    </span>
+                                                                    <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-1.5 py-0.5 rounded-full">
+                                                                        {templateAccounts.length}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="divide-y divide-zinc-100 max-h-56 overflow-y-auto scroll-slim">
+                                                                    {templateAccounts.map((acc) => {
+                                                                        const cfg = PLATFORM_CONFIG[acc.platform] || {
+                                                                            icon: Globe,
+                                                                            color: 'text-zinc-600',
+                                                                            bg: 'bg-zinc-100',
+                                                                        };
+                                                                        const Icon = cfg.icon;
+                                                                        const avUrl = getAccountAvatarUrl(acc);
+                                                                        return (
+                                                                            <div key={acc.id} className="py-1.5 flex items-center gap-2 truncate">
+                                                                                <div className="relative h-6 w-6 rounded-full overflow-hidden shrink-0 bg-zinc-100 ring-1 ring-zinc-200/80 flex items-center justify-center text-[10px] font-bold text-zinc-700">
+                                                                                    {avUrl ? (
+                                                                                        <img
+                                                                                            src={avUrl}
+                                                                                            alt=""
+                                                                                            className="h-full w-full object-cover block"
+                                                                                            onError={(e) => {
+                                                                                                e.currentTarget.style.display = 'none';
+                                                                                            }}
+                                                                                        />
+                                                                                    ) : null}
+                                                                                    <Icon size={12} weight="fill" className={cfg.color} />
+                                                                                </div>
+                                                                                <span className="font-semibold text-zinc-800 truncate flex-1">
+                                                                                    {acc.name}
+                                                                                </span>
+                                                                                <span className="text-[10px] text-zinc-400 font-medium shrink-0 flex items-center gap-1">
+                                                                                    <Icon size={11} weight="fill" className={cfg.color} />
+                                                                                    {cfg.label || acc.platform}
+                                                                                </span>
+                                                                            </div>
+                                                                        );
+                                                                    })}
+                                                                </div>
+                                                                <HoverCard.Arrow className="fill-white" />
+                                                            </HoverCard.Content>
+                                                        </HoverCard.Portal>
+                                                    </HoverCard.Root>
+                                                ) : (
+                                                    <span className="text-muted-foreground text-[11px]">—</span>
+                                                )}
                                             </td>
 
                                             {/* Column 4: Format */}
@@ -795,7 +1111,7 @@ export default function PostTemplates() {
                                                         type="button"
                                                         disabled={busy}
                                                         onClick={() => startFromTemplate(template)}
-                                                        className="btn-skew h-7 px-2.5 text-[11px] font-semibold gap-1 cursor-pointer"
+                                                        className="h-7 px-2.5 text-[11px] font-semibold rounded-lg bg-zinc-900 text-white hover:bg-black gap-1 cursor-pointer flex items-center shadow-xs transition-colors"
                                                         title={t('Create post from this template')}
                                                     >
                                                         <NotePencil size={13} weight="bold" />

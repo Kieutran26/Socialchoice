@@ -306,39 +306,11 @@ export default function AllPosts() {
                 }
             />
 
-            {/* Status Filter Tabs */}
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 mb-4 scroll-slim">
-                {tabs.map((tab) => {
-                    const isActive = filters.status === tab.key;
-                    return (
-                        <button
-                            key={tab.key}
-                            type="button"
-                            onClick={() => handleTabChange(tab.key)}
-                            className={`flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap cursor-pointer ${
-                                isActive
-                                    ? 'bg-card text-foreground border border-border shadow-2xs font-semibold'
-                                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-                            }`}
-                        >
-                            {tab.dot && <span className={`h-2 w-2 rounded-full ${tab.dot}`} />}
-                            <span>{tab.label}</span>
-                            <span
-                                className={`rounded-md px-1.5 py-0.2 text-[10px] font-semibold ${
-                                    isActive
-                                        ? 'bg-brand/20 text-brand-ink'
-                                        : 'bg-muted text-muted-foreground'
-                                }`}
-                            >
-                                {tab.count}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
-
-            {/* Filter toolbar */}
+            {/* Unified Filter toolbar with Smart Status Tabs */}
             <PostFilters
+                tabs={tabs}
+                activeTab={filters.status}
+                onTabChange={handleTabChange}
                 filters={filters}
                 setFilters={setFilters}
                 pillars={pillars}
