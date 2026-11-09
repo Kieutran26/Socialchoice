@@ -130,10 +130,10 @@ export default function Overview() {
                     loading
                         ? t("Đang nạp dữ liệu không gian làm việc...")
                         : t("{scheduled} bài trong lịch phát sóng · {clicks} lượt nhấp UTM · {connected} kênh sẵn sàng", {
-                              scheduled: scheduledCount,
-                              clicks: data?.totalClicks || 0,
-                              connected: connected + demoAccounts,
-                          })
+                            scheduled: scheduledCount,
+                            clicks: data?.totalClicks || 0,
+                            connected: connected + demoAccounts,
+                        })
                 }
                 actions={
                     <div className="flex flex-wrap items-center gap-2">
@@ -175,6 +175,7 @@ export default function Overview() {
                             <Skeleton className="h-64 rounded-2xl" />
                         </div>
                     </div>
+                    <Skeleton className="h-72 rounded-2xl" />
                 </div>
             ) : !hasContent ? (
                 <EmptyState
@@ -338,11 +339,9 @@ export default function Overview() {
                                                 >
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <div
-                                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${
-                                                                conf?.bg || 'bg-muted'
-                                                            } ${conf?.border || 'border-border'} ${
-                                                                conf?.color || 'text-foreground'
-                                                            }`}
+                                                            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${conf?.bg || 'bg-muted'
+                                                                } ${conf?.border || 'border-border'} ${conf?.color || 'text-foreground'
+                                                                }`}
                                                         >
                                                             {IconComp ? <IconComp size={16} weight="bold" /> : <ShareNetwork size={16} />}
                                                         </div>
@@ -357,19 +356,18 @@ export default function Overview() {
                                                     </div>
 
                                                     <span
-                                                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${
-                                                            isConn
+                                                        className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${isConn
                                                                 ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                                                                 : isDemo
-                                                                ? 'bg-amber-50 text-amber-700 border-amber-200'
-                                                                : 'bg-zinc-100 text-zinc-600 border-zinc-200'
-                                                        }`}
+                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                    : 'bg-zinc-100 text-zinc-600 border-zinc-200'
+                                                            }`}
                                                     >
                                                         {isConn
                                                             ? t("Hoạt động")
                                                             : isDemo
-                                                            ? t("Mô phỏng")
-                                                            : t("Cần xác thực")}
+                                                                ? t("Mô phỏng")
+                                                                : t("Cần xác thực")}
                                                     </span>
                                                 </div>
                                             );
@@ -380,17 +378,17 @@ export default function Overview() {
 
                             {/* Recent Activity Feed */}
                             <RecentActivity logs={data.logs} />
-
-                            {/* Content Strategy Distribution Panel */}
-                            <DistributionPanel
-                                pillarRows={data.pillarRows}
-                                angleRows={data.angleRows}
-                                pillarMap={data.pillarMap}
-                                angleMap={data.angleMap}
-                                total={data.total}
-                            />
                         </div>
                     </div>
+
+                    {/* Content Strategy Distribution Panel - Full Width */}
+                    <DistributionPanel
+                        pillarRows={data.pillarRows}
+                        angleRows={data.angleRows}
+                        pillarMap={data.pillarMap}
+                        angleMap={data.angleMap}
+                        total={data.total}
+                    />
                 </>
             )}
         </div>
