@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="vi" data-mau="xam">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wireframe - Modal Dùng Mẫu Bài Viết (Skill UI-UX)</title>
+  <!-- Google Fonts: Space Grotesk & Mona Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mona+Sans:wght@500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Tailwind CSS 4 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <!-- Phosphor Icons -->
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+
+  <style>
+    :root {
+      --app-font: "Space Grotesk", system-ui, -apple-system, sans-serif;
+      --heading-font: "Mona Sans", "Space Grotesk", system-ui, sans-serif;
+      --mono-font: "JetBrains Mono", monospace;
+      
+      /* Style Đen Trắng / Monochrome mặc định theo skill UI-UX */
+      --bg-page: #f4f4f5;
+      --bg-card: #ffffff;
+      --fg-primary: #18181b;
+      --fg-muted: #71717a;
+      --fg-subtle: #a1a1aa;
+      --border-subtle: #e4e4e7;
+      --border-strong: #d4d4d8;
+      --border-focus: #18181b;
+      --accent: #18181b;
+      --accent-fg: #ffffff;
+      --accent-soft: #f4f4f5;
+    }
+
+    /* Chế độ màu nhấn (khi bật toggle) */
+    :root[data-mau="mau"] {
+      --accent: #ffd631;
+      --accent-fg: #2b2100;
+      --accent-soft: #fffbeb;
+    }
+
+    body {
+      font-family: var(--app-font);
+      background-color: var(--bg-page);
+      color: var(--fg-primary);
+      margin: 0;
+      padding: 0;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    h1, h2, h3, h4, .font-heading {
+      font-family: var(--heading-font);
+    }
+
+    .font-mono-code {
+      font-family: var(--mono-font);
+    }
+
+    /* Công tắc Gọn chữ & Bỏ lặp */
+    body[data-gon="1"] [data-wf-gon] { display: none !important; }
+    body[data-bolap="1"] [data-wf-lap] { display: none !important; }
+
+    /* Mô phỏng khung Mobile 390px */
+    body[data-kho="mobile"] #modal-viewport {
+      max-width: 390px !important;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Custom scrollbar */
+    .custom-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .custom-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb {
+      background: #d4d4d8;
+      border-radius: 9999px;
+    }
+    .custom-scroll::-webkit-scrollbar-thumb:hover {
+      background: #a1a1aa;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen text-sm antialiased pb-24">
+
+  <!-- ============================================================== -->
+  <!-- THANH CÔNG CỤ ĐIỀU KHIỂN CHUẨN SKILL UI-UX (NHÁNH U)            -->
+  <!-- ============================================================== -->
+  <header class="sticky top-0 z-50 border-b border-zinc-800 bg-zinc-950 text-zinc-100 px-4 py-2.5 flex flex-wrap items-center justify-between gap-3 shadow-md">
+    <div class="flex items-center gap-3">
+      <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg bg-zinc-800 text-zinc-100 font-bold text-xs border border-zinc-700">
+        <i class="ph-bold ph-faders"></i> Skill UI-UX Wireframe
+      </span>
+      <span class="text-xs text-zinc-300 font-medium hidden sm:inline">
+        Modal Chọn mẫu bài viết (Post Template Selector)
+      </span>
+    </div>
+
+    <!-- Controls -->
+    <div class="flex flex-wrap items-center gap-2 text-xs">
+      <!-- 3 Phương án bố cục -->
+      <div class="inline-flex rounded-xl bg-zinc-900 p-1 border border-zinc-800">
+        <button id="btn-opt-a" onclick="switchOption('a')" class="px-3 py-1 rounded-lg font-semibold bg-zinc-100 text-zinc-900 cursor-pointer transition-all">
+          A: Master-Detail (2 Cột)
+        </button>
+        <button id="btn-opt-b" onclick="switchOption('b')" class="px-3 py-1 rounded-lg font-medium text-zinc-400 hover:text-white cursor-pointer transition-all">
+          B: Visual Card Grid
+        </button>
+        <button id="btn-opt-c" onclick="switchOption('c')" class="px-3 py-1 rounded-lg font-medium text-zinc-400 hover:text-white cursor-pointer transition-all">
+          C: Command Palette
+        </button>
+      </div>
+
+      <!-- Công tắc Nấc màu (Mặc định Xám đen trắng) -->
+      <button id="btn-mau" onclick="toggleMau()" class="px-3 py-1 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 cursor-pointer font-medium flex items-center gap-1.5">
+        <span>Màu:</span>
+        <span id="label-mau" class="font-bold text-zinc-300">Đen trắng (Xám)</span>
+      </button>
+
+      <!-- Khổ Desktop / Mobile -->
+      <button id="btn-kho" onclick="toggleKho()" class="px-3 py-1 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-200 hover:bg-zinc-800 cursor-pointer font-medium flex items-center gap-1.5">
+        <span>Khổ:</span>
+        <span id="label-kho" class="font-bold text-zinc-300">Desktop</span>
+      </button>
+
+      <!-- Công tắc Gọn chữ -->
+      <button id="btn-gon" onclick="toggleGon()" class="px-3 py-1 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 cursor-pointer">
+        Gọn chữ: <span id="label-gon" class="text-zinc-500 font-bold">Tắt</span>
+      </button>
+
+      <!-- Công tắc Bỏ lặp -->
+      <button id="btn-lap" onclick="toggleLap()" class="px-3 py-1 rounded-xl border border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800 cursor-pointer">
+        Bỏ lặp: <span id="label-lap" class="text-zinc-500 font-bold">Tắt</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ============================================================== -->
+  <!-- MAIN WORKSPACE VỚI BỐI CẢNH MODAL LỚP NỔI                       -->
+  <!-- ============================================================== -->
+  <main class="max-w-[1440px] mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- Header Thông tin & Phân tích Đề bài -->
+    <div class="bg-white rounded-2xl border border-zinc-200 p-5 shadow-2xs">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-zinc-100">
+        <div>
+          <div class="flex items-center gap-2 text-xs text-zinc-500 mb-1">
+            <span>Socialchoice</span>
+            <span>›</span>
+            <span>Trình soạn thảo</span>
+            <span>›</span>
+            <span class="text-zinc-900 font-semibold">Tạo bài viết từ mẫu</span>
+          </div>
+          <h1 class="text-xl font-bold text-zinc-900 font-heading">
+            Tái thiết kế Modal: Chọn mẫu bài viết để tạo bài
+          </h1>
+          <p class="text-xs text-zinc-600 mt-0.5 leading-relaxed" data-wf-gon>
+            Quy trình chọn mẫu bài viết phục vụ mục đích: <strong>so sánh nhanh các mẫu đã lưu</strong> (tiêu đề, hình ảnh, văn bản, kênh đăng) và <strong>áp dụng vào form chỉ với 1 click</strong> mà không gây phân tâm.
+          </p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-xs px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-700 font-mono font-medium">
+            Phạm vi: Modal Overlay · Style Monochrome
+          </span>
+        </div>
+      </div>
+
+      <!-- Khung phân tích lý do & so sánh phương án -->
+      <div id="option-analysis" class="mt-4 p-4 rounded-xl border border-zinc-200 bg-zinc-50 text-xs text-zinc-800 leading-relaxed">
+        <!-- Nội dung sẽ tự thay đổi theo Option A/B/C -->
+      </div>
+    </div>
+
+    <!-- KHU VỰC HIỂN THỊ MODAL TRONG NGỮ CẢNH (Mô phỏng lớp phủ Backdrop) -->
+    <div id="modal-viewport" class="relative rounded-3xl border border-zinc-300 bg-zinc-800/40 p-4 sm:p-10 min-h-[750px] flex items-center justify-center backdrop-blur-xs transition-all">
+      
+      <!-- NỀN MÔ PHỎNG TRANG SOẠN THẢO BỊ MỜ PHÍA SAU -->
+      <div class="absolute inset-0 p-6 opacity-20 pointer-events-none overflow-hidden select-none">
+        <div class="max-w-4xl mx-auto space-y-4">
+          <div class="h-8 w-48 bg-zinc-400 rounded-lg"></div>
+          <div class="flex gap-2">
+            <div class="size-9 rounded-full bg-zinc-400"></div>
+            <div class="size-9 rounded-full bg-zinc-400"></div>
+            <div class="size-9 rounded-full bg-zinc-400"></div>
+          </div>
+          <div class="h-44 w-full bg-zinc-300 rounded-2xl border border-zinc-400"></div>
+          <div class="h-10 w-full bg-zinc-300 rounded-xl"></div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- PHƯƠNG ÁN A: MASTER-DETAIL (2 CỘT: DANH SÁCH + XEM TRƯỚC BÀI)    -->
+      <!-- ============================================================== -->
+      <div id="view-opt-a" class="relative w-full max-w-4xl bg-white rounded-3xl border border-zinc-300 shadow-2xl overflow-hidden flex flex-col max-h-[85vh]">
+        <!-- Header Modal -->
+        <div class="p-5 border-b border-zinc-200 flex items-center justify-between gap-4 bg-white shrink-0">
+          <div class="flex items-center gap-3">
+            <span class="w-9 h-9 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-900 shrink-0">
+              <i class="ph-bold ph-quotes text-base"></i>
+            </span>
+            <div>
+              <h2 class="text-base font-bold text-zinc-900 font-heading">Chọn mẫu bài viết</h2>
+              <p class="text-xs text-zinc-500 mt-0.5" data-wf-gon>
+                Chọn mẫu bên trái để xem trước nội dung chi tiết bên phải trước khi áp dụng.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="/templates" class="text-xs text-zinc-600 hover:text-zinc-900 font-semibold px-2 py-1 rounded-lg hover:bg-zinc-100 transition hidden sm:inline-block">
+              Quản lý mẫu →
+            </a>
+            <button class="size-8 rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 grid place-items-center transition cursor-pointer">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Thân Modal chia 2 cột (Master - Detail) -->
+        <div class="grid grid-cols-1 md:grid-cols-12 flex-1 overflow-hidden">
+          
+          <!-- Cột trái: Danh sách mẫu & Tìm kiếm (Master, 5/12 cột) -->
+          <div class="md:col-span-5 border-r border-zinc-200 flex flex-col bg-zinc-50/50">
+            <!-- Search & Filters -->
+            <div class="p-3.5 border-b border-zinc-200 space-y-2.5 bg-white">
+              <div class="relative">
+                <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs"></i>
+                <input
+                  type="text"
+                  placeholder="Tìm theo tên hoặc nội dung…"
+                  value="Khuyến mãi"
+                  class="w-full h-8.5 rounded-xl border border-zinc-200 bg-zinc-50 pl-8 pr-3 text-xs outline-none focus:bg-white focus:border-zinc-800 transition"
+                />
+              </div>
+
+              <!-- Filter tabs -->
+              <div class="flex items-center gap-1 text-[11px] font-medium">
+                <button class="px-2.5 py-1 rounded-lg bg-zinc-900 text-white font-bold">Tất cả (4)</button>
+                <button class="px-2.5 py-1 rounded-lg text-zinc-600 hover:bg-zinc-100">Chỉ chữ (1)</button>
+                <button class="px-2.5 py-1 rounded-lg text-zinc-600 hover:bg-zinc-100">Có media (3)</button>
+              </div>
+            </div>
+
+            <!-- List items cuộn được -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2 custom-scroll max-h-[460px]">
+              
+              <!-- Item 1 (Selected / Active) -->
+              <div class="p-3 rounded-2xl bg-white border-2 border-zinc-900 shadow-xs cursor-pointer transition">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-bold text-zinc-900 truncate">Ưu đãi Flash Sale cuối tuần</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[10px] font-mono shrink-0">3 kênh</span>
+                </div>
+                <p class="text-[11px] text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                  🔥 Duy nhất thứ 7 & Chủ Nhật! Giảm ngay 30% cho toàn bộ sản phẩm mới khi nhập mã...
+                </p>
+                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-zinc-100 text-[10px] text-zinc-400">
+                  <span class="inline-flex items-center gap-1 font-semibold text-zinc-700">
+                    <i class="ph-bold ph-image"></i> 2 ảnh
+                  </span>
+                  <span>•</span>
+                  <span>Cập nhật 2 ngày trước</span>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="p-3 rounded-2xl bg-white border border-zinc-200 hover:border-zinc-300 shadow-2xs cursor-pointer transition">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-bold text-zinc-900 truncate">Giới thiệu tính năng AI Agent</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[10px] font-mono shrink-0">4 kênh</span>
+                </div>
+                <p class="text-[11px] text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                  Lên lịch đa kênh trong 10 giây? Khám phá cách Socialchoice giúp bạn tiết kiệm 80% thời gian...
+                </p>
+                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-zinc-100 text-[10px] text-zinc-400">
+                  <span class="inline-flex items-center gap-1 font-semibold text-zinc-700">
+                    <i class="ph-bold ph-video-camera"></i> 1 video
+                  </span>
+                  <span>•</span>
+                  <span>Cập nhật tuần trước</span>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="p-3 rounded-2xl bg-white border border-zinc-200 hover:border-zinc-300 shadow-2xs cursor-pointer transition">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-xs font-bold text-zinc-900 truncate">Thông báo bảo trì hệ thống định kỳ</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[10px] font-mono shrink-0">1 kênh</span>
+                </div>
+                <p class="text-[11px] text-zinc-500 line-clamp-2 mt-1 leading-relaxed">
+                  Kính gửi quý khách hàng, hệ thống sẽ bảo trì nâng cấp trong khung giờ 02:00 - 04:00 sáng...
+                </p>
+                <div class="flex items-center gap-2 mt-2 pt-2 border-t border-zinc-100 text-[10px] text-zinc-400">
+                  <span class="inline-flex items-center gap-1 text-zinc-500 font-medium">
+                    <i class="ph-bold ph-file-text"></i> Chỉ văn bản
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Cột phải: Xem trước chi tiết bài viết (Detail Inspector, 7/12 cột) -->
+          <div class="md:col-span-7 flex flex-col bg-white">
+            <div class="p-4 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+              <span class="text-xs font-bold text-zinc-700 uppercase tracking-wider font-mono">
+                Xem trước nội dung mẫu
+              </span>
+              <span class="text-[11px] text-zinc-500">Mẫu ID: <code class="font-mono">tmpl-sale-wknd</code></span>
+            </div>
+
+            <!-- Content preview body -->
+            <div class="p-5 flex-1 overflow-y-auto space-y-4 custom-scroll max-h-[460px]">
+              
+              <!-- Meta tags bar -->
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-800 text-xs font-semibold">
+                  <i class="ph-bold ph-tag text-zinc-500"></i> Khuyến mãi & Bán hàng
+                </span>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-zinc-100 text-zinc-600 text-xs">
+                  Góc: Khẩn cấp (FOMO)
+                </span>
+                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg border border-zinc-200 text-zinc-600 text-xs font-mono ml-auto">
+                  Facebook · Threads · X
+                </span>
+              </div>
+
+              <!-- Mockup Post Box -->
+              <div class="rounded-2xl border border-zinc-200 bg-white p-4 space-y-3 shadow-2xs">
+                <div class="flex items-center gap-2.5">
+                  <div class="size-9 rounded-full bg-zinc-200 border border-zinc-300 flex items-center justify-center font-bold text-xs text-zinc-700">
+                    SC
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-zinc-900">Socialchoice Brand</p>
+                    <p class="text-[10px] text-zinc-400 font-mono">Đăng tự động qua Socialchoice</p>
+                  </div>
+                </div>
+
+                <!-- Post Text -->
+                <p class="text-xs text-zinc-800 leading-relaxed whitespace-pre-line">
+                  🔥 <strong>DUY NHẤT THỨ 7 & CHỦ NHẬT NÀY!</strong>
+                  
+                  Giảm ngay 30% cho toàn bộ tài khoản Pro khi nâng cấp gói thường niên. Nhập mã <code>FLASH30</code> tại bước thanh toán.
+                  
+                  👉 Trải nghiệm quản lý đa kênh toàn diện không giới hạn tài khoản ngay hôm nay!
+                  
+                  #Socialchoice #FlashSale #MarketingTools #SocialMedia
+                </p>
+
+                <!-- Media Preview Grid (Đen trắng tỉ lệ thật) -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                  <div class="aspect-video rounded-xl bg-zinc-100 border border-zinc-200 flex flex-col items-center justify-center text-zinc-400 gap-1">
+                    <i class="ph-duotone ph-image text-2xl"></i>
+                    <span class="text-[10px] font-mono">banner-promo-1.png</span>
+                  </div>
+                  <div class="aspect-video rounded-xl bg-zinc-100 border border-zinc-200 flex flex-col items-center justify-center text-zinc-400 gap-1">
+                    <i class="ph-duotone ph-image text-2xl"></i>
+                    <span class="text-[10px] font-mono">banner-promo-2.png</span>
+                  </div>
+                </div>
+
+                <!-- First Comment attached -->
+                <div class="p-2.5 rounded-xl bg-zinc-50 border border-zinc-200 text-xs text-zinc-600 flex items-start gap-2">
+                  <i class="ph-bold ph-chat-circle text-zinc-400 mt-0.5"></i>
+                  <div class="min-w-0">
+                    <span class="font-bold text-zinc-900 text-[11px]">Bình luận ghim tự động:</span>
+                    <p class="text-[11px] text-zinc-600 mt-0.5">Link nhận mã ưu đãi độc quyền: https://socialchoice.site/promo</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Footer Action Bar -->
+            <div class="p-4 border-t border-zinc-200 flex items-center justify-between bg-white shrink-0">
+              <span class="text-xs text-zinc-500 font-mono" data-wf-lap>
+                Đã sẵn sàng tải vào 3 kênh
+              </span>
+              <div class="flex items-center gap-2">
+                <button class="h-9 px-4 rounded-xl border border-zinc-300 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer">
+                  Đóng
+                </button>
+                <button class="h-9 px-5 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-bold flex items-center gap-1.5 shadow-sm cursor-pointer">
+                  <i class="ph-bold ph-check text-xs"></i>
+                  <span>Dùng mẫu này</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- PHƯƠNG ÁN B: VISUAL CARD GRID (LƯỚI THẺ CARD TRỰC QUAN)         -->
+      <!-- ============================================================== -->
+      <div id="view-opt-b" class="relative w-full max-w-4xl bg-white rounded-3xl border border-zinc-300 shadow-2xl overflow-hidden flex flex-col max-h-[85vh] hidden">
+        <!-- Header Modal -->
+        <div class="p-5 border-b border-zinc-200 bg-white shrink-0">
+          <div class="flex items-center justify-between gap-4 mb-3">
+            <div class="flex items-center gap-3">
+              <span class="w-9 h-9 rounded-xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-900 shrink-0">
+                <i class="ph-bold ph-squares-four text-base"></i>
+              </span>
+              <div>
+                <h2 class="text-base font-bold text-zinc-900 font-heading">Thư viện mẫu bài viết</h2>
+                <p class="text-xs text-zinc-500 mt-0.5" data-wf-gon>
+                  Duyệt thẻ mẫu có hình ảnh trực quan, chọn mẫu nhanh phù hợp với từng chiến dịch.
+                </p>
+              </div>
+            </div>
+            <button class="size-8 rounded-xl text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 grid place-items-center transition cursor-pointer">
+              <i class="ph-bold ph-x text-sm"></i>
+            </button>
+          </div>
+
+          <!-- Search & Filter bar -->
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+            <div class="relative flex-1 max-w-md">
+              <i class="ph-bold ph-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-xs"></i>
+              <input
+                type="text"
+                placeholder="Tìm mẫu bài viết…"
+                class="w-full h-8.5 rounded-xl border border-zinc-200 bg-zinc-50 pl-8 pr-3 text-xs outline-none focus:bg-white focus:border-zinc-800 transition"
+              />
+            </div>
+            <div class="flex items-center gap-1.5 overflow-x-auto text-xs">
+              <button class="px-3 py-1.5 rounded-lg bg-zinc-900 text-white font-bold whitespace-nowrap">Tất cả mẫu</button>
+              <button class="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">Khuyến mãi</button>
+              <button class="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">Giới thiệu sản phẩm</button>
+              <button class="px-3 py-1.5 rounded-lg border border-zinc-200 text-zinc-600 hover:bg-zinc-50 whitespace-nowrap">Kiến thức ngành</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Thân Modal: Lưới Card 2 cột cuộn được -->
+        <div class="p-5 flex-1 overflow-y-auto custom-scroll bg-zinc-50/50">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            
+            <!-- Card 1 (Có ảnh) -->
+            <article class="bg-white rounded-2xl border border-zinc-200 hover:border-zinc-300 hover:shadow-xs transition-all overflow-hidden flex flex-col justify-between group">
+              <div>
+                <!-- Ảnh preview trên cùng -->
+                <div class="relative aspect-video w-full bg-zinc-100 border-b border-zinc-100 flex items-center justify-center text-zinc-400">
+                  <i class="ph-duotone ph-image text-3xl"></i>
+                  <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white">
+                    2 ẢNH
+                  </span>
+                  <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[10px] font-semibold text-zinc-800 border border-zinc-200">
+                    3 KÊNH
+                  </span>
+                </div>
+
+                <div class="p-4 space-y-2">
+                  <div class="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+                    <span class="w-2 h-2 rounded-full bg-zinc-900"></span>
+                    <span>Khuyến mãi & Bán hàng</span>
+                  </div>
+                  <h3 class="text-sm font-bold text-zinc-900 group-hover:text-zinc-700 transition">
+                    Ưu đãi Flash Sale cuối tuần
+                  </h3>
+                  <p class="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
+                    🔥 Duy nhất thứ 7 & Chủ Nhật! Giảm ngay 30% cho toàn bộ sản phẩm mới khi nhập mã FLASH30...
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-4 pt-2 border-t border-zinc-100 flex items-center justify-between gap-2 mt-auto">
+                <span class="text-[11px] text-zinc-400 font-mono" data-wf-gon>Dùng 14 lần</span>
+                <button class="h-8 px-4 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer ml-auto">
+                  <span>Dùng mẫu này</span>
+                  <i class="ph-bold ph-arrow-right text-xs"></i>
+                </button>
+              </div>
+            </article>
+
+            <!-- Card 2 (Video) -->
+            <article class="bg-white rounded-2xl border border-zinc-200 hover:border-zinc-300 hover:shadow-xs transition-all overflow-hidden flex flex-col justify-between group">
+              <div>
+                <div class="relative aspect-video w-full bg-zinc-100 border-b border-zinc-100 flex items-center justify-center text-zinc-400">
+                  <i class="ph-duotone ph-video-camera text-3xl"></i>
+                  <span class="absolute left-2.5 top-2.5 px-2 py-0.5 rounded-md bg-black/70 backdrop-blur-xs text-[10px] font-mono text-white">
+                    VIDEO
+                  </span>
+                  <span class="absolute right-2.5 top-2.5 px-2 py-0.5 rounded-md bg-white/90 backdrop-blur-xs text-[10px] font-semibold text-zinc-800 border border-zinc-200">
+                    4 KÊNH
+                  </span>
+                </div>
+
+                <div class="p-4 space-y-2">
+                  <div class="flex items-center gap-1.5 text-[10px] font-semibold text-zinc-500 uppercase tracking-wider font-mono">
+                    <span class="w-2 h-2 rounded-full bg-zinc-600"></span>
+                    <span>Tính năng sản phẩm</span>
+                  </div>
+                  <h3 class="text-sm font-bold text-zinc-900 group-hover:text-zinc-700 transition">
+                    Giới thiệu tính năng AI Agent
+                  </h3>
+                  <p class="text-xs text-zinc-600 line-clamp-3 leading-relaxed">
+                    Lên lịch đa kênh trong 10 giây? Khám phá cách Socialchoice giúp bạn tiết kiệm 80% thời gian lên bài...
+                  </p>
+                </div>
+              </div>
+
+              <div class="p-4 pt-2 border-t border-zinc-100 flex items-center justify-between gap-2 mt-auto">
+                <span class="text-[11px] text-zinc-400 font-mono" data-wf-gon>Dùng 8 lần</span>
+                <button class="h-8 px-4 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer ml-auto">
+                  <span>Dùng mẫu này</span>
+                  <i class="ph-bold ph-arrow-right text-xs"></i>
+                </button>
+              </div>
+            </article>
+
+            <!-- Card 3 (Chỉ văn bản) -->
+            <article class="bg-white rounded-2xl border border-zinc-200 hover:border-zinc-300 hover:shadow-xs transition-all overflow-hidden flex flex-col justify-between group">
+              <div class="p-4 space-y-3">
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-zinc-100 text-zinc-700 text-[10px] font-semibold">
+                    <i class="ph-bold ph-file-text"></i> CHỈ VĂN BẢN
+                  </span>
+                  <span class="text-[10px] text-zinc-400 font-mono">1 KÊNH</span>
+                </div>
+                <h3 class="text-sm font-bold text-zinc-900">
+                  Thông báo bảo trì hệ thống định kỳ
+                </h3>
+                <p class="text-xs text-zinc-600 line-clamp-4 leading-relaxed bg-zinc-50 p-2.5 rounded-xl border border-zinc-100">
+                  Kính gửi quý khách hàng, hệ thống sẽ bảo trì nâng cấp trong khung giờ 02:00 - 04:00 sáng nhằm cải thiện độ ổn định đường truyền API...
+                </p>
+              </div>
+
+              <div class="p-4 pt-2 border-t border-zinc-100 flex items-center justify-between gap-2 mt-auto">
+                <span class="text-[11px] text-zinc-400 font-mono" data-wf-gon>Dùng 3 lần</span>
+                <button class="h-8 px-4 rounded-xl bg-zinc-900 text-white hover:bg-zinc-800 text-xs font-bold flex items-center gap-1.5 shadow-2xs cursor-pointer ml-auto">
+                  <span>Dùng mẫu này</span>
+                  <i class="ph-bold ph-arrow-right text-xs"></i>
+                </button>
+              </div>
+            </article>
+
+            <!-- Card 4 (Thêm mẫu mới) -->
+            <div class="rounded-2xl border-2 border-dashed border-zinc-300 hover:border-zinc-400 bg-white/60 p-6 flex flex-col items-center justify-center text-center gap-2 cursor-pointer transition">
+              <div class="size-10 rounded-xl bg-zinc-100 text-zinc-600 flex items-center justify-center">
+                <i class="ph-bold ph-plus text-base"></i>
+              </div>
+              <p class="text-xs font-bold text-zinc-800">Tạo mẫu bài viết mới</p>
+              <p class="text-[11px] text-zinc-400 max-w-[200px]" data-wf-gon>
+                Lưu bố cục, hashtag và nội dung tái sử dụng thường xuyên.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Modal -->
+        <div class="p-3.5 px-6 border-t border-zinc-200 bg-white flex items-center justify-between text-xs text-zinc-500 shrink-0">
+          <span>Tổng số <strong>4</strong> mẫu bài viết</span>
+          <button class="h-8 px-3.5 rounded-lg border border-zinc-200 text-zinc-700 hover:bg-zinc-50 font-semibold cursor-pointer">
+            Đóng
+          </button>
+        </div>
+      </div>
+
+      <!-- ============================================================== -->
+      <!-- PHƯƠNG ÁN C: COMMAND PALETTE (TÌM KIẾM SIÊU TỐC SPOTLIGHT)      -->
+      <!-- ============================================================== -->
+      <div id="view-opt-c" class="relative w-full max-w-2xl bg-white rounded-3xl border border-zinc-300 shadow-2xl overflow-hidden flex flex-col max-h-[80vh] hidden">
+        <!-- Spotlight Search Bar -->
+        <div class="p-4 border-b border-zinc-200 flex items-center gap-3 bg-white shrink-0">
+          <i class="ph-bold ph-magnifying-glass text-zinc-400 text-lg"></i>
+          <input
+            type="text"
+            placeholder="Gõ để tìm kiếm mẫu bài viết… (dùng ↑↓ để chọn, ↵ để áp dụng)"
+            value=""
+            class="flex-1 bg-transparent text-sm text-zinc-900 outline-none placeholder:text-zinc-400 font-medium"
+          />
+          <div class="flex items-center gap-1.5 shrink-0">
+            <kbd class="px-2 py-0.5 rounded-md bg-zinc-100 border border-zinc-200 text-[10px] font-mono text-zinc-600">ESC</kbd>
+          </div>
+        </div>
+
+        <!-- Quick Categories Strip -->
+        <div class="px-4 py-2 bg-zinc-50 border-b border-zinc-200 flex items-center gap-2 overflow-x-auto text-[11px] font-medium text-zinc-600 shrink-0">
+          <span class="text-zinc-400">Lọc nhanh:</span>
+          <button class="px-2 py-0.5 rounded-md bg-white border border-zinc-200 text-zinc-900 font-bold shadow-2xs">Tất cả</button>
+          <button class="px-2 py-0.5 rounded-md hover:bg-white text-zinc-600">Sale & Khuyến mãi</button>
+          <button class="px-2 py-0.5 rounded-md hover:bg-white text-zinc-600">Sản phẩm</button>
+          <button class="px-2 py-0.5 rounded-md hover:bg-white text-zinc-600">Thông báo</button>
+        </div>
+
+        <!-- Command List Body -->
+        <div class="p-2 flex-1 overflow-y-auto custom-scroll space-y-3 max-h-[420px]">
+          
+          <!-- Nhóm 1: Gần đây -->
+          <div class="space-y-1">
+            <div class="px-3 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+              Mẫu dùng gần đây
+            </div>
+
+            <!-- Row 1 (Focused / Active) -->
+            <div class="flex items-center justify-between gap-3 p-3 rounded-2xl bg-zinc-900 text-white cursor-pointer transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="size-8 rounded-xl bg-zinc-800 flex items-center justify-center shrink-0 text-white border border-zinc-700">
+                  <i class="ph-bold ph-image text-sm"></i>
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold truncate">Ưu đãi Flash Sale cuối tuần</p>
+                    <span class="px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300 text-[9px] font-mono">3 kênh</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-300 truncate mt-0.5">
+                    🔥 Duy nhất thứ 7 & Chủ Nhật! Giảm ngay 30% cho toàn bộ sản phẩm mới...
+                  </p>
+                </div>
+              </div>
+
+              <div class="flex items-center gap-2 shrink-0">
+                <kbd class="px-2 py-1 rounded-md bg-zinc-800 border border-zinc-700 text-[10px] font-mono text-zinc-300">↵ Áp dụng</kbd>
+              </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div class="flex items-center justify-between gap-3 p-3 rounded-2xl hover:bg-zinc-100 text-zinc-900 cursor-pointer transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="size-8 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0 text-zinc-700 border border-zinc-200">
+                  <i class="ph-bold ph-video-camera text-sm"></i>
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold truncate">Giới thiệu tính năng AI Agent</p>
+                    <span class="px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 text-[9px] font-mono">4 kênh</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-500 truncate mt-0.5">
+                    Lên lịch đa kênh trong 10 giây? Khám phá cách Socialchoice giúp bạn...
+                  </p>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-zinc-400 font-mono shrink-0">
+                2 ảnh · 1 video
+              </div>
+            </div>
+          </div>
+
+          <!-- Nhóm 2: Mẫu thông báo & chăm sóc khách hàng -->
+          <div class="space-y-1">
+            <div class="px-3 py-1 text-[10px] font-bold text-zinc-400 uppercase tracking-wider font-mono">
+              Thông báo & Hỗ trợ
+            </div>
+
+            <!-- Row 3 -->
+            <div class="flex items-center justify-between gap-3 p-3 rounded-2xl hover:bg-zinc-100 text-zinc-900 cursor-pointer transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="size-8 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0 text-zinc-700 border border-zinc-200">
+                  <i class="ph-bold ph-file-text text-sm"></i>
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold truncate">Thông báo bảo trì hệ thống định kỳ</p>
+                    <span class="px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 text-[9px] font-mono">1 kênh</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-500 truncate mt-0.5">
+                    Kính gửi quý khách hàng, hệ thống sẽ bảo trì nâng cấp trong khung giờ...
+                  </p>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-zinc-400 font-mono shrink-0">
+                Chỉ chữ
+              </div>
+            </div>
+
+            <!-- Row 4 -->
+            <div class="flex items-center justify-between gap-3 p-3 rounded-2xl hover:bg-zinc-100 text-zinc-900 cursor-pointer transition">
+              <div class="flex items-center gap-3 min-w-0">
+                <span class="size-8 rounded-xl bg-zinc-100 flex items-center justify-center shrink-0 text-zinc-700 border border-zinc-200">
+                  <i class="ph-bold ph-chats text-sm"></i>
+                </span>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <p class="text-xs font-bold truncate">Mini game tương tác cuối tuần</p>
+                    <span class="px-1.5 py-0.2 rounded bg-zinc-100 text-zinc-600 text-[9px] font-mono">2 kênh</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-500 truncate mt-0.5">
+                    Thử tài đoán chữ nhận voucher 100k! Comment ngay đáp án bên dưới...
+                  </p>
+                </div>
+              </div>
+
+              <div class="text-[11px] text-zinc-400 font-mono shrink-0">
+                1 ảnh
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Spotlight -->
+        <div class="px-4 py-2.5 bg-zinc-50 border-t border-zinc-200 flex items-center justify-between text-[11px] text-zinc-500 shrink-0">
+          <div class="flex items-center gap-3">
+            <span><kbd class="font-mono bg-white border border-zinc-200 px-1 rounded">↑↓</kbd> Di chuyển</span>
+            <span><kbd class="font-mono bg-white border border-zinc-200 px-1 rounded">↵</kbd> Áp dụng</span>
+            <span><kbd class="font-mono bg-white border border-zinc-200 px-1 rounded">ESC</kbd> Đóng</span>
+          </div>
+          <a href="/templates" class="text-zinc-700 font-semibold hover:underline">Quản lý mẫu →</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- BẢNG SO SÁNH & ĐÁNH GIÁ 3 PHƯƠNG ÁN THEO SKILL UI-UX           -->
+    <!-- ============================================================== -->
+    <div class="bg-white rounded-3xl border border-zinc-200 p-6 space-y-5 shadow-2xs">
+      <div class="flex items-center justify-between">
+        <div>
+          <h2 class="text-base font-bold text-zinc-900 font-heading">
+            So sánh chi tiết 3 Phương án Wireframe
+          </h2>
+          <p class="text-xs text-zinc-500 mt-0.5">
+            Phân tích theo tiêu chuẩn thiết kế UI/UX (Mục U2: Việc chính & Trải nghiệm so sánh).
+          </p>
+        </div>
+        <span class="text-xs px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-800 font-bold font-mono">
+          3 OPTIONS ĐEN TRẮNG
+        </span>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left border-collapse">
+          <thead>
+            <tr class="border-b border-zinc-200 text-zinc-500 font-mono text-[11px]">
+              <th class="py-2.5 px-3">Tiêu chí UX</th>
+              <th class="py-2.5 px-3 font-bold text-zinc-900">A: Master-Detail (2 Cột)</th>
+              <th class="py-2.5 px-3 font-bold text-zinc-900">B: Visual Card Grid</th>
+              <th class="py-2.5 px-3 font-bold text-zinc-900">C: Command Palette</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-zinc-100 text-zinc-700">
+            <tr>
+              <td class="py-3 px-3 font-semibold text-zinc-900">Việc chính thấy ở đâu?</td>
+              <td class="py-3 px-3">Cột phải: xem toàn bộ bài viết, ảnh, tag, bình luận trước khi bấm dùng.</td>
+              <td class="py-3 px-3">Mỗi card có ảnh/media lớn nổi bật ở trên, nhìn lướt nhanh được nhiều mẫu.</td>
+              <td class="py-3 px-3">Gõ phím tìm kiếm và nhấn Enter áp dụng ngay tức thì.</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-semibold text-zinc-900">Khác gì so với bản cũ?</td>
+              <td class="py-3 px-3">Khắc phục triệt để việc chỉ thấy 1 dòng tên vô nghĩa; có Live Preview trực quan.</td>
+              <td class="py-3 px-3">Thay thế danh sách 1 dòng bằng lưới card hiện đại như Canva/Pinterest.</td>
+              <td class="py-3 px-3">Biến modal thành hộp lệnh Spotlight siêu gọn, hỗ trợ phím tắt 100%.</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-semibold text-zinc-900">Tốc độ thao tác</td>
+              <td class="py-3 px-3">Vừa phải (phù hợp người kỹ tính muốn kiểm tra bài kỹ trước khi đăng).</td>
+              <td class="py-3 px-3">Nhanh (quét bằng mắt theo hình ảnh và màu sắc thương hiệu).</td>
+              <td class="py-3 px-3 font-bold text-zinc-950">Cực nhanh (chỉ mất 1-2 giây để tìm và áp dụng).</td>
+            </tr>
+            <tr>
+              <td class="py-3 px-3 font-semibold text-zinc-900">Đánh đổi (Trade-off)</td>
+              <td class="py-3 px-3">Cần diện tích ngang tối thiểu 768px (trên mobile tự xếp chồng dọc).</td>
+              <td class="py-3 px-3">Chiếm nhiều diện tích cuộn dọc nếu có quá nhiều mẫu chỉ có chữ.</td>
+              <td class="py-3 px-3">Không xem trước được chi tiết toàn bộ bài dài hay nhiều ảnh.</td>
+            </tr>
+            <tr class="bg-zinc-50/60">
+              <td class="py-3 px-3 font-bold text-zinc-950">Khuyên dùng cho:</td>
+              <td class="py-3 px-3 font-semibold text-zinc-950">🔥 Đội ngũ Marketing / Duyệt nội dung</td>
+              <td class="py-3 px-3">Content Creator / Mạng xã hội hình ảnh</td>
+              <td class="py-3 px-3">Power User / Quản trị viên thích phím tắt</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- JAVASCRIPT ĐIỀU HƯỚNG TƯƠNG TÁC WIREFRAME                     -->
+  <!-- ============================================================== -->
+  <script>
+    const analyses = {
+      a: `<strong>Phương án A: Master-Detail (2 Cột - Danh sách + Xem trước trực quan)</strong><br />
+          • <strong>Việc chính:</strong> Giúp người dùng nhìn thấy TOÀN BỘ bài viết (tiêu đề, nội dung, kênh đăng, ảnh đính kèm, bình luận ghim) ở cột bên phải trước khi quyết định bấm "Dùng mẫu này". Tránh hoàn toàn việc chọn nhầm mẫu.<br />
+          • <strong>Điểm cải tiến:</strong> Khắc phục triệt để nhược điểm của modal cũ (chỉ có 1 dòng tên cụt ngủn, không biết bài viết bên trong có gì).<br />
+          • <strong>Đánh đổi:</strong> Yêu cầu modal rộng hơn (khổ 896px); trên màn hình nhỏ di động sẽ tự động co về 1 cột.`,
+      b: `<strong>Phương án B: Visual Card Grid (Lưới thẻ trực quan dạng Card 2 cột)</strong><br />
+          • <strong>Việc chính:</strong> Trình bày mẫu theo dạng thẻ trực quan có khung ảnh thumbnail lớn phía trên, tiêu đề và trích đoạn phía dưới như thư viện mẫu Canva.<br />
+          • <strong>Điểm cải tiến:</strong> Rất dễ nhận diện mẫu có hình ảnh hoặc video; có bộ lọc trụ cột (Khuyến mãi, Sản phẩm, Kiến thức) ngay trên đầu.<br />
+          • <strong>Đánh đổi:</strong> Với những mẫu chỉ có văn bản thuần túy, card sẽ ít bắt mắt hơn mẫu có ảnh.`,
+      c: `<strong>Phương án C: Command Palette (Tìm kiếm siêu tốc Spotlight / Keyboard-first)</strong><br />
+          • <strong>Việc chính:</strong> Tối ưu cho tốc độ! Mở modal là con trỏ tự động nhảy vào ô tìm kiếm, gõ từ khóa, dùng phím mũi tên ↑↓ và nhấn Enter để áp dụng ngay.<br />
+          • <strong>Điểm cải tiến:</strong> Siêu gọn gàng, không che khuất màn hình soạn thảo, phân nhóm "Gần đây" và "Chiến dịch" thông minh.<br />
+          • <strong>Đánh đổi:</strong> Không có vùng hiển thị chi tiết bài viết đầy đủ; phù hợp nhất khi người dùng đã nhớ tên mẫu quen thuộc.`
+    };
+
+    function updateAnalysis(opt) {
+      document.getElementById('option-analysis').innerHTML = analyses[opt];
+    }
+
+    // Khởi tạo
+    updateAnalysis('a');
+
+    function switchOption(opt) {
+      ['a', 'b', 'c'].forEach(o => {
+        const btn = document.getElementById('btn-opt-' + o);
+        const view = document.getElementById('view-opt-' + o);
+        if (o === opt) {
+          btn.className = "px-3 py-1 rounded-lg font-semibold bg-zinc-100 text-zinc-900 cursor-pointer transition-all";
+          view.classList.remove('hidden');
+        } else {
+          btn.className = "px-3 py-1 rounded-lg font-medium text-zinc-400 hover:text-white cursor-pointer transition-all";
+          view.classList.add('hidden');
+        }
+      });
+      updateAnalysis(opt);
+    }
+
+    // Toggle Màu (Mặc định Xám đen trắng / Màu nhấn vàng)
+    function toggleMau() {
+      const html = document.documentElement;
+      const isXam = html.getAttribute('data-mau') === 'xam';
+      if (isXam) {
+        html.setAttribute('data-mau', 'mau');
+        document.getElementById('label-mau').textContent = 'Màu nhấn (Brand)';
+        document.getElementById('label-mau').className = 'font-bold text-amber-400';
+      } else {
+        html.setAttribute('data-mau', 'xam');
+        document.getElementById('label-mau').textContent = 'Đen trắng (Xám)';
+        document.getElementById('label-mau').className = 'font-bold text-zinc-300';
+      }
+    }
+
+    // Toggle Khổ Mobile / Desktop
+    function toggleKho() {
+      const body = document.body;
+      const isMobile = body.getAttribute('data-kho') === 'mobile';
+      if (isMobile) {
+        body.removeAttribute('data-kho');
+        document.getElementById('label-kho').textContent = 'Desktop';
+        document.getElementById('label-kho').className = 'font-bold text-zinc-300';
+      } else {
+        body.setAttribute('data-kho', 'mobile');
+        document.getElementById('label-kho').textContent = 'Mobile 390px';
+        document.getElementById('label-kho').className = 'font-bold text-cyan-400';
+      }
+    }
+
+    // Toggle Gọn chữ
+    function toggleGon() {
+      const body = document.body;
+      const isGon = body.getAttribute('data-gon') === '1';
+      if (isGon) {
+        body.removeAttribute('data-gon');
+        document.getElementById('label-gon').textContent = 'Tắt';
+        document.getElementById('label-gon').className = 'text-zinc-500 font-bold';
+      } else {
+        body.setAttribute('data-gon', '1');
+        document.getElementById('label-gon').textContent = 'Bật';
+        document.getElementById('label-gon').className = 'text-emerald-400 font-bold';
+      }
+    }
+
+    // Toggle Bỏ lặp
+    function toggleLap() {
+      const body = document.body;
+      const isLap = body.getAttribute('data-bolap') === '1';
+      if (isLap) {
+        body.removeAttribute('data-bolap');
+        document.getElementById('label-lap').textContent = 'Tắt';
+        document.getElementById('label-lap').className = 'text-zinc-500 font-bold';
+      } else {
+        body.setAttribute('data-bolap', '1');
+        document.getElementById('label-lap').textContent = 'Bật';
+        document.getElementById('label-lap').className = 'text-emerald-400 font-bold';
+      }
+    }
+  </script>
+</body>
+</html>
+
