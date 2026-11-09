@@ -29,6 +29,7 @@ import {
     ChatCircleDots,
     SlidersHorizontal,
     BookmarkSimple,
+    Quotes,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -36,6 +37,7 @@ import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SaveTemplateDialog from '@/components/composer/save-template-dialog';
+import UseTemplateDialog from '@/components/composer/use-template-dialog';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
 import PlatformLogo from '@/components/composer/PlatformLogo';
@@ -138,6 +140,7 @@ export default function CreatePost() {
     const [isComposerExpanded, setIsComposerExpanded] = useState(true);
     const [isMediaDrawerOpen, setIsMediaDrawerOpen] = useState(false);
     const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+    const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(true);
     const [isUtmOpen, setIsUtmOpen] = useState(false);
     const [aiConfig, setAiConfig] = useState(null);
@@ -766,6 +769,14 @@ export default function CreatePost() {
                             </h1>
                         </div>
                         <div className="flex items-center gap-2">
+                            <button
+                                type="button"
+                                onClick={() => setIsTemplatePickerOpen(true)}
+                                className="flex h-7 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 shadow-2xs transition cursor-pointer"
+                            >
+                                <Quotes size={13} weight="bold" className="text-amber-500" />
+                                <span>{t('Dùng mẫu bài viết')}</span>
+                            </button>
                             <span className="flex h-7 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700">
                                 <span className="size-1.5 rounded-full bg-emerald-500" />
                                 {t('Đã lưu tự động')}
@@ -1077,6 +1088,15 @@ export default function CreatePost() {
                                         >
                                             <Sparkle size={15} weight="duotone" className="text-amber-500" />
                                             <span>{t('Trợ lý AI')}</span>
+                                        </button>
+
+                                        <button
+                                            type="button"
+                                            onClick={() => setIsTemplatePickerOpen(true)}
+                                            className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
+                                        >
+                                            <Quotes size={15} weight="duotone" className="text-amber-500" />
+                                            <span>{t('Dùng mẫu')}</span>
                                         </button>
 
                                         {/* Signature Dropdown */}
@@ -1798,6 +1818,14 @@ export default function CreatePost() {
                     </button>
 
                     <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+
+                    <UseTemplateDialog
+                        brandId={form.brand_id}
+                        demoMode={demoMode}
+                        disabled={saving || uploading || loading}
+                        open={isTemplatePickerOpen}
+                        onOpenChange={setIsTemplatePickerOpen}
+                    />
 
                     <div className="ml-auto flex flex-wrap items-center gap-2">
                         {/* Date & Time Picker */}
