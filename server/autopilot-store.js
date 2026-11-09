@@ -36,7 +36,9 @@ export function createAutopilotStore(db, store) {
             const old = row ? JSON.parse(row.data) : null;
             if (!old && api.assets().length >= 10000) fail('Asset limit reached', 409);
             const changed = !old || old.version !== file.version;
-            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, analysis_revision: (old?.analysis_revision || 0) + (old && changed ? 1 : 0), availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
+            const fileUrl = old?.file_url || file.file_url || file.thumbnail_url || (source.kind === 'drive' || file.id ? `https://drive.google.com/thumbnail?id=${file.id}&sz=w600` : '');
+            const thumbUrl = old?.thumbnail_url || file.thumbnail_url || fileUrl;
+            const asset = { ...old, id: old?.id || randomUUID(), source_id: source.id, brand_id: source.brand_id, external_id: file.id, name: file.name, mime: file.mime, resource_key: file.resource_key || null, size: file.size, version: file.version, file_url: fileUrl, thumbnail_url: thumbUrl, analysis_revision: (old?.analysis_revision || 0) + (old && changed ? 1 : 0), availability: 'available', seen_scan: source.scan, updated_at: new Date().toISOString(), ...(changed ? { analysis: null, review: 'pending', analysis_status: 'not_analyzed' } : {}) };
             db.prepare('INSERT INTO autopilot_assets VALUES (?,?,?,?) ON CONFLICT(source_id,external_id) DO UPDATE SET data=excluded.data').run(asset.id, source.id, file.id, JSON.stringify(asset)); return asset;
         },
         drafts: () => rows('autopilot_drafts'),

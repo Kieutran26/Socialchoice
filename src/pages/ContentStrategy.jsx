@@ -121,7 +121,7 @@ export default function ContentStrategy() {
                 ? (autopilotRes.value?.assets || []).map((a) => ({
                     id: a.id,
                     name: a.name,
-                    file_url: a.file_url || '',
+                    file_url: a.file_url || (a.external_id ? `https://drive.google.com/thumbnail?id=${a.external_id}&sz=w600` : ''),
                     notes: [a.analysis?.summary, ...(a.analysis?.tags || [])].filter(Boolean).join(' · '),
                     is_autopilot: true,
                 }))

@@ -18,11 +18,11 @@ export async function boundedBytes(response, limit) {
             const { value, done } = await reader.read(); if (done) break;
             size += value.byteLength; if (size > limit) fail('Source response exceeds limit', 413); chunks.push(value);
         }
-    } catch (error) { await reader.cancel().catch(() => {}); throw error; }
+    } catch (error) { await reader.cancel().catch(() => { }); throw error; }
     const result = new Uint8Array(size); let offset = 0; for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.length; } return result;
 }
 export async function providerJson(response) {
-    if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error('Source provider request failed'), { status: response.status === 401 || response.status === 403 ? 409 : 502, retryable: response.status === 429 || response.status >= 500 }); }
+    if (!response.ok) { await response.body?.cancel().catch(() => { }); throw Object.assign(new Error('Source provider request failed'), { status: response.status === 401 || response.status === 403 ? 409 : 502, retryable: response.status === 429 || response.status >= 500 }); }
     let data; try { data = JSON.parse(new TextDecoder().decode(await boundedBytes(response, 1024 * 1024))); } catch { fail('Invalid source response', 502); }
     if (!data || typeof data !== 'object' || Array.isArray(data)) fail('Invalid source response', 502); return data;
 }
@@ -42,7 +42,7 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
             if (!config.apiKey) fail('Public Drive requires a server API key', 409);
             const keys = [[source.folder, source.resource_key], [path.startsWith('files/') ? path.slice(6) : '', resourceKey]].filter(([, key]) => key);
             const response = await fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { 'X-Goog-Api-Key': config.apiKey, ...(keys.length ? { 'X-Goog-Drive-Resource-Keys': keys.map(([id, key]) => id + '/' + key).join(',') } : {}) }, redirect: 'manual', signal: signal || AbortSignal.timeout(20000) });
-            if (!response.ok) { await response.body?.cancel().catch(() => {}); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401,403,404].includes(response.status) ? 409 : 502, code: [401,403,404].includes(response.status) ? 'SOURCE_ACCESS_DENIED' : undefined, providerStatus: response.status, retryable: response.status === 429 || response.status >= 500 }); }
+            if (!response.ok) { await response.body?.cancel().catch(() => { }); throw Object.assign(new Error([401, 403, 404].includes(response.status) ? 'Public Drive folder or file is unavailable. Check Anyone with the link access and server API key restrictions.' : 'Public Drive request failed'), { status: [401, 403, 404].includes(response.status) ? 409 : 502, code: [401, 403, 404].includes(response.status) ? 'SOURCE_ACCESS_DENIED' : undefined, providerStatus: response.status, retryable: response.status === 429 || response.status >= 500 }); }
             return response;
         }
         return fetcher(`https://www.googleapis.com/drive/v3/${path}?${new URLSearchParams(params)}`, { headers: { Authorization: `Bearer ${await token(source)}` }, redirect: 'manual', signal: signal || AbortSignal.timeout(20000) });
@@ -96,9 +96,24 @@ export function createDriveProvider(config, vault, fetcher = fetch, isCurrent = 
         disconnect: source => vault.remove(credentialId(source)),
         async list(source) {
             if (source.access === 'public') await verify(source);
-            const data = await providerJson(await request(source, 'files', { q: `'${source.folder}' in parents and trashed = false`, fields: 'nextPageToken,incompleteSearch,files(id,name,mimeType,size,version,modifiedTime,md5Checksum,resourceKey)', pageSize: '100', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...(source.cursor ? { pageToken: source.cursor } : {}) }));
+            const data = await providerJson(await request(source, 'files', { q: `'${source.folder}' in parents and trashed = false`, fields: 'nextPageToken,incompleteSearch,files(id,name,mimeType,size,version,modifiedTime,md5Checksum,resourceKey,thumbnailLink)', pageSize: '100', supportsAllDrives: 'true', includeItemsFromAllDrives: 'true', ...(source.cursor ? { pageToken: source.cursor } : {}) }));
             if (!Array.isArray(data.files) || data.incompleteSearch || data.nextPageToken && typeof data.nextPageToken !== 'string') fail('Incomplete Drive listing', 502);
-            return { files: data.files.filter(file => !file.mimeType?.startsWith('application/vnd.google-apps.')).map(file => ({ id: file.id, name: file.name, mime: file.mimeType, size: Number(file.size), resource_key: file.resourceKey || null, version: file.md5Checksum || `${file.version}:${file.modifiedTime}` })), cursor: data.nextPageToken || null };
+            return {
+                files: data.files.filter(file => !file.mimeType?.startsWith('application/vnd.google-apps.')).map(file => {
+                    const thumb = file.thumbnailLink ? file.thumbnailLink.replace(/=s\d+$/, '=s600') : (file.id ? `https://drive.google.com/thumbnail?id=${file.id}&sz=w600` : null);
+                    return {
+                        id: file.id,
+                        name: file.name,
+                        mime: file.mimeType,
+                        size: Number(file.size),
+                        resource_key: file.resourceKey || null,
+                        version: file.md5Checksum || `${file.version}:${file.modifiedTime}`,
+                        thumbnail_url: thumb,
+                        file_url: thumb,
+                    };
+                }),
+                cursor: data.nextPageToken || null
+            };
         },
         async image(source, asset) {
             // Re-check membership/version before sending bytes to an AI provider.

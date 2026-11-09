@@ -77,7 +77,10 @@ export function createAutopilot({ store, auth, env = {}, key, bucket, storageRoo
                 if (input.brand_id) store.get('Brand', input.brand_id);
                 const filter = row => !input.brand_id || row.brand_id === input.brand_id;
                 const search = typeof input.search === 'string' ? input.search.slice(0, 200).toLowerCase() : '';
-                const assets = db().assets().filter(filter).filter(asset => !search || [asset.name, asset.analysis?.summary, ...(asset.analysis?.tags || [])].join(' ').toLowerCase().includes(search));
+                const assets = db().assets().filter(filter).filter(asset => !search || [asset.name, asset.analysis?.summary, ...(asset.analysis?.tags || [])].join(' ').toLowerCase().includes(search)).map(asset => {
+                    const fileUrl = asset.file_url || asset.thumbnail_url || (asset.external_id ? `https://drive.google.com/thumbnail?id=${asset.external_id}&sz=w600` : '');
+                    return { ...asset, file_url: fileUrl, thumbnail_url: asset.thumbnail_url || fileUrl };
+                });
                 const offset = Number.isInteger(input.offset) && input.offset >= 0 ? input.offset : 0;
                 const sources = db().sources().filter(filter);
                 const sourceIds = new Set(sources.map(source => source.id)), assetIds = new Set(db().assets().filter(filter).map(asset => asset.id));

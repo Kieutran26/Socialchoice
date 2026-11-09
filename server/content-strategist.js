@@ -15,7 +15,7 @@ export function createContentStrategist({ store, write, sourceFor, readImage, au
     const eligible = brand => {
         const catalog = db().assets().filter(a => a.brand_id === brand.id && a.size <= 3 * 1024 * 1024 && a.availability === 'available' && a.analysis_status === 'analyzed' && a.review === 'approved' && a.analysis && a.analysis_key && ['image/png', 'image/jpeg', 'image/webp'].includes(a.mime)).filter(a => sourceFor(a.source_id).status === 'connected').map(a => {
             const source = sourceFor(a.source_id);
-            return { id: a.id, brand_id: brand.id, name: a.name, size_bytes: a.size, file_type: 'image', file_url: '', notes: [a.analysis.summary, ...a.analysis.tags].join(' ').slice(0, 1000), is_autopilot: true, snapshot: assetSnapshot(a, source) };
+            return { id: a.id, brand_id: brand.id, name: a.name, size_bytes: a.size, file_type: 'image', file_url: a.file_url || (a.external_id ? `https://drive.google.com/thumbnail?id=${a.external_id}&sz=w600` : ''), notes: [a.analysis.summary, ...a.analysis.tags].join(' ').slice(0, 1000), is_autopilot: true, snapshot: assetSnapshot(a, source) };
         });
         const local = store.all('MediaAsset').filter(a => a.brand_id === brand.id && !a.is_demo && a.storage_id && a.file_type === 'image').map(a => ({ ...a, notes: (a.notes || '').slice(0, 1000), snapshot: JSON.stringify([a.storage_id, a.updated_date]) }));
         return [...local, ...catalog];

@@ -53,6 +53,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
     const [busy, setBusy] = useState(false);
     const [confirmation, setConfirmation] = useState(null);
     const [draftAsset, setDraftAsset] = useState(null);
+    const [previewAsset, setPreviewAsset] = useState(null);
 
     useEffect(() => {
         setDraftAsset(null);
@@ -125,7 +126,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
     };
 
     const click = (operation, input = {}) => {
-        action(operation, input).catch(() => {});
+        action(operation, input).catch(() => { });
     };
 
     if (!status && !error) return <Skeleton className="h-16 mb-5 rounded-2xl" />;
@@ -188,20 +189,18 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                         {/* Inline Queue Pill (Gọn gàng trong header, bấm để xem chi tiết task dưới dạng tab trang) */}
                         {data?.jobs?.length > 0 && (
                             <div
-                                className={`flex items-center gap-1.5 p-1 rounded-xl border transition-all ${
-                                    autopilotSubTab === 'tasks'
+                                className={`flex items-center gap-1.5 p-1 rounded-xl border transition-all ${autopilotSubTab === 'tasks'
                                         ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
                                         : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-800 border-neutral-200/90 shadow-2xs'
-                                }`}
+                                    }`}
                             >
                                 <button
                                     type="button"
                                     onClick={() => setAutopilotSubTab(autopilotSubTab === 'tasks' ? 'assets' : 'tasks')}
-                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold cursor-pointer transition-colors no-underline ${
-                                        autopilotSubTab === 'tasks'
+                                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-mono font-semibold cursor-pointer transition-colors no-underline ${autopilotSubTab === 'tasks'
                                             ? 'text-white'
                                             : 'text-neutral-800 hover:text-black'
-                                    }`}
+                                        }`}
                                     title={autopilotSubTab === 'tasks' ? t('Đang xem danh sách tác vụ. Bấm để về kho tệp') : t('Bấm để xem danh sách tác vụ đang chạy')}
                                 >
                                     <ListBullets size={14} className={autopilotSubTab === 'tasks' ? 'text-white' : 'text-neutral-600'} />
@@ -217,11 +216,10 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                         e.stopPropagation();
                                         click('run');
                                     }}
-                                    className={`text-[10px] font-bold px-2 py-1 rounded-md cursor-pointer transition shadow-2xs ${
-                                        autopilotSubTab === 'tasks'
+                                    className={`text-[10px] font-bold px-2 py-1 rounded-md cursor-pointer transition shadow-2xs ${autopilotSubTab === 'tasks'
                                             ? 'bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700'
                                             : 'bg-neutral-900 hover:bg-neutral-800 text-white'
-                                    }`}
+                                        }`}
                                     title={t('Xử lý tác vụ tiếp theo')}
                                 >
                                     {busy ? '…' : t('Chạy')}
@@ -350,11 +348,10 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                     <button
                                         type="button"
                                         onClick={() => setAutopilotSubTab('assets')}
-                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${
-                                            autopilotSubTab === 'assets'
+                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${autopilotSubTab === 'assets'
                                                 ? 'bg-neutral-900 text-white shadow-xs'
                                                 : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-600 hover:text-neutral-900'
-                                        }`}
+                                            }`}
                                     >
                                         <FileImage size={15} weight={autopilotSubTab === 'assets' ? 'bold' : 'regular'} />
                                         <span>{t('Kho tệp đã đồng bộ')}</span>
@@ -366,11 +363,10 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                     <button
                                         type="button"
                                         onClick={() => setAutopilotSubTab('tasks')}
-                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${
-                                            autopilotSubTab === 'tasks'
+                                        className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${autopilotSubTab === 'tasks'
                                                 ? 'bg-neutral-900 text-white shadow-xs'
                                                 : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-600 hover:text-neutral-900'
-                                        }`}
+                                            }`}
                                     >
                                         <ListBullets size={15} weight={autopilotSubTab === 'tasks' ? 'bold' : 'regular'} />
                                         <span>{t('Tác vụ & Hàng đợi')}</span>
@@ -456,23 +452,21 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                 return (
                                                     <div
                                                         key={job.id}
-                                                        className={`p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-4 text-xs bg-white ${
-                                                            isFailed
+                                                        className={`p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-4 text-xs bg-white ${isFailed
                                                                 ? 'border-rose-200/80 shadow-2xs'
                                                                 : isRunning
-                                                                ? 'border-blue-200/80 shadow-xs'
-                                                                : 'border-neutral-200/80 shadow-2xs'
-                                                        }`}
+                                                                    ? 'border-blue-200/80 shadow-xs'
+                                                                    : 'border-neutral-200/80 shadow-2xs'
+                                                            }`}
                                                     >
                                                         <div className="flex items-start gap-3.5 min-w-0 flex-1">
                                                             <span
-                                                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                                                                    isFailed
+                                                                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isFailed
                                                                         ? 'bg-rose-100 text-rose-600 border border-rose-200'
                                                                         : isRunning
-                                                                        ? 'bg-blue-100 text-blue-600 border border-blue-200'
-                                                                        : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
-                                                                }`}
+                                                                            ? 'bg-blue-100 text-blue-600 border border-blue-200'
+                                                                            : 'bg-neutral-100 text-neutral-600 border border-neutral-200'
+                                                                    }`}
                                                             >
                                                                 {isFailed ? (
                                                                     <WarningCircle size={18} weight="bold" />
@@ -491,13 +485,12 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                                             : t('Phân tích hình ảnh AI')}
                                                                     </span>
                                                                     <span
-                                                                        className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold uppercase ${
-                                                                            isFailed
+                                                                        className={`text-[10px] font-mono px-2 py-0.5 rounded-md font-semibold uppercase ${isFailed
                                                                                 ? 'bg-rose-100 text-rose-800'
                                                                                 : isRunning
-                                                                                ? 'bg-blue-100 text-blue-800'
-                                                                                : 'bg-neutral-200/70 text-neutral-700'
-                                                                        }`}
+                                                                                    ? 'bg-blue-100 text-blue-800'
+                                                                                    : 'bg-neutral-200/70 text-neutral-700'
+                                                                            }`}
                                                                     >
                                                                         {t(job.status)}
                                                                     </span>
@@ -579,368 +572,435 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                             </p>
                                         </div>
                                     ) : (
-                                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                    {data.assets.map((asset) => {
-                                        const hasAnalysis = !!asset.analysis;
-                                        return (
-                                            <article
-                                                key={asset.id}
-                                                className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group"
-                                            >
-                                                {/* Thumbnail area */}
-                                                <div className="relative aspect-video w-full bg-neutral-100 overflow-hidden flex items-center justify-center">
-                                                    {asset.file_url ? (
-                                                        <img
-                                                            src={asset.file_url}
-                                                            alt={asset.name}
-                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                                        />
-                                                    ) : (
-                                                        <div className="flex flex-col items-center justify-center text-neutral-400 gap-1.5 p-4 text-center">
-                                                            <FileImage size={28} weight="duotone" />
-                                                            <span className="text-[10px] font-mono truncate max-w-[140px]">{asset.name}</span>
-                                                        </div>
-                                                    )}
+                                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                            {data.assets.map((asset) => {
+                                                const hasAnalysis = !!asset.analysis;
+                                                const imageUrl = asset.file_url
+                                                    || asset.thumbnail_url
+                                                    || (asset.external_id ? `https://drive.google.com/thumbnail?id=${asset.external_id}&sz=w600` : null);
 
-                                                    {/* Top Badges */}
-                                                    <div className="absolute left-2.5 top-2.5">
-                                                        <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[9px] font-bold uppercase text-white shadow-xs font-mono">
-                                                            {asset.mime?.includes('video') ? 'DRIVE · VIDEO' : 'DRIVE · ẢNH'}
-                                                        </span>
-                                                    </div>
-
-                                                    <div className="absolute right-2.5 top-2.5">
-                                                        {hasAnalysis ? (
-                                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs">
-                                                                <Sparkle size={10} weight="fill" />
-                                                                <span>AI Đã quét</span>
-                                                            </span>
-                                                        ) : (
-                                                            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-600/90 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs font-mono">
-                                                                Mới đồng bộ
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </div>
-
-                                                {/* Content & Metadata */}
-                                                <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
-                                                    <div className="space-y-1.5">
-                                                        <h4 className="text-xs font-bold text-neutral-900 truncate" title={asset.name}>
-                                                            {asset.name}
-                                                        </h4>
-                                                        <p className="text-[10px] text-neutral-400 font-mono">
-                                                            {formatBytes(asset.size)} {asset.source_name && `· ${asset.source_name}`}
-                                                        </p>
-
-                                                        {/* AI Hook / Summary Box */}
-                                                        {hasAnalysis ? (
-                                                            <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-700 space-y-1 mt-1">
-                                                                <div className="flex items-center gap-1 text-[10px] font-bold text-amber-700">
-                                                                    <Sparkle size={11} weight="fill" className="text-amber-500" />
-                                                                    <span>GỢI Ý GÓC VIẾT:</span>
-                                                                </div>
-                                                                <p className="line-clamp-2 text-[11px] text-neutral-600 leading-relaxed">
-                                                                    {asset.analysis.summary}
-                                                                </p>
-                                                                {asset.analysis.tags?.length > 0 && (
-                                                                    <div className="flex flex-wrap gap-1 pt-1">
-                                                                        {asset.analysis.tags.slice(0, 3).map((tag, idx) => (
-                                                                            <span key={idx} className="text-[9px] font-mono text-neutral-500 bg-neutral-200/60 px-1.5 py-0.2 rounded">
-                                                                                #{tag}
-                                                                            </span>
-                                                                        ))}
-                                                                    </div>
-                                                                )}
-                                                            </div>
-                                                        ) : (
-                                                            <div className="p-2.5 rounded-xl bg-neutral-50/70 border border-neutral-100 text-[11px] text-neutral-400 mt-1">
-                                                                <p className="text-[10px]">Tệp vừa tải về từ Drive, chưa phân tích nội dung hình ảnh.</p>
-                                                            </div>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Action Row */}
-                                                    <div className="pt-2 border-t border-neutral-100 flex items-center justify-between gap-2 mt-auto">
-                                                        {hasAnalysis ? (
-                                                            <>
-                                                                <div className="flex items-center gap-1">
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="ghost"
-                                                                        disabled={busy}
-                                                                        onClick={() => click('review', { id: asset.id, review: 'approved' })}
-                                                                        className="h-7 w-7 p-0 rounded-lg text-emerald-600 hover:bg-emerald-50 cursor-pointer"
-                                                                        title={t('Approve analysis')}
-                                                                    >
-                                                                        <Check size={13} weight="bold" />
-                                                                    </Button>
-                                                                    <Button
-                                                                        size="sm"
-                                                                        variant="ghost"
-                                                                        disabled={busy}
-                                                                        onClick={() => click('review', { id: asset.id, review: 'rejected' })}
-                                                                        className="h-7 w-7 p-0 rounded-lg text-dangerFg hover:bg-rose-50 cursor-pointer"
-                                                                        title={t('Reject analysis')}
-                                                                    >
-                                                                        <X size={13} />
-                                                                    </Button>
-                                                                </div>
-
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={busy}
-                                                                    onClick={() => setDraftAsset(asset)}
-                                                                    className="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs ml-auto transition"
-                                                                >
-                                                                    <PencilSimple size={12} weight="bold" />
-                                                                    <span>{t('Tạo bài viết')}</span>
-                                                                </button>
-                                                            </>
-                                                        ) : (
+                                                return (
+                                                    <article
+                                                        key={asset.id}
+                                                        className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group"
+                                                    >
+                                                        {/* Thumbnail area */}
+                                                        <div className="relative aspect-video w-full bg-neutral-100 overflow-hidden flex items-center justify-center">
                                                             <button
                                                                 type="button"
-                                                                disabled={
-                                                                    busy ||
-                                                                    asset.availability !== 'available' ||
-                                                                    ![
-                                                                        'image/png',
-                                                                        'image/jpeg',
-                                                                        'image/webp',
-                                                                    ].includes(asset.mime) ||
-                                                                    asset.size > 3145728
-                                                                }
-                                                                onClick={() => setConfirmation(asset)}
-                                                                className="w-full h-7 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs"
+                                                                onClick={() => setPreviewAsset(asset)}
+                                                                className="h-full w-full block focus:outline-none cursor-pointer"
+                                                                title={t('Quick preview')}
                                                             >
-                                                                <Sparkle size={12} weight="fill" className="text-amber-600" />
-                                                                <span>{t('Quét AI & Lên ý tưởng')}</span>
+                                                                {imageUrl ? (
+                                                                    <>
+                                                                        <img
+                                                                            src={imageUrl}
+                                                                            alt={asset.name}
+                                                                            loading="lazy"
+                                                                            referrerPolicy="no-referrer"
+                                                                            onError={(e) => {
+                                                                                const img = e.currentTarget;
+                                                                                if (!img.dataset.fallback && asset.external_id) {
+                                                                                    img.dataset.fallback = 'lh3';
+                                                                                    img.src = `https://lh3.googleusercontent.com/d/${asset.external_id}=s600`;
+                                                                                    return;
+                                                                                }
+                                                                                if (img.dataset.fallback === 'lh3' && asset.external_id) {
+                                                                                    img.dataset.fallback = 'uc';
+                                                                                    img.src = `https://drive.google.com/uc?export=view&id=${asset.external_id}`;
+                                                                                    return;
+                                                                                }
+                                                                                img.style.display = 'none';
+                                                                                const fallback = img.nextElementSibling;
+                                                                                if (fallback) fallback.style.display = 'flex';
+                                                                            }}
+                                                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                                        />
+                                                                        <div style={{ display: 'none' }} className="flex-col items-center justify-center text-neutral-400 gap-1.5 p-4 text-center h-full w-full">
+                                                                            <FileImage size={28} weight="duotone" />
+                                                                            <span className="text-[10px] font-mono truncate max-w-[140px]">{asset.name}</span>
+                                                                        </div>
+                                                                    </>
+                                                                ) : (
+                                                                    <div className="flex flex-col items-center justify-center text-neutral-400 gap-1.5 p-4 text-center h-full w-full">
+                                                                        <FileImage size={28} weight="duotone" />
+                                                                        <span className="text-[10px] font-mono truncate max-w-[140px]">{asset.name}</span>
+                                                                    </div>
+                                                                )}
                                                             </button>
-                                                        )}
-                                                    </div>
-                                                </div>
-                                            </article>
-                                        );
+
+                                                            {/* Top Badges */}
+                                                                <div className="absolute left-2.5 top-2.5 pointer-events-none">
+                                                                    <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[9px] font-bold uppercase text-white shadow-xs font-mono">
+                                                                        {asset.mime?.includes('video') ? 'DRIVE · VIDEO' : 'DRIVE · ẢNH'}
+                                                                    </span>
+                                                                </div>
+
+                                                                    <div className="absolute right-2.5 top-2.5 pointer-events-none">
+                                                                        {hasAnalysis ? (
+                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs">
+                                                                                <Sparkle size={10} weight="fill" />
+                                                                                <span>AI Đã quét</span>
+                                                                            </span>
+                                                                        ) : (
+                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-600/90 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs font-mono">
+                                                                                Mới đồng bộ
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+
+                                                                {/* Content & Metadata */}
+                                                                <div className="p-3.5 space-y-2.5 flex-1 flex flex-col justify-between">
+                                                                    <div className="space-y-1.5">
+                                                                        <h4 className="text-xs font-bold text-neutral-900 truncate" title={asset.name}>
+                                                                            {asset.name}
+                                                                        </h4>
+                                                                        <p className="text-[10px] text-neutral-400 font-mono">
+                                                                            {formatBytes(asset.size)} {asset.source_name && `· ${asset.source_name}`}
+                                                                        </p>
+
+                                                                        {/* AI Hook / Summary Box */}
+                                                                        {hasAnalysis ? (
+                                                                            <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-700 space-y-1 mt-1">
+                                                                                <div className="flex items-center gap-1 text-[10px] font-bold text-amber-700">
+                                                                                    <Sparkle size={11} weight="fill" className="text-amber-500" />
+                                                                                    <span>GỢI Ý GÓC VIẾT:</span>
+                                                                                </div>
+                                                                                <p className="line-clamp-2 text-[11px] text-neutral-600 leading-relaxed">
+                                                                                    {asset.analysis.summary}
+                                                                                </p>
+                                                                                {asset.analysis.tags?.length > 0 && (
+                                                                                    <div className="flex flex-wrap gap-1 pt-1">
+                                                                                        {asset.analysis.tags.slice(0, 3).map((tag, idx) => (
+                                                                                            <span key={idx} className="text-[9px] font-mono text-neutral-500 bg-neutral-200/60 px-1.5 py-0.2 rounded">
+                                                                                                #{tag}
+                                                                                            </span>
+                                                                                        ))}
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
+                                                                        ) : (
+                                                                            <div className="p-2.5 rounded-xl bg-neutral-50/70 border border-neutral-100 text-[11px] text-neutral-400 mt-1">
+                                                                                <p className="text-[10px]">Tệp vừa tải về từ Drive, chưa phân tích nội dung hình ảnh.</p>
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Action Row */}
+                                                                    <div className="pt-2 border-t border-neutral-100 flex items-center justify-between gap-2 mt-auto">
+                                                                        {hasAnalysis ? (
+                                                                            <>
+                                                                                <div className="flex items-center gap-1">
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="ghost"
+                                                                                        disabled={busy}
+                                                                                        onClick={() => click('review', { id: asset.id, review: 'approved' })}
+                                                                                        className="h-7 w-7 p-0 rounded-lg text-emerald-600 hover:bg-emerald-50 cursor-pointer"
+                                                                                        title={t('Approve analysis')}
+                                                                                    >
+                                                                                        <Check size={13} weight="bold" />
+                                                                                    </Button>
+                                                                                    <Button
+                                                                                        size="sm"
+                                                                                        variant="ghost"
+                                                                                        disabled={busy}
+                                                                                        onClick={() => click('review', { id: asset.id, review: 'rejected' })}
+                                                                                        className="h-7 w-7 p-0 rounded-lg text-dangerFg hover:bg-rose-50 cursor-pointer"
+                                                                                        title={t('Reject analysis')}
+                                                                                    >
+                                                                                        <X size={13} />
+                                                                                    </Button>
+                                                                                </div>
+
+                                                                                <button
+                                                                                    type="button"
+                                                                                    disabled={busy}
+                                                                                    onClick={() => setDraftAsset(asset)}
+                                                                                    className="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs ml-auto transition"
+                                                                                >
+                                                                                    <PencilSimple size={12} weight="bold" />
+                                                                                    <span>{t('Tạo bài viết')}</span>
+                                                                                </button>
+                                                                            </>
+                                                                        ) : (
+                                                                            <button
+                                                                                type="button"
+                                                                                disabled={
+                                                                                    busy ||
+                                                                                    asset.availability !== 'available' ||
+                                                                                    ![
+                                                                                        'image/png',
+                                                                                        'image/jpeg',
+                                                                                        'image/webp',
+                                                                                    ].includes(asset.mime) ||
+                                                                                    asset.size > 3145728
+                                                                                }
+                                                                                onClick={() => setConfirmation(asset)}
+                                                                                className="w-full h-7 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs"
+                                                                            >
+                                                                                <Sparkle size={12} weight="fill" className="text-amber-600" />
+                                                                                <span>{t('Quét AI & Lên ý tưởng')}</span>
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </article>
+                                                            );
                                     })}
-                                </div>
+                                                        </div>
                             )}
 
-                            {/* Pagination */}
-                            <div className="p-3 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2 shadow-2xs">
-                                <span className="text-xs text-neutral-500 font-mono">
-                                    {t('{count} ingested assets', { count: data.total || data.assets?.length || 0 })}
-                                </span>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={busy || offset === 0}
-                                        onClick={() => setOffset(Math.max(0, offset - 100))}
-                                        className="h-8 rounded-xl text-xs gap-1 cursor-pointer"
-                                    >
-                                        <CaretLeft size={13} />
-                                        <span>{t('Previous')}</span>
-                                    </Button>
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        disabled={busy || data.nextOffset === null}
-                                        onClick={() => setOffset(data.nextOffset)}
-                                        className="h-8 rounded-xl text-xs gap-1 cursor-pointer"
-                                    >
-                                        <span>{t('Next')}</span>
-                                        <CaretRight size={13} />
-                                    </Button>
-                                </div>
-                            </div>
-                        </>
-                    )}
+                                                        {/* Pagination */}
+                                                        <div className="p-3 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                                                            <span className="text-xs text-neutral-500 font-mono">
+                                                                {t('{count} ingested assets', { count: data.total || data.assets?.length || 0 })}
+                                                            </span>
+                                                            <div className="flex gap-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled={busy || offset === 0}
+                                                                    onClick={() => setOffset(Math.max(0, offset - 100))}
+                                                                    className="h-8 rounded-xl text-xs gap-1 cursor-pointer"
+                                                                >
+                                                                    <CaretLeft size={13} />
+                                                                    <span>{t('Previous')}</span>
+                                                                </Button>
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    disabled={busy || data.nextOffset === null}
+                                                                    onClick={() => setOffset(data.nextOffset)}
+                                                                    className="h-8 rounded-xl text-xs gap-1 cursor-pointer"
+                                                                >
+                                                                    <span>{t('Next')}</span>
+                                                                    <CaretRight size={13} />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    </>
+                                                )
+                                            }
                 </div>
-            )}
-        </>
-    )}
+                                    )}
+                                </>
+                            )}
 
-            {draftAsset && (
-                <AssetDraftDialog
-                    key={draftAsset.id}
-                    asset={draftAsset}
-                    onClose={() => setDraftAsset(null)}
-                />
-            )}
-
-            <ConfirmDialog
-                destructive={false}
-                open={!!confirmation}
-                onOpenChange={(open) => !open && setConfirmation(null)}
-                title={t('Send image for AI analysis?')}
-                description={t(
-                    'The selected image will be sent to the AI provider configured in Settings. Provider charges may apply. Output remains unapproved until you review it.'
-                )}
-                confirmLabel="Queue AI analysis"
-                onConfirm={() =>
-                    action(confirmation.retry ? 'retry' : 'analyze', {
-                        id: confirmation.id,
-                        confirmed: true,
-                    })
-                }
-            />
-
-            {/* Modal Popup: Thêm nguồn Google Drive / Cloud Storage */}
-            <Dialog open={addSourceModalOpen} onOpenChange={setAddSourceModalOpen}>
-                <DialogContent className="max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-neutral-200">
-                    <DialogHeader className="mb-4">
-                        <div className="flex items-center gap-3">
-                            <span className="w-10 h-10 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-xs shrink-0">
-                                <FolderPlus size={20} weight="bold" />
-                            </span>
-                            <div>
-                                <DialogTitle className="text-base font-bold text-neutral-900">
-                                    {t('Thêm nguồn Google Drive / Storage')}
-                                </DialogTitle>
-                                <DialogDescription className="text-xs text-neutral-500 mt-0.5">
-                                    {t('Đồng bộ tệp ảnh & video từ thư mục công khai để AI tự động phân tích và tạo bài viết.')}
-                                </DialogDescription>
-                            </div>
-                        </div>
-                    </DialogHeader>
-
-                    <form
-                        onSubmit={(event) => {
-                            event.preventDefault();
-                            click('createSource', { brand_id: brandId, kind, name, folder });
-                        }}
-                        className="space-y-4"
-                    >
-                        {/* Brand selection if multiple brands */}
-                        {brands.length > 1 && (
-                            <div>
-                                <Label htmlFor="popup-brand" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
-                                    {t('Thương hiệu liên kết')}
-                                </Label>
-                                <div className="relative">
-                                    <select
-                                        id="popup-brand"
-                                        value={brandId}
-                                        onChange={(e) => onBrandChange?.(e.target.value)}
-                                        className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
-                                    >
-                                        {brands.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                    <CaretDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400" />
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Source Type */}
-                        <div>
-                            <Label htmlFor="popup-kind" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
-                                {t('Loại nguồn lưu trữ')}
-                            </Label>
-                            <div className="relative flex items-center">
-                                <HardDrives size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-                                <select
-                                    id="popup-kind"
-                                    disabled={busy}
-                                    value={kind}
-                                    onChange={(event) => setKind(event.target.value)}
-                                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
-                                >
-                                    <option value="drive_public">{t('Thư mục Google Drive công khai (Public Folder)')}</option>
-                                    <option value="r2" disabled={!status?.storageReady}>
-                                        Cloud Storage (R2 / S3)
-                                    </option>
-                                </select>
-                                <CaretDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400" />
-                            </div>
-                        </div>
-
-                        {/* Source Name */}
-                        <div>
-                            <Label htmlFor="popup-name" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
-                                {t('Tên nguồn tài sản')}
-                            </Label>
-                            <Input
-                                id="popup-name"
-                                required
-                                maxLength={160}
-                                value={name}
-                                disabled={busy}
-                                placeholder={t('VD: Ảnh Sản Phẩm Mùa Thu 2026')}
-                                onChange={(event) => setName(event.target.value)}
-                                className="h-10 rounded-xl border-neutral-200 text-xs font-medium"
-                            />
-                        </div>
-
-                        {/* Folder Link */}
-                        <div>
-                            <Label htmlFor="popup-folder" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
-                                {t(
-                                    kind === 'drive_public'
-                                        ? 'Liên kết thư mục Google Drive (Link chia sẻ)'
-                                        : 'Tiền tố thư mục Storage (kết thúc bằng /)'
-                                )}
-                            </Label>
-                            <div className="relative flex items-center">
-                                <LinkSimple size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
-                                <Input
-                                    id="popup-folder"
-                                    required
-                                    maxLength={1000}
-                                    value={folder}
-                                    disabled={busy}
-                                    placeholder={
-                                        kind === 'drive_public'
-                                            ? 'https://drive.google.com/drive/folders/...'
-                                            : 'folder/'
-                                    }
-                                    onChange={(event) => setFolder(event.target.value)}
-                                    className="h-10 rounded-xl border-neutral-200 pl-9 text-xs font-mono"
+                            {draftAsset && (
+                                <AssetDraftDialog
+                                    key={draftAsset.id}
+                                    asset={draftAsset}
+                                    onClose={() => setDraftAsset(null)}
                                 />
-                            </div>
-
-                            {kind === 'drive_public' && (
-                                <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 flex items-start gap-2">
-                                    <Info size={15} className="text-amber-600 shrink-0 mt-0.5" />
-                                    <p className="text-[11px] leading-relaxed">
-                                        {t('Hướng dẫn: Mở thư mục trên Google Drive > Chia sẻ > Đặt quyền "Bất kỳ ai có liên kết đều có thể xem". Không yêu cầu đăng nhập tài khoản Google.')}
-                                    </p>
-                                </div>
                             )}
-                            {kind === 'r2' && (
-                                <p className="text-[11px] text-neutral-500 mt-1.5 font-mono">
-                                    {t('Thư mục gốc Storage')}: {status?.storagePrefix}
-                                </p>
-                            )}
-                        </div>
 
-                        {/* Actions */}
-                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                disabled={busy}
-                                onClick={() => setAddSourceModalOpen(false)}
-                                className="h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
-                            >
-                                {t('Hủy')}
-                            </Button>
-                            <button
-                                type="submit"
-                                disabled={busy || !name.trim() || !folder.trim()}
-                                className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition"
-                            >
-                                <Plus size={14} weight="bold" />
-                                <span>{t(busy ? 'Đang thêm…' : 'Xác nhận thêm nguồn')}</span>
-                            </button>
-                        </div>
-                    </form>
-                </DialogContent>
-            </Dialog>
-        </section>
-    );
+                            <ConfirmDialog
+                                destructive={false}
+                                open={!!confirmation}
+                                onOpenChange={(open) => !open && setConfirmation(null)}
+                                title={t('Send image for AI analysis?')}
+                                description={t(
+                                    'The selected image will be sent to the AI provider configured in Settings. Provider charges may apply. Output remains unapproved until you review it.'
+                                )}
+                                confirmLabel="Queue AI analysis"
+                                onConfirm={() =>
+                                    action(confirmation.retry ? 'retry' : 'analyze', {
+                                        id: confirmation.id,
+                                        confirmed: true,
+                                    })
+                                }
+                            />
+
+                            {/* Modal Popup: Thêm nguồn Google Drive / Cloud Storage */}
+                            <Dialog open={addSourceModalOpen} onOpenChange={setAddSourceModalOpen}>
+                                <DialogContent className="max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-neutral-200">
+                                    <DialogHeader className="mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <span className="w-10 h-10 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-xs shrink-0">
+                                                <FolderPlus size={20} weight="bold" />
+                                            </span>
+                                            <div>
+                                                <DialogTitle className="text-base font-bold text-neutral-900">
+                                                    {t('Thêm nguồn Google Drive / Storage')}
+                                                </DialogTitle>
+                                                <DialogDescription className="text-xs text-neutral-500 mt-0.5">
+                                                    {t('Đồng bộ tệp ảnh & video từ thư mục công khai để AI tự động phân tích và tạo bài viết.')}
+                                                </DialogDescription>
+                                            </div>
+                                        </div>
+                                    </DialogHeader>
+
+                                    <form
+                                        onSubmit={(event) => {
+                                            event.preventDefault();
+                                            click('createSource', { brand_id: brandId, kind, name, folder });
+                                        }}
+                                        className="space-y-4"
+                                    >
+                                        {/* Brand selection if multiple brands */}
+                                        {brands.length > 1 && (
+                                            <div>
+                                                <Label htmlFor="popup-brand" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
+                                                    {t('Thương hiệu liên kết')}
+                                                </Label>
+                                                <div className="relative">
+                                                    <select
+                                                        id="popup-brand"
+                                                        value={brandId}
+                                                        onChange={(e) => onBrandChange?.(e.target.value)}
+                                                        className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                                    >
+                                                        {brands.map((b) => (
+                                                            <option key={b.id} value={b.id}>
+                                                                {b.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <CaretDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400" />
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Source Type */}
+                                        <div>
+                                            <Label htmlFor="popup-kind" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
+                                                {t('Loại nguồn lưu trữ')}
+                                            </Label>
+                                            <div className="relative flex items-center">
+                                                <HardDrives size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+                                                <select
+                                                    id="popup-kind"
+                                                    disabled={busy}
+                                                    value={kind}
+                                                    onChange={(event) => setKind(event.target.value)}
+                                                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                                >
+                                                    <option value="drive_public">{t('Thư mục Google Drive công khai (Public Folder)')}</option>
+                                                    <option value="r2" disabled={!status?.storageReady}>
+                                                        Cloud Storage (R2 / S3)
+                                                    </option>
+                                                </select>
+                                                <CaretDown size={13} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-neutral-400" />
+                                            </div>
+                                        </div>
+
+                                        {/* Source Name */}
+                                        <div>
+                                            <Label htmlFor="popup-name" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
+                                                {t('Tên nguồn tài sản')}
+                                            </Label>
+                                            <Input
+                                                id="popup-name"
+                                                required
+                                                maxLength={160}
+                                                value={name}
+                                                disabled={busy}
+                                                placeholder={t('VD: Ảnh Sản Phẩm Mùa Thu 2026')}
+                                                onChange={(event) => setName(event.target.value)}
+                                                className="h-10 rounded-xl border-neutral-200 text-xs font-medium"
+                                            />
+                                        </div>
+
+                                        {/* Folder Link */}
+                                        <div>
+                                            <Label htmlFor="popup-folder" className="block text-[11px] font-bold uppercase tracking-wider text-neutral-500 mb-1.5">
+                                                {t(
+                                                    kind === 'drive_public'
+                                                        ? 'Liên kết thư mục Google Drive (Link chia sẻ)'
+                                                        : 'Tiền tố thư mục Storage (kết thúc bằng /)'
+                                                )}
+                                            </Label>
+                                            <div className="relative flex items-center">
+                                                <LinkSimple size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400 pointer-events-none" />
+                                                <Input
+                                                    id="popup-folder"
+                                                    required
+                                                    maxLength={1000}
+                                                    value={folder}
+                                                    disabled={busy}
+                                                    placeholder={
+                                                        kind === 'drive_public'
+                                                            ? 'https://drive.google.com/drive/folders/...'
+                                                            : 'folder/'
+                                                    }
+                                                    onChange={(event) => setFolder(event.target.value)}
+                                                    className="h-10 rounded-xl border-neutral-200 pl-9 text-xs font-mono"
+                                                />
+                                            </div>
+
+                                            {kind === 'drive_public' && (
+                                                <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 flex items-start gap-2">
+                                                    <Info size={15} className="text-amber-600 shrink-0 mt-0.5" />
+                                                    <p className="text-[11px] leading-relaxed">
+                                                        {t('Hướng dẫn: Mở thư mục trên Google Drive > Chia sẻ > Đặt quyền "Bất kỳ ai có liên kết đều có thể xem". Không yêu cầu đăng nhập tài khoản Google.')}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {kind === 'r2' && (
+                                                <p className="text-[11px] text-neutral-500 mt-1.5 font-mono">
+                                                    {t('Thư mục gốc Storage')}: {status?.storagePrefix}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex items-center justify-end gap-2 pt-3 border-t border-neutral-100">
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                disabled={busy}
+                                                onClick={() => setAddSourceModalOpen(false)}
+                                                className="h-9 px-4 rounded-xl text-xs font-semibold cursor-pointer"
+                                            >
+                                                {t('Hủy')}
+                                            </Button>
+                                            <button
+                                                type="submit"
+                                                disabled={busy || !name.trim() || !folder.trim()}
+                                                className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition"
+                                            >
+                                                <Plus size={14} weight="bold" />
+                                                <span>{t(busy ? 'Đang thêm…' : 'Xác nhận thêm nguồn')}</span>
+                                            </button>
+                                        </div>
+                                    </form>
+                                </DialogContent>
+                            </Dialog>
+
+                            {/* Quick Image Preview Dialog */}
+                            <Dialog open={!!previewAsset} onOpenChange={(val) => !val && setPreviewAsset(null)}>
+                                <DialogContent className="max-w-4xl sm:max-w-4xl w-[94vw] !p-0 overflow-hidden rounded-3xl bg-white border border-neutral-200/90 shadow-2xl space-y-0">
+                                    <div className="pl-5 sm:pl-6 pr-16 sm:pr-16 py-4 border-b border-neutral-100 flex items-center justify-between gap-3 bg-white shrink-0">
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-800 shrink-0 shadow-2xs">
+                                                <FileImage size={18} weight="duotone" />
+                                            </span>
+                                            <div className="min-w-0">
+                                                <DialogTitle className="text-sm font-bold text-neutral-900 truncate" title={previewAsset?.name}>
+                                                    {previewAsset?.name}
+                                                </DialogTitle>
+                                                <div className="flex items-center gap-2 mt-0.5 text-[11px] text-neutral-500 font-mono">
+                                                    <span>{formatBytes(previewAsset?.size)}</span>
+                                                    <span>•</span>
+                                                    <span className="uppercase font-semibold text-neutral-700">DRIVE</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="p-4 bg-neutral-950 flex items-center justify-center min-h-[300px] max-h-[70vh] overflow-hidden">
+                                        <img
+                                            src={previewAsset?.file_url || previewAsset?.thumbnail_url || (previewAsset?.external_id ? `https://drive.google.com/thumbnail?id=${previewAsset.external_id}&sz=w1200` : '')}
+                                            alt={previewAsset?.name}
+                                            referrerPolicy="no-referrer"
+                                            className="max-h-[65vh] w-auto max-w-full object-contain rounded-lg"
+                                        />
+                                    </div>
+                                </DialogContent>
+                            </Dialog>
+                        </section>
+                    );
 }
