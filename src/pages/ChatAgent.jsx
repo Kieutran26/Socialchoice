@@ -7,9 +7,7 @@ import {
     CalendarBlank,
     CheckCircle,
     Clock,
-    Trash,
     ArrowSquareOut,
-    ArrowsClockwise,
     X,
     Check,
     PlugsConnected,
@@ -23,7 +21,6 @@ import {
     LinkedinLogo,
     ThreadsLogo,
     InstagramLogo,
-    XLogo,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { aiRequest } from '@/api/ai';
@@ -31,7 +28,7 @@ import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
-import { toUtcIso, toZonedParts, todayInZone, addDays, localInputDefault } from '@/lib/tz';
+import { toUtcIso, toZonedParts, todayInZone, addDays } from '@/lib/tz';
 import { DEFAULT_TIMEZONE } from '@/lib/constants';
 import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 
@@ -114,6 +111,37 @@ const PLATFORM_TABS = [
     { key: 'instagram', label: 'Instagram', icon: InstagramLogo, color: 'text-purple-600', badgeClass: 'bg-purple-50 text-purple-700 border-purple-200' },
 ];
 
+// Render message text with bold formatting for *text*, **text**, or ***text***
+function renderFormattedText(text, isUser = false) {
+    if (!text || typeof text !== 'string') return text;
+
+    const regex = /\*{1,3}([^*\n]+?)\*{1,3}/g;
+    const elements = [];
+    let lastIndex = 0;
+    let match;
+
+    while ((match = regex.exec(text)) !== null) {
+        if (match.index > lastIndex) {
+            elements.push(text.substring(lastIndex, match.index));
+        }
+        elements.push(
+            <strong
+                key={`bold-${match.index}`}
+                className={`font-bold ${isUser ? 'text-white' : 'text-zinc-900'}`}
+            >
+                {match[1]}
+            </strong>
+        );
+        lastIndex = regex.lastIndex;
+    }
+
+    if (lastIndex < text.length) {
+        elements.push(text.substring(lastIndex));
+    }
+
+    return elements.length > 0 ? elements : text;
+}
+
 export default function ChatAgent() {
     const { t } = useTranslation();
     const { brands, selectedBrandId, setSelectedBrandId, timezone, demoMode } = useWorkspace();
@@ -180,7 +208,7 @@ export default function ChatAgent() {
                 {
                     id: 'welcome',
                     role: 'agent',
-                    text: `Xin chào! Tôi là **Socialchoice AI Agent** 🤖.\n\nBạn chỉ cần gửi ý tưởng, ghi chú hoặc đính kèm hình ảnh. Tôi sẽ tự động:\n1. ✍️ **Viết caption hấp dẫn** & gắn hashtag phù hợp.\n2. 🎯 **Tối ưu nội dung** riêng cho Facebook, LinkedIn, Threads, Instagram...\n3. ⏰ **Tự động trích xuất thời gian** (ví dụ: *"lên lịch 9h sáng mai"* hoặc *"20:00 tối nay"*).\n4. 🚀 **Hiển thị bản xem trước trực tiếp** ở cột bên phải để bạn duyệt và lên lịch ngay!`,
+                    text: `Xin chào! Tôi là **Socialchoice AI Agent** 🤖.\n\nBạn chỉ cần gửi ý tưởng, ghi chú hoặc đính kèm hình ảnh. Tôi sẽ tự động:\n1. ✍️ **Viết caption hấp dẫn** & gắn hashtag phù hợp.\n2. 🎯 **Tối ưu nội dung** riêng cho Facebook, LinkedIn, Threads, Instagram...\n3. ⏰ **Tự động trích xuất thời gian** (ví dụ: **"lên lịch 9h sáng mai"** hoặc **"20:00 tối nay"**).\n4. 🚀 **Hiển thị bản xem trước trực tiếp** ở cột bên phải để bạn duyệt và lên lịch ngay!`,
                     createdAt: new Date().toISOString(),
                 },
             ]);
@@ -670,7 +698,7 @@ export default function ChatAgent() {
                                                     : 'bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-tl-xs'
                                             }`}
                                         >
-                                            {msg.text}
+                                            {renderFormattedText(msg.text, msg.role === 'user')}
 
                                             {/* User Attached Images */}
                                             {msg.attachedImages?.length > 0 && (
