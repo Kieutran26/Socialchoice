@@ -15,7 +15,6 @@ import {
     LinkSimple,
     GearSix,
     IdentificationCard,
-    Globe,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { useAuth } from '@/lib/AuthContext';
@@ -52,7 +51,6 @@ const NAV_GROUPS = [
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/accounts', label: 'Social Accounts', icon: Users },
-            { to: '/landing', label: 'Trang giới thiệu', icon: Globe },
         ],
     },
 ];
