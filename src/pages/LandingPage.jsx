@@ -37,13 +37,17 @@ export default function LandingPage() {
                     }
 
                     // Điều hướng khi người dùng nhấn các nút CTA trên Landing Page
-                    if (text.includes('đăng nhập')) {
+                    if (text.includes('đăng nhập') || text.includes('log in') || text.includes('sign in')) {
                         e.preventDefault();
                         navigate('/login');
                     } else if (
                         text.includes('dùng thử') ||
                         text.includes('bắt đầu') ||
-                        text.includes('tạo bài')
+                        text.includes('tạo bài') ||
+                        text.includes('try free') ||
+                        text.includes('start free') ||
+                        text.includes('get started') ||
+                        text.includes('start')
                     ) {
                         e.preventDefault();
                         navigate('/create');

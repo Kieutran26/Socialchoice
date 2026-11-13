@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
+import { useTranslation } from '@/lib/i18n';
 import {
     ArrowLeft,
     ArrowRight,
@@ -279,6 +280,9 @@ function FormInput({ icon: Icon, label, error, right, ...props }) {
 export default function LoginPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { t, language, setLanguage } = useTranslation();
+    const isEn = language === 'en';
+
     const initialMode =
         searchParams.get('mode') === 'admin'
             ? 'admin'
@@ -388,10 +392,18 @@ export default function LoginPage() {
     };
 
     const HEADINGS = {
-        login: ['Chào mừng trở lại', 'Đăng nhập để tiếp tục quản lý nội dung và các kênh của bạn.'],
-        admin: ['Đăng nhập Quản trị viên', 'Nhập mật khẩu Socialchoice của bạn để truy cập không gian làm việc và bài viết sẵn có.'],
-        signup: ['Tạo tài khoản miễn phí', 'Bắt đầu với gói Starter — không cần thẻ thanh toán.'],
-        reset: ['Quên mật khẩu?', 'Nhập email, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.']
+        login: isEn
+            ? ['Welcome back', 'Log in to continue managing your social content and accounts.']
+            : ['Chào mừng trở lại', 'Đăng nhập để tiếp tục quản lý nội dung và các kênh của bạn.'],
+        admin: isEn
+            ? ['Admin Sign In', 'Enter your SocialChoice password to access the workspace.']
+            : ['Đăng nhập Quản trị viên', 'Nhập mật khẩu Socialchoice của bạn để truy cập không gian làm việc và bài viết sẵn có.'],
+        signup: isEn
+            ? ['Create your free account', 'Get started with the Starter plan — no credit card needed.']
+            : ['Tạo tài khoản miễn phí', 'Bắt đầu với gói Starter — không cần thẻ thanh toán.'],
+        reset: isEn
+            ? ['Forgot password?', 'Enter your email to receive a password reset link.']
+            : ['Quên mật khẩu?', 'Nhập email, chúng tôi sẽ gửi liên kết đặt lại mật khẩu.']
     };
 
     return (
@@ -403,12 +415,31 @@ export default function LoginPage() {
                     <Link to="/">
                         <Logo />
                     </Link>
-                    <Link
-                        to="/"
-                        className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900"
-                    >
-                        <ArrowLeft className="size-3.5" /> Trang chủ
-                    </Link>
+                    <div className="flex items-center gap-2">
+                        {/* Language Switcher */}
+                        <div className="flex items-center rounded-lg border border-zinc-200 bg-zinc-100 p-0.5 text-[11px] font-semibold">
+                            <button
+                                type="button"
+                                onClick={() => setLanguage('vi')}
+                                className={`rounded-md px-2 py-0.5 transition ${language === 'vi' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'}`}
+                            >
+                                VI
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setLanguage('en')}
+                                className={`rounded-md px-2 py-0.5 transition ${language === 'en' ? 'bg-white text-zinc-950 shadow-sm' : 'text-zinc-500 hover:text-zinc-900'}`}
+                            >
+                                EN
+                            </button>
+                        </div>
+                        <Link
+                            to="/"
+                            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[13px] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900"
+                        >
+                            <ArrowLeft className="size-3.5" /> {isEn ? 'Home' : 'Trang chủ'}
+                        </Link>
+                    </div>
                 </div>
 
                 {/* Form Container */}
@@ -423,10 +454,10 @@ export default function LoginPage() {
                                     className={`rounded-lg py-2 transition cursor-pointer ${
                                         mode === 'login'
                                             ? 'bg-white font-semibold text-zinc-900 shadow-sm'
-                                            : 'text-zinc-500 hover:text-zinc-900'
+                                             : 'text-zinc-500 hover:text-zinc-900'
                                     }`}
                                 >
-                                    Đăng nhập
+                                    {isEn ? 'Log in' : 'Đăng nhập'}
                                 </button>
                                 <button
                                     type="button"
@@ -438,7 +469,7 @@ export default function LoginPage() {
                                     }`}
                                 >
                                     <ShieldCheck className="size-3.5" />
-                                    <span>Quản trị viên</span>
+                                    <span>{isEn ? 'Admin' : 'Quản trị viên'}</span>
                                 </button>
                                 <button
                                     type="button"
@@ -449,7 +480,7 @@ export default function LoginPage() {
                                             : 'text-zinc-500 hover:text-zinc-900'
                                     }`}
                                 >
-                                    Đăng ký
+                                    {isEn ? 'Sign up' : 'Đăng ký'}
                                 </button>
                             </div>
                         )}
@@ -492,18 +523,20 @@ export default function LoginPage() {
                                 <div className="rounded-xl border border-amber-200/80 bg-amber-50/60 p-3.5 text-[12.5px] text-zinc-700 leading-relaxed">
                                     <div className="font-semibold text-zinc-900 flex items-center gap-1.5 mb-0.5">
                                         <ShieldCheck className="size-4 text-amber-600" />
-                                        Tài khoản Quản trị Socialchoice
+                                        {isEn ? 'SocialChoice Admin Account' : 'Tài khoản Quản trị Socialchoice'}
                                     </div>
-                                    Tài khoản này dùng mật khẩu để truy cập toàn bộ bài viết, lịch trình và kênh mạng xã hội đã lưu.
+                                    {isEn
+                                        ? 'Use your password to access all saved posts, schedule calendars, and connected channels.'
+                                        : 'Tài khoản này dùng mật khẩu để truy cập toàn bộ bài viết, lịch trình và kênh mạng xã hội đã lưu.'}
                                 </div>
 
                                 <FormInput
                                     icon={Lock}
-                                    label="Mật khẩu Socialchoice"
+                                    label={isEn ? 'SocialChoice Password' : 'Mật khẩu Socialchoice'}
                                     type={showPassword ? 'text' : 'password'}
                                     value={adminPassword}
                                     onChange={(e) => setAdminPassword(e.target.value)}
-                                    placeholder="Nhập mật khẩu Quản trị..."
+                                    placeholder={isEn ? 'Enter admin password...' : 'Nhập mật khẩu Quản trị...'}
                                     autoFocus
                                     right={
                                         <button
@@ -525,7 +558,7 @@ export default function LoginPage() {
                                         <Loader2 className="size-4 animate-spin" />
                                     ) : (
                                         <>
-                                            Đăng nhập Quản trị <ArrowRight className="size-4" />
+                                            {isEn ? 'Admin Sign In' : 'Đăng nhập Quản trị'} <ArrowRight className="size-4" />
                                         </>
                                     )}
                                 </button>
@@ -536,7 +569,7 @@ export default function LoginPage() {
                                         onClick={() => switchMode('login')}
                                         className="text-[12.5px] text-zinc-500 hover:text-zinc-900 cursor-pointer"
                                     >
-                                        ← Quay lại đăng nhập người dùng thường
+                                        ← {isEn ? 'Back to standard user sign in' : 'Quay lại đăng nhập người dùng thường'}
                                     </button>
                                 </div>
                             </form>
@@ -558,10 +591,10 @@ export default function LoginPage() {
                                                     </div>
                                                     <div>
                                                         <div className="text-[13px] font-bold text-zinc-900 flex items-center gap-1.5">
-                                                            Đăng nhập tài khoản Quản trị (Admin)
+                                                            {isEn ? 'Sign in as Administrator' : 'Đăng nhập tài khoản Quản trị (Admin)'}
                                                         </div>
                                                         <div className="text-[11.5px] text-zinc-600">
-                                                            Dùng mật khẩu để vào xem bài viết đã tạo sẵn
+                                                            {isEn ? 'Access full workspace and ready-made posts' : 'Dùng mật khẩu để vào xem bài viết đã tạo sẵn'}
                                                         </div>
                                                     </div>
                                                 </div>
@@ -571,7 +604,7 @@ export default function LoginPage() {
 
                                         <div className="my-5 flex items-center gap-3 text-[12px] text-zinc-400">
                                             <span className="h-px flex-1 bg-zinc-200" />
-                                            hoặc đăng nhập bằng tài khoản
+                                            {isEn ? 'or sign in with' : 'hoặc đăng nhập bằng tài khoản'}
                                             <span className="h-px flex-1 bg-zinc-200" />
                                         </div>
 
@@ -600,8 +633,8 @@ export default function LoginPage() {
                                     {mode === 'signup' && (
                                         <FormInput
                                             icon={User}
-                                            label="Họ và tên"
-                                            placeholder="Nguyễn Văn A"
+                                            label={isEn ? 'Full name' : 'Họ và tên'}
+                                            placeholder={isEn ? 'John Doe' : 'Nguyễn Văn A'}
                                             value={name}
                                             onChange={(e) => setName(e.target.value)}
                                             error={isSubmitted ? errors.name : undefined}
@@ -612,7 +645,7 @@ export default function LoginPage() {
                                         icon={Mail}
                                         label="Email"
                                         type="email"
-                                        placeholder="ban@congty.vn"
+                                        placeholder={isEn ? 'you@company.com' : 'ban@congty.vn'}
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         error={isSubmitted ? errors.email : undefined}
@@ -620,9 +653,9 @@ export default function LoginPage() {
 
                                     <FormInput
                                         icon={Lock}
-                                        label="Mật khẩu"
+                                        label={isEn ? 'Password' : 'Mật khẩu'}
                                         type={showPassword ? 'text' : 'password'}
-                                        placeholder="Tối thiểu 8 ký tự"
+                                        placeholder={isEn ? 'At least 8 characters' : 'Tối thiểu 8 ký tự'}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         right={
@@ -645,14 +678,14 @@ export default function LoginPage() {
                                                     onChange={(e) => setRemember(e.target.checked)}
                                                     className="size-4 rounded border-zinc-300 text-brand-400 focus:ring-brand-400"
                                                 />
-                                                Ghi nhớ đăng nhập
+                                                {isEn ? 'Remember me' : 'Ghi nhớ đăng nhập'}
                                             </label>
                                             <button
                                                 type="button"
                                                 onClick={() => switchMode('reset')}
                                                 className="font-medium text-zinc-700 hover:text-zinc-900 cursor-pointer"
                                             >
-                                                Quên mật khẩu?
+                                                {isEn ? 'Forgot password?' : 'Quên mật khẩu?'}
                                             </button>
                                         </div>
                                     ) : (
@@ -664,14 +697,14 @@ export default function LoginPage() {
                                                 className="mt-0.5 size-4 rounded border-zinc-300 text-brand-400 focus:ring-brand-400"
                                             />
                                             <span>
-                                                Tôi đồng ý với{' '}
-                                                <span className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2">
-                                                    Điều khoản dịch vụ
-                                                </span>{' '}
-                                                và{' '}
-                                                <span className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2">
-                                                    Chính sách bảo mật
-                                                </span>
+                                                {isEn ? 'I agree to the ' : 'Tôi đồng ý với '}
+                                                <Link to="/terms" className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2">
+                                                    {isEn ? 'Terms of Service' : 'Điều khoản dịch vụ'}
+                                                </Link>{' '}
+                                                {isEn ? 'and ' : 'và '}
+                                                <Link to="/privacy" className="font-medium text-zinc-900 underline decoration-zinc-300 underline-offset-2">
+                                                    {isEn ? 'Privacy Policy' : 'Chính sách bảo mật'}
+                                                </Link>
                                                 .
                                             </span>
                                         </label>
@@ -686,11 +719,11 @@ export default function LoginPage() {
                                             <Loader2 className="size-4 animate-spin" />
                                         ) : mode === 'login' ? (
                                             <>
-                                                Đăng nhập <ArrowRight className="size-4" />
+                                                {isEn ? 'Log in' : 'Đăng nhập'} <ArrowRight className="size-4" />
                                             </>
                                         ) : (
                                             <>
-                                                Tạo tài khoản ngay <ArrowRight className="size-4" />
+                                                {isEn ? 'Create account' : 'Tạo tài khoản ngay'} <ArrowRight className="size-4" />
                                             </>
                                         )}
                                     </button>
@@ -699,24 +732,24 @@ export default function LoginPage() {
                                 <div className="mt-6 text-center text-[12.5px] text-zinc-500">
                                     {mode === 'login' ? (
                                         <span>
-                                            Chưa có tài khoản?{' '}
+                                            {isEn ? "Don't have an account? " : 'Chưa có tài khoản? '}
                                             <button
                                                 type="button"
                                                 onClick={() => switchMode('signup')}
                                                 className="font-semibold text-zinc-900 hover:underline cursor-pointer"
                                             >
-                                                Đăng ký miễn phí
+                                                {isEn ? 'Sign up free' : 'Đăng ký miễn phí'}
                                             </button>
                                         </span>
                                     ) : (
                                         <span>
-                                            Đã có tài khoản?{' '}
+                                            {isEn ? 'Already have an account? ' : 'Đã có tài khoản? '}
                                             <button
                                                 type="button"
                                                 onClick={() => switchMode('login')}
                                                 className="font-semibold text-zinc-900 hover:underline cursor-pointer"
                                             >
-                                                Đăng nhập
+                                                {isEn ? 'Log in' : 'Đăng nhập'}
                                             </button>
                                         </span>
                                     )}
@@ -730,9 +763,9 @@ export default function LoginPage() {
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-zinc-400">
                     <span>© 2026 SocialChoice</span>
                     <span className="flex gap-4">
-                        <Link to="/terms" className="hover:text-zinc-700 cursor-pointer">Điều khoản</Link>
-                        <Link to="/privacy" className="hover:text-zinc-700 cursor-pointer">Bảo mật</Link>
-                        <Link to="/cookies" className="hover:text-zinc-700 cursor-pointer">Cookie</Link>
+                        <Link to="/terms" className="hover:text-zinc-700 cursor-pointer">{isEn ? 'Terms' : 'Điều khoản'}</Link>
+                        <Link to="/privacy" className="hover:text-zinc-700 cursor-pointer">{isEn ? 'Privacy' : 'Bảo mật'}</Link>
+                        <Link to="/cookies" className="hover:text-zinc-700 cursor-pointer">{isEn ? 'Cookies' : 'Cookie'}</Link>
                     </span>
                 </div>
             </div>
