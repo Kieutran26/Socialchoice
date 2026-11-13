@@ -1,0 +1,57 @@
+# SocialChoice - Tài liệu đầy đủ (Full Context & Knowledge Base)
+
+> Website chính thức: https://socialchoice.site
+> Đơn vị phát triển: NextChoice (https://nextchoice.world)
+> Liên hệ: contact@socialchoice.site / hello@socialchoice.site
+
+---
+
+## 1. Giới thiệu tổng quan
+
+SocialChoice là phần mềm dạng dịch vụ (SaaS) được phát triển chuyên biệt cho thị trường Việt Nam nhằm giải quyết triệt để sự phân mảnh trong quy trình quản lý mạng xã hội. Thay vì phải đăng nhập từng tài khoản riêng lẻ và định dạng thủ công cho mỗi kênh, người dùng có thể lên kế hoạch, sản xuất và xuất bản nội dung đồng loạt trên một nền tảng duy nhất.
+
+Các nền tảng được hỗ trợ đầy đủ qua API chính thức:
+1. Meta Facebook (Trang Fanpage & Nhóm)
+2. Meta Instagram (Tài khoản Business & Creator)
+3. Meta Threads (Tài khoản Threads cá nhân & thương hiệu)
+4. ByteDance TikTok (Kênh cá nhân & Business)
+5. LinkedIn (Trang cá nhân & Trang công ty - Company Page)
+6. X / Twitter
+
+---
+
+## 2. Tính năng then chốt
+
+### 2.1. Chiến lược nội dung & Ma trận trụ cột (Content Pillars & Angles)
+- Thiết lập định vị thương hiệu, giọng văn (Brand Tone & Voice) và đối tượng mục tiêu.
+- Phân bổ bài viết theo các trụ cột truyền thông (ví dụ: Chuyên môn, Bán hàng, Kết nối, Hậu trường) để tránh nội dung bị lệch hướng.
+- Gợi ý góc nhìn (Angle) theo thời gian thực giúp người sáng tạo nội dung không bao giờ cạn kiệt ý tưởng.
+
+### 2.2. Trợ lý AI Content thuần Việt
+- Tích hợp mô hình ngôn ngữ lớn được tinh chỉnh (fine-tuned) cho ngữ cảnh, tiếng lóng và thói quen tiêu thụ thông tin của người Việt.
+- Tự động tạo tiêu đề giật gân, đoạn mở đầu lôi cuốn (Hook) và lời kêu gọi hành động (CTA).
+- Khả năng tự động điều chỉnh độ dài văn bản và chèn hashtag phù hợp theo đặc thù của từng mạng xã hội (Threads ngắn gọn, Facebook chi tiết, TikTok chú trọng từ khóa tìm kiếm).
+
+### 2.3. Trình soạn thảo & Xuất bản đa kênh (Composer)
+- Giao diện trực quan xem trước (Preview) theo đúng chuẩn giao diện thực tế của từng ứng dụng điện thoại.
+- Tuỳ biến nội dung riêng cho từng kênh trong cùng một lượt soạn thảo (ví dụ: caption riêng cho TikTok, bài phân tích dài cho LinkedIn).
+- Lên lịch đăng thông minh theo múi giờ Việt Nam (UTC+7) hoặc đăng ngay lập tức chỉ với 1 cú click.
+
+### 2.4. Thư viện nội dung & Tài sản số (Autopilot Media Library)
+- Đồng bộ trực tiếp từ Google Drive, máy tính cá nhân hoặc thư viện đám mây bảo mật.
+- Quản lý trạng thái bản nháp, tài sản đã dùng, tài sản cần duyệt trước khi đăng.
+
+### 2.5. Shortlink & Phân tích lượt click
+- Tạo liên kết ngắn thương hiệu hỗ trợ gắn thẻ UTM theo dõi nguồn chiến dịch.
+- Đo lường số lượt nhấp chuột, tỉ lệ chuyển đổi trực tiếp trong hệ thống.
+
+---
+
+## 3. Chính sách bảo mật & Pháp lý
+
+- **Bảo mật dữ liệu**: Kết nối OAuth 2.0 trực tiếp với các nhà cung cấp nền tảng (Meta, ByteDance, LinkedIn). Không bao giờ yêu cầu hay lưu trữ mật khẩu cá nhân của người dùng.
+- **Tuân thủ quyền riêng tư**: Tuân thủ tiêu chuẩn GDPR và các quy định bảo vệ dữ liệu cá nhân tại Việt Nam. Người dùng có toàn quyền ngắt kết nối hoặc gửi yêu cầu xóa sạch dữ liệu bất kỳ lúc nào tại `/data-deletion`.
+- **Liên hệ hỗ trợ**:
+  - Email: hello@socialchoice.site / support@socialchoice.site
+  - Website: https://socialchoice.site
+  - Pháp nhân phát triển: NextChoice (https://nextchoice.world)

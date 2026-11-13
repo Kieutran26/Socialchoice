@@ -1,0 +1,27 @@
+# SocialChoice
+
+> SocialChoice là nền tảng quản lý, sáng tạo và xuất bản nội dung mạng xã hội đa kênh (Facebook, Instagram, TikTok, Threads, LinkedIn, X) all-in-one được thiết kế và tối ưu cho thương hiệu Việt và các nhà sáng tạo nội dung. Phát triển bởi NextChoice (https://nextchoice.world).
+
+## Tổng quan sản phẩm
+
+SocialChoice cung cấp giải pháp toàn diện giúp doanh nghiệp, agency và content creator rút ngắn 70% thời gian quản lý mạng xã hội thông qua các khả năng:
+- Lập kế hoạch nội dung với ma trận trụ cột & góc nhìn truyền thông (Content Pillars & Angles).
+- Trợ lý AI Content thông minh tối ưu riêng cho phong cách viết và hành vi người dùng Việt Nam.
+- Trình soạn thảo và lên lịch đăng bài đa kênh đồng thời với tính năng tuỳ biến định dạng theo từng nền tảng (Threads, Instagram, Facebook, TikTok, LinkedIn, X).
+- Thư viện tài nguyên tập trung (Autopilot Media Library), tích hợp Google Drive và bộ nhớ đám mây an toàn.
+- Hệ thống rút gọn link thương hiệu (Shortlinks) với tính năng đo lường lượt click thời gian thực.
+- Kết nối API chính thức, bảo mật chuẩn doanh nghiệp, không bao giờ lưu trữ mật khẩu mạng xã hội.
+
+## Tài liệu và liên kết cốt lõi
+
+- [Trang chủ](https://socialchoice.site/): Khám phá các tính năng chính, bảng giá và giao diện sản phẩm.
+- [Đăng nhập & Bắt đầu](https://socialchoice.site/login): Đăng nhập hoặc kích hoạt tài khoản không gian làm việc.
+- [Điều khoản dịch vụ](https://socialchoice.site/terms): Điều khoản quy định quyền và nghĩa vụ khi sử dụng dịch vụ SocialChoice.
+- [Chính sách bảo mật](https://socialchoice.site/privacy): Chính sách bảo vệ dữ liệu người dùng, quyền riêng tư và cam kết bảo mật.
+- [Chính sách Cookie](https://socialchoice.site/cookies): Chi tiết về phân loại cookie cần thiết và cookie tính năng trên hệ thống.
+- [Hướng dẫn xóa dữ liệu](https://socialchoice.site/data-deletion): Quy trình thu hồi quyền truy cập và yêu cầu xóa dữ liệu người dùng.
+
+## Tổ chức & Phát triển
+
+- [NextChoice](https://nextchoice.world): Tổ chức phát triển và bảo trợ công nghệ của hệ sinh thái SocialChoice.
+- [Liên hệ hỗ trợ](mailto:hello@socialchoice.site): Bộ phận chăm sóc khách hàng và tiếp nhận ý kiến đóng góp.

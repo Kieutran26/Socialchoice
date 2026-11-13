@@ -36,6 +36,17 @@ export default function LandingPage() {
                         return;
                     }
 
+                    // Cuộn mượt khi nhấn liên kết anchor (#tinh-nang, #bang-gia, #faq, #diem-manh)
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        const id = href.slice(1);
+                        const targetEl = document.getElementById(id);
+                        if (targetEl) {
+                            targetEl.scrollIntoView({ behavior: 'smooth' });
+                        }
+                        return;
+                    }
+
                     // Điều hướng khi người dùng nhấn các nút CTA trên Landing Page
                     if (text.includes('đăng nhập') || text.includes('log in') || text.includes('sign in')) {
                         e.preventDefault();

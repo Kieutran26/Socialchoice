@@ -843,11 +843,11 @@ function Sr(){
   let footerCols = lang === "en" ? [
     ["Product", ["Features", "Pricing", "Changelog", "AI Assistant"]],
     ["Company", ["About Us", "Blog", "Careers", "Contact"]],
-    ["Legal", ["Terms of Service", "Privacy Policy", "Cookie Policy"]]
+    ["Legal", ["Terms of Service", "Privacy Policy", "Cookie Policy", "Data Deletion"]]
   ] : [
     ["Sản phẩm", ["Tính năng", "Bảng giá", "Cập nhật", "Trợ lý AI"]],
     ["Công ty", ["Về chúng tôi", "Blog", "Tuyển dụng", "Liên hệ"]],
-    ["Pháp lý", ["Điều khoản", "Bảo mật", "Cookie"]]
+    ["Pháp lý", ["Điều khoản", "Bảo mật", "Cookie", "Xóa dữ liệu"]]
   ];
 
   return (0, f.jsxs)("div", {
@@ -1230,7 +1230,7 @@ function Sr(){
                     (0, f.jsx)("ul", {
                       className: "mt-3 space-y-2",
                       children: n.map(i => {
-                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : null;
+                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : (i === "Xóa dữ liệu" || i === "Data Deletion") ? "/data-deletion" : (i === "Tính năng" || i === "Features") ? "#tinh-nang" : (i === "Bảng giá" || i === "Pricing") ? "#bang-gia" : (i === "Cập nhật" || i === "Updates") ? "#diem-manh" : (i === "Trợ lý AI" || i === "AI Assistant") ? "/login" : (i === "Về chúng tôi" || i === "About Us") ? "#diem-manh" : (i === "Blog") ? "#diem-manh" : (i === "Tuyển dụng" || i === "Careers") ? "mailto:contact@socialchoice.site" : (i === "Liên hệ" || i === "Contact") ? "mailto:hello@socialchoice.site" : null;
                         return (0, f.jsx)("li", {
                           className: "text-[13px] text-zinc-500 transition hover:text-zinc-900",
                           children: u ? (0, f.jsx)("a", { href: u, className: "hover:text-zinc-900 transition", children: i }) : i
@@ -1246,6 +1246,13 @@ function Sr(){
             className: "mx-auto mt-10 flex max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-6 text-[12px] text-zinc-400",
             children: [
               (0, f.jsx)("span", { children: lang === "en" ? "© 2026 SocialChoice. All rights reserved." : "© 2026 SocialChoice. Bảo lưu mọi quyền." }),
+              (0, f.jsxs)("span", {
+                className: "flex items-center gap-1.5 text-zinc-500",
+                children: [
+                  (0, f.jsx)("span", { className: "size-1.5 rounded-full bg-emerald-500" }),
+                  lang === "en" ? "All systems operational" : "Mọi hệ thống hoạt động bình thường"
+                ]
+              }),
               (0, f.jsxs)("span", {
                 className: "flex items-center gap-1 text-zinc-400",
                 children: [
