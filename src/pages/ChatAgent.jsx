@@ -127,56 +127,402 @@ function extractDriveInfo(url = '') {
     return { kind: 'custom', id: 'drive-linked', url: trimmed };
 }
 
-// Detect if a chat prompt is asking for a Campaign / Drive / Bulk Remix workflow
+// Detect whether a chat prompt is asking for Campaign + Drive + Auto-Remix + Schedule
 function isCampaignIntent(text = '') {
     const lower = text.toLowerCase();
     return (
         lower.includes('campaign') ||
         lower.includes('chiến dịch') ||
         lower.includes('drive.google.com') ||
+        lower.includes('google drive') ||
         lower.includes('xào nấu') ||
-        lower.includes('lịch tự động') ||
-        lower.includes('chuỗi bài') ||
-        (lower.includes('drive') && (lower.includes('lên lịch') || lower.includes('tạo')))
+        (lower.includes('drive') && (lower.includes('lịch') || lower.includes('tự động')))
     );
 }
 
-// Remix raw user data into a structured post item
+// Extract clean campaign title, Drive URL, and pure raw data from a natural language chat prompt
+function parseCampaignPromptText(userText = '', fallbackName = 'Chiến dịch Marketing', fallbackDriveUrl = '') {
+    let text = userText.trim();
+
+    // 1. Extract Google Drive URL if present
+    const urlMatch = text.match(/https?:\/\/drive\.google\.com\/[^\s,;"']+/i);
+    const driveUrl = urlMatch ? urlMatch[0] : fallbackDriveUrl;
+
+    // 2. Extract campaign name inside quotes if present: e.g. Tạo campaign "Tên chiến dịch"
+    const quotedNameMatch =
+        text.match(/(?:campaign|chiến dịch)\s+["“”'‘’]([^"“”'‘’]{3,80})["“”'‘’]/i) ||
+        text.match(/["“”]([^"“”]{3,80})["“”]/);
+    const campaignName = quotedNameMatch ? quotedNameMatch[1].trim() : fallbackName;
+
+    // 3. Extract duration in days
+    const daysMatch = text.match(/(\d+)\s*ngày/i);
+    const days = daysMatch ? Math.min(30, Math.max(3, parseInt(daysMatch[1], 10))) : 7;
+
+    // 4. Clean command boilerplate & URLs to get pure raw data facts
+    let cleanRaw = text
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(
+            /^(?:bạn hãy\s+|hãy\s+)?(?:tạo|lên|chạy)\s+(?:1\s+|một\s+)?(?:campaign|chiến dịch)\s*(?:["“”'‘’][^"“”'‘’]+["“”'‘’])?\s*(?:trong\s*\d+\s*ngày|\d+\s*ngày)?[,.\s]*/i,
+            ''
+        )
+        .replace(
+            /(?:kèm\s+|với\s+|và\s+)?(?:liên kết\s+)?(?:ảnh\s+)?(?:với\s+)?(?:link\s+)?drive\s*/gi,
+            ''
+        )
+        .replace(
+            /(?:và\s+)?(?:sau đó\s+)?(?:hãy\s+)?(?:tự động\s+)?xào nấu\s*(?:đống\s+)?(?:dữ liệu\s*)?(?:sau\s*)?(?:của mình\s*)?(?:rồi\s*)?(?:lên lịch\s*tự động)?[:.,\s]*/gi,
+            ''
+        )
+        .replace(/(?:tự động\s+)?setup\s+lịch\s+đăng\s+bài(?:\s+hàng\s+ngày|\s+tự\s+động)?[.!\s]*/gi, '')
+        .trim();
+
+    if (!cleanRaw || cleanRaw.length < 10) {
+        cleanRaw = text.replace(/https?:\/\/[^\s]+/gi, '').trim();
+    }
+
+    return {
+        campaignName,
+        driveUrl,
+        days,
+        rawData: cleanRaw,
+    };
+}
+
+// Parse user rawData into clean, meaningful fact statements (never splitting on dots inside URLs or numbers)
+function extractCleanFacts(rawData = '', brandName = 'Thương hiệu') {
+    const withoutUrls = (rawData || '')
+        .replace(/https?:\/\/[^\s]+/gi, '')
+        .replace(/(?:com|vn|net|org)\/drive\/folders\/[a-zA-Z0-9_-]+/gi, '')
+        .trim();
+
+    const rawSegments = withoutUrls
+        .split(/\r?\n|;|•|(?:\s+-\s+)|(?:^\s*-\s*)|(?:\.\s+)/)
+        .map((s) =>
+            s
+                .replace(/^[-•*+\d.)\s]+/, '')
+                .replace(/^(?:hãy\s+)?xào nấu\s*dữ liệu\s*:?\s*/i, '')
+                .replace(/^(?:tự động\s+)?setup\s+lịch.*$/i, '')
+                .trim()
+        )
+        .filter((s) => s.length >= 10 && !/^(?:drive|http|com\/)/i.test(s));
+
+    if (rawSegments.length === 0) {
+        return [
+            `Giải pháp chất lượng cao từ ${brandName} giúp tối ưu trải nghiệm mỗi ngày`,
+            `Quy trình chuẩn hóa hiện đại, tiết kiệm tối đa thời gian và chi phí vận hành`,
+            `Ưu đãi đặc quyền dành riêng cho khách hàng đăng ký sớm trong chiến dịch`,
+            `Đồng hành và hỗ trợ tận tâm, cam kết hiệu quả thực tế vượt mong đợi`,
+        ];
+    }
+
+    return rawSegments;
+}
+
+// 14 Distinct Copywriting Frameworks so every day in the campaign is unique, engaging, and impressive
+const CAMPAIGN_COPY_ARCHETYPES = [
+    {
+        key: 'manifesto',
+        label: 'Tuyên ngôn & Ra mắt Chiến dịch',
+        build: ({ campaignName, brandName, fact1, fact2, fact3, promoFact }) => ({
+            title: `Chính thức khởi động: ${campaignName} — Bước đột phá mới từ ${brandName}`,
+            caption: [
+                `🚀 CHÍNH THỨC BÙNG NỔ: ${campaignName.toUpperCase()}!`,
+                ``,
+                `Bạn đã sẵn sàng nâng tầm trải nghiệm và bứt phá giới hạn cùng ${brandName}? Chiến dịch lớn nhất kỳ này đã chính thức lên sóng với những giá trị khác biệt hoàn toàn:`,
+                ``,
+                `✨ ${fact1}`,
+                `✨ ${fact2}`,
+                fact3 ? `✨ ${fact3}` : null,
+                ``,
+                promoFact ? `🎁 Đặc quyền mở màn: ${promoFact}!` : null,
+                `👉 Theo dõi ngay chuỗi bài viết từ ${brandName} và nhắn tin cho chúng mình để trở thành những người đầu tiên sở hữu ưu đãi nhé!`,
+            ]
+                .filter((x) => x !== null)
+                .join('\n'),
+        }),
+    },
+    {
+        key: 'pas_problem',
+        label: 'Góc nhìn PAS (Vấn đề & Giải pháp)',
+        build: ({ campaignName, brandName, fact1, fact2 }) => ({
+            title: `Tại sao bạn vẫn tốn quá nhiều công sức mà chưa đạt hiệu quả tối đa?`,
+            caption: [
+                `⚠️ Đừng để cách làm cũ kìm hãm tốc độ phát triển của bạn thêm một ngày nào nữa!`,
+                ``,
+                `Rất nhiều khách hàng tìm đến ${brandName} đều từng gặp chung một bài toán: muốn tối ưu chất lượng nhưng lại mất quá nhiều thời gian loay hoay tự xử lý.`,
+                ``,
+                `Đó chính là lý do trong chiến dịch "${campaignName}", chúng tôi mang đến lời giải trực diện:`,
+                `🔹 Giải pháp cốt lõi: ${fact1}.`,
+                `🔹 Giá trị thực tế: ${fact2}.`,
+                ``,
+                `💡 Thay đổi một lựa chọn nhỏ hôm nay để tạo ra bước nhảy vọt lớn vào ngày mai. Bạn đang gặp khó khăn ở khâu nào nhất? Chia sẻ bên dưới để ${brandName} tư vấn ngay!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'usp_deepdive',
+        label: 'Mổ xẻ Điểm Khác Biệt (Deep-Dive USP)',
+        build: ({ campaignName, brandName, fact1, fact2, fact3 }) => ({
+            title: `Điều gì tạo nên chuẩn mực khác biệt của ${brandName} trong "${campaignName}"?`,
+            caption: [
+                `🔍 MỔ XẺ CHI TIẾT: Đằng sau chất lượng vượt trội mà khách hàng luôn nhắc tới!`,
+                ``,
+                `Không phải ngẫu nhiên mà giải pháp của ${brandName} luôn được đánh giá cao về tính thực chiến. Bí quyết nằm ở 3 tiêu chuẩn khắt khe:`,
+                ``,
+                `1️⃣ Trọng tâm chất lượng: ${fact1}.`,
+                `2️⃣ Tối ưu vận hành: ${fact2}.`,
+                `3️⃣ Cam kết bền vững: ${fact3 || 'Đồng hành sát sao và tối ưu trải nghiệm người dùng ở mọi điểm chạm'}.`,
+                ``,
+                `📌 Lưu ngay bài viết này để đối chiếu khi bạn cần một giải pháp thực sự đáng đầu tư!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'before_after',
+        label: 'So sánh Trước & Sau (Before vs. After)',
+        build: ({ campaignName, brandName, fact1, fact2, promoFact }) => ({
+            title: `Sự khác biệt rõ rệt: Trước và Sau khi áp dụng giải pháp từ ${brandName}`,
+            caption: [
+                `⚖️ ĐẶT LÊN BÀN CÂN: TRƯỚC & SAU KHI ĐỒNG HÀNH CÙNG ${brandName.toUpperCase()}`,
+                ``,
+                `❌ TRƯỚC ĐÂY:`,
+                `• Tốn nhiều giờ đồng hồ xử lý thủ công, dễ sai sót và thiếu đồng bộ.`,
+                `• Chi phí phát sinh cao nhưng hiệu quả thu về lại nhỏ giọt.`,
+                ``,
+                `✅ KHI ÁP DỤNG "${campaignName.toUpperCase()}":`,
+                `• ${fact1}.`,
+                `• ${fact2}.`,
+                promoFact ? `• Đặc biệt: ${promoFact}.` : null,
+                ``,
+                `🚀 Bạn chọn tiếp tục cách cũ hay sẵn sàng bứt tốc ngay hôm nay? Để lại chấm (.) dưới phần bình luận để nhận trọn bộ thông tin nhé!`,
+            ]
+                .filter((x) => x !== null)
+                .join('\n'),
+        }),
+    },
+    {
+        key: 'storytelling',
+        label: 'Kể chuyện Thực tế (Customer Story)',
+        build: ({ campaignName, brandName, fact1, fact2 }) => ({
+            title: `"Giá như mình biết đến giải pháp này sớm hơn!" — Câu chuyện thực tế`,
+            caption: [
+                `☕ "Thật sự bất ngờ vì mọi thứ lại trở nên nhẹ nhàng và trơn tru đến vậy..."`,
+                ``,
+                `Đó là lời chia sẻ thật lòng từ một khách hàng sau tuần đầu tiên trải nghiệm giải pháp trong chiến dịch "${campaignName}" của ${brandName}.`,
+                ``,
+                `Ban đầu, bạn ấy cũng khá đắn đo. Nhưng ngay khi trực tiếp trải nghiệm:`,
+                `🌱 "${fact1}"`,
+                `🌱 Kết hợp cùng ưu điểm: "${fact2}"`,
+                ``,
+                `Mọi rào cản trước đó hoàn toàn được tháo gỡ. Còn bạn thì sao? Hãy kể cho ${brandName} nghe mong muốn lớn nhất của bạn lúc này nhé!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'myth_vs_truth',
+        label: 'Phá bỏ Lầm tưởng (Myth vs. Truth)',
+        build: ({ campaignName, brandName, fact1, fact2 }) => ({
+            title: `3 lầm tưởng phổ biến khiến 80% người dùng bỏ lỡ cơ hội tối ưu hiệu suất`,
+            caption: [
+                `🛑 DỪNG LẠI 30 GIÂY: Bạn có đang mắc phải những lầm tưởng quen thuộc này?`,
+                ``,
+                `Nhiều người vẫn nghĩ rằng muốn đạt chất lượng cao thì bắt buộc phải phức tạp và tốn kém. Nhưng thực tế tại ${brandName} đã chứng minh điều ngược lại:`,
+                ``,
+                `💡 Sự thật #1: Không cần rườm rà — ${fact1}.`,
+                `💡 Sự thật #2: Hiệu quả đo lường được ngay — ${fact2}.`,
+                ``,
+                `Trong khuôn khổ "${campaignName}", chúng mình giúp bạn đơn giản hóa toàn bộ quy trình chỉ trong vài bước. Bấm Chia sẻ bài viết này cho đồng đội của bạn cùng biết nhé!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'offer_push',
+        label: 'Bùng nổ Ưu đãi Đặc quyền (Flash Offer)',
+        build: ({ campaignName, brandName, fact1, promoFact }) => ({
+            title: `Đặc quyền giới hạn trong "${campaignName}" — Đừng bỏ lỡ suất ưu đãi tốt nhất!`,
+            caption: [
+                `🎁 CƠ HỘI VÀNG TRONG CHIẾN DỊCH "${campaignName.toUpperCase()}"!`,
+                ``,
+                `Dành riêng cho cộng đồng theo dõi ${brandName} trong tuần lễ cao điểm này:`,
+                ``,
+                `🔥 Ưu đãi tâm điểm: ${promoFact}.`,
+                `🔥 Giá trị nhận về: ${fact1}.`,
+                ``,
+                `⏰ Số lượng suất ưu đãi có giới hạn để đảm bảo chất lượng phục vụ tốt nhất cho từng khách hàng.`,
+                `👉 Nhắn tin trực tiếp hoặc bình luận "ĐĂNG KÝ" ngay bên dưới để giữ suất ưu đãi trước khi khép lại!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'howto_guide',
+        label: 'Cẩm nang Thực chiến 3 Bước (How-To)',
+        build: ({ campaignName, brandName, fact1, fact2, fact3 }) => ({
+            title: `Hướng dẫn nhanh 3 bước làm chủ giải pháp từ ${brandName} chỉ trong 5 phút`,
+            caption: [
+                `📘 CẨM NANG BỎ TÚI: 3 bước khai thác tối đa giá trị từ "${campaignName}"!`,
+                ``,
+                `Để đạt kết quả nhanh và chuẩn xác nhất, đội ngũ chuyên gia tại ${brandName} gợi ý lộ trình 3 bước tinh gọn:`,
+                ``,
+                `✅ Bước 1 — Khởi tạo nền tảng: Tận dụng ngay lợi thế "${fact1}".`,
+                `✅ Bước 2 — Tối ưu hóa sâu: Kết hợp "${fact2}".`,
+                `✅ Bước 3 — Mở rộng kết quả: ${fact3 || 'Đo lường và nhân rộng mô hình hiệu quả mỗi ngày'}.`,
+                ``,
+                `🔖 Hãy Lưu (Save) lại bài viết này ngay để mở ra áp dụng bất cứ khi nào bạn cần!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'faq_objection',
+        label: 'Giải đáp Thắc mắc Trọng tâm (Q&A)',
+        build: ({ campaignName, brandName, fact1, fact2, promoFact }) => ({
+            title: `Giải đáp A-Z: Những câu hỏi được quan tâm nhất về "${campaignName}"`,
+            caption: [
+                `❓ HỎI XOÁY ĐÁP THẲNG CÙNG ${brandName.toUpperCase()}!`,
+                ``,
+                `Trong những ngày qua, hộp thư của chiến dịch "${campaignName}" nhận được rất nhiều câu hỏi hay. Hôm nay chúng mình xin giải đáp 3 điểm cốt lõi nhất:`,
+                ``,
+                `💬 Câu hỏi 1: Điểm mạnh lớn nhất của giải pháp này là gì?`,
+                `👉 Trả lời: Chính là "${fact1}".`,
+                ``,
+                `💬 Câu hỏi 2: Người mới bắt đầu có dễ áp dụng không?`,
+                `👉 Trả lời: Hoàn toàn dễ dàng nhờ "${fact2}".`,
+                ``,
+                `💬 Câu hỏi 3: Hiện tại có chương trình hỗ trợ nào không?`,
+                `👉 Trả lời: ${promoFact}!`,
+                ``,
+                `Bạn còn câu hỏi nào khác? Đặt câu hỏi ngay dưới comment để được giải đáp trong 5 phút nhé!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'community_poll',
+        label: 'Khảo sát & Thảo luận Cộng đồng',
+        build: ({ campaignName, brandName, fact1, fact2 }) => ({
+            title: `Thảo luận nhanh: Đâu là ưu tiên số 1 của bạn trong giai đoạn này?`,
+            caption: [
+                `📊 KHẢO SÁT NHANH CÙNG CỘNG ĐỒNG ${brandName.toUpperCase()}!`,
+                ``,
+                `Nếu chỉ được chọn 1 mục tiêu quan trọng nhất để bứt phá trong tháng này, bạn sẽ nghiêng về phương án nào?`,
+                ``,
+                `🅰️ Phương án A: Tập trung vào chất lượng & trải nghiệm ("${fact1}")`,
+                `🅱️ Phương án B: Tối ưu tốc độ & hiệu suất ("${fact2}")`,
+                `🆎 Phương án C: Muốn kết hợp trọn vẹn cả A và B cùng chiến dịch "${campaignName}"!`,
+                ``,
+                `👇 Hãy comment chữ cái bạn chọn (A, B hay C) bên dưới để xem bao nhiêu người có cùng góc nhìn với bạn nhé!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'behind_the_scenes',
+        label: 'Chuyện Hậu trường & Tiêu chuẩn Khắt khe',
+        build: ({ campaignName, brandName, fact1, fact2 }) => ({
+            title: `Hậu trường "${campaignName}": Điều gì diễn ra trước khi sản phẩm đến tay bạn?`,
+            caption: [
+                `🎬 ĐẰNG SAU HẬU TRƯỜNG TẠI ${brandName.toUpperCase()}`,
+                ``,
+                `Ít ai biết rằng để mang đến sự chỉn chu trong chiến dịch "${campaignName}", đội ngũ của chúng mình đã phải thử nghiệm và tinh chỉnh hàng chục lần:`,
+                ``,
+                `🛠️ Từng chi tiết nhỏ đều xoay quanh tiêu chí: "${fact1}".`,
+                `🛠️ Mọi quy trình đều được kiểm chứng để đảm bảo: "${fact2}".`,
+                ``,
+                `Chúng mình tin rằng sự tử tế và tỉ mỉ ở hậu trường chính là thứ tạo nên sự hài lòng của bạn ở tiền tuyến. Thả một ❤️ tiếp thêm động lực cho đội ngũ ${brandName} nhé!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'checklist_audit',
+        label: 'Checklist 4 Dấu hiệu Cần Bứt phá',
+        build: ({ campaignName, brandName, fact1, fact2, promoFact }) => ({
+            title: `Checklist tự kiểm tra: 4 dấu hiệu cho thấy bạn cần "${campaignName}" ngay lúc này`,
+            caption: [
+                `📝 CHECKLIST 1 PHÚT: Bạn có đang thấy mình trong 4 dấu hiệu dưới đây?`,
+                ``,
+                `☑️ 1. Bạn muốn nâng cấp chất lượng hiện tại nhưng chưa tìm được giải pháp đồng bộ.`,
+                `☑️ 2. Bạn đang tìm kiếm: "${fact1}".`,
+                `☑️ 3. Bạn mong muốn đạt được: "${fact2}".`,
+                `☑️ 4. Bạn muốn tận dụng đặc quyền: "${promoFact}".`,
+                ``,
+                `🎯 Nếu bạn gật đầu từ 2/4 dấu hiệu trở lên, thì chiến dịch "${campaignName}" của ${brandName} sinh ra là dành riêng cho bạn. Inbox ngay để bắt đầu!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'roi_value',
+        label: 'Bài toán Đầu tư & Giá trị Thực (ROI)',
+        build: ({ campaignName, brandName, fact1, fact2, promoFact }) => ({
+            title: `Bài toán thông minh: Đầu tư nhỏ hôm nay, thu về lợi ích dài hạn`,
+            caption: [
+                `💎 GÓC NHÌN ĐẦU TƯ THÔNG MINH CÙNG ${brandName.toUpperCase()}`,
+                ``,
+                `Người thành công không nhìn vào chi phí ngắn hạn, họ nhìn vào giá trị và thời gian tiết kiệm được trong dài hạn.`,
+                ``,
+                `Khi tham gia "${campaignName}", khoản đầu tư của bạn được chuyển hóa ngay thành:`,
+                `📈 Giá trị #1: ${fact1}.`,
+                `📈 Giá trị #2: ${fact2}.`,
+                `🎁 Cộng hưởng ưu đãi: ${promoFact}.`,
+                ``,
+                `Đừng chần chừ khi cơ hội tối ưu hóa tốt nhất đang ở ngay trước mắt. Liên hệ ${brandName} ngay hôm nay!`,
+            ].join('\n'),
+        }),
+    },
+    {
+        key: 'finale_urgency',
+        label: 'Tổng kết Chiến dịch & Chốt đơn Cuối (Last Call)',
+        build: ({ campaignName, brandName, fact1, fact2, promoFact }) => ({
+            title: `[LAST CALL] Chuyến tàu cuối cùng của chiến dịch "${campaignName}"!`,
+            caption: [
+                `⏳ ĐẾM NGƯỢC: Cơ hội cuối cùng trong chiến dịch "${campaignName.toUpperCase()}"!`,
+                ``,
+                `Hàng trăm khách hàng đã kịp thời nắm bắt giải pháp từ ${brandName} và bắt đầu tạo ra sự thay đổi rõ rệt:`,
+                `🌟 ${fact1}.`,
+                `🌟 ${fact2}.`,
+                ``,
+                `🔥 Đặc quyền "${promoFact}" sẽ sớm khép lại khi đủ số lượng đăng ký.`,
+                `👉 Hành động ngay lúc này: Bình luận hoặc nhắn tin trực tiếp cho ${brandName} để không bỏ lỡ nhịp tăng trưởng!`,
+            ].join('\n'),
+        }),
+    },
+];
+
+// Remix raw user data into a vivid, unique post item per day using rotating copywriting archetypes
 function remixPostWithRawData({ item, campaignName, rawData, brandName, index }) {
-    const cleanRaw = (rawData || '').trim();
-    if (!cleanRaw) return item;
+    const cleanCampaignName = (campaignName || 'Chiến dịch Tâm điểm').trim();
+    const cleanBrandName = (brandName || 'Thương hiệu').trim();
+    const facts = extractCleanFacts(rawData, cleanBrandName);
 
-    // Split user's raw data into bullet points / sentences for varied remixing across slots
-    const lines = cleanRaw
-        .split(/[\n.;•\-]+/)
-        .map((s) => s.trim())
-        .filter((s) => s.length > 8);
+    const fact1 = facts[index % facts.length];
+    const fact2 = facts[(index + 1) % facts.length] || fact1;
+    const fact3 = facts[(index + 2) % facts.length] || '';
 
-    const focusPoint = lines.length > 0 ? lines[index % lines.length] : cleanRaw.slice(0, 180);
-    const secondaryPoint = lines.length > 1 ? lines[(index + 1) % lines.length] : '';
-    const assetNote = item.asset?.notes || item.asset?.name || 'Hình ảnh từ Google Drive';
+    // Find any promo/offer fact in user's data
+    const promoFact =
+        facts.find((f) => /giảm|tặng|ưu đãi|miễn phí|vip|khuyến mãi|%|quà|dùng thử/i.test(f)) ||
+        fact2;
 
-    const remixedTitle = `[${campaignName}] Ngày ${item.dayIndex}: ${focusPoint.slice(0, 68)}`;
-    const remixedCaption = [
-        `🔥 ${campaignName.toUpperCase()} — ${item.angle?.name || 'Góc chia sẻ'}:`,
-        ``,
-        `📌 Điểm nhấn hôm nay: ${focusPoint}.`,
-        secondaryPoint ? `💡 Chi tiết bổ sung: ${secondaryPoint}.` : null,
-        `🖼️ Minh họa trực quan: ${assetNote}.`,
-        ``,
-        `Cùng ${brandName} theo dõi trọn bộ chiến dịch ${campaignName} và để lại bình luận nếu bạn cần tư vấn chi tiết hơn nhé!`,
-        ``,
-        `#${brandName.replace(/[^a-zA-Z0-9]/g, '') || 'Brand'} #${campaignName.replace(/[^a-zA-Z0-9]/g, '') || 'Campaign'} #SocialchoiceAutopilot`,
-    ]
-        .filter((line) => line !== null)
-        .join('\n');
+    const archetype = CAMPAIGN_COPY_ARCHETYPES[index % CAMPAIGN_COPY_ARCHETYPES.length];
+    const generated = archetype.build({
+        campaignName: cleanCampaignName,
+        brandName: cleanBrandName,
+        fact1,
+        fact2,
+        fact3,
+        promoFact,
+    });
+
+    const brandTag = cleanBrandName.replace(/[^a-zA-Z0-9À-ỹ]/g, '').replace(/\s+/g, '') || 'Brand';
+    const campTag = cleanCampaignName.replace(/[^a-zA-Z0-9À-ỹ]/g, '').replace(/\s+/g, '').slice(0, 24) || 'Campaign';
+    const fullCaption = `${generated.caption}\n\n#${brandTag} #${campTag} #Socialchoice`;
 
     return {
         ...item,
-        title: remixedTitle.slice(0, 160),
-        caption: remixedCaption,
-        platformCaptions: generatePlatformContent(remixedCaption, focusPoint),
-        reason: `Xào nấu từ dữ liệu gốc ("${focusPoint.slice(0, 60)}...") kết hợp ảnh Drive (${item.asset?.name || 'Drive Asset'}) theo trụ cột ${item.pillar?.name}.`,
+        angle: {
+            ...(item.angle || {}),
+            name: archetype.label,
+        },
+        title: generated.title.slice(0, 160),
+        caption: fullCaption,
+        platformCaptions: generatePlatformContent(fullCaption, fact1),
+        reason: `Công thức "${archetype.label}" — Xào nấu từ dữ liệu ("${fact1.slice(0, 55)}...") kết hợp ảnh Drive (${item.asset?.name || 'Drive Asset'}).`,
     };
 }
 
@@ -555,21 +901,6 @@ export default function ChatAgent() {
                     data: postPayload,
                 });
 
-                if (!isDemo && canScheduleLive) {
-                    try {
-                        const review = await appClient.publishing.prepareSchedule(
-                            savedPost.id,
-                            scheduledAtIso,
-                            tz
-                        );
-                        if (review?.attemptId) {
-                            await appClient.publishing.schedule(review.attemptId);
-                        }
-                    } catch (queueErr) {
-                        console.warn('Campaign queue scheduling warning:', queueErr);
-                    }
-                }
-
                 scheduledPosts.push({
                     ...item,
                     scheduledPostId: savedPost.id,
@@ -664,7 +995,7 @@ export default function ChatAgent() {
             try {
                 const apStatus = await appClient.autopilot.call('status');
                 if (apStatus?.ready) {
-                    if (driveUrl && driveInfo) {
+                    if (apStatus?.publicDriveReady && driveUrl && driveInfo) {
                         try {
                             const createdSource = await appClient.autopilot.call('createSource', {
                                 brand_id: currentBrand.id,
@@ -677,7 +1008,7 @@ export default function ChatAgent() {
                                 await appClient.autopilot.call('run');
                             }
                         } catch {
-                            // Source might already exist or public key not set; continue to list
+                            // Source might already exist; continue to list
                         }
                     }
                     const apList = await appClient.autopilot.call('list', { brand_id: currentBrand.id });
@@ -981,20 +1312,21 @@ export default function ChatAgent() {
 
         // Check if the user is asking for Campaign + Drive + Auto Remix in natural language
         if (isCampaignIntent(userText)) {
-            const urlMatch = userText.match(/https?:\/\/drive\.google\.com\/[^\s]+/i);
-            const daysMatch = userText.match(/(\d+)\s*ngày/i);
-            const extractedDriveUrl = urlMatch ? urlMatch[0] : campaignForm.driveUrl;
-            const extractedDays = daysMatch ? Math.min(30, Math.max(3, parseInt(daysMatch[1], 10))) : campaignForm.days;
+            const parsed = parseCampaignPromptText(
+                userText,
+                campaignForm.name || `Campaign ${currentBrand.name}`,
+                campaignForm.driveUrl
+            );
 
             setInputText('');
             setSelectedImages([]);
             if (textareaRef.current) textareaRef.current.style.height = 'auto';
 
             await handleRunCampaignAutopilot({
-                name: campaignForm.name || `Campaign ${currentBrand.name}`,
-                driveUrl: extractedDriveUrl,
-                rawData: userText,
-                days: extractedDays,
+                name: parsed.campaignName,
+                driveUrl: parsed.driveUrl,
+                rawData: parsed.rawData,
+                days: parsed.days,
                 frequency: campaignForm.frequency,
                 autoSchedule: true,
                 userPromptText: userText,
