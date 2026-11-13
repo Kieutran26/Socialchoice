@@ -25,6 +25,7 @@ import InteractiveImages from '@/pages/InteractiveImages';
 import Shortlinks from '@/pages/Shortlinks';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
+import CookiePolicy from '@/pages/CookiePolicy';
 import DataDeletion from '@/pages/DataDeletion';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
@@ -76,6 +77,8 @@ export default function App() {
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsOfService />} />
+                            <Route path="/cookies" element={<CookiePolicy />} />
+                            <Route path="/cookie" element={<CookiePolicy />} />
                             <Route path="/data-deletion" element={<DataDeletion />} />
 
                             {/* Authenticated Workspace Routes */}

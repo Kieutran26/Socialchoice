@@ -6,7 +6,7 @@ Socialchoice app264127536 is associated with verified NextChoice Page144000396. 
 
 Server variables LINKEDIN_CLIENT_ID, LINKEDIN_CLIENT_SECRET, LINKEDIN_REDIRECT_URI and existing META_TOKEN_ENCRYPTION_KEY. Never expose them through VITE variables or commit private .env.linkedin. Local start/dev:api load .env.linkedin. Existing Cloudflare Worker holds the private values after explicit owner approval. Preserve the stable encryption key and existing platform secrets.
 
-Exact allowed redirect: https://socialchoice.vercel.app/api/linkedin/callback. The owner approved and the portal saved this callback2026-10-15. Required scopes: openid, profile, w_member_social; email is not requested. App product availability is not a user OAuth grant. Token introspection confirms app, active3-legged grant, scopes and expiry; userinfo provides member identity. No ID-token claims are trusted without validation: this integration uses the authenticated userinfo response instead. No refresh grant is assumed; reconnect on expiry (normally about60days).
+Exact allowed redirect: https://socialchoice.site/api/linkedin/callback. The owner approved and the portal saved this callback2026-10-15. Required scopes: openid, profile, w_member_social; email is not requested. App product availability is not a user OAuth grant. Token introspection confirms app, active3-legged grant, scopes and expiry; userinfo provides member identity. No ID-token claims are trusted without validation: this integration uses the authenticated userinfo response instead. No refresh grant is assumed; reconnect on expiry (normally about60days).
 
 ## Use
 

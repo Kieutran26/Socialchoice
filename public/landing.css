@@ -3324,3 +3324,61 @@
     }
   }
 }
+
+/* Landing-page-only brand yellow overrides (prevents main app unlayered Tailwind v3 gray brand-* from overriding @layer utilities) */
+.landing-page-wrapper .bg-brand-50 { background-color: #fffbe8; }
+.landing-page-wrapper .bg-brand-50\/50 { background-color: rgb(255 251 232 / 0.5); }
+.landing-page-wrapper .bg-brand-50\/60 { background-color: rgb(255 251 232 / 0.6); }
+.landing-page-wrapper .bg-brand-100 { background-color: #fff4c2; }
+.landing-page-wrapper .bg-brand-200 { background-color: #ffe98a; }
+.landing-page-wrapper .bg-brand-300 { background-color: #fede4f; }
+.landing-page-wrapper .bg-brand-300\/80 { background-color: rgb(254 222 79 / 0.8); }
+.landing-page-wrapper .bg-brand-400 { background-color: #fdd835; }
+.landing-page-wrapper .bg-brand-400\/25 { background-color: rgb(253 216 53 / 0.25); }
+.landing-page-wrapper .bg-brand-400\/90 { background-color: rgb(253 216 53 / 0.9); }
+.landing-page-wrapper .bg-brand-500 { background-color: #f5c400; }
+.landing-page-wrapper .hover\:bg-brand-300:hover { background-color: #fede4f; }
+.landing-page-wrapper .text-brand-400 { color: #fdd835; }
+.landing-page-wrapper .text-brand-700 { color: #8a6a00; }
+.landing-page-wrapper .border-brand-200 { border-color: #ffe98a; }
+.landing-page-wrapper .border-brand-300 { border-color: #fede4f; }
+.landing-page-wrapper .border-brand-400 { border-color: #fdd835; }
+.landing-page-wrapper .decoration-brand-400 { text-decoration-color: #fdd835; }
+.landing-page-wrapper .ring-brand-100\/60 { --tw-ring-color: rgb(255 244 194 / 0.6); }
+.landing-page-wrapper .ring-brand-200 { --tw-ring-color: #ffe98a; }
+.landing-page-wrapper .ring-brand-400 { --tw-ring-color: #fdd835; }
+.landing-page-wrapper .focus-within\:ring-brand-400\/60:focus-within { --tw-ring-color: rgb(253 216 53 / 0.6); }
+.landing-page-wrapper .focus\:ring-brand-100:focus { --tw-ring-color: #fff4c2; }
+
+
+/* Responsive utilities */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* Hero Card Stack Responsive Tuning for Mobile and Tablet (iPad) */
+@media (max-width: 1023px) {
+  .hero-card-stack .translate-x-10 {
+    --tw-translate-x: 18px !important;
+    --tw-translate-y: 6px !important;
+    translate: 18px 6px !important;
+    transform: rotate(3.5deg) !important;
+  }
+  .hero-card-stack .translate-x-20 {
+    --tw-translate-x: 34px !important;
+    --tw-translate-y: 12px !important;
+    translate: 34px 12px !important;
+    transform: rotate(7deg) !important;
+  }
+  .hero-card-stack .translate-x-24 {
+    --tw-translate-x: 46px !important;
+    --tw-translate-y: 16px !important;
+    translate: 46px 16px !important;
+    transform: rotate(9deg) !important;
+  }
+  .hero-card-stack .-translate-x-28 {
+    --tw-translate-x: -32px !important;
+    --tw-translate-y: 0px !important;
+    translate: -32px 0px !important;
+    transform: rotate(-6deg) !important;
+  }
+}

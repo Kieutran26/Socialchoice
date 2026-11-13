@@ -4,7 +4,7 @@ Threads uses a separate OAuth client, app secret and user access token. A connec
 
 ## Setup
 
-The existing Meta App now has the Access Threads API use case. threads_basic and threads_content_publish visibly show Ready for testing; this is permission availability, not account consent or Advanced Access. The saved redirect is https://socialchoice.vercel.app/api/threads/callback. Threads product App ID is1880622033307199, distinct from the main Meta App ID. Use the Threads product secret from that use case's Settings; do not use the Facebook or Instagram App Secret.
+The existing Meta App now has the Access Threads API use case. threads_basic and threads_content_publish visibly show Ready for testing; this is permission availability, not account consent or Advanced Access. The saved redirect is https://socialchoice.site/api/threads/callback. Threads product App ID is1880622033307199, distinct from the main Meta App ID. Use the Threads product secret from that use case's Settings; do not use the Facebook or Instagram App Secret.
 
 Server-only values: THREADS_APP_ID, THREADS_APP_SECRET, THREADS_REDIRECT_URI. The existing stable META_TOKEN_ENCRYPTION_KEY encrypts Threads credentials; preserve it. No additional encryption key or public storage is needed. These values must never enter VITE variables, Git or chat.
 

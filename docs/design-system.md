@@ -249,4 +249,4 @@ export default function TitleEditor({ title, onTitleChange, onSave, busy }) {
 
 ## Public landing page
 
-The public `/` and `/landing` routes follow the owner-supplied `landing-page.html` reference, including its PostChoice branding, layout and animated product previews. This exception applies only to the marketing page, not the authenticated workspace. Product illustrations are local SVG files under `public/images/landing`; landing-only accessibility overrides live in `src/pages/landing-page.css`.
+The public `/` and `/landing` routes follow the owner-supplied `landing-page.html` reference, including its SocialChoice branding, layout and animated product previews. This exception applies only to the marketing page, not the authenticated workspace. Product illustrations are local SVG files under `public/images/landing`; landing-only accessibility overrides live in `src/pages/landing-page.css`.

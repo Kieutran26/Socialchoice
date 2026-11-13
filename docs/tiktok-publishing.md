@@ -4,11 +4,11 @@ This release connects an explicitly selected TikTok sandbox profile using separa
 
 ## Setup
 
-Use the Socialchoice Test sandbox, not production credentials. Server-only TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET were owner-authorized and uploaded privately to the existing Cloudflare Worker. TIKTOK_REDIRECT_URI is https://socialchoice.vercel.app/api/tiktok/callback. The existing META_TOKEN_ENCRYPTION_KEY encrypts credentials; preserve this stable key. Local scripts additionally load ignored .env.tiktok. TikTok web callbacks must be HTTPS, so local-only loopback OAuth is not claimed.
+Use the Socialchoice Test sandbox, not production credentials. Server-only TIKTOK_CLIENT_KEY and TIKTOK_CLIENT_SECRET were owner-authorized and uploaded privately to the existing Cloudflare Worker. TIKTOK_REDIRECT_URI is https://socialchoice.site/api/tiktok/callback. The existing META_TOKEN_ENCRYPTION_KEY encrypts credentials; preserve this stable key. Local scripts additionally load ignored .env.tiktok. TikTok web callbacks must be HTTPS, so local-only loopback OAuth is not claimed.
 
 Portal app7696631987075729428, sandbox7696674250572908565 has Login Kit and Content Posting API/Direct Post configured. The integration requests only user.info.basic and video.publish; it does not request video.upload, video.list, analytics or broad profile permissions. Target user ktrn046 is verified in the sandbox list. That allowlist entry alone is not a Socialchoice OAuth import.
 
-TikTok verified https://socialchoice.vercel.app/ as a URL prefix. Keep public/tiktokwMohPCinmk03ELeCvvrFBAVX8vV1nd9d.txt in all frontend releases. TikTok media URLs use that verified app origin and the existing Vercel API proxy to private backend storage. The separate backend origin is not covered by this prefix; do not switch TikTok media to it without another verification.
+TikTok verified https://socialchoice.site/ as a URL prefix. Keep public/tiktokwMohPCinmk03ELeCvvrFBAVX8vV1nd9d.txt in all frontend releases. TikTok media URLs use that verified app origin and the existing Vercel API proxy to private backend storage. The separate backend origin is not covered by this prefix; do not switch TikTok media to it without another verification.
 
 ## Account access
 

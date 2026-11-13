@@ -1,6 +1,6 @@
 # Cấp license Socialchoice bản web
 
-Website: https://socialchoice.vercel.app
+Website: https://socialchoice.site
 
 ## Bạn đăng nhập thế nào?
 
@@ -8,7 +8,7 @@ Chọn **Đăng nhập chủ hệ thống**, nhập mật khẩu Socialchoice c�
 
 ## Cấp license cho khách đã thanh toán
 
-1. Đăng nhập chủ hệ thống, mở **Quản lý license** trong menu hoặc https://socialchoice.vercel.app/admin/licenses.
+1. Đăng nhập chủ hệ thống, mở **Quản lý license** trong menu hoặc https://socialchoice.site/admin/licenses.
 2. Nhập **email khách hàng**, **tên khách hoặc mã đơn hàng**, chọn gói.
 3. Tích **Tôi đã xác minh khách thanh toán**, sau khi thực sự kiểm tra thanh toán.
 4. Bấm **Tạo license**, rồi **Tải file license**. Thao tác này không thu tiền khách.

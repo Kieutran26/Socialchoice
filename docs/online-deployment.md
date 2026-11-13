@@ -1,6 +1,6 @@
 # Online deployment
 
-Accepted route: Vercel keeps the existing UI at https://socialchoice.vercel.app. Cloudflare Worker `socialchoice-api` retains the original owner workspace. The customer licensing implementation adds separate customer SQLite Durable Objects and an account directory; see [web licensing](web-licensing.md) before enabling customer registration. Node local mode remains owner-only. No paid service was provisioned.
+Accepted route: Vercel keeps the existing UI at https://socialchoice.site. Cloudflare Worker `socialchoice-api` retains the original owner workspace. The customer licensing implementation adds separate customer SQLite Durable Objects and an account directory; see [web licensing](web-licensing.md) before enabling customer registration. Node local mode remains owner-only. No paid service was provisioned.
 
 ## Free plan
 
@@ -21,7 +21,7 @@ Required private Worker secrets: `SOCIALCHOICE_ADMIN_PASSWORD_HASH` and a stable
 1. Run `pnpm test`, `pnpm run lint`, `pnpm run typecheck`, `pnpm run build`. The Worker test builds the actual cloud bundle and verifies authentication, Vietnamese content, sessions and login throttling across runtime restarts in an isolated database.
 2. Deploy only the named Worker, preserving the SQLite namespace and migration tag on subsequent deployments. Privately set secrets. Verify its actual `/api/health` JSON and anonymous access rejection before connecting the UI.
 3. Run `node server/configure-api-proxy.js https://ACTUAL-BACKEND-ORIGIN` after verification. It places the API rewrite before the SPA fallback and creates an exclusive rollback backup. Deploy Vercel and verify health and login through the public app domain.
-4. Register `https://socialchoice.vercel.app/api/meta/callback` in Meta only after routing is working. Complete real OAuth and Page import before reporting a connected account. Text Publish Now requires the separately granted publishing scope and reviewed confirmation; calendar delivery remains unavailable.
+4. Register `https://socialchoice.site/api/meta/callback` in Meta only after routing is working. Complete real OAuth and Page import before reporting a connected account. Text Publish Now requires the separately granted publishing scope and reviewed confirmation; calendar delivery remains unavailable.
 
 ## Persistence and rollback
 
@@ -43,7 +43,7 @@ Private CLI route after explicit scope approval: set `XDG_CONFIG_HOME=D:/Socialc
 
 Live status 2026-10-12: Socialchoice Worker deployed at https://socialchoice-api.nguyenngockieutran.workers.dev on the verified Free plan. Private admin/storage secrets provisioned; health200 and anonymous session401 verified. Owner scoped Wrangler authorization completed via device flow. Vercel cutover is prepared locally and still requires deployment verification. Meta remains configuration_required.
 
-Cutover verified: Vercel deployment 9edRC65B3Z64nvF2iYgRsyPE39oU from commit adaf9aa serves API JSON through https://socialchoice.vercel.app. Health200, anonymous session401, Vietnamese sign-in screen verified. Owner password login and Meta OAuth require owner interaction; neither is claimed as successful.
+Cutover verified: Vercel deployment 9edRC65B3Z64nvF2iYgRsyPE39oU from commit adaf9aa serves API JSON through https://socialchoice.site. Health200, anonymous session401, Vietnamese sign-in screen verified. Owner password login and Meta OAuth require owner interaction; neither is claimed as successful.
 
 
 ## Private photo delivery
@@ -56,7 +56,7 @@ The actor alarm is shared by approved automatic schedules and active text/photo/
 
 Owner-authorized deployment of the independently reviewed multi-Page/Analytics build and one-Page compatibility/permission fixes completed. Worker version ff095650-8c66-4689-9489-26b88db766ec retains the same Worker name, SQLite namespace/class/object identity, migration tag, bindings and private secrets. Previous Worker version67515d3b-577f-449e-9a69-38e2d6604cac is the rollback reference; retain storage and check active jobs before rolling back.
 
-Vercel production deployment dpl_8e8DM7nrvrnPC6rXFoyxte6GS39j serves socialchoice.vercel.app. This release used CLI prebuilt output staged under the ignored .test-tools/analytics-release directory, containing only dist UI files and Build Output API routes equivalent to vercel.json: API proxy first, filesystem then SPA fallback, API no-store headers. The linked existing project supplies CLI deployment identity; no workspace data, diagnostic files or server secrets were uploaded. Future source/Git builds still use the root vercel.json and package scripts.
+Vercel production deployment dpl_8e8DM7nrvrnPC6rXFoyxte6GS39j serves socialchoice.site. This release used CLI prebuilt output staged under the ignored .test-tools/analytics-release directory, containing only dist UI files and Build Output API routes equivalent to vercel.json: API proxy first, filesystem then SPA fallback, API no-store headers. The linked existing project supplies CLI deployment identity; no workspace data, diagnostic files or server secrets were uploaded. Future source/Git builds still use the root vercel.json and package scripts.
 
 Verified production UI200, exact SHA-256 match of deployed JavaScript to the tested dist artifact, API health200 and anonymous session401. No paid plan or secret/key change. Meta app enablement and owner OAuth/Deszy reimport are still pending; successful Analytics counters are not claimed. See [rollout record](../plans/reports/analytics-rollout-261013-socialchoice-report.md).
 
@@ -72,7 +72,7 @@ Update 2026-10-15 08:24: owner explicitly approved product-secret read and stora
 TikTok preparation2026-10-15: owner-reviewed public /privacy.html, /terms.html and /socialchoice-icon.png released in Vercel dpl_3ThJEfQcH678qhoQ7Qe3gcTcsNeo; all200 and exact source artifact matches. Worker/data/keys unchanged. TikTok sandbox portal configuration saved; URL verification pending owner download of the provider verification file. No TikTok runtime/OAuth/publishing success claimed.
 
 
-URL verification2026-10-15 08:50: owner provided the actual downloaded TikTok verification file. Published its exact bytes under the root public/ path in Vercel dpl_M2HeUJz2nZgvpwabnULx35KMj9sE. TikTok sandbox confirmed "Your property has been verified", URL prefix https://socialchoice.vercel.app/, Verified. Keep the verification file on subsequent releases. Backend/keys unchanged. The backend media origin is not covered by this Vercel URL prefix; future TikTok media must use a verified delivery origin or separately verified backend prefix. No target user, private client-secret transfer, runtime connection or publishing claimed.
+URL verification2026-10-15 08:50: owner provided the actual downloaded TikTok verification file. Published its exact bytes under the root public/ path in Vercel dpl_M2HeUJz2nZgvpwabnULx35KMj9sE. TikTok sandbox confirmed "Your property has been verified", URL prefix https://socialchoice.site/, Verified. Keep the verification file on subsequent releases. Backend/keys unchanged. The backend media origin is not covered by this Vercel URL prefix; future TikTok media must use a verified delivery origin or separately verified backend prefix. No target user, private client-secret transfer, runtime connection or publishing claimed.
 
 
 Private setup2026-10-15: owner explicitly authorized reading the Client key and Client secret of Socialchoice Test sandbox and storing them in existing Socialchoice Cloudflare backend. Captured only visible credential values into an ignored exclusive .env.tiktok, concealed them again, and uploaded only TIKTOK_CLIENT_KEY/TIKTOK_CLIENT_SECRET through Wrangler secret bulk stdin. Both uploads succeeded; other keys unchanged. Initial full credential-container HTML inspection was rejected by automatic review because it could expose keys in logs; completed through safer metadata-only inspection and variable-only credential capture. No secret value printed. TikTok redirect/mode still need runtime implementation/configuration; secret presence is not an OAuth connection or publishing proof.
@@ -87,7 +87,7 @@ LinkedIn personal rollout2026-10-15: reviewed Worker9e64bdd5-5eed-47d1-91f4-24ef
 
 Company lookup rollout2026-11-02: owner authorized frontend and API update. Worker `e32b8d4d-d800-4a33-bb71-5bd6a717c3b4` deployed preserving existing variables, bindings and persistent storage; Vercel `dpl_E24T1W48X3RPuGozghtMyUDgtaCc` released from static-only `.test-tools/linkedin-company-release`. Exact deployed UI hashes, health200, protected anonymous401 and cross-origin login403 verified. Live authenticated company lookup returned LinkedIn403 and correctly showed the missing organization API permission; successful company discovery is not claimed. Previous Worker `740ebfa7-8321-4f30-b82d-7c6d6eb00773` and frontend `https://socialchoice-v0hehc1je-nguyenngockieutran-3710s-projects.vercel.app` are rollback references. No secret, scope or database change. See [rollout and remaining access requirement](../plans/reports/linkedin-company-mentions-261102-report.md).
 
-Owner authorized the frontend production update after reviewing the local @ interaction. Vercel deployment `dpl_8tBiLYWKJEV5f1RH6XT2FmW3XC8S` is READY and aliased to `https://socialchoice.vercel.app`; release source is static-only `.test-tools/linkedin-inline-release/.vercel/output`. Existing `/api/*` rewrite and public policies retained. No Cloudflare deployment, secret update, database migration or provider configuration change.
+Owner authorized the frontend production update after reviewing the local @ interaction. Vercel deployment `dpl_8tBiLYWKJEV5f1RH6XT2FmW3XC8S` is READY and aliased to `https://socialchoice.site`; release source is static-only `.test-tools/linkedin-inline-release/.vercel/output`. Existing `/api/*` rewrite and public policies retained. No Cloudflare deployment, secret update, database migration or provider configuration change.
 
 `node scripts/web-license-live-check.mjs --enabled` passes: exact deployed index/JS/CSS hashes, policies and verification file, health/customer config 200, anonymous protected APIs 401 and cross-origin login 403. Authenticated browser check on Create Post: selecting the existing LinkedIn profile, typing `@kieu`, and pressing Enter inserts its real ID-backed mention. Test caption and destination selection restored; no post saved or published.
 

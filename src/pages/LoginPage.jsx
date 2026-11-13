@@ -137,7 +137,7 @@ function Logo() {
                 </svg>
             </div>
             <span className="font-heading text-lg font-bold tracking-tight text-zinc-900">
-                PostChoice
+                SocialChoice
             </span>
         </div>
     );
@@ -728,11 +728,11 @@ export default function LoginPage() {
 
                 {/* Footer */}
                 <div className="flex flex-wrap items-center justify-between gap-2 text-[12px] text-zinc-400">
-                    <span>© 2026 PostChoice</span>
+                    <span>© 2026 SocialChoice</span>
                     <span className="flex gap-4">
-                        <span className="hover:text-zinc-700 cursor-pointer">Điều khoản</span>
-                        <span className="hover:text-zinc-700 cursor-pointer">Bảo mật</span>
-                        <span className="hover:text-zinc-700 cursor-pointer">Hỗ trợ</span>
+                        <Link to="/terms" className="hover:text-zinc-700 cursor-pointer">Điều khoản</Link>
+                        <Link to="/privacy" className="hover:text-zinc-700 cursor-pointer">Bảo mật</Link>
+                        <Link to="/cookies" className="hover:text-zinc-700 cursor-pointer">Cookie</Link>
                     </span>
                 </div>
             </div>
@@ -771,7 +771,7 @@ export default function LoginPage() {
                                     </span>
                                 </h2>
                                 <p className="mt-2 text-[14px] text-zinc-500">
-                                    Mỗi ngày hơn 12.000 bài viết được đăng qua PostChoice.
+                                    Mỗi ngày hơn 12.000 bài viết được đăng qua SocialChoice.
                                 </p>
                             </div>
                             <div className="hidden shrink-0 grid-cols-3 gap-1 xl:grid">

@@ -45,9 +45,9 @@ If authorization fails: verify exact callback/app mode/version/roles/permissions
 
 ## Public Socialchoice configuration
 
-Cloudflare backend and Vercel API cutover verified on 2026-10-12. Meta callback `https://socialchoice.vercel.app/api/meta/callback` was saved with owner approval, remained after reload, and Meta's URI validator reported valid. App remains unpublished. Real OAuth and Page discovery were verified after the transport fix below; publication is not yet verified.
+Cloudflare backend and Vercel API cutover verified on 2026-10-12. Meta callback `https://socialchoice.site/api/meta/callback` was saved with owner approval, remained after reload, and Meta's URI validator reported valid. App remains unpublished. Real OAuth and Page discovery were verified after the transport fix below; publication is not yet verified.
 
-For owner secret entry, run `pnpm run setup:meta` locally. App ID: `1115808334255427`; callback: `https://socialchoice.vercel.app/api/meta/callback`; Graph version: the supported value shown by the Meta dashboard. Use the optional Business Login configuration ID only when that configuration is used. Enter the App Secret from app settings in the hidden prompt, never a Facebook password or chat message. Then run `pnpm run setup:cloudflare` to provision the private values into the existing named Worker. This preserves the cloud storage key; no redeployment or local server restart is needed for online secret updates. A configured health result does not imply Meta permission approval or a connected Page.
+For owner secret entry, run `pnpm run setup:meta` locally. App ID: `1115808334255427`; callback: `https://socialchoice.site/api/meta/callback`; Graph version: the supported value shown by the Meta dashboard. Use the optional Business Login configuration ID only when that configuration is used. Enter the App Secret from app settings in the hidden prompt, never a Facebook password or chat message. Then run `pnpm run setup:cloudflare` to provision the private values into the existing named Worker. This preserves the cloud storage key; no redeployment or local server restart is needed for online secret updates. A configured health result does not imply Meta permission approval or a connected Page.
 
 ## Connection diagnostics and Workers transport
 

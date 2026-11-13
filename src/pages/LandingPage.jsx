@@ -26,7 +26,15 @@ export default function LandingPage() {
                 const handleClicks = (e) => {
                     const target = e.target.closest('a, button');
                     if (!target) return;
+                    const href = target.getAttribute('href');
                     const text = (target.textContent || '').trim().toLowerCase();
+
+                    // Điều hướng trang pháp lý và các liên kết nội bộ
+                    if (href && (href.startsWith('/terms') || href.startsWith('/privacy') || href.startsWith('/cookies') || href.startsWith('/data-deletion') || href.startsWith('/login') || href.startsWith('/create'))) {
+                        e.preventDefault();
+                        navigate(href);
+                        return;
+                    }
 
                     // Điều hướng khi người dùng nhấn các nút CTA trên Landing Page
                     if (text.includes('đăng nhập')) {
