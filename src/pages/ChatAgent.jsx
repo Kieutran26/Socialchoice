@@ -11,7 +11,6 @@ import {
     X,
     Check,
     PlugsConnected,
-    Lightning,
     CaretDown,
     LinkSimple,
     ChatCircleDots,
@@ -26,6 +25,7 @@ import {
     ArrowsClockwise,
     Trash,
     FolderOpen,
+    Cpu,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { aiRequest } from '@/api/ai';
@@ -138,6 +138,21 @@ function isCampaignIntent(text = '') {
         lower.includes('xào nấu') ||
         (lower.includes('drive') && (lower.includes('lịch') || lower.includes('tự động')))
     );
+}
+
+const CLARIFICATION_PLATFORMS = ['facebook', 'instagram', 'threads', 'linkedin', 'tiktok', 'x'];
+
+function detectPlatformsFromText(text = '') {
+    const lower = text.toLowerCase();
+    return CLARIFICATION_PLATFORMS.filter((p) => {
+        if (p === 'x') return /\bx\b|twitter/i.test(lower);
+        return lower.includes(p);
+    });
+}
+
+function detectBrandFromText(text = '', brands = []) {
+    const lower = text.toLowerCase();
+    return brands.find((b) => b?.name && lower.includes(b.name.toLowerCase())) || null;
 }
 
 // Extract clean campaign title, Drive URL, and pure raw data from a natural language chat prompt
@@ -598,6 +613,13 @@ export default function ChatAgent() {
     });
     const [autopilotSources, setAutopilotSources] = useState([]);
     const [selectedCampaignPostId, setSelectedCampaignPostId] = useState(null);
+    const [previewCampaignPost, setPreviewCampaignPost] = useState(null);
+
+    // AI Settings & Model Selector (synced with Settings)
+    const [aiSettings, setAiSettings] = useState({ configured: false, provider: 'openai', model: '' });
+    const [aiModels, setAiModels] = useState([]);
+    const [aiModelsLoading, setAiModelsLoading] = useState(false);
+    const [savingAiModel, setSavingAiModel] = useState(false);
 
     const fileInputRef = useRef(null);
     const chatEndRef = useRef(null);
@@ -649,6 +671,95 @@ export default function ChatAgent() {
     useEffect(() => {
         loadAutopilotSources();
     }, [loadAutopilotSources]);
+
+    // Load configured AI provider & model from Settings
+    useEffect(() => {
+        let active = true;
+        aiRequest('status')
+            .then((res) => {
+                if (!active || !res) return;
+                setAiSettings({
+                    configured: Boolean(res.configured),
+                    provider: res.provider || 'openai',
+                    model: res.model || '',
+                });
+                if (res.provider === 'openrouter') {
+                    setAiModelsLoading(true);
+                    aiRequest('models')
+                        .then((mRes) => {
+                            if (active && Array.isArray(mRes?.models)) {
+                                setAiModels(mRes.models);
+                            }
+                        })
+                        .catch(() => {})
+                        .finally(() => {
+                            if (active) setAiModelsLoading(false);
+                        });
+                }
+            })
+            .catch(() => {});
+        return () => {
+            active = false;
+        };
+    }, []);
+
+    const availableAiModelOptions = useMemo(() => {
+        const provider = aiSettings.provider;
+        let list = [];
+        if (provider === 'openrouter') {
+            list = aiModels.map((m) => ({ id: m.id, name: m.name || m.id }));
+        } else if (provider === 'gemini') {
+            list = [
+                { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash' },
+                { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro' },
+                { id: 'gemini-2.0-flash', name: 'Gemini 2.0 Flash' },
+                { id: 'gemini-3.8-flash', name: 'Gemini 3.8 Flash' },
+            ];
+        } else {
+            list = [
+                { id: 'gpt-4o-mini', name: 'GPT-4o mini' },
+                { id: 'gpt-4o', name: 'GPT-4o' },
+                { id: 'gpt-4.1-mini', name: 'GPT-4.1 mini' },
+                { id: 'gpt-4.1', name: 'GPT-4.1' },
+            ];
+        }
+        if (aiSettings.model && !list.some((m) => m.id === aiSettings.model)) {
+            list.unshift({ id: aiSettings.model, name: aiSettings.model });
+        }
+        return list;
+    }, [aiSettings.provider, aiSettings.model, aiModels]);
+
+    const handleChangeAiModel = async (nextModel) => {
+        if (!nextModel || nextModel === aiSettings.model) return;
+        const prevModel = aiSettings.model;
+        setAiSettings((prev) => ({ ...prev, model: nextModel }));
+        if (!aiSettings.configured) return;
+
+        setSavingAiModel(true);
+        try {
+            const saved = await aiRequest('save', {
+                provider: aiSettings.provider,
+                model: nextModel,
+            });
+            if (saved?.model) {
+                setAiSettings({
+                    configured: Boolean(saved.configured),
+                    provider: saved.provider,
+                    model: saved.model,
+                });
+            }
+            toast({ title: t(`Đã chuyển model AI sang ${nextModel}`) });
+        } catch (err) {
+            setAiSettings((prev) => ({ ...prev, model: prevModel }));
+            toast({
+                variant: 'destructive',
+                title: t('Không thể đổi model AI'),
+                description: err.message,
+            });
+        } finally {
+            setSavingAiModel(false);
+        }
+    };
 
     // Available accounts for current brand
     const brandAccounts = useMemo(() => {
@@ -743,7 +854,13 @@ export default function ChatAgent() {
     const scheduleCampaignPosts = async (messageId, campaignDraftInput) => {
         const targetDraft =
             campaignDraftInput || messages.find((m) => m.id === messageId)?.campaignDraft;
-        if (!targetDraft || !currentBrand) return null;
+        const effectiveBrand =
+            (targetDraft?.brandId && brands.find((b) => b.id === targetDraft.brandId)) || currentBrand;
+        if (!targetDraft || !effectiveBrand) return null;
+
+        const effectiveBrandAccounts = accounts.filter(
+            (acc) => !acc.brand_id || acc.brand_id === effectiveBrand.id
+        );
 
         setMessages((prev) =>
             prev.map((m) =>
@@ -754,19 +871,19 @@ export default function ChatAgent() {
         );
 
         try {
-            const isDemo = !!currentBrand.is_demo || !!demoMode;
+            const isDemo = !!effectiveBrand.is_demo || !!demoMode;
             const selectedAccountIds =
                 targetDraft.selectedAccountIds?.length > 0
                     ? targetDraft.selectedAccountIds
-                    : brandAccounts.map((a) => a.id);
+                    : effectiveBrandAccounts.map((a) => a.id);
 
             // 1. Ensure Pillars & Angles exist in DB for this Brand
             const existingPillarsRes = await appClient.entities.ContentPillar.filter(
-                { brand_id: currentBrand.id, is_demo: isDemo },
+                { brand_id: effectiveBrand.id, is_demo: isDemo },
                 { limit: 100 }
             );
             const existingAnglesRes = await appClient.entities.ContentAngle.filter(
-                { brand_id: currentBrand.id, is_demo: isDemo },
+                { brand_id: effectiveBrand.id, is_demo: isDemo },
                 { limit: 200 }
             );
             const pillarByName = Object.fromEntries(
@@ -778,7 +895,7 @@ export default function ChatAgent() {
 
             // 2. Ensure Drive / Campaign images exist in MediaAsset table for valid foreign keys
             const existingMediaRes = await appClient.entities.MediaAsset.filter(
-                { brand_id: currentBrand.id, is_demo: isDemo },
+                { brand_id: effectiveBrand.id, is_demo: isDemo },
                 { limit: 200 }
             );
             const mediaByUrl = Object.fromEntries(
@@ -798,7 +915,7 @@ export default function ChatAgent() {
                     pillarId = pillarByName[pName.toLowerCase()].id;
                 } else {
                     const createdPillar = await appClient.entities.ContentPillar.create({
-                        brand_id: currentBrand.id,
+                        brand_id: effectiveBrand.id,
                         name: pName,
                         description: `Trụ cột nội dung thuộc chiến dịch ${targetDraft.campaignName}`,
                         color: item.pillar?.color || '#79D94B',
@@ -818,7 +935,7 @@ export default function ChatAgent() {
                     angleId = angleByKey[angleKey].id;
                 } else if (pillarId) {
                     const createdAngle = await appClient.entities.ContentAngle.create({
-                        brand_id: currentBrand.id,
+                        brand_id: effectiveBrand.id,
                         pillar_id: pillarId,
                         name: aName,
                         description: `Góc khai thác cho chiến dịch ${targetDraft.campaignName}`,
@@ -837,7 +954,7 @@ export default function ChatAgent() {
                         mediaByUrl[item.asset.file_url];
                     if (!storedMedia) {
                         storedMedia = await appClient.entities.MediaAsset.create({
-                            brand_id: currentBrand.id,
+                            brand_id: effectiveBrand.id,
                             name: item.asset.name || `drive-asset-${item.dayIndex}.jpg`,
                             file_url: item.asset.file_url,
                             file_type: 'image',
@@ -857,7 +974,7 @@ export default function ChatAgent() {
                 const scheduledAtIso = toUtcIso(item.date, item.time, tz);
 
                 // Filter accounts matching the post's target platform (or fallback to all selected accounts)
-                const matchingPlatformAccounts = brandAccounts
+                const matchingPlatformAccounts = effectiveBrandAccounts
                     .filter(
                         (acc) =>
                             selectedAccountIds.includes(acc.id) &&
@@ -879,7 +996,7 @@ export default function ChatAgent() {
                 );
 
                 const postPayload = {
-                    brand_id: currentBrand.id,
+                    brand_id: effectiveBrand.id,
                     title: item.title.trim(),
                     caption: item.caption,
                     platform_captions: cleanedPlatformCaptions,
@@ -958,12 +1075,17 @@ export default function ChatAgent() {
 
     // Execute full flow: Create Campaign -> Link Drive -> Remix Data -> Auto Schedule
     const handleRunCampaignAutopilot = async (customOptions = null) => {
-        if (!currentBrand) {
+        const cfg = customOptions || campaignForm;
+        const effectiveBrand = cfg.brandOverride || currentBrand;
+        if (!effectiveBrand) {
             toast({ variant: 'destructive', title: t('Chưa có thương hiệu nào được chọn.') });
             return;
         }
 
-        const cfg = customOptions || campaignForm;
+        const effectiveBrandAccounts = accounts.filter(
+            (acc) => !acc.brand_id || acc.brand_id === effectiveBrand.id
+        );
+
         const campaignName = (cfg.name || 'Chiến dịch Marketing Tự động').trim();
         const driveUrl = (cfg.driveUrl || '').trim();
         const rawData = (cfg.rawData || '').trim();
@@ -973,16 +1095,18 @@ export default function ChatAgent() {
 
         setShowCampaignBuilder(false);
 
-        const userSummaryMsg = {
-            id: `user-camp-${Date.now()}`,
-            role: 'user',
-            text:
-                cfg.userPromptText ||
-                `🚀 **Tạo Campaign & Xào nấu tự động**:\n• **Chiến dịch**: ${campaignName}\n• **Liên kết Google Drive**: ${driveUrl || 'Kho ảnh Drive thương hiệu'}\n• **Thời lượng**: ${daysCount} ngày (${frequency.replace(/_/g, ' ')})\n• **Dữ liệu gốc**: ${rawData.slice(0, 180)}${rawData.length > 180 ? '...' : ''}`,
-            createdAt: new Date().toISOString(),
-        };
+        if (!cfg.skipUserEcho) {
+            const userSummaryMsg = {
+                id: `user-camp-${Date.now()}`,
+                role: 'user',
+                text:
+                    cfg.userPromptText ||
+                    `🚀 **Tạo Campaign & Xào nấu tự động**:\n• **Chiến dịch**: ${campaignName}\n• **Liên kết Google Drive**: ${driveUrl || 'Kho ảnh Drive thương hiệu'}\n• **Thời lượng**: ${daysCount} ngày (${frequency.replace(/_/g, ' ')})\n• **Dữ liệu gốc**: ${rawData.slice(0, 180)}${rawData.length > 180 ? '...' : ''}`,
+                createdAt: new Date().toISOString(),
+            };
+            setMessages((prev) => [...prev, userSummaryMsg]);
+        }
 
-        setMessages((prev) => [...prev, userSummaryMsg]);
         setIsAgentThinking(true);
 
         try {
@@ -998,7 +1122,7 @@ export default function ChatAgent() {
                     if (apStatus?.publicDriveReady && driveUrl && driveInfo) {
                         try {
                             const createdSource = await appClient.autopilot.call('createSource', {
-                                brand_id: currentBrand.id,
+                                brand_id: effectiveBrand.id,
                                 name: `Drive - ${campaignName}`.slice(0, 80),
                                 kind: 'drive_public',
                                 folder: driveUrl,
@@ -1011,7 +1135,7 @@ export default function ChatAgent() {
                             // Source might already exist; continue to list
                         }
                     }
-                    const apList = await appClient.autopilot.call('list', { brand_id: currentBrand.id });
+                    const apList = await appClient.autopilot.call('list', { brand_id: effectiveBrand.id });
                     if (apList?.assets?.length) {
                         driveAssets = apList.assets.map((a) => ({
                             id: a.id,
@@ -1035,7 +1159,7 @@ export default function ChatAgent() {
             // Also load existing brand MediaAssets
             try {
                 const mediaRes = await appClient.entities.MediaAsset.filter(
-                    { brand_id: currentBrand.id, is_demo: !!demoMode },
+                    { brand_id: effectiveBrand.id, is_demo: !!demoMode },
                     { limit: 100 }
                 );
                 if (mediaRes?.items?.length) {
@@ -1072,11 +1196,11 @@ export default function ChatAgent() {
             setThinkingStage('Đang phân tích cấu trúc Campaign, Trụ cột & Góc nội dung...');
             const [pillarsRes, anglesRes] = await Promise.allSettled([
                 appClient.entities.ContentPillar.filter(
-                    { brand_id: currentBrand.id, is_demo: !!demoMode },
+                    { brand_id: effectiveBrand.id, is_demo: !!demoMode },
                     { limit: 100 }
                 ),
                 appClient.entities.ContentAngle.filter(
-                    { brand_id: currentBrand.id, is_demo: !!demoMode },
+                    { brand_id: effectiveBrand.id, is_demo: !!demoMode },
                     { limit: 200 }
                 ),
             ]);
@@ -1084,15 +1208,17 @@ export default function ChatAgent() {
             const angles = anglesRes.status === 'fulfilled' ? anglesRes.value?.items || [] : [];
 
             const targetPlatforms =
-                brandAccounts.length > 0
-                    ? [...new Set(brandAccounts.map((a) => a.platform))]
+                cfg.platformsOverride?.length > 0
+                    ? cfg.platformsOverride
+                    : effectiveBrandAccounts.length > 0
+                    ? [...new Set(effectiveBrandAccounts.map((a) => a.platform))]
                     : ['facebook', 'instagram', 'linkedin', 'threads'];
 
             // Build base strategy slots
             const basePlan = generateStrategyPlan({
                 brand: {
-                    ...currentBrand,
-                    timezone: timezone || currentBrand.timezone || DEFAULT_TIMEZONE,
+                    ...effectiveBrand,
+                    timezone: timezone || effectiveBrand.timezone || DEFAULT_TIMEZONE,
                 },
                 pillars,
                 angles,
@@ -1111,7 +1237,7 @@ export default function ChatAgent() {
                     item: post,
                     campaignName,
                     rawData,
-                    brandName: currentBrand.name,
+                    brandName: effectiveBrand.name,
                     index: idx,
                 })
             );
@@ -1122,10 +1248,10 @@ export default function ChatAgent() {
                     task: 'Bạn là chiến lược gia nội dung. Hãy xào nấu dữ liệu gốc của người dùng kết hợp với danh sách ảnh Google Drive thành mảng JSON gồm các bài đăng cho chiến dịch. Trả về đúng JSON array: [{id, title, caption, reason}]. Không trùng lặp nội dung.',
                     campaign: campaignName,
                     brand: {
-                        name: currentBrand.name,
-                        description: currentBrand.description,
-                        products: currentBrand.products,
-                        tone_of_voice: currentBrand.tone_of_voice,
+                        name: effectiveBrand.name,
+                        description: effectiveBrand.description,
+                        products: effectiveBrand.products,
+                        tone_of_voice: effectiveBrand.tone_of_voice,
                     },
                     user_raw_data: rawData,
                     drive_folder: driveUrl,
@@ -1141,7 +1267,7 @@ export default function ChatAgent() {
 
                 const aiRes = await aiRequest('generate', {
                     action: 'strategy',
-                    brand_id: currentBrand.id,
+                    brand_id: effectiveBrand.id,
                     title: campaignName,
                     caption: '',
                     brief: aiBrief,
@@ -1174,9 +1300,15 @@ export default function ChatAgent() {
                 // Keep rich deterministic remix from remixPostWithRawData if AI key is not configured
             }
 
+            const selectedAccountIdsForCampaign = effectiveBrandAccounts
+                .filter((a) => targetPlatforms.includes(a.platform))
+                .map((a) => a.id);
+
             const newMsgId = `agent-camp-${Date.now()}`;
             const campaignDraft = {
                 id: `camp_${Date.now()}`,
+                brandId: effectiveBrand.id,
+                brandName: effectiveBrand.name,
                 campaignName,
                 driveUrl: driveUrl || 'Kho ảnh Google Drive liên kết',
                 driveSourceStatus,
@@ -1184,8 +1316,11 @@ export default function ChatAgent() {
                 rawData,
                 days: daysCount,
                 frequency,
-                timezone: timezone || currentBrand.timezone || DEFAULT_TIMEZONE,
-                selectedAccountIds: brandAccounts.map((a) => a.id),
+                timezone: timezone || effectiveBrand.timezone || DEFAULT_TIMEZONE,
+                selectedAccountIds:
+                    selectedAccountIdsForCampaign.length > 0
+                        ? selectedAccountIdsForCampaign
+                        : effectiveBrandAccounts.map((a) => a.id),
                 posts: remixedPosts,
                 isScheduled: false,
                 isSaving: false,
@@ -1299,115 +1434,86 @@ export default function ChatAgent() {
         toast({ title: t('Đã xóa bài viết khỏi chuỗi lịch Campaign') });
     };
 
-    // User submits message
-    const handleSendMessage = async () => {
-        const userText = inputText.trim();
-        const attached = [...selectedImages];
+    // Execute single post draft generation after user confirms Brand & Platforms
+    const executeSinglePostDraft = async ({
+        userText,
+        attached = [],
+        brandOverride = null,
+        platformsOverride = [],
+        scheduledDate = null,
+        scheduledTime = null,
+    }) => {
+        const effectiveBrand = brandOverride || currentBrand;
+        if (!effectiveBrand) return;
 
-        if (!userText && attached.length === 0) return;
-        if (!currentBrand) {
-            toast({ variant: 'destructive', title: t('Chưa có thương hiệu nào được chọn.') });
-            return;
-        }
-
-        // Check if the user is asking for Campaign + Drive + Auto Remix in natural language
-        if (isCampaignIntent(userText)) {
-            const parsed = parseCampaignPromptText(
-                userText,
-                campaignForm.name || `Campaign ${currentBrand.name}`,
-                campaignForm.driveUrl
-            );
-
-            setInputText('');
-            setSelectedImages([]);
-            if (textareaRef.current) textareaRef.current.style.height = 'auto';
-
-            await handleRunCampaignAutopilot({
-                name: parsed.campaignName,
-                driveUrl: parsed.driveUrl,
-                rawData: parsed.rawData,
-                days: parsed.days,
-                frequency: campaignForm.frequency,
-                autoSchedule: true,
-                userPromptText: userText,
-            });
-            return;
-        }
-
-        const userMsg = {
-            id: `user-${Date.now()}`,
-            role: 'user',
-            text: userText || (attached.length ? `[Đã đính kèm ${attached.length} ảnh]` : ''),
-            attachedImages: attached,
-            createdAt: new Date().toISOString(),
-        };
-
-        setMessages((prev) => [...prev, userMsg]);
-        setInputText('');
-        setSelectedImages([]);
-        if (textareaRef.current) textareaRef.current.style.height = 'auto';
+        const effectiveBrandAccounts = accounts.filter(
+            (acc) => !acc.brand_id || acc.brand_id === effectiveBrand.id
+        );
 
         setIsAgentThinking(true);
+        setThinkingStage('Đang soạn thảo bài đăng & tối ưu cho các mạng xã hội đã chọn...');
 
         try {
-            // 1. Extract schedule time
             const schedule = parseScheduleTime(userText, timezone || DEFAULT_TIMEZONE);
+            const finalDate = scheduledDate || schedule.date;
+            const finalTime = scheduledTime || schedule.time;
 
-            // 2. Determine target accounts
-            const lowerText = userText.toLowerCase();
+            const mentionedPlatforms =
+                platformsOverride.length > 0 ? platformsOverride : detectPlatformsFromText(userText);
+
             let targetAccountIds = [];
-
-            // Detect platform mentions
-            const platformKeywords = ['threads', 'linkedin', 'facebook', 'instagram', 'tiktok', 'x'];
-            const mentionedPlatforms = platformKeywords.filter((p) => lowerText.includes(p));
-
             if (mentionedPlatforms.length > 0) {
-                targetAccountIds = brandAccounts
+                targetAccountIds = effectiveBrandAccounts
                     .filter((acc) => mentionedPlatforms.includes(acc.platform))
                     .map((acc) => acc.id);
             }
-
-            // Fallback: if no specific platform mentioned or none matched, select all brand accounts
             if (targetAccountIds.length === 0) {
-                targetAccountIds = brandAccounts.map((acc) => acc.id);
+                targetAccountIds = effectiveBrandAccounts.map((acc) => acc.id);
             }
 
-            // 3. Draft caption using AI API or smart local generator
             let generatedCaption = '';
             let generatedTitle = '';
 
             try {
                 const aiResult = await aiRequest('generate', {
                     action: 'draft',
-                    brief: userText || `Bài viết giới thiệu sản phẩm và thương hiệu ${currentBrand.name}`,
+                    brief: userText || `Bài viết giới thiệu sản phẩm và thương hiệu ${effectiveBrand.name}`,
                     confirmed: true,
                     language: 'vi',
-                    brand_id: currentBrand.id,
+                    brand_id: effectiveBrand.id,
                 });
                 if (aiResult?.caption) {
                     generatedCaption = aiResult.caption;
                     generatedTitle = aiResult.title || userText.slice(0, 45);
                 }
             } catch {
-                // Heuristic fallback if AI server endpoint is not configured or in offline mode
-                const topic = userText.replace(/mai|sáng|chiều|tối|lên lịch|đăng bài|lúc|\d+h|\d+:\d+/gi, '').trim() || 'Nội dung chia sẻ hôm nay';
+                const topic =
+                    userText.replace(/mai|sáng|chiều|tối|lên lịch|đăng bài|lúc|\d+h|\d+:\d+/gi, '').trim() ||
+                    'Nội dung chia sẻ hôm nay';
                 generatedTitle = `[AI] ${topic.slice(0, 40)}`;
-                generatedCaption = `🌟 ${topic.toUpperCase()} — Góc chia sẻ từ ${currentBrand.name}\n\nTrong thời đại số hiện nay, việc tối ưu hóa và liên tục cập nhật là chìa khóa để dẫn đầu. Cùng ${currentBrand.name} khám phá và bứt phá mỗi ngày nhé!\n\n👉 Thả tim và lưu lại bài viết nếu bạn thấy hữu ích!`;
+                generatedCaption = `🌟 ${topic.toUpperCase()} — Góc chia sẻ từ ${effectiveBrand.name}\n\nTrong thời đại số hiện nay, việc tối ưu hóa và liên tục cập nhật là chìa khóa để dẫn đầu. Cùng ${effectiveBrand.name} khám phá và bứt phá mỗi ngày nhé!\n\n👉 Thả tim và lưu lại bài viết nếu bạn thấy hữu ích!`;
             }
 
             if (!generatedTitle) generatedTitle = `[AI] ${userText.slice(0, 40) || 'Kế hoạch đăng bài'}`;
 
-            // 4. Build platform adaptations
             let platformCaptions = generatePlatformContent(generatedCaption, userText);
 
-            // Auto-shorten links in caption if preference is 'always'
             const currentPref = getShortlinkPreference();
-            if (currentPref === 'always' && /https?:\/\/[^\s]+/i.test(generatedCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(generatedCaption)) {
+            if (
+                currentPref === 'always' &&
+                /https?:\/\/[^\s]+/i.test(generatedCaption) &&
+                !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(generatedCaption)
+            ) {
                 try {
                     const linkRes = await appClient.links.build({
-                        brand_id: currentBrand.id,
+                        brand_id: effectiveBrand.id,
                         form: { caption: generatedCaption, platform_captions: platformCaptions },
-                        options: { medium: 'social', campaign: generatedTitle || 'agent-post', tracking: true, short: true },
+                        options: {
+                            medium: 'social',
+                            campaign: generatedTitle || 'agent-post',
+                            tracking: true,
+                            short: true,
+                        },
                     });
                     if (linkRes?.caption) {
                         generatedCaption = linkRes.caption;
@@ -1420,15 +1526,16 @@ export default function ChatAgent() {
                 }
             }
 
-            // 5. Create Draft Post object
             const postDraft = {
+                brandId: effectiveBrand.id,
+                brandName: effectiveBrand.name,
                 title: generatedTitle,
                 caption: generatedCaption,
                 platformCaptions,
                 media: attached,
                 selectedAccountIds: targetAccountIds,
-                scheduledDate: schedule.date,
-                scheduledTime: schedule.time,
+                scheduledDate: finalDate,
+                scheduledTime: finalTime,
                 timezone: timezone || DEFAULT_TIMEZONE,
                 isScheduled: false,
                 scheduledPostId: null,
@@ -1438,7 +1545,7 @@ export default function ChatAgent() {
             const agentReply = {
                 id: newMsgId,
                 role: 'agent',
-                text: `✨ Tôi đã soạn xong bài đăng và chuẩn bị lịch vào **${schedule.time} ngày ${schedule.date}**!\n\n👉 **Xem bản xem trước đa kênh trực tiếp ở cột bên phải** để kiểm tra và bấm **Xác nhận lên lịch ngay**.`,
+                text: `✨ Tôi đã soạn xong bài đăng cho **${effectiveBrand.name}** và chuẩn bị lịch vào **${finalTime} ngày ${finalDate}**!\n\n👉 **Xem bản xem trước đa kênh trực tiếp ở cột bên phải** để kiểm tra và bấm **Xác nhận lên lịch ngay**.`,
                 createdAt: new Date().toISOString(),
                 postDraft,
             };
@@ -1446,8 +1553,8 @@ export default function ChatAgent() {
             setMessages((prev) => [...prev, agentReply]);
             setActiveDraftMessageId(newMsgId);
             setIsEditingCaption(false);
+            if (mentionedPlatforms[0]) setActivePlatformTab(mentionedPlatforms[0]);
 
-            // If mobile view, auto-switch to preview tab so user sees the result
             if (window.innerWidth < 1024) {
                 setMobileTab('preview');
             }
@@ -1464,7 +1571,155 @@ export default function ChatAgent() {
             ]);
         } finally {
             setIsAgentThinking(false);
+            setThinkingStage('');
         }
+    };
+
+    // Update interactive clarification selections inside a chat card
+    const updateClarificationField = (messageId, patch) => {
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.id === messageId && m.clarification
+                    ? { ...m, clarification: { ...m.clarification, ...patch } }
+                    : m
+            )
+        );
+    };
+
+    // User confirms Brand, Social Platforms & Schedule options on Clarification Card
+    const handleConfirmClarification = async (messageId) => {
+        const targetMsg = messages.find((m) => m.id === messageId);
+        const c = targetMsg?.clarification;
+        if (!c || c.status === 'confirmed') return;
+
+        const chosenBrand = brands.find((b) => b.id === c.selectedBrandId) || currentBrand;
+        if (!chosenBrand) return;
+
+        if (!c.selectedPlatforms || c.selectedPlatforms.length === 0) {
+            toast({
+                variant: 'destructive',
+                title: t('Vui lòng chọn ít nhất 1 mạng xã hội.'),
+            });
+            return;
+        }
+
+        // Sync workspace brand selector if user picked another brand
+        if (chosenBrand.id !== selectedBrandId) {
+            setSelectedBrandId(chosenBrand.id);
+        }
+
+        setMessages((prev) =>
+            prev.map((m) =>
+                m.id === messageId && m.clarification
+                    ? {
+                          ...m,
+                          clarification: {
+                              ...m.clarification,
+                              status: 'confirmed',
+                              confirmedBrandName: chosenBrand.name,
+                          },
+                      }
+                    : m
+            )
+        );
+
+        if (c.mode === 'campaign') {
+            await handleRunCampaignAutopilot({
+                name: c.campaignName,
+                driveUrl: c.driveUrl,
+                rawData: c.rawData,
+                days: c.days,
+                frequency: c.frequency,
+                autoSchedule: c.autoSchedule,
+                brandOverride: chosenBrand,
+                platformsOverride: c.selectedPlatforms,
+                skipUserEcho: true,
+            });
+        } else {
+            await executeSinglePostDraft({
+                userText: c.rawPrompt,
+                attached: c.attachedImages || [],
+                brandOverride: chosenBrand,
+                platformsOverride: c.selectedPlatforms,
+                scheduledDate: c.scheduledDate,
+                scheduledTime: c.scheduledTime,
+            });
+        }
+    };
+
+    // User submits message -> AI asks clarifying questions (Brand, Social Networks, Mode)
+    const handleSendMessage = async () => {
+        const userText = inputText.trim();
+        const attached = [...selectedImages];
+
+        if (!userText && attached.length === 0) return;
+        if (!currentBrand) {
+            toast({ variant: 'destructive', title: t('Chưa có thương hiệu nào được chọn.') });
+            return;
+        }
+
+        const userMsg = {
+            id: `user-${Date.now()}`,
+            role: 'user',
+            text: userText || (attached.length ? `[Đã đính kèm ${attached.length} ảnh]` : ''),
+            attachedImages: attached,
+            createdAt: new Date().toISOString(),
+        };
+
+        setMessages((prev) => [...prev, userMsg]);
+        setInputText('');
+        setSelectedImages([]);
+        if (textareaRef.current) textareaRef.current.style.height = 'auto';
+
+        const isCampaign = isCampaignIntent(userText);
+        const matchedBrand = detectBrandFromText(userText, brands) || currentBrand;
+        const matchedBrandAccounts = accounts.filter(
+            (acc) => !acc.brand_id || acc.brand_id === matchedBrand.id
+        );
+        const availablePlatformsForBrand =
+            matchedBrandAccounts.length > 0
+                ? [...new Set(matchedBrandAccounts.map((a) => a.platform))]
+                : ['facebook', 'instagram', 'threads', 'linkedin'];
+
+        const detectedPlatforms = detectPlatformsFromText(userText);
+        const initialPlatforms =
+            detectedPlatforms.length > 0 ? detectedPlatforms : availablePlatformsForBrand;
+
+        const parsedCampaign = isCampaign
+            ? parseCampaignPromptText(
+                  userText,
+                  campaignForm.name || `Campaign ${matchedBrand.name}`,
+                  campaignForm.driveUrl
+              )
+            : null;
+        const schedule = parseScheduleTime(userText, timezone || DEFAULT_TIMEZONE);
+
+        const clarifyMsg = {
+            id: `clarify-${Date.now()}`,
+            role: 'agent',
+            text: isCampaign
+                ? `Tôi đã nhận yêu cầu tạo chiến dịch **"${parsedCampaign.campaignName}"**. Trước khi bắt đầu xào nấu dữ liệu & lên lịch, bạn xác nhận nhanh giúp tôi:`
+                : `Tôi đã nhận ý tưởng của bạn! Trước khi soạn thảo, bạn xác nhận giúp tôi vài thông tin nhanh nhé:`,
+            createdAt: new Date().toISOString(),
+            clarification: {
+                mode: isCampaign ? 'campaign' : 'single',
+                status: 'pending',
+                rawPrompt: userText,
+                attachedImages: attached,
+                selectedBrandId: matchedBrand.id,
+                selectedPlatforms: initialPlatforms,
+                autoSchedule: true,
+                campaignName: parsedCampaign?.campaignName || '',
+                driveUrl: parsedCampaign?.driveUrl || '',
+                rawData: parsedCampaign?.rawData || userText,
+                days: parsedCampaign?.days || campaignForm.days,
+                frequency: campaignForm.frequency,
+                scheduledDate: schedule.date,
+                scheduledTime: schedule.time,
+            },
+        };
+
+        setMessages((prev) => [...prev, clarifyMsg]);
     };
 
     // Confirm and schedule post
@@ -1486,11 +1741,12 @@ export default function ChatAgent() {
 
             let effectiveCaption = draft.caption;
             let effectivePlatformCaptions = draft.platformCaptions || {};
+            const targetBrandId = draft.brandId || currentBrand.id;
             const pref = getShortlinkPreference();
             if (pref === 'always' && /https?:\/\/[^\s]+/i.test(effectiveCaption) && !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(effectiveCaption)) {
                 try {
                     const linkRes = await appClient.links.build({
-                        brand_id: currentBrand.id,
+                        brand_id: targetBrandId,
                         form: { caption: effectiveCaption, platform_captions: effectivePlatformCaptions },
                         options: { medium: 'social', campaign: draft.title || 'agent-post', tracking: true, short: true },
                     });
@@ -1505,7 +1761,7 @@ export default function ChatAgent() {
 
             const allowedPlatforms = ['facebook', 'instagram', 'threads', 'tiktok', 'linkedin'];
             const payload = {
-                brand_id: currentBrand.id,
+                brand_id: targetBrandId,
                 title: draft.title.trim(),
                 caption: effectiveCaption,
                 platform_captions: Object.fromEntries(
@@ -1932,6 +2188,191 @@ export default function ChatAgent() {
                                             )}
                                         </div>
 
+                                        {/* Interactive Clarification Card (Brand, Social Platforms, Schedule) */}
+                                        {msg.clarification && (() => {
+                                            const c = msg.clarification;
+                                            const isConfirmed = c.status === 'confirmed';
+                                            const chosenBrandAccounts = accounts.filter(
+                                                (acc) => !acc.brand_id || acc.brand_id === c.selectedBrandId
+                                            );
+                                            const brandPlatformList =
+                                                chosenBrandAccounts.length > 0
+                                                    ? [...new Set(chosenBrandAccounts.map((a) => a.platform))]
+                                                    : [];
+                                            const displayPlatforms = [...new Set([...brandPlatformList, ...CLARIFICATION_PLATFORMS])];
+
+                                            return (
+                                                <div className="w-full rounded-xl border border-amber-300 bg-amber-50/40 p-3.5 space-y-3 shadow-2xs">
+                                                    {/* 1. Brand Selection */}
+                                                    <div className="space-y-1.5">
+                                                        <div className="text-[11px] font-bold text-zinc-700">
+                                                            1. Bạn muốn dùng thương hiệu nào?
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {brands.map((b) => {
+                                                                const selected = c.selectedBrandId === b.id;
+                                                                return (
+                                                                    <button
+                                                                        key={b.id}
+                                                                        type="button"
+                                                                        disabled={isConfirmed}
+                                                                        onClick={() => {
+                                                                            const nextAccs = accounts.filter(
+                                                                                (acc) => !acc.brand_id || acc.brand_id === b.id
+                                                                            );
+                                                                            const nextPlats =
+                                                                                nextAccs.length > 0
+                                                                                    ? [...new Set(nextAccs.map((a) => a.platform))]
+                                                                                    : c.selectedPlatforms;
+                                                                            updateClarificationField(msg.id, {
+                                                                                selectedBrandId: b.id,
+                                                                                selectedPlatforms: nextPlats,
+                                                                            });
+                                                                        }}
+                                                                        className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                                                                            selected
+                                                                                ? 'border-zinc-900 bg-zinc-900 text-white'
+                                                                                : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400'
+                                                                        } ${isConfirmed ? 'opacity-75 cursor-default' : 'cursor-pointer'}`}
+                                                                    >
+                                                                        {selected && <Check size={11} weight="bold" />}
+                                                                        {b.name}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* 2. Social Network Selection */}
+                                                    <div className="space-y-1.5">
+                                                        <div className="flex items-center justify-between">
+                                                            <span className="text-[11px] font-bold text-zinc-700">
+                                                                2. Bạn muốn tạo bài cho mạng xã hội nào?
+                                                            </span>
+                                                            {!isConfirmed && (
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() =>
+                                                                        updateClarificationField(msg.id, {
+                                                                            selectedPlatforms:
+                                                                                c.selectedPlatforms.length === displayPlatforms.length
+                                                                                    ? []
+                                                                                    : displayPlatforms,
+                                                                        })
+                                                                    }
+                                                                    className="text-[10px] font-bold text-amber-800 hover:underline cursor-pointer"
+                                                                >
+                                                                    {c.selectedPlatforms.length === displayPlatforms.length
+                                                                        ? 'Bỏ chọn tất cả'
+                                                                        : 'Chọn tất cả'}
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex flex-wrap gap-1.5">
+                                                            {displayPlatforms.map((plat) => {
+                                                                const selected = c.selectedPlatforms.includes(plat);
+                                                                const label = PLATFORM_CONFIG[plat]?.label || plat.toUpperCase();
+                                                                return (
+                                                                    <button
+                                                                        key={plat}
+                                                                        type="button"
+                                                                        disabled={isConfirmed}
+                                                                        onClick={() => {
+                                                                            const next = selected
+                                                                                ? c.selectedPlatforms.filter((p) => p !== plat)
+                                                                                : [...c.selectedPlatforms, plat];
+                                                                            updateClarificationField(msg.id, {
+                                                                                selectedPlatforms: next,
+                                                                            });
+                                                                        }}
+                                                                        className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all ${
+                                                                            selected
+                                                                                ? 'border-zinc-900 bg-white text-zinc-900 ring-1 ring-zinc-900'
+                                                                                : 'border-zinc-200 bg-white/70 text-zinc-500 hover:border-zinc-400'
+                                                                        } ${isConfirmed ? 'opacity-75 cursor-default' : 'cursor-pointer'}`}
+                                                                    >
+                                                                        {selected && <Check size={11} weight="bold" className="text-emerald-600" />}
+                                                                        {label}
+                                                                    </button>
+                                                                );
+                                                            })}
+                                                        </div>
+                                                    </div>
+
+                                                    {/* 3. Schedule Preference */}
+                                                    {c.mode === 'campaign' ? (
+                                                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-200/70">
+                                                            <label className="inline-flex items-center gap-2 text-[11px] font-semibold text-zinc-800 cursor-pointer">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    disabled={isConfirmed}
+                                                                    checked={c.autoSchedule}
+                                                                    onChange={(e) =>
+                                                                        updateClarificationField(msg.id, {
+                                                                            autoSchedule: e.target.checked,
+                                                                        })
+                                                                    }
+                                                                    className="rounded border-zinc-300 text-zinc-900"
+                                                                />
+                                                                Tự động lên lịch {c.days} ngày ngay sau khi xào nấu
+                                                            </label>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-amber-200/70">
+                                                            <span className="text-[11px] font-bold text-zinc-700">
+                                                                3. Thời gian dự kiến:
+                                                            </span>
+                                                            <input
+                                                                type="date"
+                                                                disabled={isConfirmed}
+                                                                value={c.scheduledDate}
+                                                                onChange={(e) =>
+                                                                    updateClarificationField(msg.id, {
+                                                                        scheduledDate: e.target.value,
+                                                                    })
+                                                                }
+                                                                className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-zinc-800"
+                                                            />
+                                                            <input
+                                                                type="time"
+                                                                disabled={isConfirmed}
+                                                                value={c.scheduledTime}
+                                                                onChange={(e) =>
+                                                                    updateClarificationField(msg.id, {
+                                                                        scheduledTime: e.target.value,
+                                                                    })
+                                                                }
+                                                                className="rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[11px] font-semibold text-zinc-800"
+                                                            />
+                                                        </div>
+                                                    )}
+
+                                                    {/* Confirm Action */}
+                                                    <div className="flex items-center justify-end gap-2 pt-1">
+                                                        {isConfirmed ? (
+                                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 text-[11px] font-bold text-emerald-700">
+                                                                <CheckCircle size={12} weight="bold" />
+                                                                Đã xác nhận ({c.confirmedBrandName} · {c.selectedPlatforms.length} kênh)
+                                                            </span>
+                                                        ) : (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => handleConfirmClarification(msg.id)}
+                                                                className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-zinc-800 cursor-pointer shadow-2xs"
+                                                            >
+                                                                <Sparkle size={13} weight="bold" />
+                                                                <span>
+                                                                    {c.mode === 'campaign'
+                                                                        ? 'Xác nhận & Tạo Campaign ngay'
+                                                                        : 'Xác nhận & Soạn bài ngay'}
+                                                                </span>
+                                                            </button>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            );
+                                        })()}
+
                                         {/* Compact Single Post Draft Summary Card in Left Column */}
                                         {msg.postDraft && (
                                             <div
@@ -2052,33 +2493,55 @@ export default function ChatAgent() {
 
                         {/* Sticky Prompt Input Dock (Left Column Bottom) */}
                         <div className="p-3.5 border-t border-zinc-100 bg-white shrink-0 space-y-2.5">
-                            {/* Quick Suggestion Chips */}
-                            <div className="flex items-center gap-1.5 overflow-x-auto text-[11px] pb-0.5 scrollbar-none">
-                                <span className="font-bold text-zinc-400 uppercase text-[10px] shrink-0 flex items-center gap-1">
-                                    <Lightning size={12} weight="bold" className="text-amber-500" /> Gợi ý:
-                                </span>
-                                <button
-                                    type="button"
-                                    onClick={() => setShowCampaignBuilder(true)}
-                                    className="px-2.5 py-1 rounded-full border border-amber-400/80 bg-amber-50 hover:bg-amber-100 text-zinc-900 font-bold shrink-0 cursor-pointer transition-all flex items-center gap-1"
+                            {/* AI Model Selector (Synced with Settings) */}
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px]">
+                                <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <span className="font-bold text-zinc-500 uppercase text-[10px] shrink-0 flex items-center gap-1">
+                                        <Cpu size={13} weight="bold" className="text-zinc-700" />
+                                        Model AI:
+                                    </span>
+                                    {aiSettings.configured ? (
+                                        <div className="flex items-center gap-1.5 min-w-0 flex-1 max-w-sm">
+                                            <span className="rounded-md bg-zinc-100 border border-zinc-200 px-2 py-0.5 text-[10px] font-bold text-zinc-700 shrink-0">
+                                                {aiSettings.provider === 'gemini'
+                                                    ? 'Gemini'
+                                                    : aiSettings.provider === 'openrouter'
+                                                    ? 'OpenRouter'
+                                                    : 'OpenAI'}
+                                            </span>
+                                            <div className="relative flex-1 min-w-0">
+                                                <select
+                                                    value={aiSettings.model}
+                                                    disabled={savingAiModel || aiModelsLoading}
+                                                    onChange={(e) => handleChangeAiModel(e.target.value)}
+                                                    className="w-full h-7 rounded-lg border border-zinc-200 bg-zinc-50 pl-2.5 pr-7 text-[11px] font-semibold text-zinc-900 appearance-none cursor-pointer hover:border-zinc-400 focus:outline-none focus:border-zinc-900 truncate"
+                                                >
+                                                    {availableAiModelOptions.map((m) => (
+                                                        <option key={m.id} value={m.id}>
+                                                            {m.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <CaretDown
+                                                    size={12}
+                                                    className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 pointer-events-none"
+                                                />
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[11px] text-zinc-500 truncate">
+                                            Chưa cấu hình AI Key trong Settings
+                                        </span>
+                                    )}
+                                </div>
+
+                                <Link
+                                    to="/Settings"
+                                    className="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-50 hover:border-zinc-400 shrink-0"
                                 >
-                                    <HardDrives size={12} weight="bold" />
-                                    Tạo Campaign + Liên kết Drive tự động
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuickPrompt('Ra mắt tính năng mới vào 9h sáng mai trên Threads và Facebook')}
-                                    className="px-2.5 py-1 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-400 text-zinc-700 font-medium shrink-0 cursor-pointer transition-all"
-                                >
-                                    🚀 Ra mắt tính năng 9h sáng mai
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => handleQuickPrompt('Chia sẻ bài học tối ưu nội dung MXH vào 20:00 tối nay trên LinkedIn')}
-                                    className="px-2.5 py-1 rounded-full border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 hover:border-zinc-400 text-zinc-700 font-medium shrink-0 cursor-pointer transition-all"
-                                >
-                                    📈 Bài học kinh nghiệm 20:00
-                                </button>
+                                    <span>{aiSettings.configured ? 'Cài đặt AI' : 'Cấu hình ngay'}</span>
+                                    <ArrowSquareOut size={11} />
+                                </Link>
                             </div>
 
                             {/* Pending Images Strip */}
@@ -2280,6 +2743,21 @@ export default function ChatAgent() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() =>
+                                                                    setPreviewCampaignPost({
+                                                                        messageId: activeDraftMessage.id,
+                                                                        postId: postItem.id,
+                                                                        index: idx,
+                                                                    })
+                                                                }
+                                                                title="Xem đầy đủ nội dung bài viết"
+                                                                className="inline-flex items-center gap-1 rounded-lg border border-zinc-200 bg-white px-2 py-1 text-[11px] font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                                                            >
+                                                                <Eye size={12} weight="bold" />
+                                                                <span>Xem</span>
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
                                                                     handleRegenerateCampaignPost(
                                                                         activeDraftMessage.id,
                                                                         postItem
@@ -2342,9 +2820,25 @@ export default function ChatAgent() {
                                                                 {postItem.title}
                                                             </div>
                                                             {!isExpanded && (
-                                                                <p className="text-xs text-zinc-600 line-clamp-2 whitespace-pre-line">
-                                                                    {postItem.caption}
-                                                                </p>
+                                                                <div className="space-y-1">
+                                                                    <p className="text-xs text-zinc-600 line-clamp-2 whitespace-pre-line">
+                                                                        {postItem.caption}
+                                                                    </p>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() =>
+                                                                            setPreviewCampaignPost({
+                                                                                messageId: activeDraftMessage.id,
+                                                                                postId: postItem.id,
+                                                                                index: idx,
+                                                                            })
+                                                                        }
+                                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 hover:text-amber-800 cursor-pointer"
+                                                                    >
+                                                                        <Eye size={12} weight="bold" />
+                                                                        <span>Xem đầy đủ</span>
+                                                                    </button>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
@@ -2906,6 +3400,114 @@ export default function ChatAgent() {
 
                 </div>
             </div>
+
+            {/* Popup Modal: Full Preview of Campaign Post */}
+            <Dialog
+                open={Boolean(previewCampaignPost)}
+                onOpenChange={(open) => {
+                    if (!open) setPreviewCampaignPost(null);
+                }}
+            >
+                <DialogContent className="max-w-2xl max-h-[88vh] overflow-y-auto bg-white border-zinc-200 rounded-2xl p-5 sm:p-6">
+                    {(() => {
+                        if (!previewCampaignPost) return null;
+                        const targetMsg = messages.find((m) => m.id === previewCampaignPost.messageId);
+                        const postItem = targetMsg?.campaignDraft?.posts?.find(
+                            (p) => p.id === previewCampaignPost.postId
+                        );
+                        if (!postItem) return null;
+
+                        return (
+                            <div className="space-y-4">
+                                <DialogHeader className="text-left space-y-1.5">
+                                    <div className="flex flex-wrap items-center gap-2 pr-6">
+                                        <span className="rounded-lg bg-zinc-900 text-white px-2.5 py-0.5 text-[11px] font-bold">
+                                            Bài #{previewCampaignPost.index + 1} · Ngày {postItem.dayIndex}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
+                                            <CalendarBlank size={12} /> {postItem.date}
+                                        </span>
+                                        <span className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
+                                            <Clock size={12} /> {postItem.time}
+                                        </span>
+                                        <span className="rounded-md border border-zinc-200 bg-zinc-100 px-2 py-0.5 text-[10px] font-bold uppercase text-zinc-800">
+                                            {postItem.platform}
+                                        </span>
+                                        {postItem.isScheduled && (
+                                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-700">
+                                                <CheckCircle size={11} weight="bold" /> Đã hẹn giờ
+                                            </span>
+                                        )}
+                                    </div>
+                                    <DialogTitle className="text-base font-bold text-zinc-900 leading-snug pt-1">
+                                        {postItem.title}
+                                    </DialogTitle>
+                                    <DialogDescription className="text-xs text-zinc-500">
+                                        {postItem.pillar?.name} · {postItem.angle?.name}
+                                    </DialogDescription>
+                                </DialogHeader>
+
+                                {postItem.asset?.file_url && (
+                                    <div className="rounded-xl overflow-hidden border border-zinc-200 bg-zinc-50 max-h-72 flex items-center justify-center">
+                                        <img
+                                            src={postItem.asset.file_url}
+                                            alt={postItem.asset.name || 'Drive asset'}
+                                            className="max-h-72 w-auto object-contain"
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="space-y-1.5">
+                                    <div className="text-[11px] font-bold uppercase tracking-wider text-zinc-500">
+                                        Nội dung đầy đủ
+                                    </div>
+                                    <div className="rounded-xl border border-zinc-200 bg-zinc-50/70 p-4 text-sm text-zinc-800 whitespace-pre-wrap leading-relaxed">
+                                        {postItem.caption}
+                                    </div>
+                                </div>
+
+                                {postItem.reason && (
+                                    <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-3.5 py-2.5 text-xs text-amber-900">
+                                        <span className="font-bold">Ghi chú AI Remix: </span>
+                                        {postItem.reason}
+                                    </div>
+                                )}
+
+                                <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-zinc-100">
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            handleRegenerateCampaignPost(previewCampaignPost.messageId, postItem)
+                                        }
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                                    >
+                                        <ArrowsClockwise size={13} weight="bold" />
+                                        Xào nấu lại
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setSelectedCampaignPostId(postItem.id);
+                                            setPreviewCampaignPost(null);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-100 cursor-pointer"
+                                    >
+                                        <PencilSimple size={13} weight="bold" />
+                                        Chỉnh sửa
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setPreviewCampaignPost(null)}
+                                        className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-zinc-800 cursor-pointer"
+                                    >
+                                        Đóng
+                                    </button>
+                                </div>
+                            </div>
+                        );
+                    })()}
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
