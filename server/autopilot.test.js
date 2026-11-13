@@ -179,7 +179,7 @@ test('private Gemini relay supports bounded image requests without changing writ
 });
 
 test('Autopilot HTTP endpoints enforce authentication, browser origin, header and disabled gate', async t => {
-    const { server } = createApi({ dbPath: ':memory:', passwordHash: hashPassword('autopilot-test-password') });
+    const { server } = createApi({ dbPath: ':memory:', passwordHash: hashPassword('autopilot-test-password'), publicOrigin: 'https://socialchoice.site' });
     await new Promise(resolve => server.listen(0, '127.0.0.1', resolve)); t.after(() => new Promise(resolve => server.close(resolve)));
     const url = `http://127.0.0.1:${server.address().port}`, headers = { 'Content-Type': 'application/json', 'X-Socialchoice-Client': 'local-ui' }, body = JSON.stringify({ args: [{}] });
     assert.equal((await fetch(url + '/api/autopilot/status', { method: 'POST', headers, body })).status, 401);
