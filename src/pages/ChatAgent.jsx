@@ -32,6 +32,7 @@ import { aiRequest } from '@/api/ai';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import { useTranslation } from '@/lib/i18n';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { toUtcIso, toZonedParts, todayInZone, addDays } from '@/lib/tz';
 import { DEFAULT_TIMEZONE } from '@/lib/constants';
@@ -1307,12 +1308,8 @@ export default function ChatAgent() {
                 <div className="flex flex-wrap items-center gap-2.5">
                     <button
                         type="button"
-                        onClick={() => setShowCampaignBuilder((prev) => !prev)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border shadow-2xs ${
-                            showCampaignBuilder
-                                ? 'bg-zinc-900 text-white border-zinc-900'
-                                : 'bg-amber-400/20 hover:bg-amber-400/30 text-zinc-900 border-amber-400/60'
-                        }`}
+                        onClick={() => setShowCampaignBuilder(true)}
+                        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border shadow-2xs bg-amber-400/20 hover:bg-amber-400/30 text-zinc-900 border-amber-400/60"
                     >
                         <HardDrives size={15} weight="bold" />
                         <span>Tạo Campaign + Liên kết Drive</span>
@@ -1395,173 +1392,166 @@ export default function ChatAgent() {
                             </span>
                             <button
                                 type="button"
-                                onClick={() => setShowCampaignBuilder((prev) => !prev)}
+                                onClick={() => setShowCampaignBuilder(true)}
                                 className="text-[11px] font-bold text-zinc-900 hover:underline flex items-center gap-1 cursor-pointer"
                             >
                                 <HardDrives size={13} weight="bold" />
-                                {showCampaignBuilder ? 'Đóng cấu hình Campaign' : '+ Tạo Campaign & Drive'}
+                                + Tạo Campaign & Drive
                             </button>
                         </div>
 
-                        {/* CAMPAIGN + GOOGLE DRIVE AUTOPILOT DRAWER PANEL */}
-                        {showCampaignBuilder && (
-                            <div className="border-b border-zinc-200 bg-zinc-50/90 p-4 space-y-3 shrink-0 max-h-[68%] overflow-y-auto">
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                        <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-zinc-900 text-white">
-                                            <Stack size={15} weight="bold" />
+                        {/* CAMPAIGN + GOOGLE DRIVE AUTOPILOT POPUP MODAL */}
+                        <Dialog open={showCampaignBuilder} onOpenChange={setShowCampaignBuilder}>
+                            <DialogContent className="max-w-xl">
+                                <DialogHeader>
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white">
+                                            <Stack size={18} weight="bold" />
                                         </span>
                                         <div>
-                                            <h3 className="text-xs font-bold text-zinc-900">
-                                                Thiết lập Campaign + Liên kết Ảnh Google Drive & Xào nấu Tự động
-                                            </h3>
-                                            <p className="text-[11px] text-zinc-500">
-                                                Đồng bộ ảnh từ Drive, xào nấu dữ liệu thô bằng AI và tự động lên lịch đăng bài đa kênh
-                                            </p>
+                                            <DialogTitle className="text-sm font-bold text-zinc-900">
+                                                Tạo Campaign + Liên kết Ảnh Google Drive & Xào nấu Tự động
+                                            </DialogTitle>
+                                            <DialogDescription className="text-xs text-zinc-500 mt-0.5">
+                                                Đồng bộ ảnh từ Google Drive, tự động xào nấu đống dữ liệu của bạn bằng AI và setup lịch đăng bài đa kênh.
+                                            </DialogDescription>
                                         </div>
                                     </div>
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCampaignBuilder(false)}
-                                        className="h-7 w-7 rounded-lg border border-zinc-200 bg-white flex items-center justify-center text-zinc-500 hover:text-zinc-900 cursor-pointer"
-                                    >
-                                        <X size={14} weight="bold" />
-                                    </button>
-                                </div>
+                                </DialogHeader>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <div>
-                                        <label htmlFor="camp-name" className="block text-[11px] font-bold text-zinc-700 mb-1">
-                                            1. Tên Chiến dịch (Campaign Name)
-                                        </label>
-                                        <input
-                                            id="camp-name"
-                                            type="text"
-                                            value={campaignForm.name}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
-                                            placeholder="VD: Chiến dịch Ra mắt Sản phẩm Mới..."
-                                            className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
-                                        />
-                                    </div>
+                                <div className="space-y-4">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                                        <div>
+                                            <label htmlFor="camp-name" className="block text-xs font-bold text-zinc-700 mb-1.5">
+                                                1. Tên Chiến dịch (Campaign Name)
+                                            </label>
+                                            <input
+                                                id="camp-name"
+                                                type="text"
+                                                value={campaignForm.name}
+                                                onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
+                                                placeholder="VD: Chiến dịch Ra mắt Sản phẩm Mới..."
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                                            />
+                                        </div>
 
-                                    <div>
-                                        <label htmlFor="camp-drive" className="block text-[11px] font-bold text-zinc-700 mb-1">
-                                            2. Link thư mục / tệp ảnh Google Drive
-                                        </label>
-                                        <div className="flex items-center gap-1.5">
+                                        <div>
+                                            <label htmlFor="camp-drive" className="block text-xs font-bold text-zinc-700 mb-1.5">
+                                                2. Link thư mục / tệp ảnh Google Drive
+                                            </label>
                                             <input
                                                 id="camp-drive"
                                                 type="text"
                                                 value={campaignForm.driveUrl}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, driveUrl: e.target.value })}
                                                 placeholder="https://drive.google.com/drive/folders/..."
-                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
                                             />
+                                            {autopilotSources.length > 0 && (
+                                                <div className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px] text-zinc-500">
+                                                    <span>Nguồn Drive đã lưu:</span>
+                                                    {autopilotSources.map((src) => (
+                                                        <button
+                                                            key={src.id}
+                                                            type="button"
+                                                            onClick={() =>
+                                                                setCampaignForm({
+                                                                    ...campaignForm,
+                                                                    driveUrl: src.folder || src.name,
+                                                                })
+                                                            }
+                                                            className="px-2 py-0.5 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-800 font-semibold hover:border-zinc-900 cursor-pointer"
+                                                        >
+                                                            {src.name}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            )}
                                         </div>
-                                        {autopilotSources.length > 0 && (
-                                            <div className="mt-1 flex flex-wrap items-center gap-1 text-[10px] text-zinc-500">
-                                                <span>Nguồn đã lưu:</span>
-                                                {autopilotSources.map((src) => (
-                                                    <button
-                                                        key={src.id}
-                                                        type="button"
-                                                        onClick={() =>
-                                                            setCampaignForm({
-                                                                ...campaignForm,
-                                                                driveUrl: src.folder || src.name,
-                                                            })
-                                                        }
-                                                        className="px-1.5 py-0.5 rounded bg-white border border-zinc-200 text-zinc-800 font-semibold hover:border-zinc-900 cursor-pointer"
-                                                    >
-                                                        {src.name}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label htmlFor="camp-raw-data" className="block text-[11px] font-bold text-zinc-700 mb-1">
-                                        3. Đống dữ liệu của bạn cần AI xào nấu (Thông tin sản phẩm, USP, ưu đãi, ghi chú...)
-                                    </label>
-                                    <textarea
-                                        id="camp-raw-data"
-                                        rows={3}
-                                        value={campaignForm.rawData}
-                                        onChange={(e) => setCampaignForm({ ...campaignForm, rawData: e.target.value })}
-                                        placeholder="Dán dữ liệu thô, tính năng sản phẩm, chương trình khuyến mãi, câu chuyện thương hiệu..."
-                                        className="w-full rounded-lg border border-zinc-200 bg-white p-2.5 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none leading-relaxed"
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 items-end">
-                                    <div>
-                                        <label htmlFor="camp-days" className="block text-[11px] font-bold text-zinc-700 mb-1">
-                                            Thời lượng chiến dịch
-                                        </label>
-                                        <select
-                                            id="camp-days"
-                                            value={campaignForm.days}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, days: Number(e.target.value) })}
-                                            className="w-full h-8 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
-                                        >
-                                            <option value={7}>7 ngày</option>
-                                            <option value={14}>14 ngày</option>
-                                            <option value={30}>30 ngày</option>
-                                        </select>
                                     </div>
 
                                     <div>
-                                        <label htmlFor="camp-freq" className="block text-[11px] font-bold text-zinc-700 mb-1">
-                                            Tần suất đăng tự động
+                                        <label htmlFor="camp-raw-data" className="block text-xs font-bold text-zinc-700 mb-1.5">
+                                            3. Đống dữ liệu của bạn cần AI xào nấu (Thông tin sản phẩm, USP, ưu đãi, ghi chú...)
                                         </label>
-                                        <select
-                                            id="camp-freq"
-                                            value={campaignForm.frequency}
-                                            onChange={(e) => setCampaignForm({ ...campaignForm, frequency: e.target.value })}
-                                            className="w-full h-8 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
-                                        >
-                                            <option value="1_per_day">1 bài / ngày</option>
-                                            <option value="2_per_day">2 bài / ngày</option>
-                                            <option value="3_per_week">3 bài / tuần (T2-T4-T6)</option>
-                                            <option value="5_per_week">5 bài / tuần (T2-T6)</option>
-                                        </select>
-                                    </div>
-
-                                    <label className="col-span-2 sm:col-span-1 flex items-center gap-2 h-8 px-2.5 rounded-lg border border-zinc-200 bg-white text-xs font-semibold text-zinc-800 cursor-pointer select-none">
-                                        <input
-                                            type="checkbox"
-                                            checked={campaignForm.autoSchedule}
-                                            onChange={(e) =>
-                                                setCampaignForm({ ...campaignForm, autoSchedule: e.target.checked })
-                                            }
-                                            className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                                        <textarea
+                                            id="camp-raw-data"
+                                            rows={4}
+                                            value={campaignForm.rawData}
+                                            onChange={(e) => setCampaignForm({ ...campaignForm, rawData: e.target.value })}
+                                            placeholder="Dán dữ liệu thô, tính năng sản phẩm, chương trình khuyến mãi, câu chuyện thương hiệu..."
+                                            className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none leading-relaxed"
                                         />
-                                        <span className="truncate">Tự động lên lịch ngay</span>
-                                    </label>
-                                </div>
+                                    </div>
 
-                                <div className="flex items-center justify-end gap-2 pt-1">
-                                    <button
-                                        type="button"
-                                        onClick={() => setShowCampaignBuilder(false)}
-                                        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer"
-                                    >
-                                        Đóng
-                                    </button>
-                                    <button
-                                        type="button"
-                                        disabled={isAgentThinking}
-                                        onClick={() => handleRunCampaignAutopilot()}
-                                        className="btn-skew inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer disabled:opacity-40"
-                                    >
-                                        <Sparkle size={15} weight="duotone" />
-                                        <span>Bắt đầu Xào nấu & Setup Lịch Tự Động</span>
-                                    </button>
+                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-end">
+                                        <div>
+                                            <label htmlFor="camp-days" className="block text-xs font-bold text-zinc-700 mb-1.5">
+                                                Thời lượng chiến dịch
+                                            </label>
+                                            <select
+                                                id="camp-days"
+                                                value={campaignForm.days}
+                                                onChange={(e) => setCampaignForm({ ...campaignForm, days: Number(e.target.value) })}
+                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
+                                            >
+                                                <option value={7}>7 ngày</option>
+                                                <option value={14}>14 ngày</option>
+                                                <option value={30}>30 ngày</option>
+                                            </select>
+                                        </div>
+
+                                        <div>
+                                            <label htmlFor="camp-freq" className="block text-xs font-bold text-zinc-700 mb-1.5">
+                                                Tần suất đăng tự động
+                                            </label>
+                                            <select
+                                                id="camp-freq"
+                                                value={campaignForm.frequency}
+                                                onChange={(e) => setCampaignForm({ ...campaignForm, frequency: e.target.value })}
+                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
+                                            >
+                                                <option value="1_per_day">1 bài / ngày</option>
+                                                <option value="2_per_day">2 bài / ngày</option>
+                                                <option value="3_per_week">3 bài / tuần (T2-T4-T6)</option>
+                                                <option value="5_per_week">5 bài / tuần (T2-T6)</option>
+                                            </select>
+                                        </div>
+
+                                        <label className="flex items-center gap-2 h-9 px-3 rounded-lg border border-zinc-200 bg-zinc-50 text-xs font-semibold text-zinc-800 cursor-pointer select-none">
+                                            <input
+                                                type="checkbox"
+                                                checked={campaignForm.autoSchedule}
+                                                onChange={(e) =>
+                                                    setCampaignForm({ ...campaignForm, autoSchedule: e.target.checked })
+                                                }
+                                                className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                                            />
+                                            <span className="truncate">Tự động lên lịch ngay</span>
+                                        </label>
+                                    </div>
+
+                                    <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-zinc-100">
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowCampaignBuilder(false)}
+                                            className="rounded-lg border border-zinc-200 bg-white px-4 py-2 text-xs font-semibold text-zinc-600 hover:text-zinc-900 cursor-pointer"
+                                        >
+                                            Hủy
+                                        </button>
+                                        <button
+                                            type="button"
+                                            disabled={isAgentThinking}
+                                            onClick={() => handleRunCampaignAutopilot()}
+                                            className="btn-skew inline-flex items-center gap-1.5 text-xs font-bold cursor-pointer disabled:opacity-40"
+                                        >
+                                            <Sparkle size={15} weight="duotone" />
+                                            <span>Bắt đầu Xào nấu & Setup Lịch Tự Động</span>
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                        )}
+                            </DialogContent>
+                        </Dialog>
 
                         {/* Scrollable Message List */}
                         <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
