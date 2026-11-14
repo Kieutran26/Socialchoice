@@ -7,6 +7,8 @@ export async function handleWebRequest(request, handler) {
     let status = 200, body = '';
     const responseHeaders = new Headers();
     const res = {
+        get statusCode() { return status; },
+        set statusCode(code) { status = code; },
         setHeader: (key, value) => responseHeaders.set(key, value),
         writeHead(code, values) { status = code; for (const [key, value] of Object.entries(values || {})) responseHeaders.set(key, value); },
         end(value = '') { body = value; },
@@ -22,6 +24,6 @@ export async function handleWebRequest(request, handler) {
         },
     };
     await handler(req, res);
-    return new Response(body, { status, headers: responseHeaders });
+    return new Response([101, 204, 205, 304].includes(status) ? null : body, { status, headers: responseHeaders });
 }
 import { Buffer } from 'node:buffer';

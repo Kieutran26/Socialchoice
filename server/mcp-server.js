@@ -804,12 +804,11 @@ export function setMcpCorsHeaders(req, res) {
 }
 
 function sendJson(res, status, payload, extraHeaders = {}) {
-    res.statusCode = status;
-    res.setHeader('Content-Type', 'application/json; charset=utf-8');
-    res.setHeader('Cache-Control', 'no-store');
-    for (const [k, v] of Object.entries(extraHeaders)) {
-        res.setHeader(k, v);
-    }
+    res.writeHead(status, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        ...extraHeaders,
+    });
     res.end(JSON.stringify(payload));
 }
 
@@ -861,7 +860,7 @@ export async function handleMcpAndOAuthRoutes({
     if (pathname === '/.well-known/oauth-protected-resource' || pathname === '/.well-known/oauth-protected-resource/mcp') {
         setMcpCorsHeaders(req, res);
         if (req.method === 'OPTIONS') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -883,7 +882,7 @@ export async function handleMcpAndOAuthRoutes({
     ) {
         setMcpCorsHeaders(req, res);
         if (req.method === 'OPTIONS') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -908,7 +907,7 @@ export async function handleMcpAndOAuthRoutes({
     if (pathname === '/api/mcp/register') {
         setMcpCorsHeaders(req, res);
         if (req.method === 'OPTIONS') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -943,11 +942,10 @@ export async function handleMcpAndOAuthRoutes({
         });
 
         const base = getPublicBaseOrigin(req, publicOrigin);
-        res.statusCode = 302;
-        res.setHeader(
-            'Location',
-            `${base}/oauth/consent?ctx=${encodeURIComponent(authReq.handle)}`
-        );
+        res.writeHead(302, {
+            Location: `${base}/oauth/consent?ctx=${encodeURIComponent(authReq.handle)}`,
+            'Cache-Control': 'no-store',
+        });
         res.end();
         return true;
     }
@@ -1039,7 +1037,7 @@ export async function handleMcpAndOAuthRoutes({
     if (pathname === '/api/mcp/token') {
         setMcpCorsHeaders(req, res);
         if (req.method === 'OPTIONS') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -1150,7 +1148,7 @@ export async function handleMcpAndOAuthRoutes({
     if (pathname === '/mcp') {
         setMcpCorsHeaders(req, res);
         if (req.method === 'OPTIONS') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -1180,7 +1178,7 @@ export async function handleMcpAndOAuthRoutes({
         }
 
         if (req.method === 'DELETE') {
-            res.statusCode = 204;
+            res.writeHead(204);
             res.end();
             return true;
         }
@@ -1349,7 +1347,7 @@ export async function handleMcpAndOAuthRoutes({
         if (Array.isArray(rpcPayload)) {
             const responses = (await Promise.all(rpcPayload.map(handleSingleRpc))).filter(Boolean);
             if (!responses.length) {
-                res.statusCode = 202;
+                res.writeHead(202);
                 res.end();
                 return true;
             }
@@ -1359,7 +1357,7 @@ export async function handleMcpAndOAuthRoutes({
 
         const singleResponse = await handleSingleRpc(rpcPayload);
         if (!singleResponse) {
-            res.statusCode = 202;
+            res.writeHead(202);
             res.end();
             return true;
         }

@@ -172,13 +172,28 @@ export function createMcpStore(db) {
             if (!client.adhoc && client.redirect_uris.length && !client.redirect_uris.includes(redirect_uri)) {
                 fail('redirect_uri does not match registered client', 400);
             }
-            const handle = generatePrefixedSecret('ctx', workspace_id, 18);
             const expiresAt = Date.now() + 10 * 60 * 1000; // 10 minutes
             const requestedScopes = normalizeScopes(scope, DEFAULT_MCP_SCOPES);
+            const resolvedClientName = client_name || client.client_name || 'AI Assistant';
+            const portableEnvelope = Buffer.from(
+                JSON.stringify({
+                    c: client_id,
+                    n: resolvedClientName,
+                    r: redirect_uri,
+                    s: requestedScopes,
+                    st: String(state || ''),
+                    cc: String(code_challenge || ''),
+                    cm: String(code_challenge_method || 'S256'),
+                    rs: String(resource || ''),
+                    e: expiresAt,
+                }),
+                'utf8'
+            ).toString('base64url');
+            const handle = `sc_ctx_${portableEnvelope}_${randomBytes(8).toString('base64url')}`;
             const record = {
                 handle,
                 client_id,
-                client_name: client_name || client.client_name || 'AI Assistant',
+                client_name: resolvedClientName,
                 redirect_uri,
                 requested_scopes: requestedScopes,
                 state: String(state || ''),
@@ -199,9 +214,42 @@ export function createMcpStore(db) {
         getAuthRequest(handle) {
             cleanupExpired();
             if (!handle || typeof handle !== 'string') return null;
-            const row = db
+            let row = db
                 .prepare('SELECT data, expires_at FROM mcp_auth_requests WHERE handle = ?')
                 .get(handle);
+            if (!row) {
+                const match = /^sc_ctx_([A-Za-z0-9_-]+)_[A-Za-z0-9_-]+$/.exec(handle.trim());
+                if (match) {
+                    try {
+                        const envData = JSON.parse(
+                            Buffer.from(match[1], 'base64url').toString('utf8')
+                        );
+                        if (envData && envData.e > Date.now() && envData.c && envData.r) {
+                            const hydrated = {
+                                handle,
+                                client_id: envData.c,
+                                client_name: envData.n || 'AI Assistant',
+                                redirect_uri: envData.r,
+                                requested_scopes: normalizeScopes(envData.s, DEFAULT_MCP_SCOPES),
+                                state: String(envData.st || ''),
+                                code_challenge: String(envData.cc || ''),
+                                code_challenge_method: String(envData.cm || 'S256'),
+                                resource: String(envData.rs || ''),
+                                workspace_id: 'admin',
+                                status: 'pending',
+                                created_at: new Date().toISOString(),
+                                expires_at: envData.e,
+                            };
+                            db.prepare(
+                                'INSERT OR IGNORE INTO mcp_auth_requests (handle, code_hash, data, expires_at) VALUES (?, NULL, ?, ?)'
+                            ).run(handle, JSON.stringify(hydrated), envData.e);
+                            row = { data: JSON.stringify(hydrated), expires_at: envData.e };
+                        }
+                    } catch {
+                        // ignore invalid portable handle
+                    }
+                }
+            }
             if (!row || row.expires_at <= Date.now()) return null;
             const parsed = JSON.parse(row.data);
             return parsed.status === 'pending' ? parsed : null;
@@ -209,6 +257,7 @@ export function createMcpStore(db) {
 
         consumeAuthRequestDecision(handle, { action, scopes, workspace_id }) {
             cleanupExpired();
+            this.getAuthRequest(handle);
             const row = db
                 .prepare('SELECT data, expires_at FROM mcp_auth_requests WHERE handle = ?')
                 .get(handle);

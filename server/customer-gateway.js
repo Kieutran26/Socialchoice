@@ -52,11 +52,22 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 path === '/api/mcp/token';
             const allowedAppOrigins = [env.SOCIALCHOICE_PUBLIC_ORIGIN, 'https://socialchoice.site', 'https://www.socialchoice.site', 'https://socialchoice.vercel.app'].filter(Boolean);
             if (!callback && !publicMcpOrOAuth && (request.headers.get('origin') && !allowedAppOrigins.includes(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
-            if (path === '/mcp') {
-                const rawToken =
+            if (path === '/mcp' || path === '/api/mcp/token') {
+                let rawToken =
                     request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
                     url.searchParams.get('token') ||
                     '';
+                if (!rawToken && path === '/api/mcp/token' && request.method === 'POST') {
+                    try {
+                        const rawBody = await request.clone().text();
+                        const params = rawBody.trim().startsWith('{')
+                            ? JSON.parse(rawBody)
+                            : Object.fromEntries(new URLSearchParams(rawBody));
+                        rawToken = params.code || params.refresh_token || '';
+                    } catch {
+                        // ignore parse error here
+                    }
+                }
                 const targetWorkspace = decodeWorkspacePrefix(rawToken);
                 if (targetWorkspace && targetWorkspace !== 'admin' && accountId(targetWorkspace)) {
                     const headers = new Headers(request.headers);
