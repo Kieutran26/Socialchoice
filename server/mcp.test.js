@@ -178,7 +178,33 @@ test('MCP OAuth 2.1 + Streamable HTTP tools end-to-end', async (t) => {
     assert.equal(pillarsCall.result.structuredContent.pillars[0].id, pillar.id);
     assert.equal(pillarsCall.result.structuredContent.pillars[0].angles[0].id, angle.id);
 
-    // 9. Create Draft & Schedule Post
+    // 9. Upload Media, List Media, Create Draft & Schedule Post with Images/Videos
+    // 1x1 valid PNG in base64
+    const tinyPngBase64 =
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGP4z8AAAAMBAQDJ/pLvAAAAAElFTkSuQmCC';
+    const uploadImgCall = await callMcp('tools/call', {
+        name: 'upload_media',
+        arguments: {
+            brand_id: brand.id,
+            name: 'morning-coffee.png',
+            base64_data: tinyPngBase64,
+            mime_type: 'image/png',
+            notes: 'Hero shot of V60 coffee',
+        },
+    });
+    assert.equal(uploadImgCall.result.isError, false);
+    const uploadedImageId = uploadImgCall.result.structuredContent.media.id;
+    assert.equal(uploadImgCall.result.structuredContent.media.file_type, 'image');
+    assert.equal(uploadImgCall.result.structuredContent.media.stored_binary, true);
+
+    const listMediaCall = await callMcp('tools/call', {
+        name: 'list_media',
+        arguments: { brand_id: brand.id, file_type: 'image' },
+    });
+    assert.equal(listMediaCall.result.isError, false);
+    assert.equal(listMediaCall.result.structuredContent.media.length, 1);
+    assert.equal(listMediaCall.result.structuredContent.media[0].id, uploadedImageId);
+
     const draftCall = await callMcp('tools/call', {
         name: 'create_draft',
         arguments: {
@@ -186,6 +212,8 @@ test('MCP OAuth 2.1 + Streamable HTTP tools end-to-end', async (t) => {
             title: 'Bí quyết pha V60 buổi sáng',
             caption: '3 bước pha cà phê V60 chuẩn vị tại nhà.',
             account_ids: [account.id],
+            media_ids: [uploadedImageId],
+            media_urls: ['https://cdn.example.com/videos/v60-tutorial.mp4'],
             pillar_id: pillar.id,
             angle_id: angle.id,
         },
@@ -193,6 +221,8 @@ test('MCP OAuth 2.1 + Streamable HTTP tools end-to-end', async (t) => {
     assert.equal(draftCall.result.isError, false);
     const createdPostId = draftCall.result.structuredContent.post.id;
     assert.equal(draftCall.result.structuredContent.post.status, 'draft');
+    assert.equal(draftCall.result.structuredContent.post.media_ids.length, 2);
+    assert.ok(draftCall.result.structuredContent.post.media_ids.includes(uploadedImageId));
 
     // Schedule the draft at local time in Asia/Ho_Chi_Minh (09:00 = 02:00 UTC)
     const scheduleCall = await callMcp('tools/call', {

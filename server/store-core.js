@@ -85,7 +85,7 @@ export function createStoreCore(db, transactionSync) {
         pendingAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='processing'").all().map(row => JSON.parse(row.data)),
         queuedAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='queued'").all().map(row => JSON.parse(row.data)),
         commentAttempts: () => db.prepare("SELECT data FROM publish_attempts WHERE json_extract(data,'$.status')='published' AND json_extract(data,'$.commentStatus') IN ('queued','processing')").all().map(row => JSON.parse(row.data)),
-        imageWrite: input => store.write('MediaAsset', input, undefined, imageWriter),
+        imageWrite: (input, id) => store.write('MediaAsset', input, id, imageWriter),
         publishingWrite: (entity, input, id) => {
             if (!['Post', 'PublishJob', 'PostVariant', 'PublishingLog'].includes(entity)) fail('Invalid publishing entity');
             return store.write(entity, input, id, publisher);

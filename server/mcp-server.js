@@ -1,4 +1,6 @@
+import { Buffer } from 'node:buffer';
 import { savePostPlan } from './post-plans.js';
+import { VIDEO_UPLOAD_CHUNK } from './video-storage.js';
 import { fail } from './validation.js';
 import { DEFAULT_MCP_SCOPES, MCP_SCOPES, normalizeScopes } from './mcp-store.js';
 
@@ -83,6 +85,89 @@ export const MCP_TOOL_DEFINITIONS = [
         },
     },
     {
+        name: 'list_media',
+        title: 'List Media Library (Images & Videos)',
+        kind: 'entity',
+        entity: 'MediaAsset',
+        operation: 'read',
+        requiredScope: 'posts:read',
+        description:
+            'List images and videos in the SocialChoice Media Library for a brand. Returns media_id, name, file_type (image or video), mime_type, file_url, dimensions, and duration so you can attach them to posts via media_ids.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                brand_id: {
+                    type: 'string',
+                    description: 'Optional brand_id to filter media assets belonging to a specific brand.',
+                },
+                file_type: {
+                    type: 'string',
+                    enum: ['image', 'video'],
+                    description: 'Optional filter by media type: "image" or "video".',
+                },
+                query: {
+                    type: 'string',
+                    description: 'Optional search keyword to match media name, filename, or notes.',
+                },
+                limit: {
+                    type: 'number',
+                    description: 'Maximum number of media items to return (default: 30, max: 100).',
+                },
+                include_demo: {
+                    type: 'boolean',
+                    description: 'Whether to include demo media assets (default: false).',
+                },
+            },
+            additionalProperties: false,
+        },
+    },
+    {
+        name: 'upload_media',
+        title: 'Upload or Import Image / Video to Media Library',
+        kind: 'entity',
+        entity: 'MediaAsset',
+        operation: 'create',
+        requiredScope: 'posts:write',
+        description:
+            'Upload or import an image (JPEG, PNG, WebP) or video (MP4) into a brand’s SocialChoice Media Library from a public URL (source_url) or base64_data. Returns the created MediaAsset with its id so it can be attached to create_draft, schedule_post, or update_post.',
+        inputSchema: {
+            type: 'object',
+            properties: {
+                brand_id: {
+                    type: 'string',
+                    description: 'Brand ID that owns this media asset.',
+                },
+                name: {
+                    type: 'string',
+                    description: 'Display name or filename for the image/video (e.g. "latte-art.jpg" or "promo-reel.mp4").',
+                },
+                source_url: {
+                    type: 'string',
+                    description: 'Public HTTP/HTTPS URL of the image or video to import into SocialChoice.',
+                },
+                base64_data: {
+                    type: 'string',
+                    description: 'Optional base64-encoded binary data (or data:...;base64,... URI) for direct image/video upload.',
+                },
+                file_type: {
+                    type: 'string',
+                    enum: ['image', 'video'],
+                    description: 'Optional explicit media type ("image" or "video"). Auto-detected from MIME type or URL if omitted.',
+                },
+                mime_type: {
+                    type: 'string',
+                    description: 'Optional MIME type (e.g. "image/jpeg", "image/png", "image/webp", "video/mp4").',
+                },
+                notes: {
+                    type: 'string',
+                    description: 'Optional notes/alt text for the media asset.',
+                },
+            },
+            required: ['brand_id'],
+            additionalProperties: false,
+        },
+    },
+    {
         name: 'list_scheduled_posts',
         title: 'List Scheduled & Draft Posts',
         kind: 'entity',
@@ -152,6 +237,20 @@ export const MCP_TOOL_DEFINITIONS = [
                     items: { type: 'string' },
                     description: 'Optional array of SocialAccount IDs to target.',
                 },
+                media_ids: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional array of MediaAsset IDs (images or videos from list_media or upload_media) to attach to the post.',
+                },
+                media_urls: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional array of public image/video URLs to automatically import and attach to the post.',
+                },
+                platform_media_ids: {
+                    type: 'object',
+                    description: 'Optional per-platform media ID overrides keyed by facebook, instagram, threads, tiktok, linkedin.',
+                },
                 pillar_id: {
                     type: 'string',
                     description: 'Optional ContentPillar ID.',
@@ -203,6 +302,20 @@ export const MCP_TOOL_DEFINITIONS = [
                     type: 'array',
                     items: { type: 'string' },
                     description: 'Destination SocialAccount IDs to publish to (at least 1 account required).',
+                },
+                media_ids: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional array of MediaAsset IDs (images or videos from list_media or upload_media) to attach to the scheduled post.',
+                },
+                media_urls: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional array of public image/video URLs to automatically import and attach to the scheduled post.',
+                },
+                platform_media_ids: {
+                    type: 'object',
+                    description: 'Optional per-platform media ID overrides keyed by facebook, instagram, threads, tiktok, linkedin.',
                 },
                 scheduled_at: {
                     type: 'string',
@@ -270,6 +383,20 @@ export const MCP_TOOL_DEFINITIONS = [
                     type: 'array',
                     items: { type: 'string' },
                     description: 'Updated destination SocialAccount IDs.',
+                },
+                media_ids: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Updated array of MediaAsset IDs (images or videos) attached to the post.',
+                },
+                media_urls: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Optional array of public image/video URLs to import and attach to the post.',
+                },
+                platform_media_ids: {
+                    type: 'object',
+                    description: 'Updated per-platform media ID overrides.',
                 },
                 pillar_id: {
                     type: 'string',
@@ -393,6 +520,178 @@ export function parseScheduledTimeToUtcIso(rawInput, timeZone = 'Asia/Ho_Chi_Min
     return new Date(utcGuess - offsetMs).toISOString();
 }
 
+function inferMediaInfoFromUrlOrMime(sourceUrl = '', explicitMime = '', explicitFileType = '') {
+    const cleanMime = String(explicitMime || '').split(';')[0].trim().toLowerCase();
+    const urlPath = String(sourceUrl || '').split('?')[0].toLowerCase();
+    let mimeType = cleanMime;
+    if (!mimeType) {
+        if (urlPath.endsWith('.png')) mimeType = 'image/png';
+        else if (urlPath.endsWith('.webp')) mimeType = 'image/webp';
+        else if (urlPath.endsWith('.jpg') || urlPath.endsWith('.jpeg')) mimeType = 'image/jpeg';
+        else if (urlPath.endsWith('.mp4') || urlPath.endsWith('.mov')) mimeType = 'video/mp4';
+        else if (explicitFileType === 'video') mimeType = 'video/mp4';
+        else mimeType = 'image/jpeg';
+    }
+    const fileType =
+        explicitFileType === 'video' || explicitFileType === 'image'
+            ? explicitFileType
+            : mimeType.startsWith('video/')
+            ? 'video'
+            : 'image';
+    const rawName = urlPath.split('/').pop() || (fileType === 'video' ? 'video.mp4' : 'image.jpg');
+    return { mimeType, fileType, fallbackName: rawName.slice(0, 120) };
+}
+
+export async function importMediaIntoStore(
+    store,
+    {
+        brand_id,
+        name,
+        source_url,
+        base64_data,
+        file_type,
+        mime_type,
+        notes = '',
+    }
+) {
+    const brand = store.get('Brand', brand_id);
+    if (!source_url && !base64_data) {
+        fail('Either source_url or base64_data is required to upload media.');
+    }
+
+    let bytes = null;
+    let detectedMime = mime_type || '';
+
+    if (base64_data && typeof base64_data === 'string') {
+        const trimmed = base64_data.trim();
+        const dataUriMatch = /^data:([^;]+);base64,(.+)$/s.exec(trimmed);
+        if (dataUriMatch) {
+            detectedMime = detectedMime || dataUriMatch[1];
+            bytes = Buffer.from(dataUriMatch[2], 'base64');
+        } else {
+            bytes = Buffer.from(trimmed, 'base64');
+        }
+    } else if (source_url && typeof source_url === 'string') {
+        const parsedUrl = new URL(source_url.trim());
+        if (!['http:', 'https:'].includes(parsedUrl.protocol)) {
+            fail('source_url must use http:// or https://');
+        }
+        // Check if an identical external URL already exists for this brand
+        const existingAsset = store
+            .all('MediaAsset')
+            .find((m) => m.brand_id === brand.id && m.file_url === source_url.trim());
+        if (existingAsset) return existingAsset;
+
+        try {
+            const response = await fetch(source_url.trim());
+            if (response.ok) {
+                const headerMime = (response.headers.get('content-type') || '').split(';')[0].trim();
+                if (headerMime && headerMime !== 'application/octet-stream') {
+                    detectedMime = detectedMime || headerMime;
+                }
+                const arrBuf = await response.arrayBuffer();
+                if (arrBuf.byteLength > 0 && arrBuf.byteLength <= 25 * 1024 * 1024) {
+                    bytes = Buffer.from(arrBuf);
+                }
+            }
+        } catch {
+            // Fall back to external URL MediaAsset registration below if remote fetch fails
+        }
+    }
+
+    const { mimeType, fileType, fallbackName } = inferMediaInfoFromUrlOrMime(
+        source_url,
+        detectedMime,
+        file_type
+    );
+    const assetName =
+        typeof name === 'string' && name.trim() ? name.trim().slice(0, 180) : fallbackName;
+
+    // 1. Try native binary storage (so live Facebook/Instagram/Threads/TikTok/LinkedIn/X publishing works directly)
+    if (bytes && !brand.is_demo && brand.status === 'active') {
+        if (fileType === 'image' && ['image/jpeg', 'image/png', 'image/webp'].includes(mimeType)) {
+            try {
+                const uploaded = store.images.upload(brand.id, assetName, mimeType, bytes);
+                if (notes) {
+                    return store.imageWrite({ notes: String(notes) }, uploaded.id);
+                }
+                return uploaded;
+            } catch {
+                // If image exceeds 3MiB or fails strict header check, fall back when source_url is available
+                if (!source_url) throw new Error('Valid JPEG, PNG, or WebP image under 3 MiB required.');
+            }
+        } else if (fileType === 'video' && mimeType === 'video/mp4') {
+            try {
+                const started = store.videos.start({
+                    brandId: brand.id,
+                    name: assetName.endsWith('.mp4') ? assetName : `${assetName}.mp4`,
+                    size: bytes.length,
+                    type: 'video/mp4',
+                });
+                for (let offset = 0; offset < bytes.length; offset += VIDEO_UPLOAD_CHUNK) {
+                    const chunk = bytes.subarray(
+                        offset,
+                        Math.min(offset + VIDEO_UPLOAD_CHUNK, bytes.length)
+                    );
+                    store.videos.append(started.uploadId, offset, chunk);
+                }
+                const completed = store.videos.complete(started.uploadId);
+                if (notes) {
+                    return store.imageWrite({ notes: String(notes) }, completed.id);
+                }
+                return completed;
+            } catch {
+                if (!source_url) throw new Error('Valid MP4 video required.');
+            }
+        }
+    }
+
+    // 2. External URL MediaAsset registration (or when source_url is an external CDN/hosting link)
+    if (source_url) {
+        return store.write('MediaAsset', {
+            brand_id: brand.id,
+            name: assetName,
+            filename: assetName,
+            file_url: source_url.trim(),
+            file_type: fileType,
+            mime_type: mimeType,
+            ...(bytes ? { size_bytes: bytes.length } : {}),
+            ...(notes ? { notes: String(notes) } : {}),
+            is_demo: !!brand.is_demo,
+        });
+    }
+
+    fail('Unable to store media asset. Provide a valid JPEG/PNG/WebP image, MP4 video, or public source_url.');
+}
+
+async function resolvePostMediaIds(store, brandId, { media_ids, media_urls, fallbackIds = [] }) {
+    const resolved = [];
+    if (Array.isArray(media_ids)) {
+        for (const id of media_ids) {
+            if (typeof id === 'string' && id.trim()) {
+                resolved.push(id.trim());
+            }
+        }
+    } else if (!Array.isArray(media_urls)) {
+        resolved.push(...fallbackIds);
+    }
+
+    if (Array.isArray(media_urls)) {
+        for (const url of media_urls) {
+            if (typeof url === 'string' && url.trim()) {
+                const asset = await importMediaIntoStore(store, {
+                    brand_id: brandId,
+                    source_url: url.trim(),
+                });
+                if (asset?.id && !resolved.includes(asset.id)) {
+                    resolved.push(asset.id);
+                }
+            }
+        }
+    }
+    return [...new Set(resolved)];
+}
+
 export async function executeMcpTool(name, args = {}, { store, publisher, scopes = DEFAULT_MCP_SCOPES }) {
     const tool = MCP_TOOL_DEFINITIONS.find((t) => t.name === name);
     if (!tool) fail(`Unknown MCP tool: ${name}`, 404);
@@ -479,6 +778,69 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
             };
         }
 
+        case 'list_media': {
+            const includeDemo = !!args.include_demo;
+            const limit = Math.min(Math.max(Number(args.limit) || 30, 1), 100);
+            const q = typeof args.query === 'string' ? args.query.trim().toLowerCase() : '';
+            const items = store
+                .all('MediaAsset')
+                .filter((m) => (includeDemo ? true : !m.is_demo))
+                .filter((m) => (args.brand_id ? m.brand_id === args.brand_id : true))
+                .filter((m) => (args.file_type ? m.file_type === args.file_type : true))
+                .filter((m) => {
+                    if (!q) return true;
+                    return (
+                        (m.name || '').toLowerCase().includes(q) ||
+                        (m.filename || '').toLowerCase().includes(q) ||
+                        (m.notes || '').toLowerCase().includes(q)
+                    );
+                })
+                .slice(0, limit)
+                .map((m) => ({
+                    id: m.id,
+                    brand_id: m.brand_id,
+                    name: m.name,
+                    filename: m.filename || m.name,
+                    file_type: m.file_type || 'image',
+                    mime_type: m.mime_type || '',
+                    file_url: m.file_url,
+                    width: m.width || null,
+                    height: m.height || null,
+                    duration_seconds: m.duration_seconds || null,
+                    size_bytes: m.size_bytes || null,
+                    notes: m.notes || '',
+                    stored_binary: !!m.storage_id,
+                }));
+            return { media: items, count: items.length };
+        }
+
+        case 'upload_media': {
+            const asset = await importMediaIntoStore(store, {
+                brand_id: args.brand_id,
+                name: args.name,
+                source_url: args.source_url,
+                base64_data: args.base64_data,
+                file_type: args.file_type,
+                mime_type: args.mime_type,
+                notes: args.notes,
+            });
+            return {
+                message: `Media (${asset.file_type}) imported into SocialChoice Media Library.`,
+                media: {
+                    id: asset.id,
+                    brand_id: asset.brand_id,
+                    name: asset.name,
+                    file_type: asset.file_type,
+                    mime_type: asset.mime_type || '',
+                    file_url: asset.file_url,
+                    width: asset.width || null,
+                    height: asset.height || null,
+                    duration_seconds: asset.duration_seconds || null,
+                    stored_binary: !!asset.storage_id,
+                },
+            };
+        }
+
         case 'list_scheduled_posts': {
             const includeDemo = !!args.include_demo;
             const limit = Math.min(Math.max(Number(args.limit) || 30, 1), 100);
@@ -520,6 +882,7 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                         const acc = accountsById.get(id);
                         return acc ? { id: acc.id, name: acc.name, platform: acc.platform } : { id };
                     }),
+                    media_ids: p.media_ids || [],
                     pillar_id: p.pillar_id || null,
                     angle_id: p.angle_id || null,
                     updated_date: p.updated_date,
@@ -530,6 +893,11 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
 
         case 'create_draft': {
             const brand = store.get('Brand', args.brand_id);
+            const mediaIds = await resolvePostMediaIds(store, brand.id, {
+                media_ids: args.media_ids,
+                media_urls: args.media_urls,
+                fallbackIds: [],
+            });
             const payload = {
                 brand_id: brand.id,
                 title: String(args.title || '').trim(),
@@ -537,8 +905,9 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                 status: 'draft',
                 timezone: brand.timezone || 'Asia/Ho_Chi_Minh',
                 account_ids: Array.isArray(args.account_ids) ? args.account_ids : [],
-                media_ids: [],
+                media_ids: mediaIds,
                 is_demo: !!brand.is_demo,
+                ...(args.platform_media_ids ? { platform_media_ids: args.platform_media_ids } : {}),
                 ...(args.pillar_id ? { pillar_id: args.pillar_id } : {}),
                 ...(args.angle_id ? { angle_id: args.angle_id } : {}),
                 ...(args.platform_captions ? { platform_captions: args.platform_captions } : {}),
@@ -554,6 +923,7 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                     caption: post.caption,
                     status: post.status,
                     account_ids: post.account_ids || [],
+                    media_ids: post.media_ids || [],
                     created_date: post.created_date,
                 },
             };
@@ -587,6 +957,12 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                 publisher.cancelSchedule(existing.id);
             }
 
+            const mediaIds = await resolvePostMediaIds(store, brand.id, {
+                media_ids: args.media_ids,
+                media_urls: args.media_urls,
+                fallbackIds: existing?.media_ids || [],
+            });
+
             const payload = {
                 brand_id: brand.id,
                 title,
@@ -595,8 +971,11 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                 scheduled_at: scheduledAtIso,
                 timezone,
                 account_ids: accountIds,
-                media_ids: existing?.media_ids || [],
+                media_ids: mediaIds,
                 is_demo: !!brand.is_demo,
+                ...(args.platform_media_ids || existing?.platform_media_ids
+                    ? { platform_media_ids: args.platform_media_ids || existing?.platform_media_ids }
+                    : {}),
                 ...(args.pillar_id || existing?.pillar_id
                     ? { pillar_id: args.pillar_id || existing?.pillar_id }
                     : {}),
@@ -648,6 +1027,7 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                     scheduled_at: post.scheduled_at,
                     timezone: post.timezone,
                     account_ids: post.account_ids,
+                    media_ids: post.media_ids || [],
                 },
                 live_publishing: liveSchedule,
             };
@@ -667,6 +1047,11 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                 : existing.scheduled_at;
 
             const nextAccountIds = Array.isArray(args.account_ids) ? args.account_ids : existing.account_ids || [];
+            const nextMediaIds = await resolvePostMediaIds(store, brand.id, {
+                media_ids: args.media_ids,
+                media_urls: args.media_urls,
+                fallbackIds: existing.media_ids || [],
+            });
             const nextStatus =
                 scheduledAtIso && nextAccountIds.length && existing.status === 'scheduled'
                     ? 'scheduled'
@@ -680,8 +1065,12 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                 caption: args.caption !== undefined ? String(args.caption).trim() : existing.caption,
                 timezone,
                 account_ids: nextAccountIds,
+                media_ids: nextMediaIds,
                 status: nextStatus,
                 ...(scheduledAtIso ? { scheduled_at: scheduledAtIso } : {}),
+                ...(args.platform_media_ids !== undefined
+                    ? { platform_media_ids: args.platform_media_ids }
+                    : {}),
                 ...(args.pillar_id !== undefined ? { pillar_id: args.pillar_id } : {}),
                 ...(args.angle_id !== undefined ? { angle_id: args.angle_id } : {}),
                 ...(args.notes !== undefined ? { notes: String(args.notes) } : {}),
@@ -702,6 +1091,7 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                     scheduled_at: updated.scheduled_at || null,
                     timezone: updated.timezone,
                     account_ids: updated.account_ids || [],
+                    media_ids: updated.media_ids || [],
                 },
             };
         }
@@ -741,6 +1131,14 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
             const post = store.get('Post', args.post_id);
             const brand = store.get('Brand', post.brand_id);
             const accounts = (post.account_ids || []).map((id) => store.get('SocialAccount', id));
+            const mediaAssets = (post.media_ids || []).map((id) => {
+                try {
+                    const m = store.get('MediaAsset', id);
+                    return { id: m.id, name: m.name, file_type: m.file_type, file_url: m.file_url };
+                } catch {
+                    return { id };
+                }
+            });
 
             if (args.confirm !== true) {
                 return {
@@ -752,6 +1150,7 @@ export async function executeMcpTool(name, args = {}, { store, publisher, scopes
                         brand: brand.name,
                         title: post.title,
                         caption: post.caption || '',
+                        media: mediaAssets,
                         destinations: accounts.map((a) => ({
                             id: a.id,
                             name: a.name,
@@ -1237,7 +1636,7 @@ export async function handleMcpAndOAuthRoutes({
                                     version: '1.0.0',
                                 },
                                 instructions:
-                                    'SocialChoice MCP Server. Use list_brands and list_accounts first to identify brand_id and account_ids. Use create_draft or schedule_post to plan content on the SocialChoice calendar. Always ask the user for confirmation before calling publish_now with confirm=true.',
+                                    'SocialChoice MCP Server. Use list_brands and list_accounts first to identify brand_id and account_ids. Use list_media or upload_media (or pass media_urls / media_ids directly to create_draft, schedule_post, and update_post) whenever the user wants to attach images or videos. Always ask the user for confirmation before calling publish_now with confirm=true.',
                             },
                         };
 
