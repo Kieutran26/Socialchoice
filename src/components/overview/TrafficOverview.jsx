@@ -61,24 +61,24 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
     const activeLinksCount = trackingLinks.filter((l) => l.active !== false).length;
 
     return (
-        <section className="panel p-5 space-y-5">
+        <section className="panel p-4 sm:p-5 space-y-5">
             {/* Header */}
             <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
-                <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                         <CursorClick size={18} weight="bold" />
                     </div>
-                    <div>
-                        <h2 className="font-heading text-[15px] font-semibold text-foreground">
+                    <div className="min-w-0">
+                        <h2 className="font-heading text-[15px] font-semibold text-foreground truncate">
                             {t("Lưu lượng truy cập & Clicks")}
                         </h2>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-muted-foreground truncate">
                             {t("Theo dõi lượng chuyển đổi và click qua các link UTM gắn trong bài viết")}
                         </p>
                     </div>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
                     <Link
                         to="/analytics"
                         className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
@@ -90,52 +90,52 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
             </div>
 
             {/* Quick Metrics Bar */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="rounded-xl border border-border/70 bg-surface/50 p-3">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 sm:gap-3">
+                <div className="rounded-xl border border-border/70 bg-surface/50 p-2.5 sm:p-3 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
                         {t("Tổng lượt nhấp")}
                     </span>
-                    <span className="mt-1 font-heading text-xl font-bold text-foreground block">
+                    <span className="mt-1 font-heading text-lg sm:text-xl font-bold text-foreground block truncate">
                         {formatNumber(totalClicks)}
                     </span>
-                    <span className="text-[11px] text-muted-foreground mt-0.5 block flex items-center gap-1">
-                        <TrendUp size={12} className="text-emerald-500" /> Tất cả các link
+                    <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
+                        <TrendUp size={12} className="text-emerald-500 shrink-0" /> <span className="truncate">{t("Tất cả các link")}</span>
                     </span>
                 </div>
 
-                <div className="rounded-xl border border-border/70 bg-surface/50 p-3">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <div className="rounded-xl border border-border/70 bg-surface/50 p-2.5 sm:p-3 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
                         {t("Link theo dõi")}
                     </span>
-                    <span className="mt-1 font-heading text-xl font-bold text-foreground block">
+                    <span className="mt-1 font-heading text-lg sm:text-xl font-bold text-foreground block truncate">
                         {formatNumber(activeLinksCount)}
                     </span>
-                    <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                        Đang hoạt động
+                    <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 block truncate">
+                        {t("Đang hoạt động")}
                     </span>
                 </div>
 
-                <div className="rounded-xl border border-border/70 bg-surface/50 p-3">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <div className="rounded-xl border border-border/70 bg-surface/50 p-2.5 sm:p-3 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
                         {t("TB lượt nhấp/link")}
                     </span>
-                    <span className="mt-1 font-heading text-xl font-bold text-foreground block">
+                    <span className="mt-1 font-heading text-lg sm:text-xl font-bold text-foreground block truncate">
                         {activeLinksCount > 0 ? (totalClicks / activeLinksCount).toFixed(1) : '0'}
                     </span>
-                    <span className="text-[11px] text-muted-foreground mt-0.5 block">
-                        Lượt truy cập trung bình
+                    <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 block truncate">
+                        {t("Lượt truy cập trung bình")}
                     </span>
                 </div>
 
-                <div className="rounded-xl border border-border/70 bg-surface/50 p-3">
-                    <span className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider block">
+                <div className="rounded-xl border border-border/70 bg-surface/50 p-2.5 sm:p-3 min-w-0">
+                    <span className="text-[10px] sm:text-[11px] font-bold text-muted-foreground uppercase tracking-wider block truncate">
                         {t("Chiến dịch hàng đầu")}
                     </span>
-                    <span className="mt-1 font-heading text-sm font-bold text-foreground truncate block">
-                        {topLinks[0]?.campaign || 'Mạng xã hội'}
+                    <span className="mt-1 font-heading text-xs sm:text-sm font-bold text-foreground truncate block">
+                        {topLinks[0]?.campaign || t("Mạng xã hội")}
                     </span>
-                    <span className="text-[11px] text-muted-foreground mt-0.5 block truncate">
-                        {topLinks[0] ? `${topLinks[0].clicks || 0} lượt nhấp` : 'Chưa có dữ liệu'}
+                    <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 block truncate">
+                        {topLinks[0] ? t("{n} lượt nhấp", { n: topLinks[0].clicks || 0 }) : t("Chưa có dữ liệu")}
                     </span>
                 </div>
             </div>
@@ -143,18 +143,18 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
             {/* Chart & Top Links Grid */}
             <div className="grid gap-5 lg:grid-cols-12 pt-1">
                 {/* 7-day Click Trend Chart */}
-                <div className="lg:col-span-7 flex flex-col justify-between rounded-xl border border-border/70 p-4 bg-card">
-                    <div className="flex items-center justify-between mb-3">
-                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                            <ChartLineUp size={15} className="text-foreground" weight="bold" />
-                            {t("Xu hướng lượt nhấp 7 ngày gần nhất")}
+                <div className="lg:col-span-7 flex flex-col justify-between rounded-xl border border-border/70 p-3.5 sm:p-4 bg-card min-w-0">
+                    <div className="flex items-center justify-between mb-3 min-w-0">
+                        <span className="text-xs font-bold text-foreground flex items-center gap-1.5 min-w-0">
+                            <ChartLineUp size={15} className="text-foreground shrink-0" weight="bold" />
+                            <span className="truncate">{t("Xu hướng lượt nhấp 7 ngày gần nhất")}</span>
                         </span>
-                        <span className="text-[11px] text-muted-foreground">Theo ngày</span>
+                        <span className="text-[11px] text-muted-foreground shrink-0 ml-2">{t("Theo ngày")}</span>
                     </div>
 
-                    <div className="h-44 w-full">
+                    <div className="h-44 w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
+                            <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
                                 <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
@@ -167,7 +167,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                         fontSize: '12px',
                                         boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
                                     }}
-                                    formatter={(value) => [`${value} lượt nhấp`, 'Traffic']}
+                                    formatter={(value) => [`${value} ${t('lượt nhấp')}`, t('Traffic')]}
                                 />
                                 <Bar dataKey="clicks" fill="#18181b" radius={[6, 6, 0, 0]} maxBarSize={36} />
                             </BarChart>
@@ -176,14 +176,14 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                 </div>
 
                 {/* Top Traffic Links */}
-                <div className="lg:col-span-5 flex flex-col justify-between rounded-xl border border-border/70 p-4 bg-card">
+                <div className="lg:col-span-5 flex flex-col justify-between rounded-xl border border-border/70 p-3.5 sm:p-4 bg-card min-w-0">
                     <div>
-                        <div className="flex items-center justify-between mb-3">
-                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                                <LinkSimple size={15} className="text-foreground" weight="bold" />
-                                {t("Top Link hút Traffic")}
+                        <div className="flex items-center justify-between mb-3 min-w-0">
+                            <span className="text-xs font-bold text-foreground flex items-center gap-1.5 min-w-0">
+                                <LinkSimple size={15} className="text-foreground shrink-0" weight="bold" />
+                                <span className="truncate">{t("Top Link hút Traffic")}</span>
                             </span>
-                            <span className="text-[11px] text-muted-foreground">Clicks</span>
+                            <span className="text-[11px] text-muted-foreground shrink-0 ml-2">{t("Clicks")}</span>
                         </div>
 
                         {!topLinks.length ? (
@@ -213,29 +213,29 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                     return (
                                         <div
                                             key={link.id}
-                                            className="group flex flex-col rounded-lg border border-border/60 p-2 hover:bg-muted/30 transition-all text-xs"
+                                            className="group flex flex-col rounded-lg border border-border/60 p-2 hover:bg-muted/30 transition-all text-xs min-w-0"
                                         >
-                                            <div className="flex items-center justify-between gap-2">
-                                                <div className="flex items-center gap-1.5 min-w-0">
-                                                    <Icon size={14} className={platformCfg.color} />
+                                            <div className="flex items-center justify-between gap-2 min-w-0">
+                                                <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                                                    <Icon size={14} className={`${platformCfg.color} shrink-0`} />
                                                     <span className="font-semibold text-foreground truncate">
-                                                        {link.campaign || 'Chiến dịch'}
+                                                        {link.campaign || t('Chiến dịch')}
                                                     </span>
                                                 </div>
                                                 <span className="font-mono font-bold text-foreground shrink-0">
-                                                    {link.clicks || 0}
+                                                    {formatNumber(link.clicks || 0)}
                                                 </span>
                                             </div>
 
-                                            <div className="mt-1 flex items-center justify-between text-[11px] text-muted-foreground">
-                                                <span className="truncate max-w-[200px]" title={link.target}>
+                                            <div className="mt-1 flex items-center justify-between gap-2 text-[11px] text-muted-foreground min-w-0">
+                                                <span className="truncate min-w-0 flex-1" title={link.target || link.url}>
                                                     {link.target ? link.target.replace(/^https?:\/\//, '') : link.url}
                                                 </span>
                                                 <a
                                                     href={link.target || link.url}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground"
+                                                    className="shrink-0 opacity-0 group-hover:opacity-100 transition-opacity hover:text-foreground"
                                                 >
                                                     <ArrowUpRight size={12} />
                                                 </a>

@@ -62,35 +62,35 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
     }, [posts, selectedDayFilter, timezone]);
 
     return (
-        <section className="panel p-5 flex flex-col justify-between space-y-4">
+        <section className="panel p-4 sm:p-5 flex flex-col justify-between space-y-4">
             <div>
                 {/* Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/80">
-                    <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-muted text-foreground">
                             <CalendarBlank size={18} weight="bold" />
                         </div>
-                        <div>
+                        <div className="min-w-0">
                             <div className="flex items-center gap-2">
-                                <h2 className="font-heading text-[15px] font-semibold text-foreground">
+                                <h2 className="font-heading text-[15px] font-semibold text-foreground truncate">
                                     {t("Lịch bài đăng sắp tới")}
                                 </h2>
                                 {posts.length > 0 && (
-                                    <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[11px] font-bold">
+                                    <span className="rounded-full bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 text-[11px] font-bold shrink-0">
                                         {posts.length} {t("bài")}
                                     </span>
                                 )}
                             </div>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-muted-foreground truncate">
                                 {t("Lịch phát sóng nội dung tự động trên các kênh đã kết nối")}
                             </p>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 shrink-0">
                         <Link
                             to="/agent"
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
                         >
                             <Sparkle size={13} weight="bold" className="text-amber-500" />
                             <span>{t("AI lên lịch nhanh")}</span>
@@ -122,7 +122,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                         )}
                     </div>
 
-                    <div className="grid grid-cols-7 gap-1.5">
+                    <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
                         {weekDays.map((d) => {
                             const isSelected = selectedDayFilter === d.iso;
                             return (
@@ -130,7 +130,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                     key={d.iso}
                                     type="button"
                                     onClick={() => setSelectedDayFilter(isSelected ? 'all' : d.iso)}
-                                    className={`flex flex-col items-center justify-center rounded-xl p-2 transition-all cursor-pointer border text-center ${
+                                    className={`flex flex-col items-center justify-center rounded-xl px-1 py-1.5 sm:p-2 min-w-0 transition-all cursor-pointer border text-center ${
                                         isSelected
                                             ? 'bg-foreground text-background border-foreground shadow-2xs'
                                             : d.isToday
@@ -138,10 +138,10 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                             : 'bg-surface/60 border-border/60 hover:border-border text-foreground'
                                     }`}
                                 >
-                                    <span className="text-[10px] font-bold uppercase opacity-75">
+                                    <span className="text-[9px] sm:text-[10px] font-bold uppercase opacity-75 truncate max-w-full">
                                         {d.label}
                                     </span>
-                                    <span className="text-xs font-heading font-semibold mt-0.5">
+                                    <span className="text-[10px] sm:text-xs font-heading font-semibold mt-0.5 whitespace-nowrap">
                                         {d.dayMonth}
                                     </span>
                                     {d.count > 0 ? (
@@ -199,26 +199,26 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                     <Link
                                         key={p.id}
                                         to={`/posts?post=${p.id}`}
-                                        className="group flex items-start gap-3.5 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2"
+                                        className="group flex items-start gap-3 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2 min-w-0"
                                     >
                                         {mediaUrl ? (
                                             <img
                                                 src={mediaUrl}
                                                 alt=""
-                                                className="h-10 w-10 shrink-0 rounded-xl object-cover border border-border/70"
+                                                className="h-10 w-10 shrink-0 rounded-xl object-cover border border-border/70 mt-0.5"
                                             />
                                         ) : (
-                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-surface text-muted-foreground group-hover:border-border transition-colors">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-border/70 bg-surface text-muted-foreground group-hover:border-border transition-colors mt-0.5">
                                                 <Clock size={18} weight="duotone" />
                                             </div>
                                         )}
 
                                         <div className="min-w-0 flex-1">
-                                            <div className="flex items-center justify-between gap-2">
-                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground/80 transition-colors">
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-2">
+                                                <p className="text-sm font-semibold text-foreground truncate group-hover:text-foreground/80 transition-colors min-w-0">
                                                     {p.title || t("Untitled")}
                                                 </p>
-                                                <span className="font-mono text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full shrink-0">
+                                                <span className="font-mono text-[10px] sm:text-[11px] font-semibold text-blue-700 bg-blue-50 border border-blue-200/60 px-2 py-0.5 rounded-full shrink-0 self-start sm:self-auto">
                                                     {formatDateTime(p.scheduled_at, p.timezone || timezone)}
                                                 </span>
                                             </div>
@@ -231,17 +231,17 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
 
                                             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                                                 {brand && (
-                                                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground/80 text-[11px]">
+                                                    <span className="inline-flex items-center gap-1.5 font-medium text-foreground/80 text-[11px] max-w-[130px] sm:max-w-[160px] truncate shrink-0">
                                                         <span
                                                             className="h-2 w-2 rounded-full shrink-0"
                                                             style={{ backgroundColor: brand.color || '#ffd631' }}
                                                         />
-                                                        {brand.name}
+                                                        <span className="truncate">{brand.name}</span>
                                                     </span>
                                                 )}
 
                                                 {postAccounts.length > 0 ? (
-                                                    <div className="flex items-center gap-1">
+                                                    <div className="flex flex-wrap items-center gap-1">
                                                         {postAccounts.map((acc) => {
                                                             const conf = PLATFORM_CONFIG[acc.platform];
                                                             const IconComp = conf?.icon;
@@ -249,7 +249,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                                                 <span
                                                                     key={acc.id}
                                                                     title={`${acc.name} (${acc.platform})`}
-                                                                    className={`inline-flex items-center justify-center rounded-md p-1 border text-[11px] ${
+                                                                    className={`inline-flex items-center justify-center rounded-md p-1 border text-[11px] shrink-0 ${
                                                                         conf?.bg || 'bg-muted'
                                                                     } ${conf?.border || 'border-border'} ${conf?.color || 'text-foreground'}`}
                                                                 >
@@ -259,8 +259,8 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                                         })}
                                                     </div>
                                                 ) : p.account_ids?.length > 0 ? (
-                                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md">
-                                                        <span>{p.account_ids.length} kênh đăng</span>
+                                                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground bg-muted/60 px-2 py-0.5 rounded-md shrink-0">
+                                                        <span>{p.account_ids.length} {t("kênh đăng")}</span>
                                                     </span>
                                                 ) : null}
                                             </div>
@@ -268,7 +268,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
 
                                         <ArrowUpRight
                                             size={14}
-                                            className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1"
+                                            className="shrink-0 text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity mt-1 hidden sm:block"
                                         />
                                     </Link>
                                 );

@@ -63,13 +63,13 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
             end
             onClick={onNavigate}
             className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2 text-xs transition-all ${isActive
+                `flex items-center gap-3 rounded-xl px-3 py-2.5 sm:py-2 text-xs min-h-[38px] sm:min-h-9 transition-all cursor-pointer ${isActive
                     ? 'bg-foreground text-background font-semibold shadow-xs'
                     : 'text-muted-foreground hover:text-foreground hover:bg-muted/50 font-medium'
                 }`
             }
         >
-            <Icon size={17} weight="bold" className="shrink-0" />
+            <Icon size={18} weight="bold" className="shrink-0" />
             <span className="truncate">{t(label)}</span>
         </NavLink>
     );
@@ -80,7 +80,7 @@ export default function SidebarNavigation({ onNavigate }) {
     const { user } = useAuth();
 
     return (
-        <nav aria-label={t('Main navigation')} className="min-h-0 flex-1 overflow-y-auto space-y-4 pr-1">
+        <nav aria-label={t('Main navigation')} className="min-h-0 flex-1 overflow-y-auto overscroll-contain space-y-4 pr-1">
             {NAV_GROUPS.map((group) => (
                 <div key={group.title} className="space-y-1">
                     <p className="px-3 text-[10px] font-bold tracking-wider text-muted-foreground/75 uppercase">

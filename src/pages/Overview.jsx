@@ -6,13 +6,11 @@ import {
     CalendarDots,
     CalendarBlank,
     CheckCircle,
-    WarningCircle,
     PaperPlaneTilt,
     SquaresFour,
     Plus,
     CursorClick,
     Sparkle,
-    TrendUp,
     ArrowUpRight,
     ShareNetwork,
 } from '@phosphor-icons/react';
@@ -136,7 +134,7 @@ export default function Overview() {
                         })
                 }
                 actions={
-                    <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
                         <Link to="/create" className="btn-skew shadow-2xs">
                             <Plus size={16} weight="bold" /> {t("Tạo bài viết")}
                         </Link>
@@ -160,7 +158,7 @@ export default function Overview() {
 
             {loading ? (
                 <div className="space-y-6">
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         {[0, 1, 2, 3].map((key) => (
                             <Skeleton key={key} className="h-[104px] rounded-2xl" />
                         ))}
@@ -207,21 +205,21 @@ export default function Overview() {
                 <>
                     {/* Drafts Alert Callout (if drafts exist) */}
                     {draftCount > 0 && (
-                        <div className="panel flex flex-wrap items-center justify-between gap-4 p-4 border-amber-300/60 bg-amber-50/40 shadow-2xs">
-                            <div className="flex items-center gap-3.5">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs">
+                        <div className="panel flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 border-amber-300/60 bg-amber-50/40 shadow-2xs">
+                            <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs mt-0.5 sm:mt-0">
                                     <PaperPlaneTilt size={20} weight="duotone" />
                                 </div>
-                                <div>
-                                    <p className="font-heading text-sm font-semibold text-foreground">
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-heading text-sm font-semibold text-foreground truncate">
                                         {draftCount} {t("bản nháp đang chờ xử lý")}
                                     </p>
-                                    <p className="label-xs text-muted-foreground">
+                                    <p className="label-xs text-muted-foreground break-words sm:truncate">
                                         {t("Các bài viết nháp cần hoàn thiện hoặc phê duyệt trước khi đưa vào lịch phát sóng.")}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                                 <Link
                                     to="/posts?status=draft"
                                     className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-50 transition-colors shadow-2xs"
@@ -234,7 +232,7 @@ export default function Overview() {
                     )}
 
                     {/* Unified StatCards KPI Row (Strictly 1 cohesive color family per UI/UX guidelines) */}
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
                         <StatCard
                             label={t("Lưu lượng traffic")}
                             value={data.totalClicks || 0}
@@ -288,24 +286,24 @@ export default function Overview() {
                         {/* Side Right Column (col-span-1) */}
                         <div className="space-y-6 xl:col-span-1">
                             {/* Connected Social Channels Card */}
-                            <section className="panel p-5 space-y-4">
-                                <div className="flex items-center justify-between pb-3 border-b border-border/80">
-                                    <div className="flex items-center gap-2">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground">
+                            <section className="panel p-4 sm:p-5 space-y-4">
+                                <div className="flex items-center justify-between pb-3 border-b border-border/80 min-w-0">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground shrink-0">
                                             <ShareNetwork size={18} weight="duotone" />
                                         </div>
-                                        <div>
-                                            <h2 className="font-heading text-[15px] font-semibold text-foreground">
+                                        <div className="min-w-0">
+                                            <h2 className="font-heading text-[15px] font-semibold text-foreground truncate">
                                                 {t("Kênh xuất bản")}
                                             </h2>
-                                            <p className="text-xs text-muted-foreground">
+                                            <p className="text-xs text-muted-foreground truncate">
                                                 {t("Trạng thái kết nối tài khoản")}
                                             </p>
                                         </div>
                                     </div>
                                     <Link
                                         to="/accounts"
-                                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
+                                        className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors shrink-0"
                                     >
                                         <span>{t("Quản lý")}</span>
                                         <ArrowUpRight size={13} />
@@ -335,9 +333,9 @@ export default function Overview() {
                                             return (
                                                 <div
                                                     key={acc.id}
-                                                    className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-border/60 bg-surface/50 hover:bg-muted/30 transition-colors"
+                                                    className="flex items-center justify-between gap-3 p-2.5 rounded-xl border border-border/60 bg-surface/50 hover:bg-muted/30 transition-colors min-w-0"
                                                 >
-                                                    <div className="flex items-center gap-2.5 min-w-0">
+                                                    <div className="flex items-center gap-2.5 min-w-0 flex-1">
                                                         <div
                                                             className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${conf?.bg || 'bg-muted'
                                                                 } ${conf?.border || 'border-border'} ${conf?.color || 'text-foreground'
@@ -345,7 +343,7 @@ export default function Overview() {
                                                         >
                                                             {IconComp ? <IconComp size={16} weight="bold" /> : <ShareNetwork size={16} />}
                                                         </div>
-                                                        <div className="min-w-0">
+                                                        <div className="min-w-0 flex-1">
                                                             <p className="text-xs font-semibold text-foreground truncate">
                                                                 {acc.name}
                                                             </p>

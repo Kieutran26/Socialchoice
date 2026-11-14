@@ -40,20 +40,20 @@ export default function RecentActivity({ logs }) {
     const { t } = useTranslation();
 
     return (
-        <section className="panel p-5">
+        <section className="panel p-4 sm:p-5">
             {/* Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-border/80 mb-3">
-                <div className="flex items-center gap-2">
-                    <h2 className="font-heading text-[15px] font-medium text-foreground">
+            <div className="flex items-center justify-between pb-3 border-b border-border/80 mb-3 min-w-0">
+                <div className="flex items-center gap-2 min-w-0">
+                    <h2 className="font-heading text-[15px] font-medium text-foreground truncate">
                         {t("Recent activity")}
                     </h2>
                     {logs.length > 0 && (
-                        <span className="label-xs rounded-full bg-muted px-2 py-0.5 text-muted-foreground font-medium">
+                        <span className="label-xs rounded-full bg-muted px-2 py-0.5 text-muted-foreground font-medium shrink-0">
                             {logs.length}
                         </span>
                     )}
                 </div>
-                <span className="inline-flex items-center gap-1.5 label-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5 label-xs text-muted-foreground shrink-0">
                     <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span>{t("Live updates")}</span>
                 </span>
@@ -81,7 +81,7 @@ export default function RecentActivity({ logs }) {
                         return (
                             <div
                                 key={l.id}
-                                className="group flex items-start gap-3 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2"
+                                className="group flex items-start gap-3 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2 min-w-0"
                             >
                                 <div
                                     className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${style.bg} ${style.text} mt-0.5 shadow-2xs`}
@@ -90,10 +90,10 @@ export default function RecentActivity({ logs }) {
                                 </div>
 
                                 <div className="min-w-0 flex-1">
-                                    <p className="text-[13px] font-medium text-foreground leading-snug">
+                                    <p className="text-[13px] font-medium text-foreground leading-snug break-words">
                                         {message}
                                     </p>
-                                    <p className="label-xs mt-1 text-muted-foreground font-mono text-[11px]">
+                                    <p className="label-xs mt-1 text-muted-foreground font-mono text-[11px] truncate">
                                         {relativeTime(l.occurred_at || l.created_date)}
                                     </p>
                                 </div>
