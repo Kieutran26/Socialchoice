@@ -36,6 +36,7 @@ import StatCard from '@/components/common/StatCard';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { clearDemoWorkspace, seedDemoWorkspace } from '@/lib/demo-seed';
+import { seedStarterWorkspace } from '@/lib/starter-seed';
 import { runPublishingEngine } from '@/lib/engine';
 import { formatDateTime } from '@/lib/format';
 import DesktopBackup from '@/components/desktop-backup';
@@ -66,6 +67,7 @@ export default function Settings() {
     const [clearOpen, setClearOpen] = useState(false);
     const [searchParams] = useSearchParams();
     const [running, setRunning] = useState(false);
+    const [seedingStarter, setSeedingStarter] = useState(false);
     const [loadError, setLoadError] = useState('');
     const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'ai');
     const [searchQuery, setSearchQuery] = useState('');
@@ -192,6 +194,33 @@ export default function Settings() {
         await switchMode(false);
         toast({ title: t('Sample data removed') });
         load();
+    };
+
+    const populateStarterData = async () => {
+        setSeedingStarter(true);
+        try {
+            const result = await seedStarterWorkspace({ force: true });
+            if (demoMode) {
+                await switchMode(false);
+            } else {
+                await reload();
+            }
+            await load();
+            toast({
+                title: t('Đã nạp dữ liệu mẫu hoàn chỉnh'),
+                description: result
+                    ? `${result.brands} thương hiệu, ${result.pillars} trụ cột, ${result.angles} góc nội dung, ${result.posts} bài viết.`
+                    : undefined,
+            });
+        } catch (error) {
+            toast({
+                title: t('Không thể nạp dữ liệu mẫu'),
+                description: t(error.message),
+                variant: 'destructive',
+            });
+        } finally {
+            setSeedingStarter(false);
+        }
     };
 
     const runEngine = async () => {
@@ -810,6 +839,44 @@ export default function Settings() {
                                                 ? 'Sign out'
                                                 : 'Local workspace'
                                         )}
+                                    </span>
+                                </Button>
+                            </div>
+                        </section>
+                    )}
+
+                    {/* Starter Workspace Data */}
+                    {(activeTab === 'all' || activeTab === 'workspace') && (
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                            <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
+                                    <Sparkle size={17} weight="duotone" />
+                                </span>
+                                <div>
+                                    <h2 className="text-[15px] font-semibold text-foreground">
+                                        {t('Dữ liệu khởi tạo hoàn chỉnh')}
+                                    </h2>
+                                    <p className="label-xs text-muted-foreground mt-0.5">
+                                        {t('Tạo thêm thương hiệu, trụ cột, góc nội dung, mẫu bài và lịch đăng mẫu vào workspace chính.')}
+                                    </p>
+                                </div>
+                            </div>
+
+                            <p className="label-xs text-muted-foreground leading-relaxed">
+                                {t('Bao gồm 3 thương hiệu mẫu (An Nhiên Coffee, Lumina Skincare, Kiên Tech Studio) cùng tài khoản, trụ cột 100%, góc nội dung, mẫu bài, chữ ký và 15 bài nháp / lên lịch.')}
+                            </p>
+
+                            <div className="flex flex-wrap gap-2.5 pt-2 border-t border-border/60">
+                                <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="h-9 rounded-xl text-xs font-medium gap-1.5"
+                                    disabled={seeding || seedingStarter}
+                                    onClick={populateStarterData}
+                                >
+                                    <Sparkle size={13} />
+                                    <span>
+                                        {t(seedingStarter ? 'Đang nạp dữ liệu mẫu…' : 'Nạp dữ liệu mẫu hoàn chỉnh')}
                                     </span>
                                 </Button>
                             </div>

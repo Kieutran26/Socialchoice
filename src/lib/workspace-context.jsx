@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { seedDemoWorkspace } from './demo-seed';
+import { seedStarterWorkspace, STARTER_SEED_STORAGE_KEY } from './starter-seed';
 
 const WorkspaceContext = createContext(null);
 
@@ -30,7 +31,26 @@ export function WorkspaceProvider({ children }) {
     useEffect(() => {
         let active = true;
         (async () => {
-            try { await loadBrands(false); } catch { /* The shell displays the stored error. */ }
+            try {
+                const items = await loadBrands(false);
+                let alreadySeeded = false;
+                try {
+                    alreadySeeded = window.localStorage.getItem(STARTER_SEED_STORAGE_KEY) === '1';
+                } catch {
+                    alreadySeeded = false;
+                }
+                if (active && items.length === 0 && !alreadySeeded) {
+                    setSeeding(true);
+                    try {
+                        const result = await seedStarterWorkspace();
+                        if (active && !result?.skipped) {
+                            await loadBrands(false);
+                        }
+                    } finally {
+                        if (active) setSeeding(false);
+                    }
+                }
+            } catch { /* The shell displays the stored error. */ }
             finally { if (active) setLoading(false); }
         })();
         return () => {
