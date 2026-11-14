@@ -34,8 +34,13 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 if (!['GET', 'HEAD'].includes(request.method)) return json({ message: 'Link fetch requires GET or HEAD' }, 405, { Allow: 'GET, HEAD' });
                 const headers = new Headers(request.headers);
                 for (const name of [CONTEXT_HEADER, 'cookie', 'authorization', 'proxy-authorization']) headers.delete(name);
-                const publicRequest = new Request(request, { headers });
-                return forwardOwner(publicRequest);
+                const ownerResponse = await forwardOwner(new Request(request.url, { method: request.method, headers }));
+                if (ownerResponse.status !== 404 || typeof directory?.customerIds !== 'function') return ownerResponse;
+                for (const id of directory.customerIds()) {
+                    const customerResponse = await forwardCustomer(id, new Request(request.url, { method: request.method, headers }));
+                    if (customerResponse.status !== 404) return customerResponse;
+                }
+                return ownerResponse;
             }
             const media = path.match(/^\/api\/workspaces\/([a-f0-9-]{36})(\/api\/instagram-media\/[a-f0-9-]{36}\/[a-f0-9-]{36})$/);
             if (media) {

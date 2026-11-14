@@ -1,5 +1,12 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 
+const trackingDayFormat = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Asia/Ho_Chi_Minh',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+});
+
 function generateShortCode() {
     const chars = '23456789abcdefghjkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ';
     const bytes = randomBytes(6);
@@ -24,7 +31,7 @@ export function createTrackingLinkStore(db) {
         get: id => unpack(db.prepare('SELECT * FROM tracking_links WHERE id=? OR code=?').get(id, id)),
         getByCode(code) {
             if (!code || typeof code !== 'string') return null;
-            return unpack(db.prepare('SELECT * FROM tracking_links WHERE code=? OR id=?').get(code, code));
+            return unpack(db.prepare('SELECT * FROM tracking_links WHERE code=? OR id=? OR (code IS NULL AND substr(id,1,8)=?)').get(code, code, code));
         },
         create(key, data) {
             const existing = db.prepare('SELECT * FROM tracking_links WHERE dedupe=?').get(key);
@@ -48,11 +55,34 @@ export function createTrackingLinkStore(db) {
             db.prepare('INSERT INTO tracking_links(id,dedupe,data,code) VALUES (?,?,?,?)').run(id, key, JSON.stringify({ ...data, active: true, created_at: new Date().toISOString() }), code);
             return this.get(id);
         },
-        list(brandId) { return db.prepare("SELECT * FROM tracking_links WHERE json_extract(data,'$.brand_id')=? ORDER BY rowid DESC LIMIT 100").all(brandId).map(unpack).map(link => ({ ...link, days: db.prepare('SELECT day,clicks FROM tracking_link_days WHERE link_id=? ORDER BY day DESC LIMIT 30').all(link.id) })); },
+        list(brandId, isDemo) {
+            const conditions = [];
+            const params = [];
+            if (Array.isArray(brandId)) {
+                if (brandId.length === 0) return [];
+                conditions.push(`json_extract(data,'$.brand_id') IN (${brandId.map(() => '?').join(',')})`);
+                params.push(...brandId);
+            } else if (brandId && brandId !== 'all') {
+                conditions.push("json_extract(data,'$.brand_id')=?");
+                params.push(brandId);
+            }
+            if (isDemo === true) {
+                conditions.push("json_extract(data,'$.is_demo')=1");
+            } else if (isDemo === false) {
+                conditions.push("(json_extract(data,'$.is_demo')=0 OR json_extract(data,'$.is_demo') IS NULL)");
+            }
+            const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+            const limit = (!brandId || brandId === 'all' || Array.isArray(brandId)) ? 500 : 200;
+            const rows = db.prepare(`SELECT * FROM tracking_links ${where} ORDER BY rowid DESC LIMIT ?`).all(...params, limit);
+            const dayStmt = db.prepare('SELECT day,clicks FROM tracking_link_days WHERE link_id=? ORDER BY day DESC LIMIT 30');
+            return rows.map(unpack).map(link => ({ ...link, days: dayStmt.all(link.id) }));
+        },
         hit(id) {
-            const now = new Date().toISOString();
+            const nowDate = new Date();
+            const now = nowDate.toISOString();
+            const day = trackingDayFormat.format(nowDate);
             db.prepare('UPDATE tracking_links SET clicks=clicks+1,last_click=? WHERE id=?').run(now, id);
-            db.prepare('INSERT INTO tracking_link_days VALUES (?,?,1) ON CONFLICT(link_id,day) DO UPDATE SET clicks=clicks+1').run(id, now.slice(0, 10));
+            db.prepare('INSERT INTO tracking_link_days VALUES (?,?,1) ON CONFLICT(link_id,day) DO UPDATE SET clicks=clicks+1').run(id, day);
         },
         disable(id) { const row = db.prepare('SELECT data FROM tracking_links WHERE id=?').get(id); if (row) db.prepare('UPDATE tracking_links SET data=? WHERE id=?').run(JSON.stringify({ ...JSON.parse(row.data), active: false }), id); },
     };

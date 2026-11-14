@@ -1,5 +1,5 @@
 import { useTranslation } from '@/lib/i18n';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     PlugsConnected,
@@ -33,12 +33,44 @@ export default function Overview() {
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState(null);
     const [loadError, setLoadError] = useState('');
+    const [trafficRefreshing, setTrafficRefreshing] = useState(false);
+    const [lastTrafficUpdatedAt, setLastTrafficUpdatedAt] = useState(null);
+    const trafficInFlightRef = useRef(false);
+
+    const fetchTraffic = useCallback(async () => {
+        const deduped = new Map();
+        try {
+            const listArg = scope.brand_id
+                ? { brand_id: scope.brand_id }
+                : { brand_id: 'all', is_demo: scope.is_demo };
+            const res = await appClient.links.list(listArg);
+            (res?.links || []).forEach((link) => {
+                if (link?.id) deduped.set(link.id, link);
+            });
+        } catch (err) {
+            if (!scope.brand_id && brands.length > 0) {
+                const results = await Promise.all(
+                    brands.map((b) => appClient.links.list({ brand_id: b.id }).catch(() => ({ links: [] })))
+                );
+                results.forEach((res) => {
+                    (res?.links || []).forEach((link) => {
+                        if (link?.id) deduped.set(link.id, link);
+                    });
+                });
+            } else {
+                throw err;
+            }
+        }
+        const trackingLinks = Array.from(deduped.values());
+        const totalClicks = trackingLinks.reduce((sum, link) => sum + (link.clicks || 0), 0);
+        return { trackingLinks, totalClicks };
+    }, [scope, brands]);
 
     const load = useCallback(async () => {
         setLoading(true);
         setLoadError('');
         try {
-            const [statusAgg, pillarAgg, angleAgg, accounts, upcoming, logs, pillars, angles] = await Promise.all([
+            const [statusAgg, pillarAgg, angleAgg, accounts, upcoming, logs, pillars, angles, traffic] = await Promise.all([
                 appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
                 appClient.entities.Post.aggregate({ query: scope, groupBy: 'pillar_id' }),
                 appClient.entities.Post.aggregate({ query: scope, groupBy: 'angle_id' }),
@@ -50,6 +82,10 @@ export default function Overview() {
                 appClient.entities.PublishingLog.filter(scope, { sort: '-occurred_at', limit: 6 }),
                 appClient.entities.ContentPillar.filter(scope, { limit: 300 }),
                 appClient.entities.ContentAngle.filter(scope, { limit: 500 }),
+                fetchTraffic().catch((linkErr) => {
+                    console.warn('Traffic links load warning:', linkErr);
+                    return { trackingLinks: [], totalClicks: 0 };
+                }),
             ]);
 
             const byStatus = {};
@@ -57,25 +93,6 @@ export default function Overview() {
                 byStatus[row.status] = row.count;
             });
             const total = Object.values(byStatus).reduce((sum, value) => sum + value, 0);
-
-            // Fetch tracking links & clicks traffic
-            const trackingLinks = [];
-            let totalClicks = 0;
-            try {
-                const targetBrandIds = scope.brand_id ? [scope.brand_id] : brands.map((b) => b.id);
-                const linkRequests = targetBrandIds.map((bId) =>
-                    appClient.links.list({ brand_id: bId }).catch(() => ({ links: [] }))
-                );
-                const results = await Promise.all(linkRequests);
-                results.forEach((res) => {
-                    (res?.links || []).forEach((link) => {
-                        trackingLinks.push(link);
-                        totalClicks += link.clicks || 0;
-                    });
-                });
-            } catch (linkErr) {
-                console.warn('Traffic links load warning:', linkErr);
-            }
 
             setData({
                 byStatus,
@@ -87,19 +104,64 @@ export default function Overview() {
                 angleRows: angleAgg.rows,
                 pillarMap: Object.fromEntries(pillars.items.map((p) => [p.id, p])),
                 angleMap: Object.fromEntries(angles.items.map((a) => [a.id, a])),
-                trackingLinks,
-                totalClicks,
+                trackingLinks: traffic.trackingLinks,
+                totalClicks: traffic.totalClicks,
             });
+            setLastTrafficUpdatedAt(Date.now());
         } catch (error) {
             setLoadError(error.message);
         } finally {
             setLoading(false);
         }
-    }, [scope, brands]);
+    }, [scope, fetchTraffic]);
+
+    const refreshTraffic = useCallback(async ({ silent = true } = {}) => {
+        if (trafficInFlightRef.current) return;
+        trafficInFlightRef.current = true;
+        if (!silent) setTrafficRefreshing(true);
+        try {
+            const traffic = await fetchTraffic();
+            setData((prev) => (prev ? { ...prev, trackingLinks: traffic.trackingLinks, totalClicks: traffic.totalClicks } : prev));
+            setLastTrafficUpdatedAt(Date.now());
+        } catch (linkErr) {
+            if (!silent) console.warn('Traffic refresh warning:', linkErr);
+        } finally {
+            trafficInFlightRef.current = false;
+            if (!silent) setTrafficRefreshing(false);
+        }
+    }, [fetchTraffic]);
 
     useEffect(() => {
         load();
     }, [load]);
+
+    useEffect(() => {
+        const POLL_INTERVAL_MS = 12000;
+        const intervalId = window.setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                refreshTraffic({ silent: true });
+            }
+        }, POLL_INTERVAL_MS);
+
+        const handleFocus = () => {
+            if (document.visibilityState === 'visible') {
+                refreshTraffic({ silent: true });
+            }
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                refreshTraffic({ silent: true });
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            window.clearInterval(intervalId);
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [refreshTraffic]);
 
     if (loadError) {
         return (
@@ -280,6 +342,9 @@ export default function Overview() {
                                 trackingLinks={data.trackingLinks}
                                 totalClicks={data.totalClicks}
                                 timezone={timezone}
+                                onRefresh={() => refreshTraffic({ silent: false })}
+                                refreshing={trafficRefreshing}
+                                lastUpdatedAt={lastTrafficUpdatedAt}
                             />
                         </div>
 

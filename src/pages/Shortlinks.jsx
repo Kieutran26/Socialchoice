@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
     LinkSimple,
@@ -36,7 +36,10 @@ export default function Shortlinks() {
     const [links, setLinks] = useState([]);
     const [loading, setLoading] = useState(true);
     const [statsBusy, setStatsBusy] = useState(false);
+    const [loadError, setLoadError] = useState('');
     const [copiedId, setCopiedId] = useState(null);
+    const inFlightRef = useRef(false);
+    const requestSeqRef = useRef(0);
 
     // Form state for creating a shortlink
     const [destinationUrl, setDestinationUrl] = useState('');
@@ -80,27 +83,75 @@ export default function Shortlinks() {
         return brands[0];
     }, [brands, selectedBrandId]);
 
-    const loadLinks = useCallback(async () => {
+    const loadLinks = useCallback(async ({ silent = false } = {}) => {
         if (!currentBrand?.id) {
             setLinks([]);
+            setLoadError('');
             setLoading(false);
             return;
         }
-        setStatsBusy(true);
+        if (silent && inFlightRef.current) return;
+        const seq = ++requestSeqRef.current;
+        inFlightRef.current = true;
+        if (!silent) {
+            setStatsBusy(true);
+            setLoadError('');
+        }
         try {
             const res = await appClient.links.list({ brand_id: currentBrand.id });
-            setLinks(res.links || []);
+            if (seq === requestSeqRef.current) {
+                setLinks(res.links || []);
+                setLoadError('');
+            }
         } catch (err) {
             console.error('Failed to load links:', err);
+            if (!silent && seq === requestSeqRef.current) {
+                setLoadError(err?.message || t('Không thể tải danh sách shortlink.'));
+            }
         } finally {
-            setStatsBusy(false);
-            setLoading(false);
+            inFlightRef.current = false;
+            if (!silent && seq === requestSeqRef.current) {
+                setStatsBusy(false);
+            }
+            if (seq === requestSeqRef.current) {
+                setLoading(false);
+            }
         }
-    }, [currentBrand]);
+    }, [currentBrand, t]);
 
     useEffect(() => {
-        loadLinks();
+        setLoading(true);
+        loadLinks({ silent: false });
     }, [loadLinks]);
+
+    useEffect(() => {
+        if (!currentBrand?.id) return undefined;
+        const POLL_INTERVAL_MS = 12000;
+        const intervalId = window.setInterval(() => {
+            if (document.visibilityState === 'visible') {
+                loadLinks({ silent: true });
+            }
+        }, POLL_INTERVAL_MS);
+
+        const handleFocus = () => {
+            if (document.visibilityState === 'visible') {
+                loadLinks({ silent: true });
+            }
+        };
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible') {
+                loadLinks({ silent: true });
+            }
+        };
+
+        window.addEventListener('focus', handleFocus);
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+        return () => {
+            window.clearInterval(intervalId);
+            window.removeEventListener('focus', handleFocus);
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, [currentBrand?.id, loadLinks]);
 
     // Handle Create Shortlink
     const handleCreateShortlink = async (e) => {
@@ -440,16 +491,25 @@ export default function Shortlinks() {
                             <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs shrink-0">
                                 <CursorClick size={18} weight="bold" />
                             </span>
-                            <button
-                                type="button"
-                                onClick={loadLinks}
-                                disabled={statsBusy}
-                                className="text-[11px] text-neutral-400 hover:text-neutral-800 flex items-center gap-1 cursor-pointer transition"
-                                title={t('Làm mới số liệu')}
-                            >
-                                <ArrowsClockwise size={12} className={statsBusy ? 'animate-spin' : ''} />
-                                <span>{t('Làm mới')}</span>
-                            </button>
+                            <div className="flex items-center gap-2">
+                                <span
+                                    className="inline-flex items-center gap-1 text-[10.5px] text-neutral-500"
+                                    title={t('Tự động cập nhật')}
+                                >
+                                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 motion-safe:animate-pulse" aria-hidden="true" />
+                                    <span>{t('Trực tiếp')}</span>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => loadLinks({ silent: false })}
+                                    disabled={statsBusy}
+                                    className="text-[11px] text-neutral-400 hover:text-neutral-800 flex items-center gap-1 cursor-pointer transition disabled:opacity-50"
+                                    title={t('Làm mới số liệu')}
+                                >
+                                    <ArrowsClockwise size={12} className={statsBusy ? 'motion-safe:animate-spin' : ''} />
+                                    <span>{t('Làm mới')}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -579,13 +639,40 @@ export default function Shortlinks() {
 
                 {loading ? (
                     <p className="text-xs text-neutral-500 py-12 text-center">{t('Đang tải danh sách...')}</p>
-                ) : !filteredLinks.length ? (
+                ) : loadError && !links.length ? (
+                    <div role="alert" className="py-12 px-4 text-center space-y-3">
+                        <p className="text-xs font-semibold text-dangerFg">{loadError}</p>
+                        <button
+                            type="button"
+                            onClick={() => loadLinks({ silent: false })}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition"
+                        >
+                            <ArrowsClockwise size={13} />
+                            <span>{t('Thử lại')}</span>
+                        </button>
+                    </div>
+                ) : !links.length ? (
                     <div className="py-12 text-center space-y-2">
                         <LinkSimple size={32} className="mx-auto text-neutral-300" />
                         <p className="text-xs font-semibold text-neutral-800">{t('Chưa có shortlink nào.')}</p>
                         <p className="text-[11px] text-neutral-500 max-w-sm mx-auto">
                             {t('Hãy tạo shortlink đầu tiên ở khung phía trên để bắt đầu theo dõi lượt nhấp bài đăng.')}
                         </p>
+                    </div>
+                ) : !filteredLinks.length ? (
+                    <div className="py-12 text-center space-y-2.5">
+                        <MagnifyingGlass size={28} className="mx-auto text-neutral-300" />
+                        <p className="text-xs font-semibold text-neutral-800">{t('Không tìm thấy shortlink phù hợp.')}</p>
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setSearchQuery('');
+                                setPlatformFilter('all');
+                            }}
+                            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground hover:bg-muted cursor-pointer transition"
+                        >
+                            <span>{t('Xóa bộ lọc')}</span>
+                        </button>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">

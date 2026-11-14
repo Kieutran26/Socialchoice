@@ -39,6 +39,7 @@ export function createCustomerDirectory(store, storageKey, publicKey) {
     }
     const equalDigest = (left, right) => typeof left === 'string' && typeof right === 'string' && /^[a-f0-9]{64}$/.test(left) && /^[a-f0-9]{64}$/.test(right) && timingSafeEqual(Buffer.from(left, 'hex'), Buffer.from(right, 'hex'));
     return {
+        customerIds: () => Array.from(accounts, ([, account]) => account.id),
         licenseCustomers(ids) {
             if (!Array.isArray(ids) || ids.length > 100 || ids.some(id => !accountId(id)) || new Set(ids).size !== ids.length) fail('Valid license IDs required');
             const requestedAccounts = new Set(ids.map(id => licenses.get(id)).filter(Boolean)), byId = new Map();

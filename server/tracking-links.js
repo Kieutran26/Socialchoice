@@ -25,11 +25,21 @@ export function createTrackingLinks(store, scope = 'owner') {
             res.writeHead(302, { Location: link.target, 'Cache-Control': 'no-store, max-age=0', 'Referrer-Policy': 'no-referrer', 'X-Robots-Tag': 'noindex, nofollow' }); res.end(); return true;
         },
         execute(operation, input, origin) {
-            if (!input || typeof input.brand_id !== 'string') fail('Choose a brand');
-            const brand = store.get('Brand', input.brand_id);
             if (operation === 'list') {
+                const isDemo = typeof input?.is_demo === 'boolean' ? input.is_demo : undefined;
+                let links;
+                if (Array.isArray(input?.brand_ids)) {
+                    if (input.brand_ids.some(id => typeof id !== 'string' || !id)) fail('Choose valid brands');
+                    links = store.trackingLinks.list(input.brand_ids, isDemo);
+                } else if (!input?.brand_id || input.brand_id === 'all') {
+                    links = store.trackingLinks.list('all', isDemo);
+                } else {
+                    if (typeof input.brand_id !== 'string') fail('Choose a brand');
+                    const brand = store.get('Brand', input.brand_id);
+                    links = store.trackingLinks.list(brand.id, isDemo);
+                }
                 return {
-                    links: store.trackingLinks.list(brand.id).map(link => {
+                    links: links.map(link => {
                         const shortUrl = `${origin}/s/${link.code || link.id}`;
                         return {
                             ...link,
@@ -40,6 +50,8 @@ export function createTrackingLinks(store, scope = 'owner') {
                     }),
                 };
             }
+            if (!input || typeof input.brand_id !== 'string') fail('Choose a brand');
+            const brand = store.get('Brand', input.brand_id);
             if (operation === 'disable') {
                 const link = store.trackingLinks.get(input.id);
                 if (!link || link.brand_id !== brand.id) fail('Link not found', 404);

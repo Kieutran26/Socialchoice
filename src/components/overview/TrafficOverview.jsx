@@ -1,17 +1,19 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     CursorClick,
     TrendUp,
     LinkSimple,
     ArrowUpRight,
+    ArrowsClockwise,
     Globe,
     Plus,
     ChartLineUp,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
-import { formatNumber } from '@/lib/format';
+import { dateKey, formatNumber, formatTime } from '@/lib/format';
+import { DEFAULT_TIMEZONE } from '@/lib/constants';
 import {
     BarChart,
     Bar,
@@ -22,34 +24,54 @@ import {
     CartesianGrid,
 } from 'recharts';
 
-export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, timezone: _timezone }) {
+export default function TrafficOverview({
+    trackingLinks = [],
+    totalClicks,
+    timezone = DEFAULT_TIMEZONE,
+    onRefresh,
+    refreshing = false,
+    lastUpdatedAt = null,
+}) {
     const { t } = useTranslation();
+    const [rangeDays, setRangeDays] = useState(7);
+    const activeTimezone = timezone || DEFAULT_TIMEZONE;
 
-    // Calculate aggregated daily clicks for the last 7 days
+    const resolvedTotalClicks = useMemo(() => {
+        if (typeof totalClicks === 'number') return totalClicks;
+        return trackingLinks.reduce((sum, link) => sum + (link.clicks || 0), 0);
+    }, [totalClicks, trackingLinks]);
+
+    // Calculate aggregated daily clicks for the selected range (7 or 30 days) in workspace timezone
     const chartData = useMemo(() => {
         const daysMap = {};
-        const today = new Date();
+        const todayKey = dateKey(new Date(), activeTimezone);
+        const [year, month, day] = todayKey.split('-').map(Number);
 
-        // Initialize 7 days
-        for (let i = 6; i >= 0; i--) {
-            const d = new Date(today);
-            d.setDate(d.getDate() - i);
-            const dateStr = d.toISOString().slice(0, 10);
-            const dayLabel = `${d.getDate()}/${d.getMonth() + 1}`;
+        for (let i = rangeDays - 1; i >= 0; i--) {
+            const calendarDate = new Date(Date.UTC(year, month - 1, day - i));
+            const dateStr = calendarDate.toISOString().slice(0, 10);
+            const [, mStr, dStr] = dateStr.split('-');
+            const dayLabel = `${Number(dStr)}/${Number(mStr)}`;
             daysMap[dateStr] = { date: dateStr, day: dayLabel, clicks: 0 };
         }
 
         // Aggregate clicks from all links
         trackingLinks.forEach((link) => {
             (link.days || []).forEach((item) => {
-                if (daysMap[item.day]) {
-                    daysMap[item.day].clicks += item.clicks || 0;
+                const key = typeof item?.day === 'string' ? item.day.slice(0, 10) : '';
+                if (key && daysMap[key]) {
+                    daysMap[key].clicks += item.clicks || 0;
                 }
             });
         });
 
         return Object.values(daysMap);
-    }, [trackingLinks]);
+    }, [trackingLinks, rangeDays, activeTimezone]);
+
+    const periodClicks = useMemo(
+        () => chartData.reduce((sum, item) => sum + (item.clicks || 0), 0),
+        [chartData]
+    );
 
     // Top 4 links by clicks
     const topLinks = useMemo(() => {
@@ -57,6 +79,11 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
             .sort((a, b) => (b.clicks || 0) - (a.clicks || 0))
             .slice(0, 4);
     }, [trackingLinks]);
+
+    const maxTopClicks = useMemo(
+        () => Math.max(...topLinks.map((l) => l.clicks || 0), 1),
+        [topLinks]
+    );
 
     const activeLinksCount = trackingLinks.filter((l) => l.active !== false).length;
 
@@ -69,9 +96,18 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                         <CursorClick size={18} weight="bold" />
                     </div>
                     <div className="min-w-0">
-                        <h2 className="font-heading text-[15px] font-semibold text-foreground truncate">
-                            {t("Lưu lượng truy cập & Clicks")}
-                        </h2>
+                        <div className="flex items-center gap-2 min-w-0">
+                            <h2 className="font-heading text-[15px] font-semibold text-foreground truncate">
+                                {t("Lưu lượng truy cập & Clicks")}
+                            </h2>
+                            <span
+                                className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-0.5 text-[11px] font-medium text-muted-foreground shrink-0"
+                                title={lastUpdatedAt ? `${t('Cập nhật lúc')} ${formatTime(lastUpdatedAt, activeTimezone)}` : t('Tự động cập nhật')}
+                            >
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 motion-safe:animate-pulse" aria-hidden="true" />
+                                <span>{t("Trực tiếp")}</span>
+                            </span>
+                        </div>
                         <p className="text-xs text-muted-foreground truncate">
                             {t("Theo dõi lượng chuyển đổi và click qua các link UTM gắn trong bài viết")}
                         </p>
@@ -79,6 +115,18 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                    {onRefresh && (
+                        <button
+                            type="button"
+                            onClick={onRefresh}
+                            disabled={refreshing}
+                            aria-label={t("Làm mới số liệu traffic")}
+                            className="inline-flex items-center gap-1 rounded-lg border border-border bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:bg-muted hover:text-foreground transition-colors cursor-pointer disabled:opacity-50"
+                        >
+                            <ArrowsClockwise size={13} className={refreshing ? 'motion-safe:animate-spin' : ''} />
+                            <span className="hidden sm:inline">{t("Làm mới")}</span>
+                        </button>
+                    )}
                     <Link
                         to="/analytics"
                         className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground font-medium transition-colors"
@@ -96,7 +144,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                         {t("Tổng lượt nhấp")}
                     </span>
                     <span className="mt-1 font-heading text-lg sm:text-xl font-bold text-foreground block truncate">
-                        {formatNumber(totalClicks)}
+                        {formatNumber(resolvedTotalClicks)}
                     </span>
                     <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1 truncate">
                         <TrendUp size={12} className="text-emerald-500 shrink-0" /> <span className="truncate">{t("Tất cả các link")}</span>
@@ -120,7 +168,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                         {t("TB lượt nhấp/link")}
                     </span>
                     <span className="mt-1 font-heading text-lg sm:text-xl font-bold text-foreground block truncate">
-                        {activeLinksCount > 0 ? (totalClicks / activeLinksCount).toFixed(1) : '0'}
+                        {activeLinksCount > 0 ? (resolvedTotalClicks / activeLinksCount).toFixed(1) : '0'}
                     </span>
                     <span className="text-[10px] sm:text-[11px] text-muted-foreground mt-0.5 block truncate">
                         {t("Lượt truy cập trung bình")}
@@ -142,34 +190,71 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
 
             {/* Chart & Top Links Grid */}
             <div className="grid gap-5 lg:grid-cols-12 pt-1">
-                {/* 7-day Click Trend Chart */}
+                {/* Click Trend Chart */}
                 <div className="lg:col-span-7 flex flex-col justify-between rounded-xl border border-border/70 p-3.5 sm:p-4 bg-card min-w-0">
-                    <div className="flex items-center justify-between mb-3 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-3 min-w-0">
                         <span className="text-xs font-bold text-foreground flex items-center gap-1.5 min-w-0">
                             <ChartLineUp size={15} className="text-foreground shrink-0" weight="bold" />
-                            <span className="truncate">{t("Xu hướng lượt nhấp 7 ngày gần nhất")}</span>
+                            <span className="truncate">
+                                {rangeDays === 30
+                                    ? t("Xu hướng lượt nhấp 30 ngày gần nhất")
+                                    : t("Xu hướng lượt nhấp 7 ngày gần nhất")}
+                            </span>
                         </span>
-                        <span className="text-[11px] text-muted-foreground shrink-0 ml-2">{t("Theo ngày")}</span>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <span className="text-[11px] text-muted-foreground">
+                                {formatNumber(periodClicks)} {t("lượt nhấp")}
+                            </span>
+                            <div className="inline-flex items-center rounded-lg border border-border bg-muted/60 p-0.5 text-[11px]">
+                                <button
+                                    type="button"
+                                    onClick={() => setRangeDays(7)}
+                                    className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                                        rangeDays === 7
+                                            ? 'bg-card text-foreground shadow-2xs font-semibold'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {t("7 ngày")}
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={() => setRangeDays(30)}
+                                    className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                                        rangeDays === 30
+                                            ? 'bg-card text-foreground shadow-2xs font-semibold'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                    }`}
+                                >
+                                    {t("30 ngày")}
+                                </button>
+                            </div>
+                        </div>
                     </div>
 
                     <div className="h-44 w-full min-w-0">
                         <ResponsiveContainer width="100%" height="100%">
                             <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.06)" />
-                                <XAxis dataKey="day" tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="oklch(var(--border))" />
+                                <XAxis
+                                    dataKey="day"
+                                    tick={{ fontSize: 11 }}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    interval={rangeDays === 30 ? 4 : 0}
+                                />
                                 <YAxis allowDecimals={false} tick={{ fontSize: 11 }} tickLine={false} axisLine={false} />
                                 <Tooltip
-                                    cursor={{ fill: 'rgba(0, 0, 0, 0.05)' }}
+                                    cursor={{ fill: 'oklch(var(--muted) / 0.5)' }}
                                     contentStyle={{
-                                        backgroundColor: '#ffffff',
+                                        backgroundColor: 'oklch(var(--popover))',
                                         borderRadius: '10px',
-                                        border: '1px solid #e5e7eb',
+                                        border: '1px solid oklch(var(--border))',
                                         fontSize: '12px',
-                                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)',
                                     }}
                                     formatter={(value) => [`${value} ${t('lượt nhấp')}`, t('Traffic')]}
                                 />
-                                <Bar dataKey="clicks" fill="#18181b" radius={[6, 6, 0, 0]} maxBarSize={36} />
+                                <Bar dataKey="clicks" fill="oklch(var(--foreground))" radius={[6, 6, 0, 0]} maxBarSize={36} />
                             </BarChart>
                         </ResponsiveContainer>
                     </div>
@@ -207,8 +292,7 @@ export default function TrafficOverview({ trackingLinks = [], totalClicks = 0, t
                                         color: 'text-foreground',
                                     };
                                     const Icon = platformCfg.icon;
-                                    const maxClicks = Math.max(...topLinks.map((l) => l.clicks || 1), 1);
-                                    const pct = Math.min(Math.round(((link.clicks || 0) / maxClicks) * 100), 100);
+                                    const pct = Math.min(Math.round(((link.clicks || 0) / maxTopClicks) * 100), 100);
 
                                     return (
                                         <div

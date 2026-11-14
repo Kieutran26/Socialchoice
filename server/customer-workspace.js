@@ -1,4 +1,4 @@
-import { TRACKING_PATH } from './tracking-links.js';
+import { TRACKING_PATH, SHORT_PATH } from './tracking-links.js';
 import { DurableObject } from 'cloudflare:workers';
 import { createCloudWorkspaceRuntime } from './cloudflare-workspace-runtime.js';
 import { handleWebRequest } from './web-request-adapter.js';
@@ -19,9 +19,10 @@ export class SocialchoiceCustomerWorkspace extends DurableObject {
         try {
             const value = request.headers.get(CONTEXT_HEADER), path = new URL(request.url).pathname;
             const tracking = ['GET', 'HEAD'].includes(request.method) && path.match(TRACKING_PATH);
-            if (tracking) {
+            const shortTracking = ['GET', 'HEAD'].includes(request.method) && path.match(SHORT_PATH);
+            if (tracking || shortTracking) {
                 const savedId = await this.ctx.storage.get('customer-id');
-                if (!savedId || tracking[1] !== savedId) return Response.json({ message: 'Link not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
+                if (!savedId || (tracking && tracking[1] !== savedId)) return Response.json({ message: 'Link not found' }, { status: 404, headers: { 'Cache-Control': 'no-store' } });
                 await this.start(savedId);
                 return handleWebRequest(request, this.runtime.handler);
             }
