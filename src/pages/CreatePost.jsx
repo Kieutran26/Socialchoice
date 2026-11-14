@@ -733,7 +733,28 @@ export default function CreatePost() {
         if (!existing?.id) return;
         setSaving(true);
         try {
-            await appClient.posts.delete(existing.id);
+            if (existing.status !== 'draft') {
+                if (existing.status === 'scheduled') {
+                    if (isDesktop()) {
+                        try {
+                            await appClient.posts.cancelPlans([existing.id]);
+                        } catch {}
+                    } else {
+                        try {
+                            const st = await appClient.publishing.status(existing.id);
+                            if (st?.status === 'queued') {
+                                await appClient.publishing.cancelSchedule(existing.id);
+                            }
+                        } catch {}
+                        await appClient.entities.PublishJob.updateMany(
+                            { post_id: existing.id, status: 'pending' },
+                            { $set: { status: 'cancelled', error_message: 'Cancelled and deleted.' } }
+                        );
+                    }
+                }
+                await appClient.entities.Post.update(existing.id, { status: 'draft' });
+            }
+            await appClient.entities.Post.delete(existing.id);
             toast({ title: t('Đã xoá bài viết') });
             navigate('/posts');
         } catch (err) {

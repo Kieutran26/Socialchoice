@@ -140,7 +140,7 @@ export default function AllPosts() {
         return query;
     }, [scope, filters, platformAccountIds]);
 
-    const load = useCallback(async () => {
+    const load = useCallback(async (keepSelection = false) => {
         setLoading(true);
         setLoadError('');
         try {
@@ -148,7 +148,9 @@ export default function AllPosts() {
             setPosts(page.items);
             setCursor(page.next_cursor);
             setHasMore(!!page.has_more);
-            setSelected([]);
+            if (!keepSelection) {
+                setSelected([]);
+            }
         } catch (error) {
             setLoadError(error.message);
         } finally {
@@ -226,13 +228,69 @@ export default function AllPosts() {
 
     const runBulk = async (action) => {
         if (action === 'delete') {
-            const targets = eligible(['draft']);
-            if (!targets.length) {
-                toast({ variant: 'destructive', title: t('Only drafts can be deleted in bulk') });
+            const selectedPosts = posts.filter((post) => selected.includes(post.id));
+            const deletableTargets = selectedPosts.filter((post) => post.status !== 'published');
+            const publishedTargets = selectedPosts.filter((post) => post.status === 'published');
+
+            if (!deletableTargets.length) {
+                if (publishedTargets.length) {
+                    toast({
+                        variant: 'destructive',
+                        title: t('Không thể xóa bài viết đã xuất bản'),
+                        description: t('Bài viết đã xuất bản trên mạng xã hội được giữ lại để bảo toàn lịch sử và số liệu.'),
+                    });
+                }
+                setBulkAction(null);
                 return;
             }
-            await appClient.entities.Post.deleteMany({ id: { $in: targets.map((post) => post.id) } });
-            toast({ title: t('{count} drafts deleted', { count: targets.length }) });
+
+            try {
+                for (const post of deletableTargets) {
+                    if (post.status === 'scheduled') {
+                        if (isDesktop()) {
+                            try {
+                                await appClient.posts.cancelPlans([post.id]);
+                            } catch {}
+                        } else {
+                            try {
+                                const st = await appClient.publishing.status(post.id);
+                                if (st?.status === 'queued') {
+                                    await appClient.publishing.cancelSchedule(post.id);
+                                }
+                            } catch (error) {
+                                if (error.status !== 404) throw error;
+                            }
+                            await appClient.entities.PublishJob.updateMany(
+                                { post_id: post.id, status: 'pending' },
+                                { $set: { status: 'cancelled', error_message: 'Cancelled and deleted in bulk.' } }
+                            );
+                        }
+                        await appClient.entities.Post.update(post.id, { status: 'draft' });
+                    } else if (post.status !== 'draft') {
+                        await appClient.entities.Post.update(post.id, { status: 'draft' });
+                    }
+                }
+
+                await appClient.entities.Post.deleteMany({ id: { $in: deletableTargets.map((post) => post.id) } });
+
+                const hasScheduledDeleted = deletableTargets.some((p) => p.status === 'scheduled');
+                toast({
+                    title: hasScheduledDeleted
+                        ? t('Đã hủy lịch và xóa {count} bài viết', { count: deletableTargets.length })
+                        : t('Đã xóa {count} bài viết', { count: deletableTargets.length }),
+                    description: publishedTargets.length
+                        ? t('{count} bài viết đã xuất bản được giữ lại lịch sử.', { count: publishedTargets.length })
+                        : undefined,
+                });
+
+                setSelected((prev) => prev.filter((id) => !deletableTargets.some((post) => post.id === id)));
+            } catch (error) {
+                toast({
+                    variant: 'destructive',
+                    title: t('Xóa bài viết thất bại'),
+                    description: error.message,
+                });
+            }
         }
         if (action === 'cancel') {
             const targets = eligible(['scheduled']);
@@ -263,7 +321,7 @@ export default function AllPosts() {
             toast({ title: t('{count} posts cancelled', { count: targets.length }) });
         }
         setBulkAction(null);
-        load();
+        await load(true);
         loadStatusCounts();
     };
 
@@ -273,6 +331,7 @@ export default function AllPosts() {
         if (statusKey === 'all') next.delete('status');
         else next.set('status', statusKey);
         setSearchParams(next);
+        setSelected([]);
     };
 
     if (loadError) return <LoadError message={loadError} onRetry={() => window.location.reload()} />;
@@ -346,6 +405,7 @@ export default function AllPosts() {
                         variant="outline"
                         size="sm"
                         className="h-8 rounded-lg text-xs"
+                        disabled={!eligible(['scheduled']).length}
                         onClick={() => setBulkAction('cancel')}
                     >
                         <Prohibit size={13} className="mr-1.5" /> {t('Cancel scheduled')}
@@ -356,7 +416,7 @@ export default function AllPosts() {
                         className="h-8 rounded-lg text-xs text-dangerFg hover:text-dangerFg border-dangerBg"
                         onClick={() => setBulkAction('delete')}
                     >
-                        <Trash size={13} className="mr-1.5" /> {t('Delete drafts')}
+                        <Trash size={13} className="mr-1.5" /> {t('Delete selected')}
                     </Button>
                     <Button
                         variant="ghost"
@@ -476,25 +536,46 @@ export default function AllPosts() {
                 />
             )}
 
-            <ConfirmDialog
-                open={!!bulkAction}
-                onOpenChange={(value) => !value && setBulkAction(null)}
-                title={bulkAction === 'delete' ? t('Delete selected drafts?') : t('Cancel selected posts?')}
-                description={
-                    bulkAction === 'delete'
-                        ? t(
-                              'Selected drafts are removed permanently. Posts already scheduled or published are left untouched.'
-                          )
-                        : t(
-                              isDesktop()
-                                  ? 'Selected calendar plans are cancelled. Drafts and other posts are preserved.'
-                                  : 'Queued destination jobs are cancelled and the posts move to Cancelled. Published history is preserved.'
-                          )
-                }
-                confirmLabel={bulkAction === 'delete' ? t('Delete drafts') : t('Cancel posts')}
-                destructive={bulkAction === 'delete'}
-                onConfirm={() => runBulk(bulkAction)}
-            />
+            {(() => {
+                const hasScheduledInSelection = posts.some((p) => selected.includes(p.id) && p.status === 'scheduled');
+                return (
+                    <ConfirmDialog
+                        open={!!bulkAction}
+                        onOpenChange={(value) => !value && setBulkAction(null)}
+                        title={
+                            bulkAction === 'delete'
+                                ? hasScheduledInSelection
+                                    ? t('Hủy lịch và xóa các bài viết đã chọn?')
+                                    : t('Delete selected posts?')
+                                : t('Cancel selected posts?')
+                        }
+                        description={
+                            bulkAction === 'delete'
+                                ? hasScheduledInSelection
+                                    ? t(
+                                          'Các bài viết đã lên lịch sẽ tự động được hủy lịch đăng và xóa vĩnh viễn cùng với các bài nháp đã chọn. Thao tác này không thể hoàn tác.'
+                                      )
+                                    : t(
+                                          'Selected posts (drafts, scheduled, cancelled, failed) are removed permanently. Posts already published are preserved.'
+                                      )
+                                : t(
+                                      isDesktop()
+                                          ? 'Selected calendar plans are cancelled. Drafts and other posts are preserved.'
+                                          : 'Queued destination jobs are cancelled and the posts move to Cancelled. Published history is preserved.'
+                                  )
+                        }
+                        confirmLabel={
+                            bulkAction === 'delete'
+                                ? hasScheduledInSelection
+                                    ? t('Hủy lịch & Xóa')
+                                    : t('Delete posts')
+                                : t('Cancel posts')
+                        }
+                        destructive={bulkAction === 'delete'}
+                        onConfirm={() => runBulk(bulkAction)}
+                    />
+                );
+            })()}
         </>
     );
 }
