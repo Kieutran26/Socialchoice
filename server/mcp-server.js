@@ -1264,8 +1264,12 @@ export async function handleMcpAndOAuthRoutes({
             return true;
         }
         const base = getPublicBaseOrigin(req, publicOrigin);
+        const iconUrl = `${base}/socialchoice-icon.png`;
         sendJson(res, 200, {
             resource: `${base}/mcp`,
+            resource_name: 'SocialChoice',
+            logo_uri: iconUrl,
+            icon_uri: iconUrl,
             authorization_servers: [base],
             scopes_supported: MCP_SCOPES,
             bearer_methods_supported: ['header'],
@@ -1286,8 +1290,11 @@ export async function handleMcpAndOAuthRoutes({
             return true;
         }
         const base = getPublicBaseOrigin(req, publicOrigin);
+        const iconUrl = `${base}/socialchoice-icon.png`;
         sendJson(res, 200, {
             issuer: base,
+            logo_uri: iconUrl,
+            icon_uri: iconUrl,
             authorization_endpoint: `${base}/api/mcp/authorize`,
             token_endpoint: `${base}/api/mcp/token`,
             registration_endpoint: `${base}/api/mcp/register`,
@@ -1371,6 +1378,7 @@ export async function handleMcpAndOAuthRoutes({
             authenticated,
             login_path: '/login',
             app_name: 'SocialChoice',
+            app_icon: '/socialchoice-icon.png',
             client_id: authReq.client_id,
             client_name: authReq.client_name,
             requested_scopes: authReq.requested_scopes,
@@ -1583,9 +1591,19 @@ export async function handleMcpAndOAuthRoutes({
         }
 
         if (req.method === 'GET') {
+            const iconUrl = `${base}/socialchoice-icon.png`;
             sendJson(res, 200, {
-                name: 'socialchoice-mcp',
+                name: 'SocialChoice',
                 version: '1.0.0',
+                icon: iconUrl,
+                logo_url: iconUrl,
+                icons: [
+                    {
+                        src: iconUrl,
+                        mimeType: 'image/png',
+                        sizes: ['512x512', '192x192', '64x64'],
+                    },
+                ],
                 protocolVersion: MCP_PROTOCOL_VERSION,
                 status: 'ok',
                 client: grant.client_name,
@@ -1616,14 +1634,15 @@ export async function handleMcpAndOAuthRoutes({
 
             try {
                 switch (method) {
-                    case 'initialize':
+                    case 'initialize': {
+                        const iconUrl = `${base}/socialchoice-icon.png`;
                         return {
                             jsonrpc: '2.0',
                             id,
                             result: {
                                 protocolVersion:
                                     params?.protocolVersion &&
-                                    ['2024-11-05', '2025-03-26', '2025-06-18'].includes(
+                                    ['2024-11-05', '2025-03-26', '2025-06-18', '2025-11-25'].includes(
                                         params.protocolVersion
                                     )
                                         ? params.protocolVersion
@@ -1632,13 +1651,25 @@ export async function handleMcpAndOAuthRoutes({
                                     tools: { listChanged: false },
                                 },
                                 serverInfo: {
-                                    name: 'SocialChoice MCP Connector',
+                                    name: 'SocialChoice',
+                                    title: 'SocialChoice MCP Connector',
                                     version: '1.0.0',
+                                    websiteUrl: base,
+                                    icon: iconUrl,
+                                    logo_url: iconUrl,
+                                    icons: [
+                                        {
+                                            src: iconUrl,
+                                            mimeType: 'image/png',
+                                            sizes: ['512x512', '192x192', '64x64'],
+                                        },
+                                    ],
                                 },
                                 instructions:
                                     'SocialChoice MCP Server. Use list_brands and list_accounts first to identify brand_id and account_ids. Use list_media or upload_media (or pass media_urls / media_ids directly to create_draft, schedule_post, and update_post) whenever the user wants to attach images or videos. Always ask the user for confirmation before calling publish_now with confirm=true.',
                             },
                         };
+                    }
 
                     case 'ping':
                         return { jsonrpc: '2.0', id, result: {} };

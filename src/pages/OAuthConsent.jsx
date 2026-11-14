@@ -33,9 +33,11 @@ function ConsentShell({ title, subtitle, children }) {
 
                 <section className="panel p-6 bg-card border border-border rounded-2xl space-y-5">
                     <div className="flex items-start gap-3.5 border-b border-border pb-4">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand/20 text-brand-ink border border-brand-dark/30">
-                            <ShieldCheck size={20} weight="duotone" />
-                        </div>
+                        <img
+                            src="/socialchoice-icon.png"
+                            alt="SocialChoice"
+                            className="h-10 w-10 shrink-0 rounded-xl border border-brand-dark/30 object-cover"
+                        />
                         <div className="min-w-0">
                             <h1 className="text-lg font-medium text-foreground">{title}</h1>
                             {subtitle && (

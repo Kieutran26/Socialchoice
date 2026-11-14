@@ -6,7 +6,6 @@ import { Label } from '@/components/ui/label';
 import StatusBadge from '@/components/common/StatusBadge';
 import { formatDateTime } from '@/lib/format';
 import {
-    PlugsConnected,
     Copy,
     Check,
     Plus,
@@ -121,9 +120,11 @@ export default function McpConnectorsSettingsCard() {
         <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-5">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3.5">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand/20 text-brand-ink border border-brand-dark/30">
-                        <PlugsConnected size={18} weight="duotone" />
-                    </span>
+                    <img
+                        src="/socialchoice-icon.png"
+                        alt="SocialChoice MCP"
+                        className="h-9 w-9 shrink-0 rounded-xl border border-brand-dark/30 object-cover"
+                    />
                     <div>
                         <h2 className="text-[15px] font-semibold text-foreground">
                             {t('Kết nối ChatGPT & Claude (MCP Connector)')}

@@ -151,7 +151,9 @@ test('MCP OAuth 2.1 + Streamable HTTP tools end-to-end', async (t) => {
 
     // 7. Initialize & List Tools
     const initRpc = await callMcp('initialize', { protocolVersion: '2025-03-26' });
-    assert.equal(initRpc.result.serverInfo.name, 'SocialChoice MCP Connector');
+    assert.equal(initRpc.result.serverInfo.name, 'SocialChoice');
+    assert.ok(initRpc.result.serverInfo.icon.endsWith('/socialchoice-icon.png'));
+    assert.equal(initRpc.result.serverInfo.icons[0].src, initRpc.result.serverInfo.icon);
 
     const listToolsRpc = await callMcp('tools/list');
     // Since posts:publish was not granted, publish_now should not be in tools/list
