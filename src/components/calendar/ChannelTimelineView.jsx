@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Plus, Globe } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -30,6 +31,7 @@ export default function ChannelTimelineView({
 }) {
     const { t } = useTranslation();
     const today = todayInZone(timezone);
+    const [dragOverCell, setDragOverCell] = useState(null);
 
     // Filter to 7 days if given more
     const timelineDays = days.slice(0, 7).map((d) => (typeof d === 'string' ? d : d.date));
@@ -144,6 +146,8 @@ export default function ChannelTimelineView({
                                     {/* Days columns for this account */}
                                     {timelineDays.map((date) => {
                                         const isToday = date === today;
+                                        const cellKey = `${account.id}:${date}`;
+                                        const isDragOver = dragOverCell === cellKey;
                                         const dayPosts = (postsByDay[date] || []).filter(
                                             (post) => post.account_ids && post.account_ids.includes(account.id)
                                         );
@@ -154,20 +158,42 @@ export default function ChannelTimelineView({
                                                 role="group"
                                                 data-calendar-date={date}
                                                 onDragOver={(event) => {
-                                                    if (onMove && event.dataTransfer.types.includes('application/x-socialchoice-post')) {
+                                                    if (onMove && (event.dataTransfer.types.includes('application/x-socialchoice-post') || event.dataTransfer.types.includes('text/plain'))) {
                                                         event.preventDefault();
+                                                        event.dataTransfer.dropEffect = 'move';
+                                                        if (dragOverCell !== cellKey) {
+                                                            setDragOverCell(cellKey);
+                                                        }
+                                                    }
+                                                }}
+                                                onDragLeave={(event) => {
+                                                    if (!event.currentTarget.contains(event.relatedTarget)) {
+                                                        if (dragOverCell === cellKey) setDragOverCell(null);
                                                     }
                                                 }}
                                                 onDrop={(event) => {
+                                                    setDragOverCell(null);
                                                     if (!onMove) return;
                                                     event.preventDefault();
-                                                    const id = event.dataTransfer.getData('application/x-socialchoice-post');
-                                                    if (id) onMove(id, date);
+                                                    const id = event.dataTransfer.getData('application/x-socialchoice-post') || event.dataTransfer.getData('text/plain');
+                                                    if (id) onMove(id, date, account.id);
                                                 }}
-                                                className={`group/cell relative p-1.5 border-r border-border/50 last:border-r-0 flex flex-col justify-start transition-colors ${
-                                                    isToday ? 'bg-brand/5' : ''
+                                                className={`group/cell relative p-1.5 border-r border-border/50 last:border-r-0 flex flex-col justify-start transition-all duration-150 ${
+                                                    isDragOver
+                                                        ? 'ring-2 ring-brand ring-inset bg-brand/15 border-brand/60 shadow-sm z-10'
+                                                        : isToday
+                                                        ? 'bg-brand/5'
+                                                        : ''
                                                 } hover:bg-muted/20`}
                                             >
+                                                {/* Drop placeholder indicator when dragging over */}
+                                                {isDragOver && (
+                                                    <div className="mb-1.5 p-1 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[9px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse shadow-2xs">
+                                                        <span>📥</span>
+                                                        <span>{t('Thả vào đây')}</span>
+                                                    </div>
+                                                )}
+
                                                 {dayPosts.length > 0 ? (
                                                     <div className="space-y-1">
                                                         {dayPosts.map((post) => (
@@ -185,13 +211,14 @@ export default function ChannelTimelineView({
                                                                             'application/x-socialchoice-post',
                                                                             post.id
                                                                         );
+                                                                        event.dataTransfer.setData('text/plain', post.id);
                                                                         event.dataTransfer.effectAllowed = 'move';
                                                                     }
                                                                 }}
                                                             />
                                                         ))}
                                                     </div>
-                                                ) : (
+                                                ) : !isDragOver ? (
                                                     <div className="h-full min-h-[50px] flex items-center justify-center text-[10px] text-muted-foreground/30 group-hover/cell:text-transparent relative">
                                                         <span>—</span>
                                                         <Link
@@ -202,7 +229,7 @@ export default function ChannelTimelineView({
                                                             <Plus size={11} weight="bold" />
                                                         </Link>
                                                     </div>
-                                                )}
+                                                ) : null}
                                             </div>
                                         );
                                     })}

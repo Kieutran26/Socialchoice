@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { formatTime } from '@/lib/format';
-import { PLATFORM_CONFIG } from '../common/PlatformBadge';
 import {
     FacebookLogo,
     InstagramLogo,
@@ -11,7 +11,7 @@ import {
     XLogo,
     YoutubeLogo,
     Globe,
-    FileText,
+    DotsSixVertical,
 } from '@phosphor-icons/react';
 
 const PLATFORM_ICONS = {
@@ -66,11 +66,13 @@ export default function CalendarPostChip({
     onSelect,
     draggable = false,
     onDragStart,
-    compact = false,
+    compact: _compact = false,
 }) {
     const { t } = useTranslation();
+    const [isDragging, setIsDragging] = useState(false);
     const status = post.status || 'draft';
     const statusCfg = STATUS_CONFIG[status] || STATUS_CONFIG.draft;
+    const canDrag = draggable && status !== 'published';
 
     // Resolve primary account platform
     const primaryAccountId = post.account_ids?.[0];
@@ -87,6 +89,26 @@ export default function CalendarPostChip({
     // Schedule time
     const timeDisplay = post.scheduled_at ? formatTime(post.scheduled_at, timezone) : '';
 
+    const handleDragStart = (e) => {
+        if (!canDrag) {
+            e.preventDefault();
+            return;
+        }
+        setIsDragging(true);
+        e.dataTransfer.setData('application/x-socialchoice-post', post.id);
+        e.dataTransfer.setData('text/plain', post.id);
+        e.dataTransfer.effectAllowed = 'move';
+        onDragStart?.(e);
+    };
+
+    const handleDragEnd = () => {
+        setIsDragging(false);
+    };
+
+    const tooltipTitle = canDrag
+        ? `${post.title || post.caption || t('Untitled post')} (${t(statusCfg.label)}) - ${t('Nắm kéo để đổi ngày')}`
+        : `${post.title || post.caption || t('Untitled post')} (${t(statusCfg.label)})`;
+
     return (
         <div
             role="button"
@@ -102,10 +124,15 @@ export default function CalendarPostChip({
                     onSelect?.(post);
                 }
             }}
-            draggable={draggable}
-            onDragStart={onDragStart}
-            className={`group/chip relative w-full rounded-xl border bg-card p-1.5 text-left shadow-2xs transition-all duration-150 cursor-pointer select-none border-l-[3.5px] hover:-translate-y-0.5 hover:shadow-sm ${statusCfg.border} border-border hover:border-border/80 mb-1.5`}
-            title={`${post.title || post.caption || t('Untitled post')} (${t(statusCfg.label)})`}
+            draggable={canDrag}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            className={`group/chip relative w-full rounded-xl border bg-card p-1.5 text-left shadow-2xs transition-all duration-150 select-none border-l-[3.5px] ${
+                canDrag ? 'cursor-grab active:cursor-grabbing hover:-translate-y-0.5 hover:shadow-sm' : 'cursor-pointer'
+            } ${statusCfg.border} border-border hover:border-border/80 mb-1.5 ${
+                isDragging ? 'opacity-30 scale-95 ring-2 ring-brand ring-offset-1 shadow-none' : ''
+            }`}
+            title={tooltipTitle}
         >
             {/* Top row: Platform icon + Time + Status indicator */}
             <div className="flex items-center justify-between gap-1 mb-1">
@@ -123,11 +150,21 @@ export default function CalendarPostChip({
                     )}
                 </div>
 
-                <span
-                    className={`px-1.5 py-0.2 rounded text-[9px] font-bold border shrink-0 ${statusCfg.badgeBg}`}
-                >
-                    {t(statusCfg.label)}
-                </span>
+                <div className="flex items-center gap-1 shrink-0">
+                    <span
+                        className={`px-1.5 py-0.2 rounded text-[9px] font-bold border shrink-0 ${statusCfg.badgeBg}`}
+                    >
+                        {t(statusCfg.label)}
+                    </span>
+                    {canDrag && (
+                        <span
+                            className="text-muted-foreground/40 group-hover/chip:text-muted-foreground transition-colors shrink-0"
+                            title={t('Nắm kéo để đổi ngày')}
+                        >
+                            <DotsSixVertical size={13} weight="bold" />
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* Bottom row: Thumbnail (if exists) + Title */}

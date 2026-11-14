@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -28,6 +29,7 @@ export default function MonthView({
 }) {
     const { t } = useTranslation();
     const today = todayInZone(timezone);
+    const [dragOverDate, setDragOverDate] = useState(null);
 
     const weekDayHeaders = [
         { key: 'Mon', label: 'Thứ 2' },
@@ -65,6 +67,7 @@ export default function MonthView({
                             const isToday = date === today;
                             const dayNumber = Number(date.slice(-2));
                             const dayPosts = postsByDay[date] || [];
+                            const isDragOver = dragOverDate === date;
 
                             return (
                                 <div
@@ -73,18 +76,30 @@ export default function MonthView({
                                     aria-label={t('Calendar day {date}', { date })}
                                     data-calendar-date={date}
                                     onDragOver={(event) => {
-                                        if (onMove && event.dataTransfer.types.includes('application/x-socialchoice-post')) {
+                                        if (onMove && (event.dataTransfer.types.includes('application/x-socialchoice-post') || event.dataTransfer.types.includes('text/plain'))) {
                                             event.preventDefault();
+                                            event.dataTransfer.dropEffect = 'move';
+                                            if (dragOverDate !== date) {
+                                                setDragOverDate(date);
+                                            }
+                                        }
+                                    }}
+                                    onDragLeave={(event) => {
+                                        if (!event.currentTarget.contains(event.relatedTarget)) {
+                                            if (dragOverDate === date) setDragOverDate(null);
                                         }
                                     }}
                                     onDrop={(event) => {
+                                        setDragOverDate(null);
                                         if (!onMove) return;
                                         event.preventDefault();
-                                        const id = event.dataTransfer.getData('application/x-socialchoice-post');
+                                        const id = event.dataTransfer.getData('application/x-socialchoice-post') || event.dataTransfer.getData('text/plain');
                                         if (id) onMove(id, date);
                                     }}
-                                    className={`group relative min-h-[130px] p-2 border-b border-border transition-colors flex flex-col justify-between ${
-                                        !inMonth
+                                    className={`group relative min-h-[130px] p-2 border-b border-border transition-all duration-150 flex flex-col justify-between ${
+                                        isDragOver
+                                            ? 'ring-2 ring-brand ring-inset bg-brand/15 border-brand/60 shadow-sm z-10'
+                                            : !inMonth
                                             ? 'bg-muted/30 text-muted-foreground/50'
                                             : isToday
                                             ? 'bg-brand/5'
@@ -116,6 +131,14 @@ export default function MonthView({
                                             </Link>
                                         </div>
 
+                                        {/* Drop placeholder indicator when dragging over */}
+                                        {isDragOver && (
+                                            <div className="mb-2 p-1.5 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[10px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse shadow-2xs">
+                                                <span>📥</span>
+                                                <span>{t('Thả vào ngày này')}</span>
+                                            </div>
+                                        )}
+
                                         {/* Rich Post Chips List */}
                                         <div className="space-y-1">
                                             {dayPosts.map((post) => (
@@ -133,6 +156,7 @@ export default function MonthView({
                                                                 'application/x-socialchoice-post',
                                                                 post.id
                                                             );
+                                                            event.dataTransfer.setData('text/plain', post.id);
                                                             event.dataTransfer.effectAllowed = 'move';
                                                         }
                                                     }}
@@ -142,7 +166,7 @@ export default function MonthView({
                                     </div>
 
                                     {/* Empty bottom space placeholder if no posts */}
-                                    {dayPosts.length === 0 && inMonth && (
+                                    {dayPosts.length === 0 && !isDragOver && inMonth && (
                                         <div className="h-4" />
                                     )}
                                 </div>

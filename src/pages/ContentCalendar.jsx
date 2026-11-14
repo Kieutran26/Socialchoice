@@ -21,9 +21,11 @@ import { getLocale } from '@/lib/i18n-core';
 import { isDesktop } from '@/api/desktop/runtime';
 import { toZonedParts } from '@/lib/tz';
 import LoadError from '@/components/common/load-error';
+import { useToast } from '@/components/ui/use-toast';
 
 export default function ContentCalendar() {
     const { t } = useTranslation();
+    const { toast } = useToast();
     const { scope, brands, selectedBrandId, timezone } = useWorkspace();
     const [view, setView] = useState('month');
     const [anchor, setAnchor] = useState(() => todayInZone(timezone));
@@ -153,24 +155,87 @@ export default function ContentCalendar() {
         else setAnchor(addDays(anchor, direction * ((view === 'week' || view === 'channel') ? 7 : 30)));
     };
 
-    const movePlan = async (id, date) => {
-        const post = posts.find(item => item.id === id);
-        if (moving || !post || post.status !== 'scheduled') return;
-        setMoving(true); setError('');
+    const movePlan = async (id, date, targetAccountId) => {
+        const post = posts.find((item) => item.id === id);
+        if (moving || !post) return;
+
+        if (post.status === 'published') {
+            toast({
+                variant: 'destructive',
+                title: t('Không thể di chuyển bài viết'),
+                description: t('Bài viết đã xuất bản không thể thay đổi ngày lên lịch.'),
+            });
+            return;
+        }
+
+        const currentParts = toZonedParts(post.scheduled_at, timezone);
+        const time = currentParts.time || '09:00';
+        const instant = toUtcIso(date, time, timezone);
+
+        if (!instant) {
+            toast({
+                variant: 'destructive',
+                title: t('Ngày không hợp lệ'),
+            });
+            return;
+        }
+
+        const isSameDate = currentParts.date === date;
+        const isSameAccount = !targetAccountId || (post.account_ids && post.account_ids.includes(targetAccountId));
+        if (isSameDate && isSameAccount) {
+            return;
+        }
+
+        const newStatus = post.status === 'draft' ? 'draft' : 'scheduled';
+        const newAccountIds = targetAccountId && (!post.account_ids || !post.account_ids.includes(targetAccountId))
+            ? [targetAccountId]
+            : post.account_ids;
+
+        const previousPosts = posts;
+        setMoving(true);
+        setError('');
+
+        // Optimistic UI update
+        setPosts((prev) =>
+            prev.map((p) => {
+                if (p.id !== id) return p;
+                return {
+                    ...p,
+                    scheduled_at: instant,
+                    status: newStatus,
+                    account_ids: newAccountIds,
+                };
+            })
+        );
+
         try {
-            const recordTimezone = post.timezone || timezone;
-            const local = toZonedParts(post.scheduled_at, recordTimezone);
-            const displayed = toZonedParts(post.scheduled_at, timezone);
-            const delta = Math.round((Date.parse(date + 'T00:00:00Z') - Date.parse(displayed.date + 'T00:00:00Z')) / 86400000);
-            const localDate = addDays(local.date, delta);
-            const instant = toUtcIso(localDate, local.time, recordTimezone);
-            const roundTrip = toZonedParts(instant, recordTimezone);
-            if (roundTrip.date !== localDate || roundTrip.time !== local.time) throw new Error('Choose a valid local time in this timezone.');
-            if (dateKey(instant, timezone) !== date) throw new Error('This move crosses a timezone boundary. Open the plan to choose its date and time.');
-            await base44.posts.save({ id, data: { status: 'scheduled', scheduled_at: instant } });
+            await base44.posts.save({
+                id,
+                data: {
+                    status: newStatus,
+                    scheduled_at: instant,
+                    timezone: post.timezone || timezone,
+                    ...(targetAccountId ? { account_ids: newAccountIds } : {}),
+                },
+            });
+            toast({
+                title: t('Đã dời lịch bài viết'),
+                description: t('Bài viết đã được chuyển sang ngày {date}.', {
+                    date: formatCalendarDate(date),
+                }),
+            });
             await reloadCurrent.current();
-        } catch (failure) { setError(failure.message); }
-        finally { setMoving(false); }
+        } catch (failure) {
+            setPosts(previousPosts);
+            setError(failure.message);
+            toast({
+                variant: 'destructive',
+                title: t('Không thể dời lịch bài viết'),
+                description: failure.message,
+            });
+        } finally {
+            setMoving(false);
+        }
     };
 
     return (
@@ -214,7 +279,7 @@ export default function ContentCalendar() {
                 </EmptyState>
             ) : view === 'month' ? (
                 <MonthView
-                    onMove={isDesktop() ? movePlan : undefined}
+                    onMove={movePlan}
                     days={dayList}
                     postsByDay={postsByDay}
                     brands={brands}
@@ -232,11 +297,11 @@ export default function ContentCalendar() {
                     mediaMap={mediaMap}
                     timezone={timezone}
                     onSelect={setOpenPost}
-                    onMove={isDesktop() ? movePlan : undefined}
+                    onMove={movePlan}
                 />
             ) : view === 'week' ? (
                 <WeekView
-                    onMove={isDesktop() ? movePlan : undefined}
+                    onMove={movePlan}
                     days={dayList}
                     postsByDay={postsByDay}
                     brands={brands}
@@ -263,7 +328,14 @@ export default function ContentCalendar() {
             <p className="label-xs mt-3">
                 {t(selectedBrandId === 'all' ? 'Showing every brand' : 'Filtered to the selected brand')} · {t('{count} items in view', { count: posts.length })}
             </p>
-            {isDesktop() && <p className="label-xs mt-2" role="status">{t(moving ? 'Saving…' : 'Drag plans to another day, or open a plan to change its date and time.')}</p>}
+            <p className="label-xs mt-2 text-muted-foreground flex items-center gap-1.5" role="status">
+                <span>💡</span>
+                <span>
+                    {moving
+                        ? t('Đang lưu thay đổi ngày bài viết…')
+                        : t('Nắm và kéo thả bài viết vào bất kỳ ngày nào để đổi lịch đăng.')}
+                </span>
+            </p>
 
             {openPost ? <PostDetailSheet key={openPost.id} post={openPost} onClose={() => setOpenPost(null)} onChanged={load} /> : null}
         </>
