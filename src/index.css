@@ -67,14 +67,14 @@
         --radius: 6px;
 
         /* identity */
-        --brand-yellow: #18181b;
-        --brand-yellow-hover: #27272a;
-        --brand-yellow-dark: #09090b;
-        --brand-yellow-ink: #ffffff;
-        --brand-green: #18181b;
-        --brand-green-hover: #27272a;
-        --brand-green-dark: #09090b;
-        --brand-green-ink: #ffffff;
+        --brand-yellow: #ffd631;
+        --brand-yellow-hover: #ffe059;
+        --brand-yellow-dark: #d8b216;
+        --brand-yellow-ink: #2b2100;
+        --brand-green: #ffd631;
+        --brand-green-hover: #ffe059;
+        --brand-green-dark: #d8b216;
+        --brand-green-ink: #2b2100;
         --brand-gray: #eaeaea;
 
         --font-heading: 'Mona Sans', 'Neue Haas Grotesk Display Pro', ui-sans-serif, system-ui, sans-serif;
@@ -117,20 +117,20 @@
 
 @layer components {
 
-    /* Flat primary action; matches the modern monochrome rounded-xl spec */
+    /* Flat primary action; brand yellow contract */
     .btn-skew {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        gap: 6px;
-        background: #18181b;
-        color: #ffffff;
-        border: 1px solid #18181b;
-        border-radius: 12px;
-        padding: 8px 16px;
+        gap: 8px;
+        background: var(--brand-yellow);
+        color: var(--brand-yellow-ink);
+        border: 1px solid var(--brand-yellow-dark);
+        border-radius: 10px;
+        padding: 9px 16px;
         font-family: var(--font-body);
-        font-size: 12px;
-        font-weight: 500;
+        font-size: 13px;
+        font-weight: 600;
         line-height: 1.25;
         box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
         transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
@@ -138,14 +138,14 @@
         white-space: nowrap;
     }
     .btn-skew:hover:not(:disabled):not([aria-disabled="true"]) {
-        background: #27272a;
-        border-color: #27272a;
-        color: #ffffff;
+        background: var(--brand-yellow-hover);
+        border-color: var(--brand-yellow-dark);
+        color: var(--brand-yellow-ink);
     }
     .btn-skew:active:not(:disabled):not([aria-disabled="true"]) {
-        background: #09090b;
-        border-color: #09090b;
-        color: #ffffff;
+        background: var(--brand-yellow-dark);
+        border-color: var(--brand-yellow-dark);
+        color: var(--brand-yellow-ink);
     }
     .btn-skew:disabled, .btn-skew[aria-disabled="true"] {
         opacity: 0.5;

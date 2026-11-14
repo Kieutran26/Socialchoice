@@ -2,6 +2,7 @@ import { customerCookie } from './customer-directory.js';
 import { CONTEXT_HEADER, signCustomerContext } from './customer-context.js';
 import { accountId } from './web-license.js';
 import { TRACKING_PATH, SHORT_PATH } from './tracking-links.js';
+import { decodeWorkspacePrefix } from './mcp-store.js';
 import { boundedJson } from '../auth-broker/provider-http.mjs';
 
 const json = (value, status = 200, headers = {}) => Response.json(value, { status, headers: { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', ...headers } });
@@ -43,8 +44,26 @@ export function createCustomerGateway({ directory, env, forwardCustomer, forward
                 return forwardCustomer(media[1], new Request(url, { method: request.method, headers }));
             }
             const callback = request.method === 'GET' && /^\/api\/(meta|threads|linkedin|tiktok|x|drive)\/callback$/.test(path);
+            const publicMcpOrOAuth =
+                path === '/mcp' ||
+                path.startsWith('/.well-known/') ||
+                path === '/api/mcp/register' ||
+                path === '/api/mcp/authorize' ||
+                path === '/api/mcp/token';
             const allowedAppOrigins = [env.SOCIALCHOICE_PUBLIC_ORIGIN, 'https://socialchoice.site', 'https://www.socialchoice.site', 'https://socialchoice.vercel.app'].filter(Boolean);
-            if (!callback && (request.headers.get('origin') && !allowedAppOrigins.includes(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
+            if (!callback && !publicMcpOrOAuth && (request.headers.get('origin') && !allowedAppOrigins.includes(request.headers.get('origin')) || request.headers.get('sec-fetch-site') === 'cross-site')) return json({ message: 'Origin not allowed' }, 403);
+            if (path === '/mcp') {
+                const rawToken =
+                    request.headers.get('authorization')?.replace(/^Bearer\s+/i, '') ||
+                    url.searchParams.get('token') ||
+                    '';
+                const targetWorkspace = decodeWorkspacePrefix(rawToken);
+                if (targetWorkspace && targetWorkspace !== 'admin' && accountId(targetWorkspace)) {
+                    const headers = new Headers(request.headers);
+                    headers.delete(CONTEXT_HEADER);
+                    return forwardCustomer(targetWorkspace, new Request(request, { headers }));
+                }
+            }
             if (path === '/api/customer/config' && request.method === 'GET') return json({ ready: true, multipleDevices: true, purchase: 'one-time' });
             if (/^\/api\/customer\/(register|login|recover)$/.test(path)) {
                 if (request.method !== 'POST' || request.headers.get('x-socialchoice-client') !== 'local-ui' || request.headers.get('content-type') !== 'application/json') return json({ message: 'JSON application POST required' }, 415);

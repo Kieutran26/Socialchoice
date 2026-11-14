@@ -131,16 +131,13 @@ function PlatformIcon({ platform, className = 'size-4' }) {
 
 function Logo() {
     return (
-        <div className="flex items-center gap-2">
-            <div className="grid size-8 place-items-center rounded-lg bg-brand-400 font-bold text-zinc-950 shadow-sm">
-                <svg viewBox="0 0 24 24" className="size-5 fill-current">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                </svg>
-            </div>
-            <span className="font-heading text-lg font-bold tracking-tight text-zinc-900">
-                SocialChoice
-            </span>
-        </div>
+        <Link to="/" className="flex items-center py-0.5" aria-label="Socialchoice">
+            <img
+                src="/socialchoice-logo.png"
+                alt="Socialchoice"
+                className="h-8 w-auto max-w-[170px] object-contain"
+            />
+        </Link>
     );
 }
 
@@ -280,8 +277,11 @@ function FormInput({ icon: Icon, label, error, right, ...props }) {
 export default function LoginPage() {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { t, language, setLanguage } = useTranslation();
+    const { language, setLanguage } = useTranslation();
     const isEn = language === 'en';
+    const rawReturnTo = searchParams.get('returnTo') || searchParams.get('from_url') || '';
+    const safeReturnTo =
+        rawReturnTo.startsWith('/') && !rawReturnTo.startsWith('//') ? rawReturnTo : '/overview';
 
     const initialMode =
         searchParams.get('mode') === 'admin'
@@ -330,12 +330,12 @@ export default function LoginPage() {
         setAuthError('');
         try {
             await appClient.auth.loginViaEmailPassword(adminPassword);
-            navigate('/overview');
+            navigate(safeReturnTo);
         } catch (err) {
             // In dev mode, fallback allows 'admin' or accepts password
             try {
                 await appClient.auth.loginViaEmailPassword('admin');
-                navigate('/overview');
+                navigate(safeReturnTo);
             } catch {
                 setAuthError(err.message || 'Mật khẩu quản trị không đúng. Vui lòng thử lại.');
             }
@@ -363,13 +363,13 @@ export default function LoginPage() {
         try {
             // Authenticate with entered password or fallback to admin session
             await appClient.auth.loginViaEmailPassword(password || 'admin');
-            navigate('/overview');
+            navigate(safeReturnTo);
         } catch (err) {
             console.warn('Login attempt:', err);
             // If error, check if password works as admin password
             try {
                 await appClient.auth.loginViaEmailPassword('admin');
-                navigate('/overview');
+                navigate(safeReturnTo);
             } catch {
                 setAuthError(err.message || 'Đăng nhập không thành công');
             }
@@ -382,10 +382,10 @@ export default function LoginPage() {
         setIsLoading(true);
         try {
             await appClient.auth.loginViaEmailPassword('admin');
-            navigate('/overview');
+            navigate(safeReturnTo);
         } catch (err) {
             console.warn('Social auth note:', err);
-            navigate('/overview');
+            navigate(safeReturnTo);
         } finally {
             setIsLoading(false);
         }
@@ -772,7 +772,7 @@ export default function LoginPage() {
 
             {/* Right Yellow Column with Animated Marquee and Testimonial */}
             <div className="hidden p-3 lg:block">
-                <div className="relative h-full min-h-[760px] overflow-hidden rounded-[28px] bg-brand-400">
+                <div className="relative h-full min-h-[760px] overflow-hidden rounded-[28px] bg-[#ffd631] bg-brand-400">
                     {/* Animated vertical marquee */}
                     <div className="absolute inset-0 grid grid-cols-3 gap-4 px-6 [mask-image:linear-gradient(transparent,black_10%,black_60%,transparent_92%)]">
                         {SOCIAL_COLUMNS.map((col, colIdx) => (
@@ -799,7 +799,7 @@ export default function LoginPage() {
                                 <h2 className="text-[30px] font-semibold leading-[1.1] tracking-tight text-balance text-zinc-900">
                                     Soạn một lần.{' '}
                                     <span className="relative whitespace-nowrap">
-                                        <span className="absolute inset-x-[-3px] bottom-[0.08em] h-[0.35em] rounded-sm bg-brand-300" />
+                                        <span className="absolute inset-x-[-3px] bottom-[0.08em] h-[0.35em] rounded-sm bg-[#ffe059] bg-brand-300" />
                                         <span className="relative">Đăng mọi nơi.</span>
                                     </span>
                                 </h2>

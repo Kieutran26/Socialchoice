@@ -40,6 +40,7 @@ import { runPublishingEngine } from '@/lib/engine';
 import { formatDateTime } from '@/lib/format';
 import DesktopBackup from '@/components/desktop-backup';
 import DesktopAiSettings from '@/components/desktop-ai-settings';
+import McpConnectorsSettingsCard from '@/components/settings/McpConnectorsSettingsCard';
 import DesktopLicense from '@/components/desktop-license';
 import CustomerLicense from '@/components/customer-license';
 import ShortlinkSettingsCard from '@/components/settings/ShortlinkSettingsCard';
@@ -459,8 +460,13 @@ export default function Settings() {
                     {isDesktop() && <DesktopBackup />}
                     {isDesktop() && <DesktopLicense />}
 
-                    {/* AI Configuration */}
-                    {(activeTab === 'all' || activeTab === 'ai') && <DesktopAiSettings />}
+                    {/* AI Configuration & MCP Connectors */}
+                    {(activeTab === 'all' || activeTab === 'ai') && (
+                        <>
+                            <McpConnectorsSettingsCard />
+                            <DesktopAiSettings />
+                        </>
+                    )}
 
                     {/* Brands Management */}
                     {(activeTab === 'all' || activeTab === 'brands') && (

@@ -34,6 +34,16 @@ export default defineConfig(({ mode }) => {
                         });
                     },
                 },
+                '/mcp': {
+                    target,
+                    changeOrigin: true,
+                    secure: false,
+                },
+                '/.well-known': {
+                    target,
+                    changeOrigin: true,
+                    secure: false,
+                },
             },
         },
     };

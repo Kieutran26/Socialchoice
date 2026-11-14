@@ -8,7 +8,14 @@ export default {
     queue: consumeAutopilotBatch,
     async fetch(request, env) {
         const pathname = new URL(request.url).pathname;
-        if (!pathname.startsWith('/api/') && !pathname.startsWith('/s/')) return Response.json({ message: 'Endpoint not found' }, { status: 404 });
+        if (
+            !pathname.startsWith('/api/') &&
+            !pathname.startsWith('/s/') &&
+            pathname !== '/mcp' &&
+            !pathname.startsWith('/.well-known/')
+        ) {
+            return Response.json({ message: 'Endpoint not found' }, { status: 404 });
+        }
         if (env.SOCIALCHOICE_WEB_LICENSE_PUBLIC_KEY) {
             if (!env.CUSTOMER_DIRECTORY || !env.CUSTOMER_WORKSPACES) return Response.json({ message: 'Customer activation is not available yet' }, { status: 503, headers: { 'Cache-Control': 'no-store' } });
             return env.CUSTOMER_DIRECTORY.get(env.CUSTOMER_DIRECTORY.idFromName('customer-directory-v1')).fetch(request);

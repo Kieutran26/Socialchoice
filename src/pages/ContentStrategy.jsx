@@ -70,8 +70,8 @@ export default function ContentStrategy() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    // Tabs: 'strategist' | 'knowledge' | 'analytics' (default to analytics for option review)
-    const [activeTab, setActiveTabState] = useState(searchParams.get('tab') || 'analytics');
+    // Tabs: 'strategist' | 'knowledge' | 'analytics' (default: 'strategist')
+    const [activeTab, setActiveTabState] = useState(searchParams.get('tab') || 'strategist');
 
     useEffect(() => {
         const tabFromUrl = searchParams.get('tab');

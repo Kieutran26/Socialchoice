@@ -30,6 +30,7 @@ const ROUTE_LABELS = {
     '/interactive-images': 'Interactive Images',
     '/shortlinks': 'Shortlinks',
     '/accounts': 'Social Accounts',
+    '/brands': 'Brands',
     '/settings': 'Settings',
     '/admin/licenses': 'Admin Licenses',
 };

@@ -8,6 +8,7 @@ import { createVideoStorage } from './video-storage.js';
 import { createMetricsStorage } from './facebook-metrics-storage.js';
 import { createTrackingLinkStore } from './tracking-link-store.js';
 import { createRecurringPostStore } from './recurring-post-store.js';
+import { createMcpStore } from './mcp-store.js';
 
 
 const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
@@ -41,6 +42,7 @@ export function createStoreCore(db, transactionSync) {
     const store = {
         trackingLinks: createTrackingLinkStore(db),
         recurringPosts: createRecurringPostStore(db),
+        mcp: createMcpStore(db),
         bulkImport: id => { const row = db.prepare('SELECT data FROM bulk_post_imports WHERE id=?').get(id); return row ? JSON.parse(row.data) : null; },
         saveBulkImport: value => db.prepare('INSERT INTO bulk_post_imports VALUES (?,?)').run(value.id, JSON.stringify(value)),
         savePublishingReview: value => db.prepare('INSERT INTO publishing_reviews VALUES (?,?) ON CONFLICT(id) DO UPDATE SET data=excluded.data').run(value.id, JSON.stringify(value)),

@@ -19,6 +19,7 @@ import ContentAngles from '@/pages/ContentAngles';
 import Analytics from '@/pages/Analytics';
 import MediaLibrary from '@/pages/MediaLibrary';
 import SocialAccounts from '@/pages/SocialAccounts';
+import Brands from '@/pages/Brands';
 import Settings from '@/pages/Settings';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
@@ -29,6 +30,7 @@ import CookiePolicy from '@/pages/CookiePolicy';
 import DataDeletion from '@/pages/DataDeletion';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
+import OAuthConsent from '@/pages/OAuthConsent';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 
 function AppError({ error }) {
@@ -75,6 +77,7 @@ export default function App() {
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/landing" element={<LandingPage />} />
                             <Route path="/login" element={<LoginPage />} />
+                            <Route path="/oauth/consent" element={<OAuthConsent />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />
                             <Route path="/terms" element={<TermsOfService />} />
                             <Route path="/cookies" element={<CookiePolicy />} />
@@ -100,6 +103,7 @@ export default function App() {
                                 <Route path="/interactive-images" element={<InteractiveImages />} />
                                 <Route path="/shortlinks" element={<Shortlinks />} />
                                 <Route path="/accounts" element={<SocialAccounts />} />
+                                <Route path="/brands" element={<Brands />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="/admin/licenses" element={<AdminLicenses />} />
                                 <Route path="*" element={<Navigate to="/" replace />} />

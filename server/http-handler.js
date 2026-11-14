@@ -13,6 +13,7 @@ import { MAX_IMAGE_BYTES } from './image-storage.js';
 import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
 import { createTrackingLinks } from './tracking-links.js';
+import { handleMcpAndOAuthRoutes } from './mcp-server.js';
 
 export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, x, xSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {}, linkScope = 'owner' }) {
     const tracking = createTrackingLinks(store, linkScope);
@@ -50,6 +51,31 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             if (req.method === 'GET' && req.url?.startsWith('/api/drive/callback?')) return await autopilot.callback(req, res);
             // Signed GET/HEAD capabilities authorize only their exact delivery media, independently of browser origin.
             if (instagramMedia.serve(req, res)) return;
+            const parsedUrl = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
+            const readRawBody = async (streamReq, maxBytes = 256 * 1024) => {
+                let body = '';
+                for await (const chunk of streamReq) {
+                    body += chunk;
+                    if (Buffer.byteLength(body) > maxBytes) fail('Request too large', 413);
+                }
+                return body;
+            };
+            if (
+                await handleMcpAndOAuthRoutes({
+                    req,
+                    res,
+                    url: parsedUrl,
+                    store,
+                    auth,
+                    publisher,
+                    publicOrigin,
+                    allowedOrigins: origins,
+                    readBody: readRawBody,
+                    workspaceId: linkScope === 'owner' ? 'admin' : linkScope,
+                })
+            ) {
+                return;
+            }
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
             if (!req.url.startsWith('/api/')) {
