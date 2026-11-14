@@ -98,7 +98,7 @@ export default function Shortlinks() {
             setLoadError('');
         }
         try {
-            const res = await appClient.links.list({ brand_id: currentBrand.id });
+            const res = await appClient.links.list({ brand_id: currentBrand.id }, { silent });
             if (seq === requestSeqRef.current) {
                 setLinks(res.links || []);
                 setLoadError('');

@@ -22,7 +22,7 @@ import { desktopRequest } from './desktop/request';
     // Compatibility with the existing page contracts; no Base44 SDK or hosted service is used.
     export const appClient = {
         recurring: Object.fromEntries(['prepare', 'confirm', 'list', 'pause', 'stop'].map(operation => [operation, input => request(`recurring/${operation}`, [input])])),
-        links: { build: input => request('links/build', [input]), list: input => request('links/list', [input]), disable: input => request('links/disable', [input]), create: input => request('links/create', [input]) },
+        links: { build: input => request('links/build', [input]), list: (input, options) => request('links/list', [input], options), disable: input => request('links/disable', [input]), create: input => request('links/create', [input]) },
         postiz: { status: () => request('postiz/status'), channels: () => request('postiz/channels'), importChannels: (brandId, ids) => request('postiz/import', [brandId, ids]), check: id => request('postiz/check', [id]), disconnect: id => request('postiz/disconnect', [id]) },
         autopilot: { call: (operation, input = {}) => request(`autopilot/${operation}`, [input]) },
         licenses: {

@@ -37,20 +37,20 @@ export default function Overview() {
     const [lastTrafficUpdatedAt, setLastTrafficUpdatedAt] = useState(null);
     const trafficInFlightRef = useRef(false);
 
-    const fetchTraffic = useCallback(async () => {
+    const fetchTraffic = useCallback(async ({ silent = false } = {}) => {
         const deduped = new Map();
         try {
             const listArg = scope.brand_id
                 ? { brand_id: scope.brand_id }
                 : { brand_id: 'all', is_demo: scope.is_demo };
-            const res = await appClient.links.list(listArg);
+            const res = await appClient.links.list(listArg, { silent });
             (res?.links || []).forEach((link) => {
                 if (link?.id) deduped.set(link.id, link);
             });
         } catch (err) {
             if (!scope.brand_id && brands.length > 0) {
                 const results = await Promise.all(
-                    brands.map((b) => appClient.links.list({ brand_id: b.id }).catch(() => ({ links: [] })))
+                    brands.map((b) => appClient.links.list({ brand_id: b.id }, { silent: true }).catch(() => ({ links: [] })))
                 );
                 results.forEach((res) => {
                     (res?.links || []).forEach((link) => {
@@ -82,7 +82,7 @@ export default function Overview() {
                 appClient.entities.PublishingLog.filter(scope, { sort: '-occurred_at', limit: 6 }),
                 appClient.entities.ContentPillar.filter(scope, { limit: 300 }),
                 appClient.entities.ContentAngle.filter(scope, { limit: 500 }),
-                fetchTraffic().catch((linkErr) => {
+                fetchTraffic({ silent: true }).catch((linkErr) => {
                     console.warn('Traffic links load warning:', linkErr);
                     return { trackingLinks: [], totalClicks: 0 };
                 }),
@@ -120,7 +120,7 @@ export default function Overview() {
         trafficInFlightRef.current = true;
         if (!silent) setTrafficRefreshing(true);
         try {
-            const traffic = await fetchTraffic();
+            const traffic = await fetchTraffic({ silent });
             setData((prev) => (prev ? { ...prev, trackingLinks: traffic.trackingLinks, totalClicks: traffic.totalClicks } : prev));
             setLastTrafficUpdatedAt(Date.now());
         } catch (linkErr) {
