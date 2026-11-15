@@ -1,4 +1,4 @@
-import { addDays, toUtcIso, todayInZone } from './tz.js';
+﻿import { addDays, toUtcIso, todayInZone } from './tz.js';
 import { DEFAULT_TIMEZONE } from './constants.js';
 export { editPlanItem, summarizePlan } from './strategy-plan.js';
 
@@ -11,11 +11,11 @@ const PLATFORM_PEAK_HOURS = {
 };
 
 const DEFAULT_STRATEGY_PILLARS = [
-    { id: 'p_edu', name: 'Product Education', color: '#79D94B', target_percentage: 35, description: 'Hướng dẫn sử dụng, giải thích kiến thức sản phẩm và chuyên môn sâu.' },
-    { id: 'p_aware', name: 'Brand Awareness', color: '#4F7CA8', target_percentage: 25, description: 'Hậu trường, giá trị cốt lõi, văn hóa thương hiệu và con người đứng sau.' },
-    { id: 'p_story', name: 'Customer Stories', color: '#C6A15B', target_percentage: 20, description: 'Trải nghiệm thực tế của khách hàng, đánh giá và câu chuyện chuyển đổi.' },
-    { id: 'p_comm', name: 'Community Engagement', color: '#8A7FB5', target_percentage: 12, description: 'Khơi gợi thảo luận, câu hỏi mở, khảo sát và tương tác hai chiều.' },
-    { id: 'p_promo', name: 'Promotional Content', color: '#C2705F', target_percentage: 8, description: 'Chương trình khuyến mãi, ưu đãi có hạn, ra mắt bộ sản phẩm mới.' },
+    { id: 'p_edu', name: 'Product Education', color: '#A7F3D0', target_percentage: 35, description: 'Hướng dẫn sử dụng, giải thích kiến thức sản phẩm và chuyên môn sâu.' },
+    { id: 'p_aware', name: 'Brand Awareness', color: '#93C5FD', target_percentage: 25, description: 'Hậu trường, giá trị cốt lõi, văn hóa thương hiệu và con người đứng sau.' },
+    { id: 'p_story', name: 'Customer Stories', color: '#FED7AA', target_percentage: 20, description: 'Trải nghiệm thực tế của khách hàng, đánh giá và câu chuyện chuyển đổi.' },
+    { id: 'p_comm', name: 'Community Engagement', color: '#C4B5FD', target_percentage: 12, description: 'Khơi gợi thảo luận, câu hỏi mở, khảo sát và tương tác hai chiều.' },
+    { id: 'p_promo', name: 'Promotional Content', color: '#FBCFE8', target_percentage: 8, description: 'Chương trình khuyến mãi, ưu đãi có hạn, ra mắt bộ sản phẩm mới.' },
 ];
 
 const DEFAULT_ANGLES = {
@@ -305,7 +305,7 @@ export function generateStrategyPlan({ brand, pillars = [], angles = [], assets 
             pillar: {
                 id: pillar.id,
                 name: pillar.name,
-                color: pillar.color || '#79D94B',
+                color: pillar.color || '#A7F3D0',
                 is_virtual: !!pillar.is_virtual
             },
             angle: {
@@ -433,7 +433,7 @@ export async function applyPlanToCalendar({ plan, brand, appClient }) {
                 brand_id: brand.id,
                 name: item.pillar.name,
                 description: `Trụ cột ${item.pillar.name} đề xuất bởi AI Content Strategist`,
-                color: item.pillar.color || '#79D94B',
+                color: item.pillar.color || '#A7F3D0',
                 target_percentage: 20,
                 status: 'active',
                 is_demo: isDemo

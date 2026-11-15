@@ -1,4 +1,4 @@
-import { Plus, Trash, Clock, ChatCircleText, LinkedinLogo } from '@phosphor-icons/react';
+﻿import { Plus, Trash, Clock, ChatCircleText, LinkedinLogo } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -85,7 +85,7 @@ export default function CommentChainEditor({
                             >
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                         <div className="flex items-center gap-2">
-                                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-foreground text-background text-[10px] font-bold">
+                                            <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-brand text-brand-ink text-[10px] font-bold">
                                                 {index + 1}
                                             </span>
                                             <span className="text-xs font-semibold text-foreground">

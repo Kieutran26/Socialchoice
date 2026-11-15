@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import { CheckCircle, Circle, WarningCircle } from '@phosphor-icons/react';
 
 /**
@@ -50,7 +50,7 @@ export default function DestinationChecks({ checks = [], post = {} }) {
 
     return (
         <section
-            className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3.5"
+            className="panel p-5 bg-card border border-border rounded-2xl space-y-3.5"
             aria-label={t('Before you publish')}
         >
             <div className="flex items-center justify-between">

@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import { useEffect, useState } from 'react';
 import {
     ArrowLeft, ArrowRight, FacebookLogo, InstagramLogo, LinkedinLogo, RedditLogo,
@@ -146,12 +146,12 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                             {!selected && (
                                 <div className="flex items-center gap-2 text-[11.5px] font-medium text-muted-foreground">
                                     <span className="flex items-center gap-1 text-foreground font-semibold">
-                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] text-background">1</span>
+                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-brand-ink">1</span>
                                         {t('Platform')}
                                     </span>
                                     <span className="text-muted-foreground/40">→</span>
                                     <span className="flex items-center gap-1 text-foreground font-semibold">
-                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-foreground text-[10px] text-background">2</span>
+                                        <span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand text-[10px] text-brand-ink">2</span>
                                         {t('Brand')}
                                     </span>
                                     <span className="text-muted-foreground/40">→</span>
@@ -212,12 +212,12 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                                             onClick={() => setChosenPlatform(id)}
                                             className={`relative flex flex-col items-start p-3.5 rounded-xl border text-left transition-all cursor-pointer ${
                                                 isChosen
-                                                    ? 'border-foreground bg-muted/30 shadow-xs ring-1 ring-foreground'
+                                                    ? 'border-foreground bg-muted/30 ring-1 ring-foreground'
                                                     : 'border-border/80 bg-card hover:border-foreground/30 hover:bg-muted/15'
                                             }`}
                                         >
                                             <div className="flex items-center justify-between w-full mb-2">
-                                                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/80 bg-card shadow-2xs">
+                                                <div className="flex h-9 w-9 items-center justify-center rounded-lg border border-border/80 bg-card">
                                                     <Icon size={20} weight={['instagram', 'threads', 'x'].includes(id) ? 'regular' : 'fill'} style={{ color }} />
                                                 </div>
                                                 {isChosen && (
@@ -290,7 +290,7 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                                     return (
                                         <span
                                             key={c.id}
-                                            className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground shadow-2xs hover:text-foreground hover:border-foreground/30 transition-colors"
+                                            className="inline-flex items-center gap-1.5 rounded-lg border border-border/70 bg-card px-2.5 py-1 text-xs font-medium text-muted-foreground hover:text-foreground hover:border-foreground/30 transition-colors"
                                         >
                                             {Icon && (
                                                 <Icon
@@ -322,7 +322,7 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                                 type="button"
                                 onClick={handleContinueToOAuth}
                                 disabled={!chosenPlatform}
-                                className="inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                                className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors"
                             >
                                 <span>{t('Continue to {platform} to authorize', { platform: currentChannel?.label || '' })}</span>
                                 <ArrowRight size={14} weight="bold" />

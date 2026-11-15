@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+﻿import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Sparkle,
@@ -564,7 +564,7 @@ function renderFormattedText(text, isUser = false) {
         elements.push(
             <strong
                 key={`bold-${match.index}`}
-                className={`font-bold ${isUser ? 'text-white' : 'text-zinc-900'}`}
+                className={`font-bold ${isUser ? 'text-brand-ink' : 'text-zinc-900'}`}
             >
                 {match[1]}
             </strong>
@@ -918,7 +918,7 @@ export default function ChatAgent() {
                         brand_id: effectiveBrand.id,
                         name: pName,
                         description: `Trụ cột nội dung thuộc chiến dịch ${targetDraft.campaignName}`,
-                        color: item.pillar?.color || '#79D94B',
+                        color: item.pillar?.color || '#A7F3D0',
                         target_percentage: 25,
                         status: 'active',
                         is_demo: isDemo,
@@ -1873,9 +1873,9 @@ export default function ChatAgent() {
     return (
         <div className="flex h-[calc(100vh-4rem)] flex-col -mx-4 -my-6 sm:-mx-8 bg-zinc-50/50">
             {/* Top Bar / Header */}
-            <header className="border-b border-zinc-200 bg-white px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0 shadow-2xs">
+            <header className="border-b border-zinc-200 bg-white px-6 py-3.5 flex flex-wrap items-center justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-brand-ink">
                         <Sparkle size={20} weight="bold" />
                     </div>
                     <div>
@@ -1897,7 +1897,7 @@ export default function ChatAgent() {
                     <button
                         type="button"
                         onClick={() => setShowCampaignBuilder(true)}
-                        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border shadow-2xs bg-amber-400/20 hover:bg-amber-400/30 text-zinc-900 border-amber-400/60"
+                        className="inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-bold transition-all cursor-pointer border bg-brand/20 hover:bg-brand/30 text-zinc-900 border-amber-400/60"
                     >
                         <HardDrives size={15} weight="bold" />
                         <span>Tạo Campaign + Liên kết Drive</span>
@@ -1910,7 +1910,7 @@ export default function ChatAgent() {
                                 <select
                                     value={currentBrand?.id || ''}
                                     onChange={(e) => setSelectedBrandId(e.target.value)}
-                                    className="h-8 rounded-lg border border-zinc-200 bg-white px-2.5 pr-8 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 appearance-none cursor-pointer"
+                                    className="h-8 rounded-lg border border-zinc-200 bg-white px-2.5 pr-8 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                 >
                                     {brands.map((b) => (
                                         <option key={b.id} value={b.id}>
@@ -1923,7 +1923,7 @@ export default function ChatAgent() {
                         </div>
                     )}
 
-                    <div className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-800 shadow-2xs">
+                    <div className="flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-xs font-semibold text-zinc-800">
                         <PlugsConnected size={14} className="text-zinc-900" weight="bold" />
                         <span>{brandAccounts.length}</span>
                         <span className="text-zinc-500 font-normal">kênh</span>
@@ -1938,7 +1938,7 @@ export default function ChatAgent() {
                     onClick={() => setMobileTab('chat')}
                     className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition-all ${
                         mobileTab === 'chat'
-                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50'
+                            ? 'border-brand-dark text-zinc-900 bg-zinc-50'
                             : 'border-transparent text-zinc-500 hover:text-zinc-800'
                     }`}
                 >
@@ -1950,7 +1950,7 @@ export default function ChatAgent() {
                     onClick={() => setMobileTab('preview')}
                     className={`flex-1 py-2.5 text-xs font-semibold flex items-center justify-center gap-2 border-b-2 transition-all ${
                         mobileTab === 'preview'
-                            ? 'border-zinc-900 text-zinc-900 bg-zinc-50'
+                            ? 'border-brand-dark text-zinc-900 bg-zinc-50'
                             : 'border-transparent text-zinc-500 hover:text-zinc-800'
                     }`}
                 >
@@ -1969,7 +1969,7 @@ export default function ChatAgent() {
                     {/* ========================================================= */}
                     {/* LEFT COLUMN: CHAT THREAD & PROMPT DOCK                     */}
                     {/* ========================================================= */}
-                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden ${
+                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white overflow-hidden ${
                         mobileTab === 'chat' ? 'flex' : 'hidden lg:flex'
                     }`}>
                         {/* Subheader */}
@@ -1993,7 +1993,7 @@ export default function ChatAgent() {
                             <DialogContent className="max-w-xl">
                                 <DialogHeader>
                                     <div className="flex items-center gap-2.5">
-                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white">
+                                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-ink">
                                             <Stack size={18} weight="bold" />
                                         </span>
                                         <div>
@@ -2019,7 +2019,7 @@ export default function ChatAgent() {
                                                 value={campaignForm.name}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, name: e.target.value })}
                                                 placeholder="VD: Chiến dịch Ra mắt Sản phẩm Mới..."
-                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-brand-dark"
                                             />
                                         </div>
 
@@ -2033,7 +2033,7 @@ export default function ChatAgent() {
                                                 value={campaignForm.driveUrl}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, driveUrl: e.target.value })}
                                                 placeholder="https://drive.google.com/drive/folders/..."
-                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900"
+                                                className="w-full rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs text-zinc-900 focus:outline-none focus:border-brand-dark"
                                             />
                                             {autopilotSources.length > 0 && (
                                                 <div className="mt-1.5 flex flex-wrap items-center gap-1 text-[11px] text-zinc-500">
@@ -2048,7 +2048,7 @@ export default function ChatAgent() {
                                                                     driveUrl: src.folder || src.name,
                                                                 })
                                                             }
-                                                            className="px-2 py-0.5 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-800 font-semibold hover:border-zinc-900 cursor-pointer"
+                                                            className="px-2 py-0.5 rounded-md bg-zinc-50 border border-zinc-200 text-zinc-800 font-semibold hover:border-brand-dark cursor-pointer"
                                                         >
                                                             {src.name}
                                                         </button>
@@ -2068,7 +2068,7 @@ export default function ChatAgent() {
                                             value={campaignForm.rawData}
                                             onChange={(e) => setCampaignForm({ ...campaignForm, rawData: e.target.value })}
                                             placeholder="Dán dữ liệu thô, tính năng sản phẩm, chương trình khuyến mãi, câu chuyện thương hiệu..."
-                                            className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none leading-relaxed"
+                                            className="w-full rounded-lg border border-zinc-200 bg-white p-3 text-xs text-zinc-900 focus:outline-none focus:border-brand-dark resize-none leading-relaxed"
                                         />
                                     </div>
 
@@ -2081,7 +2081,7 @@ export default function ChatAgent() {
                                                 id="camp-days"
                                                 value={campaignForm.days}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, days: Number(e.target.value) })}
-                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
+                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-brand-dark"
                                             >
                                                 <option value={7}>7 ngày</option>
                                                 <option value={14}>14 ngày</option>
@@ -2097,7 +2097,7 @@ export default function ChatAgent() {
                                                 id="camp-freq"
                                                 value={campaignForm.frequency}
                                                 onChange={(e) => setCampaignForm({ ...campaignForm, frequency: e.target.value })}
-                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900"
+                                                className="w-full h-9 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-brand-dark"
                                             >
                                                 <option value="1_per_day">1 bài / ngày</option>
                                                 <option value="2_per_day">2 bài / ngày</option>
@@ -2113,7 +2113,7 @@ export default function ChatAgent() {
                                                 onChange={(e) =>
                                                     setCampaignForm({ ...campaignForm, autoSchedule: e.target.checked })
                                                 }
-                                                className="rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900"
+                                                className="rounded border-zinc-300 text-zinc-900 focus:ring-brand-dark"
                                             />
                                             <span className="truncate">Tự động lên lịch ngay</span>
                                         </label>
@@ -2149,7 +2149,7 @@ export default function ChatAgent() {
                                     className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                                 >
                                     {msg.role === 'agent' && (
-                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs text-xs">
+                                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-ink text-xs">
                                             <Sparkle size={16} weight="bold" />
                                         </div>
                                     )}
@@ -2161,9 +2161,9 @@ export default function ChatAgent() {
                                     >
                                         {/* Message Bubble */}
                                         <div
-                                            className={`rounded-2xl px-4 py-3 text-xs leading-relaxed whitespace-pre-line shadow-2xs ${
+                                            className={`rounded-2xl px-4 py-3 text-xs leading-relaxed whitespace-pre-line ${
                                                 msg.role === 'user'
-                                                    ? 'bg-zinc-900 text-white font-medium rounded-tr-xs'
+                                                    ? 'bg-brand text-brand-ink font-medium rounded-tr-xs'
                                                     : 'bg-zinc-50 border border-zinc-200 text-zinc-800 rounded-tl-xs'
                                             }`}
                                         >
@@ -2202,7 +2202,7 @@ export default function ChatAgent() {
                                             const displayPlatforms = [...new Set([...brandPlatformList, ...CLARIFICATION_PLATFORMS])];
 
                                             return (
-                                                <div className="w-full rounded-xl border border-amber-300 bg-amber-50/40 p-3.5 space-y-3 shadow-2xs">
+                                                <div className="w-full rounded-xl border border-brand-dark/50 bg-brand/10 p-3.5 space-y-3">
                                                     {/* 1. Brand Selection */}
                                                     <div className="space-y-1.5">
                                                         <div className="text-[11px] font-bold text-zinc-700">
@@ -2231,7 +2231,7 @@ export default function ChatAgent() {
                                                                         }}
                                                                         className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all ${
                                                                             selected
-                                                                                ? 'border-zinc-900 bg-zinc-900 text-white'
+                                                                                ? 'border-brand-dark bg-brand text-brand-ink'
                                                                                 : 'border-zinc-200 bg-white text-zinc-700 hover:border-zinc-400'
                                                                         } ${isConfirmed ? 'opacity-75 cursor-default' : 'cursor-pointer'}`}
                                                                     >
@@ -2260,7 +2260,7 @@ export default function ChatAgent() {
                                                                                     : displayPlatforms,
                                                                         })
                                                                     }
-                                                                    className="text-[10px] font-bold text-amber-800 hover:underline cursor-pointer"
+                                                                    className="text-[10px] font-bold text-brand-ink hover:underline cursor-pointer"
                                                                 >
                                                                     {c.selectedPlatforms.length === displayPlatforms.length
                                                                         ? 'Bỏ chọn tất cả'
@@ -2287,7 +2287,7 @@ export default function ChatAgent() {
                                                                         }}
                                                                         className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-all ${
                                                                             selected
-                                                                                ? 'border-zinc-900 bg-white text-zinc-900 ring-1 ring-zinc-900'
+                                                                                ? 'border-brand-dark bg-white text-zinc-900 ring-1 ring-brand-dark'
                                                                                 : 'border-zinc-200 bg-white/70 text-zinc-500 hover:border-zinc-400'
                                                                         } ${isConfirmed ? 'opacity-75 cursor-default' : 'cursor-pointer'}`}
                                                                     >
@@ -2301,7 +2301,7 @@ export default function ChatAgent() {
 
                                                     {/* 3. Schedule Preference */}
                                                     {c.mode === 'campaign' ? (
-                                                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-amber-200/70">
+                                                        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-brand-dark/30">
                                                             <label className="inline-flex items-center gap-2 text-[11px] font-semibold text-zinc-800 cursor-pointer">
                                                                 <input
                                                                     type="checkbox"
@@ -2318,7 +2318,7 @@ export default function ChatAgent() {
                                                             </label>
                                                         </div>
                                                     ) : (
-                                                        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-amber-200/70">
+                                                        <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-brand-dark/30">
                                                             <span className="text-[11px] font-bold text-zinc-700">
                                                                 3. Thời gian dự kiến:
                                                             </span>
@@ -2358,7 +2358,7 @@ export default function ChatAgent() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => handleConfirmClarification(msg.id)}
-                                                                className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-zinc-800 cursor-pointer shadow-2xs"
+                                                                className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-1.5 text-xs font-bold text-brand-ink hover:bg-[#ffe059] cursor-pointer"
                                                             >
                                                                 <Sparkle size={13} weight="bold" />
                                                                 <span>
@@ -2380,9 +2380,9 @@ export default function ChatAgent() {
                                                     setActiveDraftMessageId(msg.id);
                                                     if (window.innerWidth < 1024) setMobileTab('preview');
                                                 }}
-                                                className={`w-full rounded-xl border p-3.5 transition-all cursor-pointer space-y-2.5 shadow-2xs ${
+                                                className={`w-full rounded-xl border p-3.5 transition-all cursor-pointer space-y-2.5 ${
                                                     activeDraftMessageId === msg.id || (!activeDraftMessageId && msg.id === activeDraftMessage?.id)
-                                                        ? 'border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900'
+                                                        ? 'border-brand-dark bg-zinc-50 ring-1 ring-brand-dark'
                                                         : 'border-zinc-200 bg-white hover:border-zinc-400'
                                                 }`}
                                             >
@@ -2396,7 +2396,7 @@ export default function ChatAgent() {
                                                             <CheckCircle size={12} weight="bold" /> Đã lên lịch
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/20 border border-brand-dark/40 px-2 py-0.5 text-[10px] font-bold text-brand-ink">
                                                             <Clock size={12} weight="bold" /> {msg.postDraft.scheduledTime} · {msg.postDraft.scheduledDate}
                                                         </span>
                                                     )}
@@ -2424,9 +2424,9 @@ export default function ChatAgent() {
                                                     setActiveDraftMessageId(msg.id);
                                                     if (window.innerWidth < 1024) setMobileTab('preview');
                                                 }}
-                                                className={`w-full rounded-xl border p-3.5 transition-all cursor-pointer space-y-2.5 shadow-2xs ${
+                                                className={`w-full rounded-xl border p-3.5 transition-all cursor-pointer space-y-2.5 ${
                                                     activeDraftMessageId === msg.id || (!activeDraftMessageId && msg.id === activeDraftMessage?.id)
-                                                        ? 'border-zinc-900 bg-zinc-50 ring-1 ring-zinc-900'
+                                                        ? 'border-brand-dark bg-zinc-50 ring-1 ring-brand-dark'
                                                         : 'border-zinc-200 bg-white hover:border-zinc-400'
                                                 }`}
                                             >
@@ -2440,7 +2440,7 @@ export default function ChatAgent() {
                                                             <CheckCircle size={12} weight="bold" /> Đã lên lịch {msg.campaignDraft.posts?.length || 0} bài
                                                         </span>
                                                     ) : (
-                                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 text-[10px] font-bold text-amber-800">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/20 border border-brand-dark/40 px-2 py-0.5 text-[10px] font-bold text-brand-ink">
                                                             <Clock size={12} weight="bold" /> {msg.campaignDraft.posts?.length || 0} bài chờ duyệt
                                                         </span>
                                                     )}
@@ -2474,13 +2474,13 @@ export default function ChatAgent() {
                             {/* Agent Thinking Indicator */}
                             {isAgentThinking && (
                                 <div className="flex items-center gap-3">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-zinc-900 text-white shadow-2xs">
+                                    <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-brand-ink">
                                         <Sparkle size={16} weight="bold" />
                                     </div>
-                                    <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-xs text-zinc-600 shadow-2xs">
-                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce [animation-delay:-0.3s]"></span>
-                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce [animation-delay:-0.15s]"></span>
-                                        <span className="h-2 w-2 rounded-full bg-zinc-900 animate-bounce"></span>
+                                    <div className="flex items-center gap-2 rounded-2xl border border-zinc-200 bg-white px-4 py-2.5 text-xs text-zinc-600">
+                                        <span className="h-2 w-2 rounded-full bg-brand animate-bounce [animation-delay:-0.3s]"></span>
+                                        <span className="h-2 w-2 rounded-full bg-brand animate-bounce [animation-delay:-0.15s]"></span>
+                                        <span className="h-2 w-2 rounded-full bg-brand animate-bounce"></span>
                                         <span className="ml-1 font-medium">
                                             {thinkingStage || 'AI Agent đang soạn thảo & tối ưu lịch đăng...'}
                                         </span>
@@ -2514,7 +2514,7 @@ export default function ChatAgent() {
                                                     value={aiSettings.model}
                                                     disabled={savingAiModel || aiModelsLoading}
                                                     onChange={(e) => handleChangeAiModel(e.target.value)}
-                                                    className="w-full h-7 rounded-lg border border-zinc-200 bg-zinc-50 pl-2.5 pr-7 text-[11px] font-semibold text-zinc-900 appearance-none cursor-pointer hover:border-zinc-400 focus:outline-none focus:border-zinc-900 truncate"
+                                                    className="w-full h-7 rounded-lg border border-zinc-200 bg-zinc-50 pl-2.5 pr-7 text-[11px] font-semibold text-zinc-900 appearance-none cursor-pointer hover:border-zinc-400 focus:outline-none focus:border-brand-dark truncate"
                                                 >
                                                     {availableAiModelOptions.map((m) => (
                                                         <option key={m.id} value={m.id}>
@@ -2550,7 +2550,7 @@ export default function ChatAgent() {
                                     {selectedImages.map((img, idx) => (
                                         <div
                                             key={idx}
-                                            className="relative group h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100 shadow-2xs"
+                                            className="relative group h-14 w-14 shrink-0 rounded-xl overflow-hidden border border-zinc-200 bg-zinc-100"
                                         >
                                             <img src={img.url} alt="attached" className="h-full w-full object-cover" />
                                             <button
@@ -2566,7 +2566,7 @@ export default function ChatAgent() {
                             )}
 
                             {/* Input Container */}
-                            <div className="relative flex items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-2 focus-within:bg-white focus-within:border-zinc-900 focus-within:ring-1 focus-within:ring-zinc-900 transition-all">
+                            <div className="relative flex items-end gap-2 rounded-xl border border-zinc-200 bg-zinc-50/70 p-2 focus-within:bg-white focus-within:border-brand-dark focus-within:ring-1 focus-within:ring-brand-dark transition-all">
                                 <input
                                     ref={fileInputRef}
                                     type="file"
@@ -2609,7 +2609,7 @@ export default function ChatAgent() {
                                     type="button"
                                     disabled={(!inputText.trim() && selectedImages.length === 0) || isAgentThinking}
                                     onClick={handleSendMessage}
-                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-zinc-900 text-white hover:bg-zinc-800 disabled:opacity-30 transition-all cursor-pointer shadow-2xs"
+                                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-ink hover:bg-[#ffe059] disabled:opacity-30 transition-all cursor-pointer"
                                 >
                                     <PaperPlaneRight size={16} weight="bold" />
                                 </button>
@@ -2620,7 +2620,7 @@ export default function ChatAgent() {
                     {/* ========================================================= */}
                     {/* RIGHT COLUMN: LIVE MULTI-CHANNEL PREVIEW & SCHEDULING      */}
                     {/* ========================================================= */}
-                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white shadow-2xs overflow-hidden ${
+                    <div className={`flex flex-col h-full rounded-2xl border border-zinc-200 bg-white overflow-hidden ${
                         mobileTab === 'preview' ? 'flex' : 'hidden lg:flex'
                     }`}>
                         {activeDraftMessage?.campaignDraft ? (
@@ -2631,7 +2631,7 @@ export default function ChatAgent() {
                                 {/* Campaign Header */}
                                 <div className="px-5 py-3 border-b border-zinc-100 flex flex-wrap items-center justify-between gap-3 bg-zinc-50/70 shrink-0">
                                     <div className="flex items-center gap-2.5 min-w-0">
-                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-zinc-900 text-white">
+                                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-ink">
                                             <Stack size={16} weight="bold" />
                                         </span>
                                         <div className="min-w-0">
@@ -2655,7 +2655,7 @@ export default function ChatAgent() {
                                             Đã lên lịch tự động ({activeDraftMessage.campaignDraft.posts.length} bài)
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-800">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/20 border border-brand-dark/40 px-2.5 py-1 text-[11px] font-bold text-brand-ink">
                                             <Clock size={13} weight="bold" />
                                             Sẵn sàng lên lịch ({activeDraftMessage.campaignDraft.posts.length} bài)
                                         </span>
@@ -2693,14 +2693,14 @@ export default function ChatAgent() {
                                                     key={postItem.id}
                                                     className={`rounded-2xl border p-3.5 transition-all space-y-3 ${
                                                         isExpanded
-                                                            ? 'border-zinc-900 bg-white shadow-xs'
+                                                            ? 'border-brand-dark bg-white'
                                                             : 'border-zinc-200 bg-white hover:border-zinc-300'
                                                     }`}
                                                 >
                                                     {/* Top row: Day, Date/Time inputs, Platform & Actions */}
                                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                                         <div className="flex flex-wrap items-center gap-2">
-                                                            <span className="rounded-lg bg-zinc-900 text-white px-2 py-0.5 text-[11px] font-bold">
+                                                            <span className="rounded-lg bg-brand text-brand-ink px-2 py-0.5 text-[11px] font-bold">
                                                                 Bài #{idx + 1} · Ngày {postItem.dayIndex}
                                                             </span>
                                                             <input
@@ -2833,7 +2833,7 @@ export default function ChatAgent() {
                                                                                 index: idx,
                                                                             })
                                                                         }
-                                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 hover:text-amber-800 cursor-pointer"
+                                                                        className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-ink hover:text-brand-ink cursor-pointer"
                                                                     >
                                                                         <Eye size={12} weight="bold" />
                                                                         <span>Xem đầy đủ</span>
@@ -2916,7 +2916,7 @@ export default function ChatAgent() {
                                                 </button>
                                                 <Link
                                                     to="/calendar"
-                                                    className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 text-white px-4 py-2 text-xs font-semibold hover:bg-zinc-800 transition-all shadow-2xs"
+                                                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand text-brand-ink px-4 py-2 text-xs font-semibold hover:bg-[#ffe059] transition-all"
                                                 >
                                                     <CalendarBlank size={15} weight="bold" />
                                                     <span>Xem trên Lịch</span>
@@ -2974,11 +2974,11 @@ export default function ChatAgent() {
                                                         onClick={() => setActivePlatformTab(tab.key)}
                                                         className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer ${
                                                             isActive
-                                                                ? 'bg-zinc-900 text-white shadow-2xs'
+                                                                ? 'bg-brand text-brand-ink'
                                                                 : 'text-zinc-500 hover:text-zinc-900'
                                                         }`}
                                                     >
-                                                        <Icon size={13} weight="bold" className={isActive ? 'text-white' : tab.color} />
+                                                        <Icon size={13} weight="bold" className={isActive ? 'text-brand-ink' : tab.color} />
                                                         <span>{tab.label}</span>
                                                     </button>
                                                 );
@@ -2991,7 +2991,7 @@ export default function ChatAgent() {
                                             <CheckCircle size={13} weight="bold" /> Đã xếp lịch đăng
                                         </span>
                                     ) : (
-                                        <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 border border-amber-500/20 px-2.5 py-1 text-[11px] font-bold text-amber-800">
+                                        <span className="inline-flex items-center gap-1 rounded-full bg-brand/20 border border-brand-dark/40 px-2.5 py-1 text-[11px] font-bold text-brand-ink">
                                             <Clock size={13} weight="bold" />
                                             {activeDraftMessage.postDraft.scheduledTime} · {activeDraftMessage.postDraft.scheduledDate}
                                         </span>
@@ -3002,11 +3002,11 @@ export default function ChatAgent() {
                                 <div className="flex-1 overflow-y-auto p-5 space-y-4">
 
                                     {/* SOCIAL MOCKUP POST CARD */}
-                                    <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 shadow-2xs space-y-3.5">
+                                    <div className="rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5 space-y-3.5">
                                         {/* Mockup Author Bar */}
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2.5">
-                                                <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-xs uppercase shadow-2xs">
+                                                <div className="h-9 w-9 rounded-full bg-brand text-brand-ink flex items-center justify-center font-bold text-xs uppercase">
                                                     {currentBrand?.name ? currentBrand.name.slice(0, 2) : 'SC'}
                                                 </div>
                                                 <div>
@@ -3040,7 +3040,7 @@ export default function ChatAgent() {
                                                 value={activeDraftMessage.postDraft.title}
                                                 onChange={(e) => updateDraftField(activeDraftMessage.id, 'title', e.target.value)}
                                                 placeholder="Tiêu đề nội bộ bài viết..."
-                                                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-1.5 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
+                                                className="w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-1.5 text-xs font-semibold text-zinc-900 focus:outline-none focus:border-brand-dark disabled:opacity-75"
                                             />
                                         </div>
 
@@ -3081,7 +3081,7 @@ export default function ChatAgent() {
                                                             [activePlatformTab]: newVal,
                                                         });
                                                     }}
-                                                    className="w-full rounded-xl border border-zinc-300 bg-white p-3 text-xs leading-relaxed text-zinc-900 focus:outline-none focus:border-zinc-900 resize-none"
+                                                    className="w-full rounded-xl border border-zinc-300 bg-white p-3 text-xs leading-relaxed text-zinc-900 focus:outline-none focus:border-brand-dark resize-none"
                                                 />
                                             ) : (
                                                 <div className="p-3.5 rounded-xl border border-zinc-100 bg-zinc-50/50 text-xs leading-relaxed text-zinc-800 whitespace-pre-line">
@@ -3096,9 +3096,9 @@ export default function ChatAgent() {
                                             !activeDraftMessage.postDraft.isScheduled &&
                                             /https?:\/\/[^\s]+/i.test(activeDraftMessage.postDraft.caption) &&
                                             !/(?:\/api\/links\/go\/|\/s\/[a-zA-Z0-9_-]+)/i.test(activeDraftMessage.postDraft.caption) && (
-                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-2.5 text-xs text-amber-900">
+                                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 rounded-xl border border-brand-dark/40 bg-brand/10 p-2.5 text-xs text-brand-ink">
                                                     <span className="flex items-center gap-1.5 font-medium">
-                                                        <LinkSimple size={14} className="text-amber-800 shrink-0" weight="bold" />
+                                                        <LinkSimple size={14} className="text-brand-ink shrink-0" weight="bold" />
                                                         Phát hiện link URL. Bạn có muốn rút gọn sang Shortlink để đo lường click?
                                                     </span>
                                                     <div className="flex items-center gap-2 shrink-0">
@@ -3130,7 +3130,7 @@ export default function ChatAgent() {
                                                                     toast({ variant: 'destructive', title: t('Lỗi rút gọn link'), description: e.message });
                                                                 }
                                                             }}
-                                                            className="rounded-lg bg-zinc-900 text-white px-2.5 py-1 text-xs font-semibold cursor-pointer"
+                                                            className="rounded-lg bg-brand text-brand-ink px-2.5 py-1 text-xs font-semibold cursor-pointer"
                                                         >
                                                             Rút gọn ngay
                                                         </button>
@@ -3155,7 +3155,7 @@ export default function ChatAgent() {
                                                     {activeDraftMessage.postDraft.media.map((img, i) => (
                                                         <div
                                                             key={i}
-                                                            className="relative h-20 w-20 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 shadow-2xs"
+                                                            className="relative h-20 w-20 overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100"
                                                         >
                                                             <img
                                                                 src={img.url}
@@ -3202,11 +3202,11 @@ export default function ChatAgent() {
                                                             onClick={() => toggleAccountSelection(activeDraftMessage.id, acc.id)}
                                                             className={`inline-flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-semibold transition-all cursor-pointer border ${
                                                                 isSelected
-                                                                    ? 'bg-zinc-900 text-white border-zinc-900 shadow-2xs'
+                                                                    ? 'bg-brand text-brand-ink border-brand-dark'
                                                                     : 'bg-white text-zinc-600 border-zinc-200 hover:border-zinc-400'
                                                             }`}
                                                         >
-                                                            {Icon && <Icon size={14} className={isSelected ? 'text-white' : platformCfg.color} />}
+                                                            {Icon && <Icon size={14} className={isSelected ? 'text-brand-ink' : platformCfg.color} />}
                                                             <span>{acc.name}</span>
                                                             {isSelected && <Check size={12} weight="bold" className="text-emerald-400" />}
                                                         </button>
@@ -3234,14 +3234,14 @@ export default function ChatAgent() {
                                                 disabled={activeDraftMessage.postDraft.isScheduled}
                                                 value={activeDraftMessage.postDraft.scheduledDate}
                                                 onChange={(e) => updateDraftField(activeDraftMessage.id, 'scheduledDate', e.target.value)}
-                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
+                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-brand-dark disabled:opacity-75"
                                             />
                                             <input
                                                 type="time"
                                                 disabled={activeDraftMessage.postDraft.isScheduled}
                                                 value={activeDraftMessage.postDraft.scheduledTime}
                                                 onChange={(e) => updateDraftField(activeDraftMessage.id, 'scheduledTime', e.target.value)}
-                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-zinc-900 disabled:opacity-75"
+                                                className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-800 focus:outline-none focus:border-brand-dark disabled:opacity-75"
                                             />
 
                                             {/* Quick Time Shortcuts */}
@@ -3297,7 +3297,7 @@ export default function ChatAgent() {
                                             <div className="flex items-center gap-2">
                                                 <Link
                                                     to="/calendar"
-                                                    className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 text-white px-4 py-2 text-xs font-semibold hover:bg-zinc-800 transition-all shadow-2xs"
+                                                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand text-brand-ink px-4 py-2 text-xs font-semibold hover:bg-[#ffe059] transition-all"
                                                 >
                                                     <CalendarBlank size={15} weight="bold" />
                                                     Xem trên Lịch
@@ -3328,7 +3328,7 @@ export default function ChatAgent() {
                                                     type="button"
                                                     disabled={activeDraftMessage.postDraft.isSaving}
                                                     onClick={() => handleConfirmSchedule(activeDraftMessage.id)}
-                                                    className="inline-flex items-center gap-2 rounded-xl bg-zinc-900 text-white px-5 py-2.5 text-xs font-bold hover:bg-zinc-800 disabled:opacity-40 transition-all cursor-pointer shadow-xs"
+                                                    className="inline-flex items-center gap-2 rounded-xl bg-brand text-brand-ink px-5 py-2.5 text-xs font-bold hover:bg-[#ffe059] disabled:opacity-40 transition-all cursor-pointer"
                                                 >
                                                     {activeDraftMessage.postDraft.isSaving ? (
                                                         <>
@@ -3350,7 +3350,7 @@ export default function ChatAgent() {
                         ) : (
                             /* Empty Guide State (When no draft has been requested yet) */
                             <div className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-4">
-                                <div className="h-16 w-16 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-800 shadow-2xs">
+                                <div className="h-16 w-16 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-800">
                                     <Sparkle size={32} weight="bold" />
                                 </div>
                                 <div className="max-w-sm space-y-1.5">
@@ -3369,7 +3369,7 @@ export default function ChatAgent() {
                                     <button
                                         type="button"
                                         onClick={() => setShowCampaignBuilder(true)}
-                                        className="p-2.5 rounded-xl border border-amber-400 bg-amber-50/70 hover:bg-amber-100/80 text-zinc-900 font-bold text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between"
+                                        className="p-2.5 rounded-xl border border-amber-400 bg-amber-50/70 hover:bg-amber-100/80 text-zinc-900 font-bold text-left transition-all cursor-pointer flex items-center justify-between"
                                     >
                                         <span className="flex items-center gap-1.5">
                                             <HardDrives size={15} weight="bold" />
@@ -3380,7 +3380,7 @@ export default function ChatAgent() {
                                     <button
                                         type="button"
                                         onClick={() => handleQuickPrompt('Ra mắt tính năng mới vào 9h sáng mai trên Threads và Facebook')}
-                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between"
+                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer flex items-center justify-between"
                                     >
                                         <span>🚀 Ra mắt tính năng 9h sáng mai</span>
                                         <ArrowSquareOut size={14} className="text-zinc-400" />
@@ -3388,7 +3388,7 @@ export default function ChatAgent() {
                                     <button
                                         type="button"
                                         onClick={() => handleQuickPrompt('Chia sẻ bài học tối ưu nội dung MXH vào 20:00 tối nay trên LinkedIn')}
-                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer shadow-2xs flex items-center justify-between"
+                                        className="p-2.5 rounded-xl border border-zinc-200 bg-white hover:border-zinc-400 text-zinc-800 font-medium text-left transition-all cursor-pointer flex items-center justify-between"
                                     >
                                         <span>📈 Bài học kinh nghiệm 20:00 tối</span>
                                         <ArrowSquareOut size={14} className="text-zinc-400" />
@@ -3421,7 +3421,7 @@ export default function ChatAgent() {
                             <div className="space-y-4">
                                 <DialogHeader className="text-left space-y-1.5">
                                     <div className="flex flex-wrap items-center gap-2 pr-6">
-                                        <span className="rounded-lg bg-zinc-900 text-white px-2.5 py-0.5 text-[11px] font-bold">
+                                        <span className="rounded-lg bg-brand text-brand-ink px-2.5 py-0.5 text-[11px] font-bold">
                                             Bài #{previewCampaignPost.index + 1} · Ngày {postItem.dayIndex}
                                         </span>
                                         <span className="inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-zinc-50 px-2 py-0.5 text-[11px] font-semibold text-zinc-700">
@@ -3467,7 +3467,7 @@ export default function ChatAgent() {
                                 </div>
 
                                 {postItem.reason && (
-                                    <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-3.5 py-2.5 text-xs text-amber-900">
+                                    <div className="rounded-xl border border-amber-200 bg-amber-50/60 px-3.5 py-2.5 text-xs text-brand-ink">
                                         <span className="font-bold">Ghi chú AI Remix: </span>
                                         {postItem.reason}
                                     </div>
@@ -3498,7 +3498,7 @@ export default function ChatAgent() {
                                     <button
                                         type="button"
                                         onClick={() => setPreviewCampaignPost(null)}
-                                        className="inline-flex items-center gap-1.5 rounded-xl bg-zinc-900 px-4 py-1.5 text-xs font-bold text-white hover:bg-zinc-800 cursor-pointer"
+                                        className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-4 py-1.5 text-xs font-bold text-brand-ink hover:bg-[#ffe059] cursor-pointer"
                                     >
                                         Đóng
                                     </button>

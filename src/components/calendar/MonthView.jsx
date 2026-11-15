@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Plus } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -42,7 +42,7 @@ export default function MonthView({
     ];
 
     return (
-        <div className="panel overflow-hidden border border-border shadow-2xs rounded-2xl bg-card">
+        <div className="panel overflow-hidden border border-border rounded-2xl bg-card">
             <div className="overflow-x-auto">
                 <div className="min-w-[840px]">
                     {/* Day of Week Headers */}
@@ -51,7 +51,7 @@ export default function MonthView({
                             <div
                                 key={item.key}
                                 className={`p-3 text-center border-r border-border/50 last:border-r-0 ${
-                                    item.isSunday ? 'text-rose-500' : item.isWeekend ? 'text-amber-600' : ''
+                                    item.isSunday ? 'text-rose-500' : item.isWeekend ? 'text-brand-ink' : ''
                                 }`}
                             >
                                 {t(item.label)}
@@ -112,7 +112,7 @@ export default function MonthView({
                                             <span
                                                 className={`text-xs font-bold ${
                                                     isToday
-                                                        ? 'size-6 rounded-full bg-foreground text-background flex items-center justify-center font-mono font-bold shadow-2xs'
+                                                        ? 'size-6 rounded-full bg-brand text-brand-ink flex items-center justify-center font-mono font-bold'
                                                         : inMonth
                                                         ? 'text-foreground'
                                                         : 'text-muted-foreground/60'
@@ -124,7 +124,7 @@ export default function MonthView({
                                             {/* Quick Add Button on Hover */}
                                             <Link
                                                 to={`/create?date=${date}`}
-                                                className="opacity-0 group-hover:opacity-100 transition-opacity size-5 rounded-md bg-muted hover:bg-foreground hover:text-background text-muted-foreground flex items-center justify-center cursor-pointer shadow-2xs"
+                                                className="opacity-0 group-hover:opacity-100 transition-opacity size-5 rounded-md bg-muted hover:bg-brand hover:text-brand-ink text-muted-foreground flex items-center justify-center cursor-pointer"
                                                 title={t('Create post on this day')}
                                             >
                                                 <Plus size={11} weight="bold" />
@@ -133,7 +133,7 @@ export default function MonthView({
 
                                         {/* Drop placeholder indicator when dragging over */}
                                         {isDragOver && (
-                                            <div className="mb-2 p-1.5 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[10px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse shadow-2xs">
+                                            <div className="mb-2 p-1.5 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[10px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse">
                                                 <span>📥</span>
                                                 <span>{t('Thả vào ngày này')}</span>
                                             </div>

@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import { relativeTime } from '@/lib/format';
 import { CheckCircle, Clock, WarningCircle, Broadcast, Pulse } from '@phosphor-icons/react';
 
@@ -84,7 +84,7 @@ export default function RecentActivity({ logs }) {
                                 className="group flex items-start gap-3 py-3 transition-colors hover:bg-muted/30 px-2 rounded-xl -mx-2 min-w-0"
                             >
                                 <div
-                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${style.bg} ${style.text} mt-0.5 shadow-2xs`}
+                                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${style.bg} ${style.text} mt-0.5`}
                                 >
                                     <EventIcon size={16} weight={style.weight} />
                                 </div>

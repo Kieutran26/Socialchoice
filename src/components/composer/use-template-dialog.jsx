@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
     Quotes,
@@ -199,9 +199,9 @@ const selectedTemplate = useMemo(() => {
                     size="sm"
                     disabled={disabled}
                     onClick={() => setOpen(true)}
-                    className="flex h-9 items-center gap-1.5 rounded-lg border-zinc-300 bg-white px-3 text-[13px] font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 shadow-2xs cursor-pointer"
+                    className="flex h-9 items-center gap-1.5 rounded-lg border-zinc-300 bg-white px-3 text-[13px] font-medium text-zinc-700 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
                 >
-                    <Quotes size={16} weight="duotone" className="text-amber-500" />
+                    <Quotes size={16} weight="duotone" className="text-brand-dark" />
                     <span>{t('Dùng mẫu bài viết')}</span>
                 </Button>
             )}
@@ -212,7 +212,7 @@ const selectedTemplate = useMemo(() => {
                                     <DialogHeader className="p-4 sm:p-5 pb-3.5 border-b border-neutral-200 bg-zinc-50/70 shrink-0">
                                         <div className="flex items-center justify-between gap-3">
                                             <div className="flex items-center gap-3">
-                                                <span className="w-9 h-9 rounded-xl bg-zinc-900 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                                                <span className="w-9 h-9 rounded-xl bg-brand text-brand-ink flex items-center justify-center shrink-0">
                                                     <Quotes size={18} weight="bold" />
                                                 </span>
                                                 <div>
@@ -233,7 +233,7 @@ const selectedTemplate = useMemo(() => {
                                                     <button
                                                         type="button"
                                                         onClick={() => setMobileTab('list')}
-                                                        className={`px-3 py-1 rounded-lg transition ${mobileTab === 'list' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-600'
+                                                        className={`px-3 py-1 rounded-lg transition ${mobileTab === 'list' ? 'bg-white text-zinc-900' : 'text-zinc-600'
                                                             }`}
                                                     >
                                                         {t('Danh sách')}
@@ -241,7 +241,7 @@ const selectedTemplate = useMemo(() => {
                                                     <button
                                                         type="button"
                                                         onClick={() => setMobileTab('preview')}
-                                    className={`px-3 py-1 rounded-lg transition ${mobileTab === 'preview' ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-600'
+                                    className={`px-3 py-1 rounded-lg transition ${mobileTab === 'preview' ? 'bg-white text-zinc-900' : 'text-zinc-600'
                                         }`}
                                 >
                                     {t('Xem trước')}
@@ -288,7 +288,7 @@ const selectedTemplate = useMemo(() => {
                                         type="button"
                                         onClick={() => setFormatFilter('all')}
                                         className={`px-2.5 py-1 rounded-lg text-xs transition cursor-pointer font-medium ${formatFilter === 'all'
-                                                ? 'bg-zinc-900 text-white font-bold shadow-2xs'
+                                                ? 'bg-brand text-brand-ink font-bold'
                                                 : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900'
                                             }`}
                                     >
@@ -298,7 +298,7 @@ const selectedTemplate = useMemo(() => {
                                         type="button"
                                         onClick={() => setFormatFilter('text')}
                                         className={`px-2.5 py-1 rounded-lg text-xs transition cursor-pointer flex items-center gap-1 font-medium ${formatFilter === 'text'
-                                                ? 'bg-zinc-900 text-white font-bold shadow-2xs'
+                                                ? 'bg-brand text-brand-ink font-bold'
                                                 : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900'
                                             }`}
                                     >
@@ -309,7 +309,7 @@ const selectedTemplate = useMemo(() => {
                                         type="button"
                                         onClick={() => setFormatFilter('image')}
                                         className={`px-2.5 py-1 rounded-lg text-xs transition cursor-pointer flex items-center gap-1 font-medium ${formatFilter === 'image'
-                                                ? 'bg-zinc-900 text-white font-bold shadow-2xs'
+                                                ? 'bg-brand text-brand-ink font-bold'
                                                 : 'bg-zinc-100 text-zinc-600 hover:text-zinc-900'
                                             }`}
                                     >
@@ -359,8 +359,8 @@ const selectedTemplate = useMemo(() => {
                                                                         setMobileTab('preview');
                                                                     }}
                                                                     className={`p-3.5 rounded-2xl border transition-all cursor-pointer text-left ${isSelected
-                                                                            ? 'bg-white border-zinc-900 ring-2 ring-zinc-900/10 shadow-sm'
-                                                                            : 'bg-white border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50/50 shadow-2xs'
+                                                                            ? 'bg-white border-brand-dark ring-2 ring-brand/30 shadow-sm'
+                                                                            : 'bg-white border-neutral-200/80 hover:border-neutral-300 hover:bg-neutral-50/50'
                                                                         }`}
                                                                 >
                                                                     <div className="flex items-start justify-between gap-2 mb-1">
@@ -368,7 +368,7 @@ const selectedTemplate = useMemo(() => {
                                                                             {tmpl.name || tmpl.title || t('Mẫu không tên')}
                                                                         </h4>
                                                                         {isSelected ? (
-                                                                            <span className="inline-flex items-center gap-1 rounded bg-zinc-900 text-white text-[10px] font-semibold px-1.5 py-0.5 shrink-0">
+                                                                            <span className="inline-flex items-center gap-1 rounded bg-brand text-brand-ink text-[10px] font-semibold px-1.5 py-0.5 shrink-0">
                                                                                 <Check size={10} weight="bold" />
                                                                                 {t('Đang chọn')}
                                                                             </span>
@@ -460,7 +460,7 @@ const selectedTemplate = useMemo(() => {
                                                                                                     <span
                                                                                                         key={accId}
                                                                                                         title={acc?.name || acc?.platform}
-                                                                                                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-zinc-200 text-[11px] font-medium text-zinc-700 shadow-2xs"
+                                                                                                        className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-white border border-zinc-200 text-[11px] font-medium text-zinc-700"
                                                                                                     >
                                                                                                         <PlatformIcon size={12} weight="fill" className={cfg?.color || 'text-zinc-600'} />
                                                                                                         <span>{acc?.name || acc?.platform || 'Kênh'}</span>
@@ -482,7 +482,7 @@ const selectedTemplate = useMemo(() => {
                                                                                     <div className="bg-white rounded-2xl border border-zinc-200/90 shadow-sm p-4 sm:p-5 space-y-3.5">
                                                                                         {/* Author header */}
                                                                                         <div className="flex items-center gap-3">
-                                                                                            <div className="w-10 h-10 rounded-full bg-zinc-900 text-white flex items-center justify-center font-bold text-sm shadow-2xs">
+                                                                                            <div className="w-10 h-10 rounded-full bg-brand text-brand-ink flex items-center justify-center font-bold text-sm">
                                                                                                 S
                                                                                             </div>
                                                                                             <div>

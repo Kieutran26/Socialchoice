@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import {
     DownloadSimple,
     ArrowClockwise,
@@ -45,7 +45,7 @@ export default function LicenseCustomerHistory({
     };
 
     return (
-        <section className="panel min-w-0 p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+        <section className="panel min-w-0 p-5 bg-card border border-border/80 rounded-2xl space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="flex items-center gap-2.5">
                     <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">

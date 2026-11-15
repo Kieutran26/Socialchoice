@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+﻿import { useState, useMemo } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Link } from 'react-router-dom';
 import { formatDateTime } from '@/lib/format';
@@ -90,9 +90,9 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                     <div className="flex items-center gap-2 shrink-0">
                         <Link
                             to="/agent"
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors shadow-2xs"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-2.5 sm:px-3 py-1.5 text-xs font-semibold text-foreground hover:bg-muted transition-colors"
                         >
-                            <Sparkle size={13} weight="bold" className="text-amber-500" />
+                            <Sparkle size={13} weight="bold" className="text-brand-dark" />
                             <span>{t("AI lên lịch nhanh")}</span>
                         </Link>
                         <Link
@@ -132,7 +132,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                     onClick={() => setSelectedDayFilter(isSelected ? 'all' : d.iso)}
                                     className={`flex flex-col items-center justify-center rounded-xl px-1 py-1.5 sm:p-2 min-w-0 transition-all cursor-pointer border text-center ${
                                         isSelected
-                                            ? 'bg-foreground text-background border-foreground shadow-2xs'
+                                            ? 'bg-brand text-brand-ink border-foreground'
                                             : d.isToday
                                             ? 'bg-muted/80 border-foreground/40 text-foreground font-semibold'
                                             : 'bg-surface/60 border-border/60 hover:border-border text-foreground'
@@ -180,7 +180,7 @@ export default function UpcomingSchedule({ posts = [], brands = [], accounts = [
                                 </Link>
                                 <Link
                                     to="/create"
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-medium text-foreground hover:bg-muted transition-colors"
                                 >
                                     <Plus size={15} weight="bold" /> {t("Tạo bài viết")}
                                 </Link>

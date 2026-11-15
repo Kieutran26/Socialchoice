@@ -1,4 +1,4 @@
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { Plus, Globe } from '@phosphor-icons/react';
 import { Link } from 'react-router-dom';
@@ -60,7 +60,7 @@ export default function ChannelTimelineView({
     );
 
     return (
-        <div className="panel overflow-hidden border border-border shadow-2xs rounded-2xl bg-card">
+        <div className="panel overflow-hidden border border-border rounded-2xl bg-card">
             <div className="overflow-x-auto">
                 <div className="min-w-[960px]">
                     {/* Timeline Header */}
@@ -115,7 +115,7 @@ export default function ChannelTimelineView({
                                                 <img
                                                     src={avatarUrl}
                                                     alt={account.name}
-                                                    className="size-8 rounded-full object-cover border border-border shadow-2xs"
+                                                    className="size-8 rounded-full object-cover border border-border"
                                                     style={{ width: '32px', height: '32px' }}
                                                 />
                                             ) : (
@@ -127,7 +127,7 @@ export default function ChannelTimelineView({
                                                 </div>
                                             )}
                                             <span
-                                                className={`absolute -bottom-1 -right-1 size-4 rounded-full ${platformCfg.bg} text-white flex items-center justify-center text-[9px] shadow-xs`}
+                                                className={`absolute -bottom-1 -right-1 size-4 rounded-full ${platformCfg.bg} text-white flex items-center justify-center text-[9px]`}
                                                 style={{ width: '16px', height: '16px' }}
                                             >
                                                 <PlatformIcon size={10} weight="fill" className={platformCfg.color} />
@@ -188,7 +188,7 @@ export default function ChannelTimelineView({
                                             >
                                                 {/* Drop placeholder indicator when dragging over */}
                                                 {isDragOver && (
-                                                    <div className="mb-1.5 p-1 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[9px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse shadow-2xs">
+                                                    <div className="mb-1.5 p-1 border border-dashed border-brand-dark bg-brand/25 rounded-lg text-center text-[9px] font-bold text-brand-ink flex items-center justify-center gap-1 animate-pulse">
                                                         <span>📥</span>
                                                         <span>{t('Thả vào đây')}</span>
                                                     </div>
@@ -223,7 +223,7 @@ export default function ChannelTimelineView({
                                                         <span>—</span>
                                                         <Link
                                                             to={`/create?date=${date}&account_id=${account.id}`}
-                                                            className="absolute inset-0 m-auto size-6 rounded-md bg-muted hover:bg-foreground hover:text-background text-muted-foreground flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity cursor-pointer shadow-2xs"
+                                                            className="absolute inset-0 m-auto size-6 rounded-md bg-muted hover:bg-brand hover:text-brand-ink text-muted-foreground flex items-center justify-center opacity-0 group-hover/cell:opacity-100 transition-opacity cursor-pointer"
                                                             title={t('Schedule post for {name}', { name: account.name })}
                                                         >
                                                             <Plus size={11} weight="bold" />

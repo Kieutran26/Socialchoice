@@ -1,4 +1,4 @@
-import MediaAttachments from './media-attachments';
+﻿import MediaAttachments from './media-attachments';
 import RecurringPostSettings from './recurring-post-settings';
 import { referencedMediaIds } from '@/lib/publishing-content';
 import PublishConfirmation from './PublishConfirmation';
@@ -166,7 +166,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                 {/* 1. TOP STUDIO HEADER */}
                 <div className="p-3.5 px-6 border-b border-border flex items-center justify-between bg-muted/40 shrink-0 pr-14">
                     <div className="flex items-center gap-2.5">
-                        <span className="size-7 rounded-lg bg-zinc-900 text-white flex items-center justify-center text-xs font-bold shadow-2xs">
+                        <span className="size-7 rounded-lg bg-brand text-brand-ink flex items-center justify-center text-xs font-bold">
                             <DeviceMobile size={15} weight="bold" />
                         </span>
                         <div>
@@ -192,7 +192,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                     <div className="lg:col-span-4 bg-muted/30 p-5 flex flex-col items-center justify-start border-r border-border overflow-y-auto custom-scrollbar">
                         
                         {/* Platform Switcher Pills */}
-                        <div className="mb-4 flex items-center bg-card border border-border rounded-xl p-0.5 text-xs shadow-2xs shrink-0">
+                        <div className="mb-4 flex items-center bg-card border border-border rounded-xl p-0.5 text-xs shrink-0">
                             {availablePlatforms.map(platform => {
                                 const isActive = activePlatform === platform;
                                 return (
@@ -202,7 +202,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                         onClick={() => setSelectedPreviewPlatform(platform)}
                                         className={`px-3 py-1 rounded-lg capitalize font-semibold transition-all cursor-pointer ${
                                             isActive
-                                                ? 'bg-zinc-900 text-white font-bold shadow-2xs'
+                                                ? 'bg-brand text-brand-ink font-bold'
                                                 : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                     >
@@ -257,7 +257,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                                     />
                                                 </div>
                                             ) : (
-                                                <div className="size-5.5 rounded-full bg-zinc-900 text-white flex items-center justify-center text-[9px] font-bold shrink-0">
+                                                <div className="size-5.5 rounded-full bg-brand text-brand-ink flex items-center justify-center text-[9px] font-bold shrink-0">
                                                     {previewAccount?.name?.[0]?.toUpperCase() || 'D'}
                                                 </div>
                                             )}
@@ -275,7 +275,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
 
                                     {/* Feed Media Display */}
                                     {images.length > 0 ? (
-                                        <div className="w-full bg-zinc-900 overflow-hidden">
+                                        <div className="w-full bg-brand overflow-hidden">
                                             {images[0]?.file_type === 'video' ? (
                                                 <video src={images[0].file_url} controls preload="metadata" className="w-full max-h-40 object-cover" />
                                             ) : (
@@ -353,7 +353,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                 <span>{t('Publishing QA Checklist')}</span>
                             </div>
                             <div className="space-y-1.5 text-xs">
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-2xs">
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
                                     <span className="flex items-center gap-2 text-foreground font-medium">
                                         <CheckCircle size={15} weight="fill" className="text-emerald-600" />
                                         <span>{t('Media format & resolution')}</span>
@@ -363,7 +363,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                     </span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-2xs">
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
                                     <span className="flex items-center gap-2 text-foreground font-medium">
                                         <CheckCircle size={15} weight="fill" className="text-emerald-600" />
                                         <span>{t('Caption length safety')} ({caption?.length || 0} ký tự)</span>
@@ -373,7 +373,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                     </span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border shadow-2xs">
+                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
                                     <span className="flex items-center gap-2 text-foreground font-medium">
                                         <CheckCircle size={15} weight="fill" className="text-emerald-600" />
                                         <span>{t('Destination channel connections')}</span>
@@ -394,7 +394,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                             {items.length > 0 ? (
                                 <div className="space-y-2">
                                     {items.map(item => (
-                                        <div key={item.attemptId} className="rounded-xl border border-border p-3 text-sm space-y-2 bg-card shadow-2xs">
+                                        <div key={item.attemptId} className="rounded-xl border border-border p-3 text-sm space-y-2 bg-card">
                                             <div className="flex items-center justify-between">
                                                 <p className="font-bold text-xs text-foreground truncate">
                                                     {item.pageName} · {PLATFORM_LABEL[item.platform || 'facebook']}
@@ -419,7 +419,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                         const cfg = PLATFORM_CONFIG[platform] || { icon: Globe, label: platform, bg: 'bg-muted', color: 'text-foreground' };
                                         const PlatformIcon = cfg.icon;
                                         return (
-                                            <div key={account.id} className="p-2.5 rounded-xl border border-border bg-card flex items-center justify-between shadow-2xs">
+                                            <div key={account.id} className="p-2.5 rounded-xl border border-border bg-card flex items-center justify-between">
                                                 <div className="flex items-center gap-2.5 min-w-0">
                                                     <span className={`size-6 rounded-full ${cfg.bg} text-white flex items-center justify-center text-xs shrink-0`}>
                                                         <PlatformIcon size={12} weight="fill" className={cfg.color} />
@@ -443,14 +443,14 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
 
                         {/* Accordion 1: Form Đổi ngày & Giờ đăng */}
                         {!locked && ['draft', 'scheduled', 'cancelled'].includes(status) && !jobs.some(job => job.attempts > 0) && (
-                            <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
+                            <div className="border border-border rounded-xl overflow-hidden bg-card">
                                 <button
                                     type="button"
                                     onClick={() => setOpenReschedule(!openReschedule)}
                                     className="w-full p-3 bg-muted/30 hover:bg-muted/50 flex items-center justify-between text-xs font-bold text-foreground cursor-pointer transition-colors"
                                 >
                                     <span className="flex items-center gap-2">
-                                        <Clock size={15} weight="bold" className="text-amber-500" />
+                                        <Clock size={15} weight="bold" className="text-brand-dark" />
                                         <span>{t('Plan / reschedule')}</span>
                                     </span>
                                     <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${openReschedule ? 'rotate-180' : ''}`} />
@@ -461,7 +461,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                         <p className="label-xs text-muted-foreground">{t(isDesktop() ? 'This is a local plan only. No automatic publishing.' : 'Review the accounts, content and time before enabling automatic publishing.')}</p>
                                         <div className="flex items-center gap-2 pt-1">
                                             <button
-                                                className="px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                                                className="px-4 py-2 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-bold transition-colors cursor-pointer"
                                                 type="button"
                                                 disabled={busy}
                                                 onClick={reschedule}
@@ -481,7 +481,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
 
                         {/* Accordion 2: Tái đăng nội dung định kỳ */}
                         {!post.is_demo && !isDesktop() && (
-                            <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
+                            <div className="border border-border rounded-xl overflow-hidden bg-card">
                                 <button
                                     type="button"
                                     onClick={() => setOpenRecurring(!openRecurring)}
@@ -502,7 +502,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                         )}
 
                         {/* Accordion 3: Publishing History */}
-                        <div className="border border-border rounded-xl overflow-hidden bg-card shadow-2xs">
+                        <div className="border border-border rounded-xl overflow-hidden bg-card">
                             <button
                                 type="button"
                                 onClick={() => setOpenHistory(!openHistory)}
@@ -545,7 +545,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                     <div className="flex items-center gap-2">
                         <Link
                             to={'/create?duplicate=' + post.id}
-                            className="inline-flex items-center gap-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-xl px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer shadow-2xs"
+                            className="inline-flex items-center gap-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-xl px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer"
                             onClick={onClose}
                         >
                             <CopySimple size={13} weight="bold" />
@@ -554,7 +554,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                         {!locked && (['draft', 'scheduled'].includes(status) || (isDesktop() && status === 'cancelled')) && (
                             <Link
                                 to={'/create?edit=' + post.id}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-bold transition-colors cursor-pointer"
                                 onClick={onClose}
                             >
                                 <PencilSimple size={13} weight="bold" />

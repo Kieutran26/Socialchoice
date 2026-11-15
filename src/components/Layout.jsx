@@ -1,12 +1,13 @@
-import { isDesktop } from '@/api/desktop/runtime';
+﻿import { isDesktop } from '@/api/desktop/runtime';
 import DesktopPrototype from './desktop-prototype';
 import { Button } from '@/components/ui/button';
 import SidebarNavigation from './layout/sidebar-navigation';
 import PublishingNotifications from './layout/PublishingNotifications';
+import CommandSearchDialog from './layout/CommandSearchDialog';
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, MagnifyingGlass } from '@phosphor-icons/react';
+import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, CaretUp, MagnifyingGlass, GearSix, IdentificationCard } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
@@ -41,9 +42,10 @@ function Shell() {
     const { brands, selectedBrandId, setSelectedBrandId, timezone, demoMode, loading, error, retry } = useWorkspace();
     const [open, setOpen] = useState(false);
     const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
+    const [openProfileMenu, setOpenProfileMenu] = useState(false);
+    const [openCommandSearch, setOpenCommandSearch] = useState(false);
     const brandDropdownRef = useRef(null);
-    const searchInputRef = useRef(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    const profileMenuRef = useRef(null);
     const location = useLocation();
 
     const selectedBrand = brands.find((b) => b.id === selectedBrandId);
@@ -55,7 +57,7 @@ function Shell() {
         function handleKeyDown(e) {
             if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
                 e.preventDefault();
-                searchInputRef.current?.focus();
+                setOpenCommandSearch((prev) => !prev);
             }
         }
         window.addEventListener('keydown', handleKeyDown);
@@ -83,6 +85,27 @@ function Shell() {
             };
         }
     }, [openBrandDropdown]);
+
+    // Handle Escape and outside clicks for profile menu
+    useEffect(() => {
+        if (!openProfileMenu) return;
+        function handleKeyDown(event) {
+            if (event.key === 'Escape') {
+                setOpenProfileMenu(false);
+            }
+        }
+        function handleClickOutside(event) {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+                setOpenProfileMenu(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('keydown', handleKeyDown);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [openProfileMenu]);
 
     // Handle Escape and body scroll lock for mobile navigation drawer
     useEffect(() => {
@@ -112,7 +135,7 @@ function Shell() {
                 />
             )}
             <aside
-                className={`fixed inset-y-0 left-0 z-40 w-60 border-r bg-surface p-5 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
+                className={`fixed inset-y-0 left-0 z-40 w-60 border-r border-brand-dark/40 bg-surface p-5 flex flex-col transition-transform duration-200 ease-in-out lg:translate-x-0 ${open ? 'translate-x-0 shadow-2xl' : '-translate-x-full'
                     }`}
             >
                 <div className="flex items-center justify-between mb-5 shrink-0">
@@ -143,7 +166,7 @@ function Shell() {
                         aria-haspopup="listbox"
                         aria-expanded={openBrandDropdown}
                         onClick={() => setOpenBrandDropdown((prev) => !prev)}
-                        className={`flex h-10 w-full items-center justify-between gap-2 rounded-xl border bg-card px-3 text-xs font-medium text-foreground shadow-2xs transition-all hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/20 cursor-pointer ${openBrandDropdown ? 'border-foreground/30 ring-2 ring-primary/20' : 'border-border'
+                        className={`flex h-10 w-full items-center justify-between gap-2 rounded-xl border bg-card px-3 text-xs font-medium text-foreground transition-colors hover:border-brand-dark hover:bg-brand/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring cursor-pointer ${openBrandDropdown ? 'border-brand-dark bg-brand/10' : 'border-border'
                             }`}
                     >
                         <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -176,7 +199,7 @@ function Shell() {
                                     setOpenBrandDropdown(false);
                                 }}
                                 className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${selectedBrandId === 'all'
-                                    ? 'bg-foreground/10 text-foreground font-semibold'
+                                    ? 'bg-brand/25 text-brand-ink font-semibold'
                                     : 'text-foreground hover:bg-muted/60'
                                     }`}
                             >
@@ -187,7 +210,7 @@ function Shell() {
                                     <span className="truncate">{t("All brands")}</span>
                                 </div>
                                 {selectedBrandId === 'all' && (
-                                    <Check size={13} weight="bold" className="text-foreground shrink-0 ml-2" />
+                                    <Check size={13} weight="bold" className="text-brand-ink shrink-0 ml-2" />
                                 )}
                             </button>
 
@@ -206,7 +229,7 @@ function Shell() {
                                             setOpenBrandDropdown(false);
                                         }}
                                         className={`flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-left text-[12px] font-medium transition-colors cursor-pointer ${isSelected
-                                            ? 'bg-foreground/10 text-foreground font-semibold'
+                                            ? 'bg-brand/25 text-brand-ink font-semibold'
                                             : 'text-foreground hover:bg-muted/60'
                                             }`}
                                     >
@@ -218,7 +241,7 @@ function Shell() {
                                             <span className="truncate">{b.name}</span>
                                         </div>
                                         {isSelected && (
-                                            <Check size={13} weight="bold" className="text-foreground shrink-0 ml-2" />
+                                            <Check size={13} weight="bold" className="text-brand-ink shrink-0 ml-2" />
                                         )}
                                     </button>
                                 );
@@ -230,10 +253,91 @@ function Shell() {
                 <SidebarNavigation onNavigate={() => setOpen(false)} />
 
                 {/* Workspace Profile Card */}
-                <div className="mt-auto pt-3 border-t border-border/60 shrink-0">
-                    <div className="rounded-2xl border border-border/70 bg-card p-2.5 flex items-center justify-between gap-2.5 shadow-2xs">
+                <div className="mt-auto pt-3 border-t border-border/60 shrink-0 relative" ref={profileMenuRef}>
+                    {openProfileMenu && (
+                        <div
+                            role="menu"
+                            aria-label={t('Account menu')}
+                            className="absolute bottom-full left-0 right-0 z-50 mb-2 rounded-2xl border border-border bg-popover p-1.5 shadow-lg space-y-0.5 animate-in fade-in-0 zoom-in-95 duration-100"
+                        >
+                            <NavLink
+                                to="/settings"
+                                end
+                                role="menuitem"
+                                onClick={() => {
+                                    setOpenProfileMenu(false);
+                                    setOpen(false);
+                                }}
+                                className={({ isActive }) =>
+                                    `flex items-center gap-2.5 rounded-xl border px-2.5 py-2 text-xs min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${isActive
+                                        ? 'bg-brand border-brand-dark text-brand-ink font-semibold'
+                                        : 'border-transparent text-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
+                                    }`
+                                }
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        <GearSix size={16} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                                        <span className="truncate">{t('Settings')}</span>
+                                    </>
+                                )}
+                            </NavLink>
+
+                            {user?.role === 'admin' && user?.mode === 'admin-session' && (
+                                <NavLink
+                                    to="/admin/licenses"
+                                    end
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setOpenProfileMenu(false);
+                                        setOpen(false);
+                                    }}
+                                    className={({ isActive }) =>
+                                        `flex items-center gap-2.5 rounded-xl border px-2.5 py-2 text-xs min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${isActive
+                                            ? 'bg-brand border-brand-dark text-brand-ink font-semibold'
+                                            : 'border-transparent text-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
+                                        }`
+                                    }
+                                >
+                                    {({ isActive }) => (
+                                        <>
+                                            <IdentificationCard size={16} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                                            <span className="truncate">{t('License management')}</span>
+                                        </>
+                                    )}
+                                </NavLink>
+                            )}
+
+                            {['admin-session', 'web-customer'].includes(mode) && (
+                                <>
+                                    <div className="my-1 border-t border-border/60" />
+                                    <button
+                                        type="button"
+                                        role="menuitem"
+                                        onClick={() => {
+                                            setOpenProfileMenu(false);
+                                            appClient.auth.logout().catch((e) => window.alert(t(e.message)));
+                                        }}
+                                        className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs min-h-9 font-medium text-dangerFg hover:bg-dangerBg transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                                    >
+                                        <SignOut size={16} className="shrink-0" />
+                                        <span className="truncate">{t('Sign out')}</span>
+                                    </button>
+                                </>
+                            )}
+                        </div>
+                    )}
+
+                    <button
+                        type="button"
+                        aria-haspopup="menu"
+                        aria-expanded={openProfileMenu}
+                        aria-label={t('Account menu')}
+                        onClick={() => setOpenProfileMenu((prev) => !prev)}
+                        className={`w-full rounded-2xl border bg-card p-2.5 flex items-center justify-between gap-2.5 text-left transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${openProfileMenu ? 'border-brand-dark bg-brand/10' : 'border-border/70 hover:border-brand-dark/60 hover:bg-brand/5'}`}
+                    >
                         <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-muted font-heading text-xs font-bold text-foreground">
+                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-brand-dark bg-brand font-heading text-xs font-bold text-brand-ink">
                                 {user?.full_name ? user.full_name.slice(0, 2).toUpperCase() : 'MC'}
                             </div>
                             <div className="min-w-0">
@@ -246,18 +350,10 @@ function Shell() {
                                 </div>
                             </div>
                         </div>
-                        {['admin-session', 'web-customer'].includes(mode) && (
-                            <button
-                                type="button"
-                                title={t('Sign out')}
-                                aria-label={t('Sign out')}
-                                onClick={() => appClient.auth.logout().catch((e) => window.alert(t(e.message)))}
-                                className="text-muted-foreground hover:text-dangerFg text-xs p-2 min-h-[36px] min-w-[36px] flex items-center justify-center cursor-pointer rounded-lg hover:bg-muted/50 transition-colors"
-                            >
-                                <SignOut size={16} />
-                            </button>
-                        )}
-                    </div>
+                        <span className="text-muted-foreground p-1.5 flex items-center justify-center shrink-0">
+                            <CaretUp size={15} weight="bold" className={`transition-transform duration-150 ${openProfileMenu ? 'rotate-180 text-brand-ink' : ''}`} />
+                        </span>
+                    </button>
                 </div>
             </aside>
 
@@ -289,28 +385,35 @@ function Shell() {
                     </div>
 
                     <div className="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
-                        <div className="relative hidden sm:flex items-center">
-                            <MagnifyingGlass size={15} weight="regular" className="absolute left-3 text-muted-foreground pointer-events-none" />
-                            <input
-                                ref={searchInputRef}
-                                type="text"
-                                id="topbar-search"
-                                aria-label={t("Search")}
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                placeholder={t("Search...")}
-                                className="h-9 w-48 sm:w-56 md:w-64 lg:w-72 rounded-xl border border-border bg-card pl-9 pr-12 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-border transition-all"
-                            />
-                            <div className="absolute right-2.5 flex items-center pointer-events-none">
-                                <kbd className="inline-flex h-5 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
-                                    {isMac ? '⌘K' : 'Ctrl K'}
-                                </kbd>
-                            </div>
-                        </div>
+                        <button
+                            type="button"
+                            onClick={() => setOpenCommandSearch(true)}
+                            aria-label={t("Search")}
+                            className="sm:hidden flex h-9 w-9 items-center justify-center rounded-xl border border-border bg-card text-muted-foreground hover:border-brand-dark hover:text-brand-ink transition-colors cursor-pointer"
+                        >
+                            <MagnifyingGlass size={16} />
+                        </button>
+                        <button
+                            type="button"
+                            id="topbar-search"
+                            aria-label={t("Search")}
+                            onClick={() => setOpenCommandSearch(true)}
+                            className="relative hidden sm:flex h-9 w-48 sm:w-56 md:w-64 lg:w-72 items-center justify-between rounded-xl border border-border bg-card pl-3 pr-2.5 text-xs text-muted-foreground hover:border-brand-dark/70 hover:bg-brand/5 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring transition-all cursor-pointer"
+                        >
+                            <span className="flex items-center gap-2 truncate">
+                                <MagnifyingGlass size={15} weight="regular" className="shrink-0" />
+                                <span className="truncate">{t("Search...")}</span>
+                            </span>
+                            <kbd className="inline-flex h-5 shrink-0 items-center justify-center rounded border border-border/80 bg-muted/40 px-1.5 font-mono text-[10px] font-medium text-muted-foreground select-none">
+                                {isMac ? '⌘K' : 'Ctrl K'}
+                            </kbd>
+                        </button>
 
                         {!isDesktop() && <PublishingNotifications />}
                     </div>
                 </header>
+
+                <CommandSearchDialog open={openCommandSearch} onOpenChange={setOpenCommandSearch} />
 
                 <main className="mx-auto max-w-[1600px] p-4 sm:p-5 lg:p-8">
                     {demoMode && (

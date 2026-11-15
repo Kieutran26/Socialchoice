@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import { useEffect, useRef, useState } from 'react';
 import {
     UploadSimple,
@@ -445,7 +445,7 @@ export default function MediaUploader({
                                 onClick={() => setMediaTab('all')}
                                 className={`px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                                     mediaTab === 'all'
-                                        ? 'bg-foreground text-background shadow-xs'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
                                 }`}
                             >
@@ -456,7 +456,7 @@ export default function MediaUploader({
                                 onClick={() => setMediaTab('image')}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                                     mediaTab === 'image'
-                                        ? 'bg-foreground text-background shadow-xs'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
                                 }`}
                             >
@@ -471,7 +471,7 @@ export default function MediaUploader({
                                 onClick={() => setMediaTab('video')}
                                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-medium transition-all ${
                                     mediaTab === 'video'
-                                        ? 'bg-foreground text-background shadow-xs'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted/70 text-muted-foreground hover:text-foreground hover:bg-muted'
                                 }`}
                             >
@@ -534,7 +534,7 @@ export default function MediaUploader({
                                                     ? 'border-brand bg-brand/10 ring-2 ring-brand shadow-sm'
                                                     : isDisabled
                                                     ? 'opacity-40 cursor-not-allowed border-border bg-muted/20'
-                                                    : 'border-border hover:border-border-hover hover:bg-muted/40 bg-card shadow-2xs'
+                                                    : 'border-border hover:border-border-hover hover:bg-muted/40 bg-card'
                                             }`}
                                         >
                                             <div className="relative aspect-video w-full rounded-lg overflow-hidden bg-muted flex items-center justify-center">

@@ -1,4 +1,4 @@
-import { translatedLabels, translate } from './i18n-core.js';
+﻿import { translatedLabels, translate } from './i18n-core.js';
 export const DEFAULT_TIMEZONE = 'Asia/Ho_Chi_Minh';
 
 export const TIMEZONES = [
@@ -98,11 +98,11 @@ export const CONNECTION_TONE = {
 };
 
 export const PILLAR_COLORS = [
-    '#79D94B',
-    '#4F7CA8',
-    '#C6A15B',
-    '#8A7FB5',
-    '#C2705F',
+    '#A7F3D0',
+    '#93C5FD',
+    '#FED7AA',
+    '#C4B5FD',
+    '#FBCFE8',
     '#3F8F5B',
     '#6B7F86',
     '#9AA36B',

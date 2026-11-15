@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE } from './constants';
+﻿import { DEFAULT_TIMEZONE } from './constants';
 import { addDays, toUtcIso, todayInZone } from './tz';
 
 const BRANDS = [
@@ -6,7 +6,7 @@ const BRANDS = [
         key: 'b1',
         name: 'Aster Coffee Roasters',
         description: 'Specialty roastery with four cafés across Saigon.',
-        color: '#79D94B',
+        color: '#A7F3D0',
         timezone: DEFAULT_TIMEZONE,
         products: 'Cà phê hạt Single Origin Ethiopia & Cầu Đất, Cold Brew đóng chai, Phin Pour-over gốm thủ công, Drip bag tiện lợi',
         target_audience: 'Người yêu cà phê đặc sản 22-38 tuổi tại TP.HCM, dân văn phòng sáng tạo, người thích tự pha chế tại nhà',
@@ -18,7 +18,7 @@ const BRANDS = [
         key: 'b2',
         name: 'Northwind Fitness',
         description: 'Boutique strength and conditioning studios.',
-        color: '#4F7CA8',
+        color: '#93C5FD',
         timezone: DEFAULT_TIMEZONE,
         products: 'Gói tập Personal Training 1:1, Lớp nhóm Strength & Conditioning, Thẻ hội viên không giới hạn, Tư vấn dinh dưỡng cá nhân hóa',
         target_audience: 'Nhân viên văn phòng, người bận rộn 24-40 tuổi muốn rèn luyện thể lực bền bỉ, cải thiện vóc dáng và giải tỏa căng thẳng',
@@ -30,7 +30,7 @@ const BRANDS = [
         key: 'b3',
         name: 'Lumen Skincare',
         description: 'Clean-formula skincare built for tropical climates.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         timezone: DEFAULT_TIMEZONE,
         products: 'Serum cấp ẩm Niacinamide 10%, Gel rửa mặt tràm trà kiềm dầu, Kem chống nắng kiềm dầu SPF50+ PA++++, Kem phục hồi da B5',
         target_audience: 'Phụ nữ & nam giới trẻ 18-35 tuổi tại vùng khí hậu nhiệt đới nóng ẩm, da dầu mụn, tìm kiếm giải pháp dưỡng da lành tính',
@@ -45,35 +45,35 @@ const PILLAR_TEMPLATES = [
         key: 'p1',
         name: 'Product Education',
         description: 'Teach people how to get the most out of the product.',
-        color: '#79D94B',
+        color: '#A7F3D0',
         target_percentage: 35,
     },
     {
         key: 'p2',
         name: 'Brand Awareness',
         description: 'Who we are, what we stand for, what happens behind the counter.',
-        color: '#4F7CA8',
+        color: '#93C5FD',
         target_percentage: 25,
     },
     {
         key: 'p3',
         name: 'Customer Stories',
         description: 'Real customers, real outcomes, told plainly.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         target_percentage: 20,
     },
     {
         key: 'p4',
         name: 'Community Engagement',
         description: 'Conversations, questions and shout-outs.',
-        color: '#8A7FB5',
+        color: '#C4B5FD',
         target_percentage: 12,
     },
     {
         key: 'p5',
         name: 'Promotional Content',
         description: 'Offers, launches and seasonal pushes.',
-        color: '#C2705F',
+        color: '#FBCFE8',
         target_percentage: 8,
     },
 ];

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+﻿import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
     CursorClick,
@@ -328,7 +328,7 @@ export default function TrafficOverview({
                                             {/* Progress bar */}
                                             <div className="mt-1.5 h-1.5 w-full rounded-full bg-muted/60 overflow-hidden">
                                                 <div
-                                                    className="h-full rounded-full bg-foreground"
+                                                    className="h-full rounded-full bg-brand-dark"
                                                     style={{ width: `${pct}%` }}
                                                 />
                                             </div>

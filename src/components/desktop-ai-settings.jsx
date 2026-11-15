@@ -1,4 +1,4 @@
-import { isDesktop } from '@/api/desktop/runtime';
+﻿import { isDesktop } from '@/api/desktop/runtime';
 import React, { useEffect, useState } from 'react';
 import { aiRequest } from '@/api/ai';
 import { providerReasonMessage } from '@/api/ai-diagnostics';
@@ -119,10 +119,10 @@ export default function DesktopAiSettings() {
     const changed = !saved || provider !== saved.provider || model !== saved.model || !!key;
 
     return (
-        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-600">
+                    <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-brand-ink">
                         <Sparkle size={18} weight="duotone" />
                     </span>
                     <div>
@@ -158,7 +158,7 @@ export default function DesktopAiSettings() {
                 <div className="rounded-2xl border border-emerald-500/25 bg-emerald-50/30 p-4 space-y-3">
                     <div className="flex items-center justify-between">
                         <span className="text-[11px] font-bold text-foreground/80 uppercase tracking-wider flex items-center gap-1.5">
-                            <Sparkle size={13} weight="fill" className="text-amber-500" />
+                            <Sparkle size={13} weight="fill" className="text-brand-dark" />
                             {t('Added APIs')}
                         </span>
                         <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-emerald-700 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20">
@@ -167,7 +167,7 @@ export default function DesktopAiSettings() {
                         </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-card border border-border/80 shadow-2xs">
+                    <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-card border border-border/80">
                         <div className="flex items-center gap-3 min-w-0">
                             <div className="h-10 w-10 rounded-xl bg-muted/60 flex items-center justify-center font-bold text-base shrink-0 border border-border/60">
                                 {saved.provider === 'gemini' ? (

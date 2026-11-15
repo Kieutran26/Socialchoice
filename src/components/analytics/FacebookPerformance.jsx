@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import {
     ArrowsClockwise,
     ChartBar,
@@ -135,7 +135,7 @@ export default function FacebookPerformance({ scope, timezone }) {
         return (
             <section className="panel p-5 mb-5 rounded-2xl border border-border/80 bg-card">
                 <div className="flex items-center gap-3">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-neutral-900 text-white shadow-xs">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand text-brand-ink border border-brand-dark">
                         <FacebookLogo size={22} weight="fill" />
                     </span>
                     <div>
@@ -173,7 +173,7 @@ export default function FacebookPerformance({ scope, timezone }) {
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border/60">
                     <div className="flex items-start sm:items-center gap-3 min-w-0">
                         {/* Black & White Icon Box */}
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-neutral-900 text-white shadow-xs">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-ink border border-brand-dark">
                             <FacebookLogo size={22} weight="fill" />
                         </div>
                         <div>
@@ -190,14 +190,14 @@ export default function FacebookPerformance({ scope, timezone }) {
 
                     <div className="flex items-center gap-3 shrink-0 self-start md:self-auto">
                         {report?.pending > 0 && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/30 px-3 py-1 text-[11px] font-semibold shadow-2xs">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-500/10 text-amber-900 border border-amber-500/30 px-3 py-1 text-[11px] font-semibold">
                                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
                                 {t('{count} publications ready to refresh', { count: report.pending })}
                             </span>
                         )}
                         <button
                             type="button"
-                            className="cursor-pointer inline-flex items-center gap-2 bg-neutral-900 hover:bg-neutral-800 text-white font-medium text-xs px-4 py-2 rounded-lg transition-colors border border-neutral-900 shadow-2xs"
+                            className="cursor-pointer inline-flex items-center gap-2 bg-brand hover:bg-[#ffe059] text-brand-ink font-semibold text-xs px-4 py-2 rounded-lg transition-colors border border-brand-dark"
                             disabled={loading || refreshing || !report?.ready || !report?.total || report.pending === 0}
                             onClick={refresh}
                         >
@@ -213,14 +213,14 @@ export default function FacebookPerformance({ scope, timezone }) {
 
                 {/* Filter Toolbar: Presets Row */}
                 <div className="flex items-center justify-between gap-3 flex-wrap">
-                    <div className="flex items-center p-0.5 rounded-lg border border-neutral-300 bg-white text-xs shadow-2xs">
+                    <div className="flex items-center p-0.5 rounded-lg border border-border bg-card text-xs">
                         <button
                             type="button"
                             onClick={() => handlePresetChange(7, '7d')}
                             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                                 preset === '7d'
-                                    ? 'bg-neutral-900 text-white shadow-2xs font-semibold'
-                                    : 'text-neutral-600 hover:text-neutral-900'
+                                    ? 'bg-brand text-brand-ink font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             7 ngày qua
@@ -230,8 +230,8 @@ export default function FacebookPerformance({ scope, timezone }) {
                             onClick={() => handlePresetChange(30, '30d')}
                             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                                 preset === '30d'
-                                    ? 'bg-neutral-900 text-white shadow-2xs font-semibold'
-                                    : 'text-neutral-600 hover:text-neutral-900'
+                                    ? 'bg-brand text-brand-ink font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             30 ngày qua
@@ -241,8 +241,8 @@ export default function FacebookPerformance({ scope, timezone }) {
                             onClick={() => handlePresetChange(90, '90d')}
                             className={`px-3 py-1 rounded-md text-xs font-medium transition-colors cursor-pointer ${
                                 preset === '90d'
-                                    ? 'bg-neutral-900 text-white shadow-2xs font-semibold'
-                                    : 'text-neutral-600 hover:text-neutral-900'
+                                    ? 'bg-brand text-brand-ink font-semibold'
+                                    : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                             90 ngày qua
@@ -272,7 +272,7 @@ export default function FacebookPerformance({ scope, timezone }) {
                                     setPreset('custom');
                                     setDates({ ...dates, from: e.target.value });
                                 }}
-                                className="h-9 w-full rounded-lg border-border/80 bg-card pl-9 pr-3 text-xs focus:ring-neutral-400 font-medium"
+                                className="h-9 w-full rounded-lg border-border/80 bg-card pl-9 pr-3 text-xs focus:ring-ring font-medium"
                             />
                         </div>
                     </div>
@@ -292,7 +292,7 @@ export default function FacebookPerformance({ scope, timezone }) {
                                     setPreset('custom');
                                     setDates({ ...dates, to: e.target.value });
                                 }}
-                                className="h-9 w-full rounded-lg border-border/80 bg-card pl-9 pr-3 text-xs focus:ring-neutral-400 font-medium"
+                                className="h-9 w-full rounded-lg border-border/80 bg-card pl-9 pr-3 text-xs focus:ring-ring font-medium"
                             />
                         </div>
                     </div>
@@ -305,7 +305,7 @@ export default function FacebookPerformance({ scope, timezone }) {
                         <div className="relative flex items-center">
                             <select
                                 aria-label={t('Page')}
-                                className="h-9 w-full rounded-lg border border-border/80 bg-card pl-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-border cursor-pointer appearance-none"
+                                className="h-9 w-full rounded-lg border border-border/80 bg-card pl-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border cursor-pointer appearance-none"
                                 value={accountId}
                                 onChange={(e) => setAccountId(e.target.value)}
                             >
@@ -328,7 +328,7 @@ export default function FacebookPerformance({ scope, timezone }) {
                         <div className="relative flex items-center">
                             <select
                                 aria-label={t('Pillar')}
-                                className="h-9 w-full rounded-lg border border-border/80 bg-card pl-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:border-border cursor-pointer appearance-none"
+                                className="h-9 w-full rounded-lg border border-border/80 bg-card pl-3 pr-8 text-xs font-medium text-foreground transition-all hover:bg-muted/30 focus:outline-none focus:ring-2 focus:ring-ring focus:border-border cursor-pointer appearance-none"
                                 value={pillarId}
                                 onChange={(e) => setPillarId(e.target.value)}
                             >
@@ -360,26 +360,26 @@ export default function FacebookPerformance({ scope, timezone }) {
 
                 {/* Alerts if any */}
                 {report && !report.ready && (
-                    <div className="flex items-center gap-2 rounded-xl bg-white border border-neutral-300 p-2.5 text-xs text-neutral-900">
+                    <div className="flex items-center gap-2 rounded-xl bg-brand/10 border border-brand-dark/40 p-2.5 text-xs text-foreground">
                         <Info size={15} className="shrink-0 text-neutral-700" />
                         <span>{t('Configure Meta before refreshing metrics')}</span>
                     </div>
                 )}
                 {report?.limited && (
-                    <div className="flex items-center gap-2 rounded-xl bg-white border border-neutral-300 p-2.5 text-xs text-neutral-900">
+                    <div className="flex items-center gap-2 rounded-xl bg-brand/10 border border-brand-dark/40 p-2.5 text-xs text-foreground">
                         <WarningCircle size={15} className="shrink-0 text-neutral-700" />
                         <span>{t('Showing at most 1000 confirmed publications. Narrow the date range for complete totals.')}</span>
                     </div>
                 )}
                 {report?.stale > 0 && (
-                    <div className="flex items-center gap-2 rounded-xl bg-white border border-neutral-300 p-2.5 text-xs text-neutral-900">
+                    <div className="flex items-center gap-2 rounded-xl bg-brand/10 border border-brand-dark/40 p-2.5 text-xs text-foreground">
                         <Info size={15} className="shrink-0 text-neutral-700" />
                         <span>{t('{count} publications include previous data. Check the metric timestamp and access status.', { count: report.stale })}</span>
                     </div>
                 )}
                 {error && (
-                    <div role="alert" className="flex items-center gap-2 rounded-xl bg-white border border-neutral-900 p-2.5 text-xs text-neutral-900 font-medium">
-                        <WarningCircle size={15} className="shrink-0 text-neutral-900" />
+                    <div role="alert" className="flex items-center gap-2 rounded-xl bg-dangerBg border border-dangerFg p-2.5 text-xs text-neutral-900 font-medium">
+                        <WarningCircle size={15} className="shrink-0 text-dangerFg" />
                         <span>{t(error)}</span>
                     </div>
                 )}
@@ -410,13 +410,13 @@ export default function FacebookPerformance({ scope, timezone }) {
                             value={report.total}
                             hint={t('Confirmed by the destination')}
                             icon={PaperPlaneTilt}
-                            iconBg="bg-white border-neutral-300"
-                            iconColor="text-neutral-900"
+                            iconBg="bg-brand/20 border-brand-dark/40"
+                            iconColor="text-brand-ink"
                             badge={report.pending > 0 ? `${report.pending} CHỜ CẬP NHẬT` : 'ĐÃ XÁC NHẬN'}
                             badgeClass={
                                 report.pending > 0
-                                    ? 'bg-amber-500/10 text-amber-900 border-amber-500/30 font-semibold'
-                                    : 'bg-emerald-500/10 text-emerald-800 border-emerald-500/30 font-semibold'
+                                    ? 'bg-warnBg text-warnFg border-transparent font-semibold'
+                                    : 'bg-successBg text-successFg border-transparent font-semibold'
                             }
                         />
 
@@ -436,10 +436,10 @@ export default function FacebookPerformance({ scope, timezone }) {
                                       })
                             }
                             icon={ThumbsUp}
-                            iconBg="bg-white border-neutral-300"
-                            iconColor="text-neutral-900"
+                            iconBg="bg-brand/20 border-brand-dark/40"
+                            iconColor="text-brand-ink"
                             badge={avgReactions !== null ? `~${formatNumber(avgReactions)} / BÀI` : null}
-                            badgeClass="bg-blue-500/10 text-blue-800 border-blue-500/30 font-semibold"
+                            badgeClass="bg-brand/20 text-brand-ink border-brand-dark/40 font-semibold"
                         />
 
                         {/* Card 3: Comments */}
@@ -458,10 +458,10 @@ export default function FacebookPerformance({ scope, timezone }) {
                                       })
                             }
                             icon={ChatDots}
-                            iconBg="bg-white border-neutral-300"
-                            iconColor="text-neutral-900"
+                            iconBg="bg-brand/20 border-brand-dark/40"
+                            iconColor="text-brand-ink"
                             badge={avgComments !== null ? `~${formatNumber(avgComments)} / BÀI` : null}
-                            badgeClass="bg-indigo-500/10 text-indigo-800 border-indigo-500/30 font-semibold"
+                            badgeClass="bg-brand/20 text-brand-ink border-brand-dark/40 font-semibold"
                         />
 
                         {/* Card 4: Shares */}
@@ -480,10 +480,10 @@ export default function FacebookPerformance({ scope, timezone }) {
                                       })
                             }
                             icon={ShareFat}
-                            iconBg="bg-white border-neutral-300"
-                            iconColor="text-neutral-900"
+                            iconBg="bg-brand/20 border-brand-dark/40"
+                            iconColor="text-brand-ink"
                             badge={avgShares !== null ? `~${formatNumber(avgShares)} / BÀI` : null}
-                            badgeClass="bg-purple-500/10 text-purple-800 border-purple-500/30 font-semibold"
+                            badgeClass="bg-brand/20 text-brand-ink border-brand-dark/40 font-semibold"
                         />
                     </div>
 

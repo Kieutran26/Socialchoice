@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -26,6 +26,8 @@ import DistributionPanel from '@/components/overview/DistributionPanel';
 import TrafficOverview from '@/components/overview/TrafficOverview';
 import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { Skeleton } from '@/components/ui/skeleton';
+
+const KPI_ICON = { iconBg: 'bg-brand/20 border-brand-dark/40', iconColor: 'text-brand-ink' };
 
 export default function Overview() {
     const { t } = useTranslation();
@@ -183,7 +185,6 @@ export default function Overview() {
 
     return (
         <div className="space-y-6">
-            {/* Header with live operational status summary and clear action hierarchy */}
             <PageHeader
                 title={t("Tổng quan")}
                 description={
@@ -197,14 +198,14 @@ export default function Overview() {
                 }
                 actions={
                     <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                        <Link to="/create" className="btn-skew shadow-2xs">
+                        <Link to="/create" className="btn-skew">
                             <Plus size={16} weight="bold" /> {t("Tạo bài viết")}
                         </Link>
                         <Link
                             to="/agent"
-                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold hover:bg-muted transition-colors text-foreground"
+                            className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3.5 py-2 text-xs font-semibold hover:border-brand-dark hover:bg-brand/10 transition-colors text-foreground"
                         >
-                            <Sparkle size={15} weight="bold" className="text-amber-500" />
+                            <Sparkle size={15} weight="bold" className="text-brand-dark" />
                             <span>{t("AI Lên lịch nhanh")}</span>
                         </Link>
                         <Link
@@ -219,23 +220,18 @@ export default function Overview() {
             />
 
             {loading ? (
-                <div className="space-y-6">
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <div className="grid gap-5 xl:grid-cols-4">
+                    <Skeleton className="h-44 rounded-2xl xl:col-span-2" />
+                    <div className="grid grid-cols-2 gap-3 xl:col-span-2">
                         {[0, 1, 2, 3].map((key) => (
                             <Skeleton key={key} className="h-[104px] rounded-2xl" />
                         ))}
                     </div>
-                    <div className="grid gap-6 xl:grid-cols-3">
-                        <div className="xl:col-span-2 space-y-6">
-                            <Skeleton className="h-96 rounded-2xl" />
-                            <Skeleton className="h-80 rounded-2xl" />
-                        </div>
-                        <div className="xl:col-span-1 space-y-6">
-                            <Skeleton className="h-64 rounded-2xl" />
-                            <Skeleton className="h-64 rounded-2xl" />
-                        </div>
-                    </div>
-                    <Skeleton className="h-72 rounded-2xl" />
+                    <Skeleton className="h-96 rounded-2xl xl:col-span-2" />
+                    <Skeleton className="h-96 rounded-2xl xl:col-span-2" />
+                    <Skeleton className="h-64 rounded-2xl" />
+                    <Skeleton className="h-64 rounded-2xl" />
+                    <Skeleton className="h-64 rounded-2xl xl:col-span-2" />
                 </div>
             ) : !hasContent ? (
                 <EmptyState
@@ -265,11 +261,10 @@ export default function Overview() {
                 </EmptyState>
             ) : (
                 <>
-                    {/* Drafts Alert Callout (if drafts exist) */}
                     {draftCount > 0 && (
-                        <div className="panel flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 border-amber-300/60 bg-amber-50/40 shadow-2xs">
+                        <div className="panel flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 p-4 border-brand-dark/50 bg-brand/15">
                             <div className="flex items-start sm:items-center gap-3.5 min-w-0 flex-1">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-amber-800 border border-amber-200 shadow-2xs mt-0.5 sm:mt-0">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand text-brand-ink border border-brand-dark mt-0.5 sm:mt-0">
                                     <PaperPlaneTilt size={20} weight="duotone" />
                                 </div>
                                 <div className="min-w-0 flex-1">
@@ -284,7 +279,7 @@ export default function Overview() {
                             <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
                                 <Link
                                     to="/posts?status=draft"
-                                    className="inline-flex items-center gap-1.5 rounded-xl border border-amber-300 bg-white px-3 py-1.5 text-xs font-semibold text-amber-900 hover:bg-amber-50 transition-colors shadow-2xs"
+                                    className="inline-flex items-center gap-1.5 rounded-xl border border-brand-dark bg-card px-3 py-1.5 text-xs font-semibold text-brand-ink hover:bg-brand/20 transition-colors"
                                 >
                                     <PaperPlaneTilt size={14} weight="bold" />
                                     <span>{t("Xem bản nháp")}</span>
@@ -293,51 +288,78 @@ export default function Overview() {
                         </div>
                     )}
 
-                    {/* Unified StatCards KPI Row (Strictly 1 cohesive color family per UI/UX guidelines) */}
-                    <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                        <StatCard
-                            label={t("Lưu lượng traffic")}
-                            value={data.totalClicks || 0}
-                            hint={t("{n} link chuyển đổi UTM đang hoạt động", { n: (data.trackingLinks || []).length })}
-                            icon={CursorClick}
-                            badge={t("Thời gian thực")}
-                        />
-                        <StatCard
-                            label={t("Lịch bài sắp tới")}
-                            value={scheduledCount}
-                            hint={t("{n} bài đang chuẩn bị xuất bản", { n: data.byStatus.processing || 0 })}
-                            icon={CalendarBlank}
-                            badge={t("24h tới")}
-                        />
-                        <StatCard
-                            label={t("Bài đã xuất bản")}
-                            value={publishedCount}
-                            hint={t("Phân phối đa kênh thành công")}
-                            icon={CheckCircle}
-                            badge={t("Hoàn tất")}
-                        />
-                        <StatCard
-                            label={t("Kênh kết nối")}
-                            value={connected + demoAccounts}
-                            hint={demoAccounts ? t("{n} kênh ở chế độ mô phỏng", { n: demoAccounts }) : t("Đồng bộ các mạng xã hội")}
-                            icon={PlugsConnected}
-                            badge={connected > 0 ? t("Sẵn sàng") : t("Chưa nối")}
-                        />
-                    </div>
-
-                    {/* Asymmetric Workspace Grid: 2-Cols Left (Queue + Traffic), 1-Col Right (Activity + Distribution + Accounts) */}
+                    <div className="space-y-6">
+                        <div className="min-w-0">
+                            <section className="panel p-4 sm:p-5" aria-label={t("Quy trình nội dung")}>
+                                <div>
+                                    <div className="flex items-center justify-between gap-3 mb-1">
+                                        <h2 className="font-heading text-[15px] font-semibold text-foreground">{t("Quy trình nội dung")}</h2>
+                                        <span className="label-xs">{data.total} {t("bài viết")}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-3">
+                                    <div className="flex h-3 w-full overflow-hidden rounded-full bg-muted" role="img" aria-label={t("Quy trình nội dung")}>
+                                        {[['draft', 'bg-brand-neutral'], ['scheduled', 'bg-brand-dark'], ['published', 'bg-brand']].map(([k, cls]) => (
+                                            <div key={k} className={cls} style={{ width: `${data.total ? ((data.byStatus[k] || 0) / data.total) * 100 : 0}%` }} />
+                                        ))}
+                                    </div>
+                                    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-1.5 text-xs text-muted-foreground">
+                                        {[['draft', 'Bản nháp', 'bg-brand-neutral'], ['scheduled', 'Đã lên lịch', 'bg-brand-dark'], ['published', 'Đã xuất bản', 'bg-brand']].map(([k, label, cls]) => (
+                                            <span key={k} className="inline-flex items-center gap-1.5">
+                                                <span aria-hidden="true" className={`h-2 w-2 rounded-full ${cls}`} />
+                                                {t(label)}: <strong className="font-semibold text-foreground">{data.byStatus[k] || 0}</strong>
+                                            </span>
+                                        ))}
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <StatCard
+                                label={t("Lưu lượng traffic")}
+                                value={data.totalClicks || 0}
+                                hint={t("{n} link chuyển đổi UTM đang hoạt động", { n: (data.trackingLinks || []).length })}
+                                icon={CursorClick}
+                                {...KPI_ICON}
+                                badge={t("Thời gian thực")}
+                            />
+                            <StatCard
+                                label={t("Lịch bài sắp tới")}
+                                value={scheduledCount}
+                                hint={t("{n} bài đang chuẩn bị xuất bản", { n: data.byStatus.processing || 0 })}
+                                icon={CalendarBlank}
+                                {...KPI_ICON}
+                                badge={t("24h tới")}
+                            />
+                            <StatCard
+                                label={t("Bài đã xuất bản")}
+                                value={publishedCount}
+                                hint={t("Phân phối đa kênh thành công")}
+                                icon={CheckCircle}
+                                {...KPI_ICON}
+                                badge={t("Hoàn tất")}
+                            />
+                            <StatCard
+                                label={t("Kênh kết nối")}
+                                value={connected + demoAccounts}
+                                hint={demoAccounts ? t("{n} kênh ở chế độ mô phỏng", { n: demoAccounts }) : t("Đồng bộ các mạng xã hội")}
+                                icon={PlugsConnected}
+                                {...KPI_ICON}
+                                badge={connected > 0 ? t("Sẵn sàng") : t("Chưa nối")}
+                            />
+                        </div>
                     <div className="grid gap-6 xl:grid-cols-3">
-                        {/* Main Left Column (col-span-2) */}
-                        <div className="space-y-6 xl:col-span-2">
-                            {/* Primary Task 1: Upcoming Schedule Queue */}
+                    <div className="space-y-6 xl:col-span-2">
+                        <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
                             <UpcomingSchedule
                                 posts={data.upcoming}
                                 brands={brands}
                                 accounts={data.accounts}
                                 timezone={timezone}
                             />
+                        </div>
 
-                            {/* Primary Task 2: Traffic & Conversion Link Performance */}
+                        <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
                             <TrafficOverview
                                 trackingLinks={data.trackingLinks}
                                 totalClicks={data.totalClicks}
@@ -347,14 +369,13 @@ export default function Overview() {
                                 lastUpdatedAt={lastTrafficUpdatedAt}
                             />
                         </div>
-
-                        {/* Side Right Column (col-span-1) */}
-                        <div className="space-y-6 xl:col-span-1">
-                            {/* Connected Social Channels Card */}
+                    </div>
+                    <div className="space-y-6">
+                        <div className="min-w-0 [&>*]:h-full">
                             <section className="panel p-4 sm:p-5 space-y-4">
                                 <div className="flex items-center justify-between pb-3 border-b border-border/80 min-w-0">
                                     <div className="flex items-center gap-2 min-w-0">
-                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground shrink-0">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/20 text-brand-ink shrink-0">
                                             <ShareNetwork size={18} weight="duotone" />
                                         </div>
                                         <div className="min-w-0">
@@ -420,9 +441,9 @@ export default function Overview() {
 
                                                     <span
                                                         className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-semibold border ${isConn
-                                                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                                                ? 'bg-successBg text-successFg border-transparent'
                                                                 : isDemo
-                                                                    ? 'bg-amber-50 text-amber-700 border-amber-200'
+                                                                    ? 'bg-warnBg text-warnFg border-transparent'
                                                                     : 'bg-zinc-100 text-zinc-600 border-zinc-200'
                                                             }`}
                                                     >
@@ -438,20 +459,23 @@ export default function Overview() {
                                     </div>
                                 )}
                             </section>
+                        </div>
 
-                            {/* Recent Activity Feed */}
+                        <div className="min-w-0 [&>*]:h-full">
                             <RecentActivity logs={data.logs} />
                         </div>
                     </div>
-
-                    {/* Content Strategy Distribution Panel - Full Width */}
-                    <DistributionPanel
-                        pillarRows={data.pillarRows}
-                        angleRows={data.angleRows}
-                        pillarMap={data.pillarMap}
-                        angleMap={data.angleMap}
-                        total={data.total}
-                    />
+                    </div>
+                        <div className="min-w-0 xl:col-span-2 [&>*]:h-full">
+                            <DistributionPanel
+                                pillarRows={data.pillarRows}
+                                angleRows={data.angleRows}
+                                pillarMap={data.pillarMap}
+                                angleMap={data.angleMap}
+                                total={data.total}
+                            />
+                        </div>
+                    </div>
                 </>
             )}
         </div>

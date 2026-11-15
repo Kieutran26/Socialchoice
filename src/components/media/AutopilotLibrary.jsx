@@ -1,4 +1,4 @@
-import AssetDraftDialog from './AssetDraftDialog';
+﻿import AssetDraftDialog from './AssetDraftDialog';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
@@ -135,11 +135,11 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
     return (
         <section className="space-y-6" aria-label={t('Autopilot Asset Library')}>
             {/* Unified Studio Card: Header + Controls + Source Pills (Layout 1) */}
-            <div className="panel p-5 bg-card border border-border/80 rounded-3xl shadow-2xs space-y-4">
+            <div className="panel p-5 bg-card border border-border/80 rounded-3xl space-y-4">
                 {/* Top Row: Title, Brand & Controls */}
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-border/60">
                     <div className="flex items-center gap-3">
-                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 shrink-0">
+                        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-500/10 text-brand-ink border border-amber-500/20 shrink-0">
                             <Sparkle size={18} weight="duotone" />
                         </span>
                         <div>
@@ -190,8 +190,8 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                         {data?.jobs?.length > 0 && (
                             <div
                                 className={`flex items-center gap-1.5 p-1 rounded-xl border transition-all ${autopilotSubTab === 'tasks'
-                                        ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
-                                        : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-800 border-neutral-200/90 shadow-2xs'
+                                        ? 'bg-brand text-brand-ink border-brand-dark'
+                                        : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-800 border-neutral-200/90'
                                     }`}
                             >
                                 <button
@@ -216,9 +216,9 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                         e.stopPropagation();
                                         click('run');
                                     }}
-                                    className={`text-[10px] font-bold px-2 py-1 rounded-md cursor-pointer transition shadow-2xs ${autopilotSubTab === 'tasks'
+                                    className={`text-[10px] font-bold px-2 py-1 rounded-md cursor-pointer transition ${autopilotSubTab === 'tasks'
                                             ? 'bg-neutral-800 hover:bg-neutral-700 text-white border border-neutral-700'
-                                            : 'bg-neutral-900 hover:bg-neutral-800 text-white'
+                                            : 'bg-brand hover:bg-[#ffe059] text-brand-ink'
                                         }`}
                                     title={t('Xử lý tác vụ tiếp theo')}
                                 >
@@ -230,7 +230,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                         <button
                             type="button"
                             onClick={() => setAddSourceModalOpen(true)}
-                            className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center gap-2 cursor-pointer transition shrink-0"
+                            className="h-9 px-4 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-semibold flex items-center gap-2 cursor-pointer transition shrink-0"
                         >
                             <FolderPlus size={16} weight="bold" />
                             <span>{t('+ Thêm nguồn Drive')}</span>
@@ -241,7 +241,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                             size="sm"
                             disabled={busy}
                             onClick={load}
-                            className="h-9 w-9 p-0 rounded-xl flex items-center justify-center cursor-pointer shadow-2xs"
+                            className="h-9 w-9 p-0 rounded-xl flex items-center justify-center cursor-pointer"
                             title={t('Refresh')}
                         >
                             <ArrowsClockwise size={14} className={busy ? 'animate-spin' : ''} />
@@ -273,7 +273,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                             {data.sources.map((source) => (
                                 <div
                                     key={source.id}
-                                    className="p-3 rounded-2xl border border-border/80 bg-muted/20 hover:bg-background hover:border-border transition-all flex items-center justify-between gap-3 shadow-2xs"
+                                    className="p-3 rounded-2xl border border-border/80 bg-muted/20 hover:bg-background hover:border-border transition-all flex items-center justify-between gap-3"
                                 >
                                     <div className="flex items-center gap-2.5 min-w-0">
                                         <span className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 flex items-center justify-center shrink-0">
@@ -295,7 +295,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                             size="sm"
                                             disabled={busy || source.status !== 'connected'}
                                             onClick={() => click('sync', { id: source.id })}
-                                            className="h-7 px-2 rounded-lg bg-background border border-border hover:bg-muted/40 text-[11px] font-semibold gap-1 cursor-pointer shadow-2xs"
+                                            className="h-7 px-2 rounded-lg bg-background border border-border hover:bg-muted/40 text-[11px] font-semibold gap-1 cursor-pointer"
                                             title={t('Queue sync')}
                                         >
                                             <ArrowsClockwise size={11} className={busy ? 'animate-spin' : ''} />
@@ -349,7 +349,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                         type="button"
                                         onClick={() => setAutopilotSubTab('assets')}
                                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${autopilotSubTab === 'assets'
-                                                ? 'bg-neutral-900 text-white shadow-xs'
+                                                ? 'bg-brand text-brand-ink'
                                                 : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-600 hover:text-neutral-900'
                                             }`}
                                     >
@@ -364,7 +364,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                         type="button"
                                         onClick={() => setAutopilotSubTab('tasks')}
                                         className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer no-underline ${autopilotSubTab === 'tasks'
-                                                ? 'bg-neutral-900 text-white shadow-xs'
+                                                ? 'bg-brand text-brand-ink'
                                                 : 'bg-neutral-100 hover:bg-neutral-200/90 text-neutral-600 hover:text-neutral-900'
                                             }`}
                                     >
@@ -394,7 +394,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                             {autopilotSubTab === 'tasks' ? (
                                 <div className="space-y-4">
                                     {/* Task Status Summary Banner */}
-                                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-4">
+                                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-4">
                                         <div className="flex flex-wrap items-center gap-3 text-xs font-mono">
                                             <span className="flex items-center gap-1.5 text-blue-700 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200/60 font-semibold">
                                                 <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
@@ -418,7 +418,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                 size="sm"
                                                 disabled={busy}
                                                 onClick={load}
-                                                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-white shadow-2xs"
+                                                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1.5 cursor-pointer bg-white"
                                             >
                                                 <ArrowsClockwise size={12} className={busy ? 'animate-spin' : ''} />
                                                 <span>{t('Làm mới')}</span>
@@ -427,7 +427,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                 type="button"
                                                 disabled={busy || !data?.jobs?.length}
                                                 onClick={() => click('run')}
-                                                className="h-8 px-3.5 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition"
+                                                className="h-8 px-3.5 rounded-xl bg-brand hover:bg-[#ffe059] disabled:opacity-50 text-brand-ink text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
                                             >
                                                 <ArrowsClockwise size={13} className={busy ? 'animate-spin' : ''} />
                                                 <span>{t(busy ? 'Đang xử lý…' : 'Xử lý tác vụ tiếp theo')}</span>
@@ -453,10 +453,10 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                     <div
                                                         key={job.id}
                                                         className={`p-4 rounded-2xl border transition-all flex flex-wrap items-center justify-between gap-4 text-xs bg-white ${isFailed
-                                                                ? 'border-rose-200/80 shadow-2xs'
+                                                                ? 'border-rose-200/80'
                                                                 : isRunning
-                                                                    ? 'border-blue-200/80 shadow-xs'
-                                                                    : 'border-neutral-200/80 shadow-2xs'
+                                                                    ? 'border-blue-200/80'
+                                                                    : 'border-neutral-200/80'
                                                             }`}
                                                     >
                                                         <div className="flex items-start gap-3.5 min-w-0 flex-1">
@@ -523,7 +523,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                                         ? setConfirmation({ id: job.id, retry: true })
                                                                         : click('retry', { id: job.id })
                                                                 }
-                                                                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1 text-rose-700 border-rose-200 bg-white hover:bg-rose-50 cursor-pointer shadow-2xs shrink-0"
+                                                                className="h-8 px-3 rounded-xl text-xs font-semibold gap-1 text-rose-700 border-rose-200 bg-white hover:bg-rose-50 cursor-pointer shrink-0"
                                                             >
                                                                 <ArrowsClockwise size={12} />
                                                                 <span>{t('Thử lại')}</span>
@@ -538,7 +538,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                             ) : (
                                 <>
                                     {/* Filter & Search Bar */}
-                                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs flex flex-wrap items-center justify-between gap-3">
+                                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-3">
                                         <div className="flex items-center gap-3 flex-1 min-w-[240px]">
                                             <div className="relative flex-1 max-w-sm">
                                                 <MagnifyingGlass
@@ -550,7 +550,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                     value={search}
                                                     onChange={(event) => setSearch(event.target.value)}
                                                     placeholder={t('Tìm tệp theo tên, tóm tắt hoặc nhãn AI…')}
-                                                    className="h-9 w-full rounded-xl border border-neutral-200 bg-neutral-50/60 pl-9 pr-3 text-xs focus:bg-white focus:outline-none focus:border-neutral-900"
+                                                    className="h-9 w-full rounded-xl border border-neutral-200 bg-neutral-50/60 pl-9 pr-3 text-xs focus:bg-white focus:outline-none focus:border-brand-dark"
                                                 />
                                             </div>
                                         </div>
@@ -582,7 +582,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                 return (
                                                     <article
                                                         key={asset.id}
-                                                        className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group"
+                                                        className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl hover:border-neutral-300 hover:shadow-xs transition-all flex flex-col justify-between group"
                                                     >
                                                         {/* Thumbnail area */}
                                                         <div className="relative aspect-video w-full bg-neutral-100 overflow-hidden flex items-center justify-center">
@@ -632,19 +632,19 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
 
                                                             {/* Top Badges */}
                                                                 <div className="absolute left-2.5 top-2.5 pointer-events-none">
-                                                                    <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[9px] font-bold uppercase text-white shadow-xs font-mono">
+                                                                    <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[9px] font-bold uppercase text-white font-mono">
                                                                         {asset.mime?.includes('video') ? 'DRIVE · VIDEO' : 'DRIVE · ẢNH'}
                                                                     </span>
                                                                 </div>
 
                                                                     <div className="absolute right-2.5 top-2.5 pointer-events-none">
                                                                         {hasAnalysis ? (
-                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs">
+                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white text-[9px] font-bold px-2 py-0.5">
                                                                                 <Sparkle size={10} weight="fill" />
                                                                                 <span>AI Đã quét</span>
                                                                             </span>
                                                                         ) : (
-                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-600/90 text-white text-[9px] font-bold px-2 py-0.5 shadow-xs font-mono">
+                                                                            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-600/90 text-white text-[9px] font-bold px-2 py-0.5 font-mono">
                                                                                 Mới đồng bộ
                                                                             </span>
                                                                         )}
@@ -664,8 +664,8 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                                         {/* AI Hook / Summary Box */}
                                                                         {hasAnalysis ? (
                                                                             <div className="p-2.5 rounded-xl bg-neutral-50 border border-neutral-100 text-[11px] text-neutral-700 space-y-1 mt-1">
-                                                                                <div className="flex items-center gap-1 text-[10px] font-bold text-amber-700">
-                                                                                    <Sparkle size={11} weight="fill" className="text-amber-500" />
+                                                                                <div className="flex items-center gap-1 text-[10px] font-bold text-brand-ink">
+                                                                                    <Sparkle size={11} weight="fill" className="text-brand-dark" />
                                                                                     <span>GỢI Ý GÓC VIẾT:</span>
                                                                                 </div>
                                                                                 <p className="line-clamp-2 text-[11px] text-neutral-600 leading-relaxed">
@@ -719,7 +719,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                                                     type="button"
                                                                                     disabled={busy}
                                                                                     onClick={() => setDraftAsset(asset)}
-                                                                                    className="h-7 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer shadow-2xs ml-auto transition"
+                                                                                    className="h-7 px-3 rounded-lg bg-brand hover:bg-[#ffe059] text-brand-ink text-[11px] font-semibold flex items-center gap-1.5 cursor-pointer ml-auto transition"
                                                                                 >
                                                                                     <PencilSimple size={12} weight="bold" />
                                                                                     <span>{t('Tạo bài viết')}</span>
@@ -739,9 +739,9 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                                                     asset.size > 3145728
                                                                                 }
                                                                                 onClick={() => setConfirmation(asset)}
-                                                                                className="w-full h-7 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition shadow-2xs"
+                                                                                className="w-full h-7 rounded-lg border border-amber-300 bg-amber-50 hover:bg-amber-100 text-brand-ink text-[11px] font-bold flex items-center justify-center gap-1.5 cursor-pointer transition"
                                                                             >
-                                                                                <Sparkle size={12} weight="fill" className="text-amber-600" />
+                                                                                <Sparkle size={12} weight="fill" className="text-brand-ink" />
                                                                                 <span>{t('Quét AI & Lên ý tưởng')}</span>
                                                                             </button>
                                                                         )}
@@ -754,7 +754,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                             )}
 
                                                         {/* Pagination */}
-                                                        <div className="p-3 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2 shadow-2xs">
+                                                        <div className="p-3 bg-white border border-neutral-200/80 rounded-2xl flex flex-wrap items-center justify-between gap-2">
                                                             <span className="text-xs text-neutral-500 font-mono">
                                                                 {t('{count} ingested assets', { count: data.total || data.assets?.length || 0 })}
                                                             </span>
@@ -819,7 +819,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                 <DialogContent className="max-w-lg rounded-3xl bg-white p-6 shadow-2xl border border-neutral-200">
                                     <DialogHeader className="mb-4">
                                         <div className="flex items-center gap-3">
-                                            <span className="w-10 h-10 rounded-2xl bg-neutral-900 text-white flex items-center justify-center shadow-xs shrink-0">
+                                            <span className="w-10 h-10 rounded-2xl bg-brand text-brand-ink flex items-center justify-center shrink-0">
                                                 <FolderPlus size={20} weight="bold" />
                                             </span>
                                             <div>
@@ -851,7 +851,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                         id="popup-brand"
                                                         value={brandId}
                                                         onChange={(e) => onBrandChange?.(e.target.value)}
-                                                        className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                                        className="h-10 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                                     >
                                                         {brands.map((b) => (
                                                             <option key={b.id} value={b.id}>
@@ -876,7 +876,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                                     disabled={busy}
                                                     value={kind}
                                                     onChange={(event) => setKind(event.target.value)}
-                                                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                                    className="h-10 w-full rounded-xl border border-neutral-200 bg-white pl-9 pr-8 text-xs font-semibold text-neutral-900 hover:bg-neutral-50 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                                 >
                                                     <option value="drive_public">{t('Thư mục Google Drive công khai (Public Folder)')}</option>
                                                     <option value="r2" disabled={!status?.storageReady}>
@@ -932,8 +932,8 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                             </div>
 
                                             {kind === 'drive_public' && (
-                                                <div className="mt-2.5 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-xs text-amber-900 flex items-start gap-2">
-                                                    <Info size={15} className="text-amber-600 shrink-0 mt-0.5" />
+                                                <div className="mt-2.5 p-3 rounded-xl bg-brand/20 border border-brand-dark/40 text-xs text-brand-ink flex items-start gap-2">
+                                                    <Info size={15} className="text-brand-ink shrink-0 mt-0.5" />
                                                     <p className="text-[11px] leading-relaxed">
                                                         {t('Hướng dẫn: Mở thư mục trên Google Drive > Chia sẻ > Đặt quyền "Bất kỳ ai có liên kết đều có thể xem". Không yêu cầu đăng nhập tài khoản Google.')}
                                                     </p>
@@ -961,7 +961,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                             <button
                                                 type="submit"
                                                 disabled={busy || !name.trim() || !folder.trim()}
-                                                className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 disabled:opacity-50 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 cursor-pointer transition"
+                                                className="h-9 px-4 rounded-xl bg-brand hover:bg-[#ffe059] disabled:opacity-50 text-brand-ink text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
                                             >
                                                 <Plus size={14} weight="bold" />
                                                 <span>{t(busy ? 'Đang thêm…' : 'Xác nhận thêm nguồn')}</span>
@@ -976,7 +976,7 @@ export default function AutopilotLibrary({ brandId: propBrandId, onBrandChange }
                                 <DialogContent className="max-w-4xl sm:max-w-4xl w-[94vw] !p-0 overflow-hidden rounded-3xl bg-white border border-neutral-200/90 shadow-2xl space-y-0">
                                     <div className="pl-5 sm:pl-6 pr-16 sm:pr-16 py-4 border-b border-neutral-100 flex items-center justify-between gap-3 bg-white shrink-0">
                                         <div className="flex items-center gap-3 min-w-0">
-                                            <span className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-800 shrink-0 shadow-2xs">
+                                            <span className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-800 shrink-0">
                                                 <FileImage size={18} weight="duotone" />
                                             </span>
                                             <div className="min-w-0">

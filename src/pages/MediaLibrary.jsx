@@ -1,4 +1,4 @@
-import AutopilotLibrary from '@/components/media/AutopilotLibrary';
+﻿import AutopilotLibrary from '@/components/media/AutopilotLibrary';
 import { useTranslation } from '@/lib/i18n';
 import { useRef, useState, useCallback, useEffect } from 'react';
 import {
@@ -181,7 +181,7 @@ export default function MediaLibrary() {
                     iconBg="bg-white border-neutral-300"
                     iconColor="text-neutral-900"
                     badge={imageCount > 0 ? `${imageCount} ẢNH` : null}
-                    badgeClass="bg-amber-500/10 text-amber-900 border-amber-500/30 font-semibold"
+                    badgeClass="bg-amber-500/10 text-brand-ink border-amber-500/30 font-semibold"
                 />
                 <StatCard
                     label={t('Video only')}
@@ -213,7 +213,7 @@ export default function MediaLibrary() {
                         onClick={() => setActiveTab('all')}
                         className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all cursor-pointer ${
                             activeTab === 'all'
-                                ? 'bg-foreground text-background shadow-xs'
+                                ? 'bg-brand text-brand-ink'
                                 : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                     >
@@ -236,7 +236,7 @@ export default function MediaLibrary() {
                         onClick={() => setActiveTab('autopilot')}
                         className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all cursor-pointer ${
                             activeTab === 'autopilot'
-                                ? 'bg-foreground text-background shadow-xs'
+                                ? 'bg-brand text-brand-ink'
                                 : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                     >
@@ -257,10 +257,10 @@ export default function MediaLibrary() {
 
             {/* Drag & Drop File Upload Box (Thay thế vị trí Autopilot theo yêu cầu) */}
             {activeTab === 'all' && (
-                <div className="p-5 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs space-y-4">
+                <div className="p-5 bg-white border border-neutral-200/80 rounded-2xl space-y-4">
                     <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-3">
                         <div className="flex items-center gap-2.5">
-                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-900 text-white shadow-2xs shrink-0">
+                            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-brand-ink shrink-0">
                                 <CloudArrowUp size={17} weight="bold" />
                             </span>
                             <div>
@@ -285,7 +285,7 @@ export default function MediaLibrary() {
                                     value={uploadBrand}
                                     onChange={(event) => setUploadBrand(event.target.value)}
                                     disabled={demoMode || busy}
-                                    className="h-8 rounded-xl border border-neutral-200 bg-white pl-2.5 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer shadow-2xs"
+                                    className="h-8 rounded-xl border border-neutral-200 bg-white pl-2.5 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                 >
                                     <option value="">{t('Chọn thương hiệu')}</option>
                                     {brands
@@ -330,7 +330,7 @@ export default function MediaLibrary() {
             {activeTab === 'all' && (
                 <div className="space-y-5">
                     {/* Filter & Action Bar for Uploaded Assets */}
-                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs">
+                    <div className="p-4 bg-white border border-neutral-200/80 rounded-2xl">
                         <div className="flex flex-wrap items-end justify-between gap-3">
                             <div className="flex flex-wrap items-end gap-3 flex-1 min-w-[280px]">
                                 <div className="min-w-[220px] flex-1 max-w-md">
@@ -346,7 +346,7 @@ export default function MediaLibrary() {
                                             value={search}
                                             onChange={(event) => setSearch(event.target.value)}
                                             placeholder={t('Search media by name...')}
-                                            className="h-9 rounded-xl border-neutral-200 bg-neutral-50/50 pl-9 text-xs focus:bg-white focus:border-neutral-900 transition"
+                                            className="h-9 rounded-xl border-neutral-200 bg-neutral-50/50 pl-9 text-xs focus:bg-white focus:border-brand-dark transition"
                                         />
                                     </div>
                                 </div>
@@ -360,7 +360,7 @@ export default function MediaLibrary() {
                                             aria-label={t('Type')}
                                             value={type}
                                             onChange={(e) => setType(e.target.value)}
-                                            className="h-9 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                            className="h-9 w-full rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                         >
                                             <option value="all">{t('Images and video')}</option>
                                             <option value="image">{t('Images only')}</option>
@@ -423,7 +423,7 @@ export default function MediaLibrary() {
                             {assets.map((asset) => (
                                 <div
                                     key={asset.id}
-                                    className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl shadow-2xs hover:border-neutral-300 hover:shadow-xs transition-all group flex flex-col justify-between"
+                                    className="overflow-hidden border border-neutral-200/80 bg-white rounded-2xl hover:border-neutral-300 hover:shadow-xs transition-all group flex flex-col justify-between"
                                 >
                                     {/* Thumbnail Preview with Quick Action Button */}
                                     <div className="relative aspect-video w-full overflow-hidden bg-neutral-100 flex items-center justify-center">
@@ -451,7 +451,7 @@ export default function MediaLibrary() {
 
                                         {/* Type badge on top left */}
                                         <div className="absolute left-2.5 top-2.5 pointer-events-none">
-                                            <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold uppercase text-white shadow-xs font-mono">
+                                            <span className="inline-flex items-center gap-1 rounded-md bg-black/60 backdrop-blur-xs px-2 py-0.5 text-[10px] font-semibold uppercase text-white font-mono">
                                                 {asset.file_type === 'video' ? (
                                                     <>
                                                         <FilmStrip size={11} />
@@ -518,7 +518,7 @@ export default function MediaLibrary() {
                 <DialogContent className="max-w-xl rounded-3xl bg-white p-6 shadow-2xl border border-neutral-200">
                     <DialogHeader className="mb-4">
                         <div className="flex items-center gap-2.5">
-                            <span className="w-8 h-8 rounded-xl bg-neutral-900 text-white flex items-center justify-center shadow-xs shrink-0">
+                            <span className="w-8 h-8 rounded-xl bg-brand text-brand-ink flex items-center justify-center shrink-0">
                                 <CloudArrowUp size={17} weight="bold" />
                             </span>
                             <div>
@@ -544,7 +544,7 @@ export default function MediaLibrary() {
                                 value={uploadBrand}
                                 onChange={(event) => setUploadBrand(event.target.value)}
                                 disabled={demoMode || busy}
-                                className="h-8 rounded-lg border border-neutral-200 bg-white pl-2.5 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer"
+                                className="h-8 rounded-lg border border-neutral-200 bg-white pl-2.5 pr-8 text-xs font-semibold text-neutral-900 transition-all hover:bg-neutral-50 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                             >
                                 <option value="">{t('Choose brand')}</option>
                                 {brands
@@ -584,7 +584,7 @@ export default function MediaLibrary() {
                     {/* Header Bar */}
                     <div className="pl-5 sm:pl-6 pr-16 sm:pr-16 py-4 border-b border-neutral-100 flex items-center justify-between gap-3 bg-white shrink-0">
                         <div className="flex items-center gap-3 min-w-0">
-                            <span className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-800 shrink-0 shadow-2xs">
+                            <span className="w-9 h-9 rounded-xl bg-neutral-100 border border-neutral-200/80 flex items-center justify-center text-neutral-800 shrink-0">
                                 {preview?.file_type === 'video' ? (
                                     <FilmStrip size={18} weight="duotone" />
                                 ) : (
@@ -620,7 +620,7 @@ export default function MediaLibrary() {
                                 href={preview?.file_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="h-8 px-2.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                                className="h-8 px-2.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                                 title={t('Open original file in new tab')}
                             >
                                 <ArrowSquareOut size={13} weight="bold" />
@@ -629,7 +629,7 @@ export default function MediaLibrary() {
                             <button
                                 type="button"
                                 onClick={() => handleCopyUrl(preview?.file_url)}
-                                className="h-8 px-2.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                                className="h-8 px-2.5 rounded-xl border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
                                 title={t('Copy link')}
                             >
                                 {copiedUrl ? (
@@ -648,7 +648,7 @@ export default function MediaLibrary() {
                     </div>
 
                     {/* Media Viewer Stage - hiển thị đủ size ảnh không bị cắt */}
-                    <div className="relative flex-1 min-h-[380px] max-h-[66vh] bg-neutral-950/[0.03] dark:bg-neutral-900/40 p-4 sm:p-6 flex items-center justify-center overflow-auto">
+                    <div className="relative flex-1 min-h-[380px] max-h-[66vh] bg-neutral-950/[0.03] dark:bg-brand/40 p-4 sm:p-6 flex items-center justify-center overflow-auto">
                         {/* Checkerboard pattern for transparent PNG / Alpha channel */}
                         <div
                             className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]"
@@ -659,13 +659,13 @@ export default function MediaLibrary() {
                                 src={preview.file_url}
                                 controls
                                 autoPlay
-                                className="max-h-[60vh] max-w-full w-auto h-auto rounded-2xl shadow-xs object-contain"
+                                className="max-h-[60vh] max-w-full w-auto h-auto rounded-2xl object-contain"
                             />
                         ) : (
                             <img
                                 src={preview?.file_url}
                                 alt={preview?.name}
-                                className="max-h-[60vh] max-w-full w-auto h-auto rounded-2xl shadow-xs object-contain select-none"
+                                className="max-h-[60vh] max-w-full w-auto h-auto rounded-2xl object-contain select-none"
                             />
                         )}
                     </div>

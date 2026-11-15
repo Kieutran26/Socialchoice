@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { LinkSimple, CaretDown } from '@phosphor-icons/react';
 import { useToast } from '@/components/ui/use-toast';
@@ -49,10 +49,10 @@ export default function ShortlinkSettingsCard() {
     };
 
     return (
-        <section className="p-4 sm:p-5 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs space-y-4">
+        <section className="p-4 sm:p-5 bg-white border border-neutral-200/80 rounded-2xl space-y-4">
             {/* Header */}
             <div className="flex items-center gap-2.5 border-b border-neutral-100 pb-3">
-                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-900 text-white shadow-2xs">
+                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-brand-ink">
                     <LinkSimple size={18} weight="bold" />
                 </span>
                 <div>
@@ -80,7 +80,7 @@ export default function ShortlinkSettingsCard() {
                     <select
                         value={preference}
                         onChange={(e) => handleChange(e.target.value)}
-                        className="w-full h-9 rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-neutral-900 cursor-pointer appearance-none shadow-2xs"
+                        className="w-full h-9 rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-brand-dark cursor-pointer appearance-none"
                     >
                         <option value="ask">{t('Ask every time')}</option>
                         <option value="always">{t('Always shorten')}</option>

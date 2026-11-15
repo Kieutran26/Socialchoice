@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+﻿import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import {
     LinkSimple,
@@ -284,7 +284,7 @@ export default function Shortlinks() {
                                     <select
                                         value={currentBrand?.id || ''}
                                         onChange={(e) => setSelectedBrandId(e.target.value)}
-                                        className="h-9 rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-neutral-900 appearance-none cursor-pointer shadow-2xs"
+                                        className="h-9 rounded-xl border border-neutral-200 bg-white px-3 pr-8 text-xs font-semibold text-neutral-900 focus:outline-none focus:border-brand-dark appearance-none cursor-pointer"
                                     >
                                         {brands.map((b) => (
                                             <option key={b.id} value={b.id}>
@@ -321,11 +321,11 @@ export default function Shortlinks() {
             {/* OPTION A: CONVERSION STUDIO (BENTO GRID 8 COLS + 4 COLS) */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
                 {/* Left (8 cols): Quick Shortener Studio Card */}
-                <div className="lg:col-span-8 bg-white border border-neutral-200/90 rounded-2xl p-5 shadow-2xs space-y-4 flex flex-col justify-between">
+                <div className="lg:col-span-8 bg-white border border-neutral-200/90 rounded-2xl p-5 space-y-4 flex flex-col justify-between">
                     <div>
                         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-neutral-100 pb-3">
                             <div className="flex items-center gap-2.5">
-                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-900 text-white shadow-2xs shrink-0">
+                                <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-brand-ink shrink-0">
                                     <LinkSimple size={16} weight="bold" />
                                 </span>
                                 <div>
@@ -376,7 +376,7 @@ export default function Shortlinks() {
                                         value={destinationUrl}
                                         onChange={(e) => setDestinationUrl(e.target.value)}
                                         placeholder={t('Dán URL đích (VD: https://example.com/san-pham-moi)...')}
-                                        className="w-full h-10 pl-9 pr-3 rounded-xl border border-neutral-200 bg-neutral-50/50 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:outline-none focus:border-neutral-900 transition"
+                                        className="w-full h-10 pl-9 pr-3 rounded-xl border border-neutral-200 bg-neutral-50/50 text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:outline-none focus:border-brand-dark transition"
                                     />
                                 </div>
                             </div>
@@ -388,7 +388,7 @@ export default function Shortlinks() {
                                         value={campaignName}
                                         onChange={(e) => setCampaignName(e.target.value)}
                                         placeholder={t('Tên chiến dịch (VD: PromoThang11)...')}
-                                        className="w-full h-9 px-3 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-neutral-900 transition"
+                                        className="w-full h-9 px-3 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-900 placeholder:text-neutral-400 focus:outline-none focus:border-brand-dark transition"
                                     />
                                 </div>
 
@@ -396,7 +396,7 @@ export default function Shortlinks() {
                                     <select
                                         value={platform}
                                         onChange={(e) => setPlatform(e.target.value)}
-                                        className="w-full h-9 px-3 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-900 focus:outline-none focus:border-neutral-900 cursor-pointer transition"
+                                        className="w-full h-9 px-3 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-900 focus:outline-none focus:border-brand-dark cursor-pointer transition"
                                     >
                                         <option value="all">{t('Tất cả kênh (General)')}</option>
                                         <option value="threads">Threads</option>
@@ -448,7 +448,7 @@ export default function Shortlinks() {
                                 <button
                                     type="button"
                                     onClick={() => handleCopy(createdResult.url, 'created')}
-                                    className="h-8 px-3 rounded-lg bg-neutral-900 hover:bg-neutral-800 text-white font-semibold text-xs flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap shrink-0"
+                                    className="h-8 px-3 rounded-lg bg-brand hover:bg-[#ffe059] text-brand-ink font-semibold text-xs flex items-center gap-1.5 cursor-pointer transition whitespace-nowrap shrink-0"
                                 >
                                     {copiedId === 'created' ? <Check size={13} className="text-emerald-400" /> : <Copy size={13} />}
                                     <span>{copiedId === 'created' ? t('Đã sao chép') : t('Sao chép')}</span>
@@ -474,7 +474,7 @@ export default function Shortlinks() {
                 {/* Right (4 cols): 3 Light Gray (Nền xám) Metric Cards */}
                 <div className="lg:col-span-4 flex flex-col justify-between gap-3">
                     {/* Card 1: Total Clicks (Light Gray Card) */}
-                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 flex items-center justify-between">
                         <div className="space-y-0.5">
                             <span className="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">
                                 {t('Tổng Lượt Nhấp (Clicks)')}
@@ -488,7 +488,7 @@ export default function Shortlinks() {
                         </div>
 
                         <div className="flex flex-col items-end gap-2">
-                            <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs shrink-0">
+                            <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shrink-0">
                                 <CursorClick size={18} weight="bold" />
                             </span>
                             <div className="flex items-center gap-2">
@@ -514,7 +514,7 @@ export default function Shortlinks() {
                     </div>
 
                     {/* Card 2: Active Links (Light Gray Card) */}
-                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 flex items-center justify-between">
                         <div className="space-y-0.5">
                             <span className="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">
                                 {t('Shortlink Đang Hoạt Động')}
@@ -530,13 +530,13 @@ export default function Shortlinks() {
                             </span>
                         </div>
 
-                        <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs shrink-0">
+                        <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shrink-0">
                             <CheckCircle size={18} weight="bold" />
                         </span>
                     </div>
 
                     {/* Card 3: Top Converting Channel (Light Gray Card) */}
-                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 shadow-2xs flex items-center justify-between">
+                    <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-100/75 flex items-center justify-between">
                         <div className="space-y-0.5 min-w-0">
                             <span className="text-[10.5px] font-bold text-neutral-500 uppercase tracking-wider block">
                                 {t('Kênh Chuyển Đổi Hàng Đầu')}
@@ -549,7 +549,7 @@ export default function Shortlinks() {
                             </span>
                         </div>
 
-                        <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shadow-2xs shrink-0">
+                        <span className="w-9 h-9 rounded-xl bg-white border border-neutral-200/80 text-neutral-800 flex items-center justify-center shrink-0">
                             <TrendUp size={18} weight="bold" />
                         </span>
                     </div>
@@ -557,7 +557,7 @@ export default function Shortlinks() {
             </div>
 
             {/* LINKS MANAGEMENT TABLE */}
-            <div className="bg-white border border-neutral-200/80 rounded-2xl shadow-2xs overflow-hidden">
+            <div className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden">
                 <div className="p-4 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-3 bg-neutral-50/60">
                     <div>
                         <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider flex items-center gap-2">
@@ -579,7 +579,7 @@ export default function Shortlinks() {
                                 onClick={() => setPlatformFilter('all')}
                                 className={`px-2.5 py-1 rounded-md text-[11px] font-medium transition cursor-pointer ${
                                     platformFilter === 'all'
-                                        ? 'bg-white text-neutral-900 shadow-2xs font-semibold'
+                                        ? 'bg-white text-neutral-900 font-semibold'
                                         : 'text-neutral-600 hover:text-neutral-900'
                                 }`}
                             >
@@ -590,7 +590,7 @@ export default function Shortlinks() {
                                 onClick={() => setPlatformFilter('facebook')}
                                 className={`px-2 py-1 rounded-md text-[11px] font-medium transition cursor-pointer ${
                                     platformFilter === 'facebook'
-                                        ? 'bg-white text-blue-700 shadow-2xs font-semibold'
+                                        ? 'bg-white text-blue-700 font-semibold'
                                         : 'text-neutral-600 hover:text-neutral-900'
                                 }`}
                             >
@@ -601,7 +601,7 @@ export default function Shortlinks() {
                                 onClick={() => setPlatformFilter('threads')}
                                 className={`px-2 py-1 rounded-md text-[11px] font-medium transition cursor-pointer ${
                                     platformFilter === 'threads'
-                                        ? 'bg-white text-neutral-900 shadow-2xs font-semibold'
+                                        ? 'bg-white text-neutral-900 font-semibold'
                                         : 'text-neutral-600 hover:text-neutral-900'
                                 }`}
                             >
@@ -612,7 +612,7 @@ export default function Shortlinks() {
                                 onClick={() => setPlatformFilter('linkedin')}
                                 className={`px-2 py-1 rounded-md text-[11px] font-medium transition cursor-pointer ${
                                     platformFilter === 'linkedin'
-                                        ? 'bg-white text-sky-700 shadow-2xs font-semibold'
+                                        ? 'bg-white text-sky-700 font-semibold'
                                         : 'text-neutral-600 hover:text-neutral-900'
                                 }`}
                             >
@@ -631,7 +631,7 @@ export default function Shortlinks() {
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder={t('Tìm shortlink, URL, chiến dịch...')}
-                                className="h-8 pl-8 pr-3 text-xs rounded-xl border border-neutral-200 bg-white w-48 sm:w-56 focus:outline-none focus:border-neutral-900 transition"
+                                className="h-8 pl-8 pr-3 text-xs rounded-xl border border-neutral-200 bg-white w-48 sm:w-56 focus:outline-none focus:border-brand-dark transition"
                             />
                         </div>
                     </div>
@@ -773,7 +773,7 @@ export default function Shortlinks() {
                                                     <button
                                                         type="button"
                                                         onClick={() => handleCopy(link.url, link.id)}
-                                                        className="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-semibold cursor-pointer transition shadow-2xs whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1"
+                                                        className="h-7 px-3 rounded-lg border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-800 text-[11px] font-semibold cursor-pointer transition whitespace-nowrap shrink-0 inline-flex items-center justify-center gap-1"
                                                     >
                                                         {copiedId === link.id ? (
                                                             <>

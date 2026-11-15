@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 import {
     DownloadSimple,
     Key,
@@ -189,7 +189,7 @@ function OwnerLicenseManager() {
                                 setError('');
                                 setIssueOpen(true);
                             }}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors"
                         >
                             <Plus size={15} weight="bold" />
                             <span>{t('Issue a web license')}</span>
@@ -287,7 +287,7 @@ function OwnerLicenseManager() {
 
                     <div className="p-6 space-y-4">
                         {!ready && (
-                            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-xs text-amber-800 flex items-center gap-2">
+                            <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-xs text-brand-ink flex items-center gap-2">
                                 <Info size={15} className="shrink-0" />
                                 <span>{t('Web license signing is not configured')}</span>
                             </div>
@@ -330,7 +330,7 @@ function OwnerLicenseManager() {
                                     <button
                                         type="button"
                                         onClick={() => redownload(result)}
-                                        className="inline-flex items-center gap-2 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                                        className="inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors"
                                     >
                                         <DownloadSimple size={14} />
                                         <span>{t('Download license')}</span>
@@ -464,7 +464,7 @@ function OwnerLicenseManager() {
                                     <button
                                         type="submit"
                                         disabled={busy || refreshing || !ready || !confirmed}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs disabled:opacity-50"
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors disabled:opacity-50"
                                     >
                                         <Key size={14} weight="bold" />
                                         <span>{t(busy ? 'Issuing…' : 'Create license')}</span>

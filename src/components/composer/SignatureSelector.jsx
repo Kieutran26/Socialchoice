@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+﻿import { useState, useEffect, useRef, useMemo } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { PenNib, CaretDown, Check, Plus, Trash, ArrowSquareOut } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
@@ -122,14 +122,14 @@ export default function SignatureSelector({
                 type="button"
                 disabled={disabled}
                 onClick={() => setIsOpen(!isOpen)}
-                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer shadow-2xs ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all cursor-pointer ${
                     activeSignature
-                        ? 'border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400 hover:bg-amber-500/20'
+                        ? 'border-amber-500/40 bg-amber-500/10 text-brand-ink dark:text-amber-400 hover:bg-amber-500/20'
                         : 'border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
                 title={t('Chọn chữ ký cho kênh này')}
             >
-                <PenNib size={14} weight={activeSignature ? 'bold' : 'regular'} className={activeSignature ? 'text-amber-600 dark:text-amber-400' : 'text-muted-foreground'} />
+                <PenNib size={14} weight={activeSignature ? 'bold' : 'regular'} className={activeSignature ? 'text-brand-ink dark:text-amber-400' : 'text-muted-foreground'} />
                 <span>{activeSignature ? activeSignature.name : t('Chữ ký')}</span>
                 <CaretDown size={12} className="opacity-70" />
             </button>
@@ -196,7 +196,7 @@ export default function SignatureSelector({
                                                         {sig.platform !== 'all' && (
                                                             <PlatformBadge platform={sig.platform} size="sm" />
                                                         )}
-                                                        {isSelected && <Check size={14} className="text-amber-600 font-bold" />}
+                                                        {isSelected && <Check size={14} className="text-brand-ink font-bold" />}
                                                     </div>
                                                 </div>
                                                 <p className="text-[11px] text-muted-foreground line-clamp-1 italic">
@@ -235,7 +235,7 @@ export default function SignatureSelector({
                                                         {sig.platform !== 'all' && (
                                                             <PlatformBadge platform={sig.platform} size="sm" />
                                                         )}
-                                                        {isSelected && <Check size={14} className="text-amber-600 font-bold" />}
+                                                        {isSelected && <Check size={14} className="text-brand-ink font-bold" />}
                                                     </div>
                                                 </div>
                                                 <p className="text-[11px] text-muted-foreground line-clamp-1 italic">

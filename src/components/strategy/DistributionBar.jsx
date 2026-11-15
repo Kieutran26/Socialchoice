@@ -36,7 +36,7 @@ export default function DistributionBar({
                                 </span>
                             )}
                             {isBalanced && (
-                                <span className="inline-flex items-center rounded-md bg-neutral-900 px-2 py-0.5 text-[11px] font-medium text-white shadow-2xs shrink-0">
+                                <span className="inline-flex items-center rounded-md bg-brand px-2 py-0.5 text-[11px] font-semibold text-brand-ink border border-brand-dark shrink-0">
                                     ✓ {t('Balanced')}
                                 </span>
                             )}

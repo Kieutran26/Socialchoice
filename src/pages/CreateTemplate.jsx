@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     ArrowLeft,
@@ -340,7 +340,7 @@ export default function CreateTemplate() {
                 {/* Left Column: Form Fields */}
                 <div className="min-w-0 space-y-5">
                     {/* Section 1: Template Info */}
-                    <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                    <div className="panel p-5 bg-card border border-border rounded-2xl space-y-4">
                         <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                             <NotePencil size={18} weight="duotone" className="text-foreground" />
                             <h2 className="text-sm font-semibold text-foreground">
@@ -412,7 +412,7 @@ export default function CreateTemplate() {
                     </div>
 
                     {/* Section 2: Destinations */}
-                    <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                    <div className="panel p-5 bg-card border border-border rounded-2xl space-y-4">
                         <div className="flex items-center justify-between border-b border-border/50 pb-3">
                             <div className="flex items-center gap-2">
                                 <ShareNetwork size={18} weight="duotone" className="text-foreground" />
@@ -451,7 +451,7 @@ export default function CreateTemplate() {
                     </div>
 
                     {/* Section 3: Content & Media */}
-                    <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                    <div className="panel p-5 bg-card border border-border rounded-2xl space-y-4">
                         <div className="flex items-center justify-between border-b border-border/50 pb-3">
                             <div className="flex items-center gap-2">
                                 <Images size={18} weight="duotone" className="text-foreground" />
@@ -553,7 +553,7 @@ export default function CreateTemplate() {
                     </div>
 
                     {/* Section 4: Content Strategy (Optional) */}
-                    <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-4">
+                    <div className="panel p-5 bg-card border border-border rounded-2xl space-y-4">
                         <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                             <Target size={18} weight="duotone" className="text-foreground" />
                             <h2 className="text-sm font-semibold text-foreground">
@@ -588,7 +588,7 @@ export default function CreateTemplate() {
                     />
 
                     {/* Quick Save Card */}
-                    <div className="panel p-5 bg-card border border-border rounded-2xl shadow-2xs space-y-3.5">
+                    <div className="panel p-5 bg-card border border-border rounded-2xl space-y-3.5">
                         <div className="flex items-start gap-2.5 text-xs text-muted-foreground bg-muted/40 p-3 rounded-xl border border-border/50">
                             <Info size={18} className="text-brand-dark shrink-0 mt-0.5" />
                             <p className="leading-relaxed">

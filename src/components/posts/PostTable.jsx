@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+﻿import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/lib/format';
 import { PLATFORM_CONFIG } from '../common/PlatformBadge';
@@ -42,7 +42,7 @@ export default function PostTable({
     const allSelected = posts.length > 0 && posts.every((p) => selected.includes(p.id));
 
     return (
-        <div className="panel overflow-hidden border border-border rounded-2xl bg-card shadow-2xs">
+        <div className="panel overflow-hidden border border-border rounded-2xl bg-card">
             <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs border-collapse">
                     <thead className="bg-muted/50 border-b border-border text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
@@ -56,7 +56,7 @@ export default function PostTable({
                                         onChange={(e) =>
                                             onSelect(e.target.checked ? posts.map((p) => p.id) : [])
                                         }
-                                        className="h-4 w-4 rounded-sm border-border bg-white text-primary shadow-xs cursor-pointer accent-foreground"
+                                        className="h-4 w-4 rounded-sm border-border bg-white text-primary cursor-pointer accent-foreground"
                                     />
                                 </th>
                             )}
@@ -103,7 +103,7 @@ export default function PostTable({
                                                             : selected.filter((id) => id !== post.id)
                                                     )
                                                 }
-                                                className="h-4 w-4 rounded-sm border-border bg-white text-primary shadow-xs cursor-pointer accent-foreground"
+                                                className="h-4 w-4 rounded-sm border-border bg-white text-primary cursor-pointer accent-foreground"
                                             />
                                         </td>
                                     )}
@@ -202,7 +202,7 @@ export default function PostTable({
                                                             return (
                                                                 <div
                                                                     key={acc.id}
-                                                                    className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                                    className="relative h-7 w-7 rounded-full ring-2 ring-white shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
                                                                 >
                                                                     <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
                                                                         {avatarUrl ? (
@@ -223,7 +223,7 @@ export default function PostTable({
                                                                         </span>
                                                                     </div>
                                                                     {/* Platform corner badge */}
-                                                                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white">
+                                                                    <span className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white flex items-center justify-center ring-1 ring-white">
                                                                         <Icon size={9} weight="fill" className={cfg.color} />
                                                                     </span>
                                                                 </div>
@@ -232,7 +232,7 @@ export default function PostTable({
 
                                                         {postAccounts.length > 3 && (
                                                             <div
-                                                                className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                                className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shrink-0 hover:bg-zinc-200 transition-colors"
                                                             >
                                                                 +{postAccounts.length - 3}
                                                             </div>

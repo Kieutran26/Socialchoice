@@ -1,4 +1,4 @@
-import LoadError from '@/components/common/load-error';
+﻿import LoadError from '@/components/common/load-error';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -30,7 +30,7 @@ import { Input } from '@/components/ui/input';
 const PASTEL_PALETTE = [
     { color: '#93C5FD', label: 'Pastel Blue', border: 'border-blue-200/80', bg: 'bg-blue-50/70', text: 'text-blue-700', activeBg: 'bg-blue-50/90' },
     { color: '#C4B5FD', label: 'Pastel Lavender', border: 'border-purple-200/80', bg: 'bg-purple-50/70', text: 'text-purple-700', activeBg: 'bg-purple-50/90' },
-    { color: '#FED7AA', label: 'Pastel Peach', border: 'border-amber-200/80', bg: 'bg-amber-50/70', text: 'text-amber-700', activeBg: 'bg-amber-50/90' },
+    { color: '#FED7AA', label: 'Pastel Peach', border: 'border-amber-200/80', bg: 'bg-amber-50/70', text: 'text-brand-ink', activeBg: 'bg-amber-50/90' },
     { color: '#A7F3D0', label: 'Pastel Mint', border: 'border-emerald-200/80', bg: 'bg-emerald-50/70', text: 'text-emerald-700', activeBg: 'bg-emerald-50/90' },
     { color: '#FBCFE8', label: 'Pastel Rose', border: 'border-rose-200/80', bg: 'bg-rose-50/70', text: 'text-rose-700', activeBg: 'bg-rose-50/90' },
     { color: '#FEF08A', label: 'Pastel Butter', border: 'border-yellow-200/80', bg: 'bg-yellow-50/70', text: 'text-yellow-800', activeBg: 'bg-yellow-50/90' },
@@ -196,13 +196,13 @@ export default function ContentAngles() {
                 actions={
                     <div className="flex flex-wrap items-center gap-2.5">
                         {/* View Switcher: Option B (Hai cột) & Option C (Ma trận Kanban) */}
-                        <div className="inline-flex items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200/80 shadow-2xs">
+                        <div className="inline-flex items-center p-1 bg-neutral-100 rounded-xl border border-neutral-200/80">
                             <button
                                 type="button"
                                 onClick={() => setViewMode('explorer')}
                                 className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                                     viewMode === 'explorer'
-                                        ? 'bg-foreground text-background shadow-xs'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60'
                                 }`}
                                 title="Chế độ Hai cột Master / Detail"
@@ -216,7 +216,7 @@ export default function ContentAngles() {
                                 onClick={() => setViewMode('kanban')}
                                 className={`h-8 px-3 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all cursor-pointer ${
                                     viewMode === 'kanban'
-                                        ? 'bg-foreground text-background shadow-xs'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'text-neutral-600 hover:text-neutral-900 hover:bg-neutral-200/60'
                                 }`}
                                 title="Chế độ Ma trận Kanban 5 Cột"
@@ -240,7 +240,7 @@ export default function ContentAngles() {
             />
 
             {/* Quick Filter & Search Bar */}
-            <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-2xs flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+            <div className="bg-white border border-neutral-200/80 rounded-2xl p-4 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div className="flex flex-1 items-center gap-2.5 max-w-md">
                     <div className="relative w-full">
                         <MagnifyingGlass size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
@@ -249,7 +249,7 @@ export default function ContentAngles() {
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             placeholder={t("Search angles by name or description...")}
-                            className="pl-9 h-9 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:border-neutral-900 transition"
+                            className="pl-9 h-9 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:border-brand-dark transition"
                         />
                     </div>
                 </div>
@@ -261,7 +261,7 @@ export default function ContentAngles() {
                             type="button"
                             onClick={() => setStatusFilter('all')}
                             className={`px-2.5 py-1 rounded-md text-[11.5px] font-medium transition cursor-pointer ${
-                                statusFilter === 'all' ? 'bg-white text-neutral-900 shadow-2xs font-semibold' : 'text-neutral-600 hover:text-neutral-900'
+                                statusFilter === 'all' ? 'bg-white text-neutral-900 font-semibold' : 'text-neutral-600 hover:text-neutral-900'
                             }`}
                         >
                             {t("All")}
@@ -270,7 +270,7 @@ export default function ContentAngles() {
                             type="button"
                             onClick={() => setStatusFilter('active')}
                             className={`px-2.5 py-1 rounded-md text-[11.5px] font-medium transition cursor-pointer ${
-                                statusFilter === 'active' ? 'bg-white text-neutral-900 shadow-2xs font-semibold' : 'text-neutral-600 hover:text-neutral-900'
+                                statusFilter === 'active' ? 'bg-white text-neutral-900 font-semibold' : 'text-neutral-600 hover:text-neutral-900'
                             }`}
                         >
                             {t("Active")}
@@ -279,7 +279,7 @@ export default function ContentAngles() {
                             type="button"
                             onClick={() => setStatusFilter('archived')}
                             className={`px-2.5 py-1 rounded-md text-[11.5px] font-medium transition cursor-pointer ${
-                                statusFilter === 'archived' ? 'bg-white text-neutral-900 shadow-2xs font-semibold' : 'text-neutral-600 hover:text-neutral-900'
+                                statusFilter === 'archived' ? 'bg-white text-neutral-900 font-semibold' : 'text-neutral-600 hover:text-neutral-900'
                             }`}
                         >
                             {t("Archived")}
@@ -324,7 +324,7 @@ export default function ContentAngles() {
                 /* ========================================================================= */
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                     {/* Left Column: Pillar Navigator (Master) */}
-                    <div className="lg:col-span-4 bg-white border border-neutral-200/80 rounded-2xl p-4 shadow-2xs space-y-2.5">
+                    <div className="lg:col-span-4 bg-white border border-neutral-200/80 rounded-2xl p-4 space-y-2.5">
                         <div className="flex items-center justify-between pb-2 border-b border-neutral-100">
                             <h3 className="text-xs font-bold text-neutral-900 uppercase tracking-wider">
                                 {t("Content Pillars")}
@@ -339,7 +339,7 @@ export default function ContentAngles() {
                             onClick={() => setSelectedPillarId('all')}
                             className={`p-3 rounded-xl border cursor-pointer transition-all ${
                                 selectedPillarId === 'all'
-                                    ? 'bg-neutral-900 text-white border-neutral-900 shadow-xs'
+                                    ? 'bg-brand text-brand-ink border-brand-dark'
                                     : 'bg-neutral-50/70 border-neutral-200/70 hover:bg-neutral-100 hover:border-neutral-300'
                             }`}
                         >
@@ -374,14 +374,14 @@ export default function ContentAngles() {
                                         onClick={() => setSelectedPillarId(pillar.id)}
                                         className={`p-3 rounded-xl border cursor-pointer transition-all space-y-1 ${
                                             isSelected
-                                                ? `${pastel.activeBg} ${pastel.border} shadow-2xs`
+                                                ? `${pastel.activeBg} ${pastel.border}`
                                                 : 'bg-white hover:bg-neutral-50/80 border-neutral-200/70 hover:border-neutral-300'
                                         }`}
                                     >
                                         <div className="flex items-center justify-between">
                                             <span className="text-xs font-bold text-neutral-900 flex items-center gap-2">
                                                 <span
-                                                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                                                    className="w-2.5 h-2.5 rounded-full shrink-0"
                                                     style={{ backgroundColor: pillar.color || pastel.color }}
                                                 />
                                                 <span className="truncate">{pillar.name}</span>
@@ -407,14 +407,14 @@ export default function ContentAngles() {
                     </div>
 
                     {/* Right Column: Angles Detail Workbench (Detail) */}
-                    <div className="lg:col-span-8 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs overflow-hidden">
+                    <div className="lg:col-span-8 bg-white border border-neutral-200/80 rounded-2xl overflow-hidden">
                         {/* Workbench Header */}
                         <div className="p-4 border-b border-neutral-100 flex flex-wrap items-center justify-between gap-3 bg-neutral-50/60">
                             <div className="flex items-center gap-2.5 min-w-0">
                                 {activePillar ? (
                                     <>
                                         <span
-                                            className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
+                                            className="w-3.5 h-3.5 rounded-full shrink-0"
                                             style={{ backgroundColor: activePillar.color || getPastelForPillar(activePillar).color }}
                                         />
                                         <div>
@@ -447,7 +447,7 @@ export default function ContentAngles() {
                             <button
                                 type="button"
                                 onClick={() => handleCreateAngle(activePillar?.id)}
-                                className="h-8 px-3 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition"
+                                className="h-8 px-3 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-semibold flex items-center gap-1.5 cursor-pointer transition"
                             >
                                 <Plus size={14} weight="bold" />
                                 <span>{activePillar ? t("Add angle to this pillar") : t("New angle")}</span>
@@ -613,14 +613,14 @@ export default function ContentAngles() {
                             return (
                                 <div
                                     key={pillar.id}
-                                    className="p-3.5 bg-white border border-neutral-200/80 rounded-2xl shadow-2xs space-y-3 flex flex-col justify-between min-h-[320px]"
+                                    className="p-3.5 bg-white border border-neutral-200/80 rounded-2xl space-y-3 flex flex-col justify-between min-h-[320px]"
                                 >
                                     <div>
                                         {/* Column Header */}
                                         <div className="flex items-center justify-between pb-2.5 border-b border-neutral-100">
                                             <div className="flex items-center gap-1.5 min-w-0">
                                                 <span
-                                                    className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                                                    className="w-2.5 h-2.5 rounded-full shrink-0"
                                                     style={{ backgroundColor: pillar.color || pastel.color }}
                                                 />
                                                 <h4 className="text-xs font-bold text-neutral-900 truncate" title={pillar.name}>

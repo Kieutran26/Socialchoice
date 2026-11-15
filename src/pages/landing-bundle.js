@@ -804,11 +804,1221 @@ function mg(){
     })
   });
 }var f=V(Le(),1),pg=[["gioi-thieu","Gi\u1EDBi thi\u1EC7u"],["diem-manh","\u0110i\u1EC3m m\u1EA1nh"],["tinh-nang","T\xEDnh n\u0103ng"],["bang-gia","B\u1EA3ng gi\xE1"],["faq","FAQ"]],gd=["facebook","instagram","threads","x","tiktok","linkedin"],gr=e=>document.getElementById(e)?.scrollIntoView({behavior:"smooth",block:"start"});function bC(){let e=(0,fe.useRef)(null);return(0,fe.useEffect)(()=>{let a=e.current?.querySelectorAll(".reveal")??[],t=new IntersectionObserver(u=>u.forEach(o=>{o.isIntersecting&&(o.target.classList.add("in"),t.unobserve(o.target))}),{threshold:.15,rootMargin:"0px 0px -40px 0px"});a.forEach(u=>t.observe(u));let l=new MutationObserver(()=>e.current?.querySelectorAll(".reveal:not(.in)").forEach(u=>t.observe(u)));return e.current&&l.observe(e.current,{childList:!0,subtree:!0}),()=>{t.disconnect(),l.disconnect()}},[]),e}var Pe=e=>({transitionDelay:`${e}ms`,animationDelay:`${e}ms`});function zC({to:e,decimals:a=0,suffix:t=""}){let l=(0,fe.useRef)(null),[u,o]=(0,fe.useState)(0);return(0,fe.useEffect)(()=>{let d=l.current;if(!d)return;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return o(e);let s=0,n=new IntersectionObserver(([i])=>{if(!i.isIntersecting)return;n.disconnect();let x=performance.now(),L=c=>{let h=Math.min(1,(c-x)/1400);o(e*(1-Math.pow(1-h,3))),h<1&&(s=requestAnimationFrame(L))};s=requestAnimationFrame(L)});return n.observe(d),()=>{n.disconnect(),cancelAnimationFrame(s)}},[e]),(0,f.jsxs)("span",{ref:l,className:"tabular-nums",children:[u.toLocaleString("vi-VN",{minimumFractionDigits:a,maximumFractionDigits:a}),t]})}var Lr=["B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu \u0111\u1ED3ng h\u1ED3 d\xE2y da m\u1EDBi, gi\u1EA3m 20% cho 100 kh\xE1ch \u0111\u1EA7u ti\xEAn.","M\u1EB9o nh\u1ECF: lau d\xE2y da b\u1EB1ng kh\u0103n m\u1EC1m m\u1ED7i tu\u1EA7n \u0111\u1EC3 gi\u1EEF m\xE0u b\u1EC1n \u0111\u1EB9p. B\u1EA1n \u0111\xE3 th\u1EED ch\u01B0a?","Minigame cu\u1ED1i tu\u1EA7n: \u0111o\xE1n \u0111\xFAng gi\xE1 chi\u1EBFc \u0111\u1ED3ng h\u1ED3 n\xE0y \u0111\u1EC3 nh\u1EADn voucher 200K."];function TC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(0),[u,o]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{let d=Lr[e],s=setTimeout(()=>{!u&&t<d.length?l(t+1):u?t>0?l(Math.max(0,t-3)):(o(!1),a((e+1)%Lr.length)):o(!0)},!u&&t===d.length?2200:u?18:32);return()=>clearTimeout(s)},[e,t,u]),{text:Lr[e].slice(0,t),index:e}}function vr({children:e}){return(0,f.jsxs)("span",{className:"inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium text-zinc-600",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-brand-500"}),e]})}function NC({eyebrow:e,title:a,desc:t}){return(0,f.jsxs)("div",{className:"reveal mx-auto max-w-2xl text-center",children:[(0,f.jsx)(vr,{children:e}),(0,f.jsx)("h2",{className:"mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl",children:a}),(0,f.jsx)("p",{className:"mt-4 text-[15px] leading-relaxed text-zinc-500 text-pretty",children:t})]})}function kC({children:e}){return(0,f.jsxs)("span",{className:"relative whitespace-nowrap",children:[(0,f.jsx)("span",{className:"absolute inset-x-[-4px] bottom-[0.08em] h-[0.38em] origin-left animate-draw-x rounded-sm bg-brand-300/80 [animation-delay:700ms]"}),(0,f.jsx)("span",{className:"relative",children:e})]})}var xg=[{key:"compose",label:"So\u1EA1n b\xE0i",icon:mt},{key:"calendar",label:"L\u1ECBch n\u1ED9i dung",icon:Qt},{key:"analytics",label:"Ph\xE2n t\xEDch",icon:rt}];function AC(){let{text:e,index:a}=TC(),l=[["facebook","instagram","x","tiktok"],["facebook","threads","linkedin"],["instagram","tiktok","facebook","threads","x"]][a],u=[3,7,8][a];return(0,f.jsxs)("div",{className:"grid h-full grid-cols-1 md:grid-cols-[1fr_260px]",children:[(0,f.jsxs)("div",{className:"flex flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"T\u1EA1o b\xE0i vi\u1EBFt"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-emerald-500"})," \u0110\xE3 l\u01B0u"]})]}),(0,f.jsx)("div",{className:"mt-4 flex gap-2.5",children:gd.map((o,d)=>{let s=l.includes(o);return(0,f.jsxs)("div",{className:"relative",children:[(0,f.jsx)("div",{style:Pe(d*70),className:`grid size-10 place-items-center rounded-full text-[11px] font-semibold transition-colors duration-300 ${s?"animate-pop bg-zinc-900 text-white ring-2 ring-brand-400 ring-offset-2":"bg-zinc-100 text-zinc-400"}`,children:["DE","DC","TI","KI","KC","NG"][d]},s?`on-${a}`:"off"),(0,f.jsx)(de,{platform:o,className:`absolute -bottom-0.5 -right-0.5 size-4 rounded-full ring-2 ring-white ${s?"":"grayscale"}`})]},o)})}),(0,f.jsxs)("div",{className:"mt-5 flex-1 rounded-xl border border-zinc-200 p-4",children:[(0,f.jsx)("div",{className:"text-[10px] font-semibold uppercase tracking-wider text-zinc-400",children:"N\u1ED9i dung d\xF9ng chung"}),(0,f.jsxs)("p",{className:"mt-2 min-h-[64px] text-[13px] leading-relaxed text-zinc-800",children:[e,(0,f.jsx)("span",{className:"ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-zinc-900"})]}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-1.5 border-t border-zinc-100 pt-3",children:[["Ch\xE8n media","Tr\u1EE3 l\xFD AI","Ch\u1EEF k\xFD"].map((o,d)=>(0,f.jsx)("span",{className:`rounded-md px-2 py-1 text-[11px] font-medium ${d===1?"bg-brand-50 text-brand-700":"text-zinc-500"}`,children:o},o)),(0,f.jsxs)("span",{className:"ml-auto rounded-md border border-zinc-200 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400",children:[e.length,"/280"]})]})]}),(0,f.jsxs)("div",{className:"mt-4 flex items-center justify-end gap-2",children:[(0,f.jsx)("span",{className:"rounded-lg border border-zinc-200 px-3 py-1.5 text-[11px] font-medium text-zinc-600",children:"Th\xEAm v\xE0o l\u1ECBch"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-lg bg-brand-400 px-3 py-1.5 text-[11px] font-semibold",children:[(0,f.jsx)(Za,{className:"size-3"})," \u0110\u0103ng ngay \xB7 ",l.length," k\xEAnh"]})]})]}),(0,f.jsx)("div",{className:"relative hidden items-center justify-center bg-gradient-to-b from-zinc-50 to-brand-50/60 md:flex",children:(0,f.jsx)(og,{platforms:l,text:e,img:u})})]})}function MC(){let e=["T2 9","T3 10","T4 11","T5 12","T6 13","T7 14","CN 15"],a=[{day:0,top:10,p:"facebook",t:"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da",time:"09:00",c:"#fdd835"},{day:1,top:52,p:"instagram",t:"H\u1EADu tr\u01B0\u1EDDng studio",time:"18:30",c:"#18181b"},{day:2,top:22,p:"tiktok",t:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi",time:"12:00",c:"#fdd835",drag:!0},{day:3,top:62,p:"x",t:"Flash sale 48h",time:"20:00",c:"#f97316"},{day:4,top:14,p:"linkedin",t:"Tuy\u1EC3n Content Exec",time:"08:00",c:"#18181b"},{day:4,top:56,p:"threads",t:"H\u1ECFi \u0111\xE1p c\u1ED9ng \u0111\u1ED3ng",time:"19:00",c:"#10b981"},{day:5,top:36,p:"instagram",t:"Minigame \u0111o\xE1n gi\xE1",time:"19:00",c:"#10b981"},{day:6,top:18,p:"facebook",t:"Review th\xE1ng 11",time:"10:00",c:"#10b981"}];return(0,f.jsxs)("div",{className:"flex h-full flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"L\u1ECBch n\u1ED9i dung"}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:"Tu\u1EA7n 46 \xB7 Th\xE1ng 11, 2026"})]}),(0,f.jsxs)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:[(0,f.jsx)("span",{className:"rounded-md px-2 py-1 text-zinc-500",children:"Th\xE1ng"}),(0,f.jsx)("span",{className:"rounded-md bg-white px-2 py-1 shadow-sm",children:"Tu\u1EA7n"})]})]}),(0,f.jsx)("div",{className:"mt-4 grid flex-1 grid-cols-7 overflow-hidden rounded-xl border border-zinc-200",children:e.map((t,l)=>(0,f.jsxs)("div",{className:`relative border-zinc-100 ${l<6?"border-r":""} ${l===2?"bg-brand-50/50":""}`,children:[(0,f.jsxs)("div",{className:"border-b border-zinc-100 px-2 py-1.5 text-[10px]",children:[(0,f.jsxs)("span",{className:"text-zinc-400",children:[t.split(" ")[0]," "]}),(0,f.jsx)("span",{className:`font-semibold ${l===2?"rounded bg-brand-400 px-1":""}`,children:t.split(" ")[1]})]}),a.filter(u=>u.day===l).map((u,o)=>(0,f.jsxs)("div",{style:{top:`${u.top+12}%`,...Pe(150+(u.day*2+o)*60)},className:`absolute inset-x-1 animate-pop rounded-md border bg-white p-1.5 ${u.drag?"z-10 rotate-[-3deg] border-brand-400 shadow-[0_14px_28px_-12px_rgba(24,24,27,0.4)]":"border-zinc-200 shadow-sm"}`,children:[(0,f.jsxs)("div",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-3 w-0.5 rounded-full",style:{background:u.c}}),(0,f.jsx)(de,{platform:u.p,className:"size-3"}),(0,f.jsx)("span",{className:"font-mono text-[8px] text-zinc-400",children:u.time})]}),(0,f.jsx)("div",{className:"mt-0.5 line-clamp-2 text-[9px] font-medium leading-tight",children:u.t})]},o))]},t))})]})}function Cr(e){return e.map((a,t)=>{if(t===0)return`M${a[0]},${a[1]}`;let l=e[t-2]??e[t-1],u=e[t-1],o=e[t+1]??a,d=[u[0]+(a[0]-l[0])/6,u[1]+(a[1]-l[1])/6],s=[a[0]-(o[0]-u[0])/6,a[1]-(o[1]-u[1])/6];return`C${d[0]},${d[1]} ${s[0]},${s[1]} ${a[0]},${a[1]}`}).join(" ")}function wC({data:e,color:a}){let t=Math.max(...e),l=Math.min(...e),u=e.map((o,d)=>[d/(e.length-1)*60,20-(o-l)/(t-l||1)*18-1]);return(0,f.jsx)("svg",{viewBox:"0 0 60 20",className:"h-5 w-14",children:(0,f.jsx)("path",{d:Cr(u),pathLength:1,fill:"none",stroke:a,strokeWidth:"1.6",strokeLinecap:"round",className:"animate-draw-line"})})}function DC(){let[e,a]=(0,fe.useState)(1),l=[[52,58,55,63,61,70,74],[30,42,38,51,47,60,58,66,61,72,70,84],[22,28,35,33,41,46,52,49,58,63,70,74,79,86]][e],u=l.map((b,m)=>b*.78+Math.sin(m*1.3)*4),o=100,d=b=>b.map((m,r)=>[r/(b.length-1)*100,100-m/o*100]),s=d(l),n=Cr(s),i=Cr(d(u)),x=l.length-3,[L,c]=s[x],h=[["T2","T3","T4","T5","T6","T7","CN"],["1/10","8/10","15/10","22/10","30/10"],["T8","T9","T10"]][e],I=[{l:"Ti\u1EBFp c\u1EADn",v:"482K",dl:"+14%",c:"#e5b800",s:[3,5,4,6,7,6,9]},{l:"T\u01B0\u01A1ng t\xE1c",v:"32,8K",dl:"+6%",c:"#18181b",s:[4,4,6,5,7,7,8]},{l:"Theo d\xF5i m\u1EDBi",v:"2.140",dl:"+9%",c:"#10b981",s:[2,4,3,5,6,8,7]},{l:"T\u1EC9 l\u1EC7 nh\u1EA5p",v:"3,4%",dl:"\u22120,2",c:"#f97316",s:[6,5,6,4,5,4,4],down:!0}],T=[["facebook","Facebook",38],["instagram","Instagram",27],["tiktok","TikTok",21],["linkedin","LinkedIn",14]];return(0,f.jsxs)("div",{className:"flex h-full flex-col gap-3 p-5 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold leading-tight",children:"Ph\xE2n t\xEDch"}),(0,f.jsx)("div",{className:"text-[10px] text-zinc-500",children:"T\u1EA5t c\u1EA3 k\xEAnh \xB7 c\u1EADp nh\u1EADt 2 ph\xFAt tr\u01B0\u1EDBc"})]}),(0,f.jsx)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:["7 ng\xE0y","30 ng\xE0y","90 ng\xE0y"].map((b,m)=>(0,f.jsx)("button",{onClick:()=>a(m),className:`rounded-md px-2 py-1 transition ${e===m?"bg-white text-zinc-900 shadow-sm":"text-zinc-500 hover:text-zinc-800"}`,children:b},b))})]}),(0,f.jsx)("div",{className:"grid grid-cols-2 gap-2.5 md:grid-cols-4",children:I.map((b,m)=>(0,f.jsxs)("div",{style:Pe(m*80),className:"animate-fade-up rounded-xl border border-zinc-200 bg-white px-3 py-2.5",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[10px] text-zinc-500",children:[b.l,(0,f.jsx)("span",{className:`rounded-full px-1.5 text-[9px] font-medium ${b.down?"bg-red-50 text-red-600":"bg-emerald-50 text-emerald-700"}`,children:b.dl})]}),(0,f.jsxs)("div",{className:"mt-1 flex items-end justify-between",children:[(0,f.jsx)("span",{className:"text-[17px] font-semibold leading-none tracking-tight",children:b.v}),(0,f.jsx)(wC,{data:b.s,color:b.c},e)]})]},b.l))}),(0,f.jsxs)("div",{className:"grid min-h-0 flex-1 grid-cols-1 gap-2.5 md:grid-cols-[1.65fr_1fr]",children:[(0,f.jsxs)("div",{className:"flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"L\u01B0\u1EE3t ti\u1EBFp c\u1EADn"}),(0,f.jsxs)("div",{className:"flex items-center gap-3 text-[9px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-0.5 w-3 rounded bg-[#e5b800]"})," K\u1EF3 n\xE0y"]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"w-3 border-t border-dashed border-zinc-400"})," K\u1EF3 tr\u01B0\u1EDBc"]})]})]}),(0,f.jsxs)("div",{className:"mt-2 flex min-h-0 flex-1 gap-2",children:[(0,f.jsx)("div",{className:"flex flex-col justify-between pb-4 text-right font-mono text-[8px] text-zinc-400",children:["100K","75K","50K","25K","0"].map(b=>(0,f.jsx)("span",{children:b},b))}),(0,f.jsxs)("div",{className:"flex min-w-0 flex-1 flex-col",children:[(0,f.jsxs)("div",{className:"relative min-h-0 flex-1",children:[[0,25,50,75,100].map(b=>(0,f.jsx)("span",{className:"absolute inset-x-0 border-t border-dashed border-zinc-100",style:{top:`${b}%`}},b)),(0,f.jsxs)("svg",{viewBox:"0 0 100 100",preserveAspectRatio:"none",className:"absolute inset-0 size-full overflow-visible",children:[(0,f.jsx)("defs",{children:(0,f.jsxs)("linearGradient",{id:"heroArea",x1:"0",x2:"0",y1:"0",y2:"1",children:[(0,f.jsx)("stop",{offset:"0",stopColor:"#fdd835",stopOpacity:".45"}),(0,f.jsx)("stop",{offset:"1",stopColor:"#fdd835",stopOpacity:"0"})]})}),(0,f.jsx)("path",{d:`${n} L100,100 L0,100 Z`,fill:"url(#heroArea)",className:"animate-fade-up [animation-delay:500ms]"}),(0,f.jsx)("path",{d:i,fill:"none",stroke:"#a1a1aa",strokeWidth:"1.2",strokeDasharray:"3 3",vectorEffect:"non-scaling-stroke"}),(0,f.jsx)("path",{d:n,pathLength:1,fill:"none",stroke:"#e5b800",strokeWidth:"2.5",vectorEffect:"non-scaling-stroke",strokeLinecap:"round",className:"animate-draw-line"}),(0,f.jsx)("line",{x1:L,x2:L,y1:c,y2:"100",stroke:"#18181b",strokeWidth:"1",strokeDasharray:"2 2",vectorEffect:"non-scaling-stroke",className:"animate-fade-up [animation-delay:1.2s]"})]}),(0,f.jsx)("span",{className:"absolute size-2.5 -translate-x-1/2 -translate-y-1/2",style:{left:`${L}%`,top:`${c}%`},children:(0,f.jsx)("span",{className:"block size-full animate-pop rounded-full bg-zinc-900 ring-[3px] ring-white [animation-delay:1.3s]"})}),(0,f.jsx)("span",{className:"absolute -translate-x-1/2",style:{left:`${L}%`,top:`calc(${c}% - 40px)`},children:(0,f.jsxs)("span",{className:"block animate-pop whitespace-nowrap rounded-lg bg-zinc-900 px-2 py-1 text-center text-white shadow-lg [animation-delay:1.4s]",children:[(0,f.jsxs)("span",{className:"block font-mono text-[10px] font-semibold",children:[l[x],"K"]}),(0,f.jsxs)("span",{className:"block text-[8px] text-emerald-400",children:["+",Math.round((l[x]/u[x]-1)*100),"% k\u1EF3 tr\u01B0\u1EDBc"]})]})})]},e),(0,f.jsx)("div",{className:"flex justify-between pt-1.5 font-mono text-[8px] text-zinc-400",children:h.map(b=>(0,f.jsx)("span",{children:b},b))})]})]})]}),(0,f.jsxs)("div",{className:"hidden min-h-0 flex-col gap-2.5 md:flex",children:[(0,f.jsxs)("div",{className:"rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"Theo n\u1EC1n t\u1EA3ng"}),(0,f.jsx)("div",{className:"mt-2 flex h-2 overflow-hidden rounded-full",children:T.map(([b,,m],r)=>(0,f.jsx)("span",{style:{width:`${m}%`,background:["#1877F2","#D62976","#18181b","#0A66C2"][r],...Pe(200+r*120)},className:"h-full origin-left animate-draw-x"},b))}),(0,f.jsx)("ul",{className:"mt-2.5 space-y-1.5",children:T.map(([b,m,r])=>(0,f.jsxs)("li",{className:"flex items-center gap-2 text-[10px]",children:[(0,f.jsx)(de,{platform:b,className:"size-3.5"}),(0,f.jsx)("span",{className:"flex-1",children:m}),(0,f.jsxs)("span",{className:"font-mono text-zinc-500",children:[r,"%"]})]},b))})]}),(0,f.jsxs)("div",{className:"min-h-0 flex-1 rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("span",{className:"text-[11px] font-semibold",children:"B\xE0i n\u1ED5i b\u1EADt"}),(0,f.jsx)("span",{className:"text-[9px] text-zinc-400",children:"Ti\u1EBFp c\u1EADn"})]}),(0,f.jsx)("ul",{className:"mt-2 space-y-2",children:[[8,"Minigame \u0111o\xE1n gi\xE1","instagram",31.2],[3,"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da","facebook",18.4],[10,"H\u1EADu tr\u01B0\u1EDDng studio","tiktok",9.2]].map(([b,m,r,g],v)=>(0,f.jsxs)("li",{style:Pe(300+v*120),className:"flex animate-fade-up items-center gap-2",children:[(0,f.jsx)("span",{className:"w-2 font-mono text-[9px] text-zinc-400",children:v+1}),(0,f.jsxs)("div",{className:"relative shrink-0",children:[(0,f.jsx)("img",{src:Re[b].src,alt:"",className:"size-7 rounded-md object-cover"}),(0,f.jsx)(de,{platform:r,className:"absolute -bottom-1 -right-1 size-3 rounded-full ring-1 ring-white"})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1",children:[(0,f.jsx)("div",{className:"truncate text-[10px] font-medium",children:m}),(0,f.jsx)("div",{className:"mt-0.5 h-1 rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:"h-full origin-left animate-draw-x rounded-full bg-brand-400",style:{width:`${g/31.2*100}%`,...Pe(500+v*120)}})})]}),(0,f.jsxs)("span",{className:"font-mono text-[9px] text-zinc-600",children:[g.toLocaleString("vi-VN"),"K"]})]},m))})]})]})]})]})}function BC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{if(t)return;let u=setTimeout(()=>a(o=>(o+1)%xg.length),7e3);return()=>clearTimeout(u)},[e,t]),(0,f.jsxs)("div",{className:"relative mx-auto max-w-5xl",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[(0,f.jsx)("div",{className:"absolute -inset-x-10 -top-10 bottom-0 -z-10 rounded-[40px] bg-gradient-to-b from-brand-100/70 via-brand-50/40 to-transparent blur-2xl"}),(0,f.jsx)("div",{className:"mb-5 flex justify-center",children:(0,f.jsx)("div",{className:"inline-flex gap-1 rounded-2xl border border-zinc-200 bg-white/80 p-1 shadow-sm backdrop-blur",children:xg.map((u,o)=>(0,f.jsxs)("button",{onClick:()=>a(o),className:`relative flex items-center gap-2 overflow-hidden rounded-xl px-3.5 py-2 text-[13px] font-medium transition ${e===o?"bg-brand-400 text-zinc-900 font-semibold":"text-zinc-500 hover:text-zinc-900"}`,children:[(0,f.jsx)(u.icon,{className:"size-4"}),(0,f.jsx)("span",{className:"hidden sm:inline",children:u.label}),e===o&&(0,f.jsx)("span",{className:`absolute inset-x-0 bottom-0 h-0.5 origin-left bg-zinc-900/80 ${t?"scale-x-100 opacity-60":"animate-progress"}`},`${e}-${t}`)]},u.key))})}),(0,f.jsxs)("div",{className:"overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_30px_80px_-30px_rgba(24,24,27,0.25)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-1.5 border-b border-zinc-100 bg-zinc-50/80 px-4 py-2.5",children:[(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsxs)("span",{className:"ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[10px] text-zinc-400 ring-1 ring-zinc-200",children:["socialchoice.site/",["tao-bai-viet","lich-noi-dung","phan-tich"][e]]})]}),(0,f.jsxs)("div",{className:"flex h-[440px]",children:[(0,f.jsxs)("div",{className:"hidden w-14 shrink-0 flex-col items-center gap-2 border-r border-zinc-100 bg-zinc-50/70 py-4 sm:flex",children:[(0,f.jsx)("div",{className:"mb-2 grid size-8 place-items-center rounded-lg bg-brand-400",children:(0,f.jsx)("svg",{viewBox:"0 0 24 24",className:"size-4",fill:"none",children:(0,f.jsx)("path",{d:"M4 5l16 3-7 3-2 8-3-7z",fill:"#18181b"})})}),[Ya,mt,Qt,ql,rt,wl].map((u,o)=>{let d=[1,2,4][e]===o;return(0,f.jsx)("span",{className:`grid size-9 place-items-center rounded-lg transition ${d?"bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200":"text-zinc-400"}`,children:(0,f.jsx)(u,{className:"size-4"})},o)})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 animate-fade-up [animation-duration:0.5s]",children:[e===0&&(0,f.jsx)(AC,{}),e===1&&(0,f.jsx)(MC,{}),e===2&&(0,f.jsx)(DC,{})]},e)]})]})]})}var Hl=[{p:"instagram",name:"deszy_creative",handle:"Instagram",text:"B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu d\xE2y da m\u1EDBi.",img:3,likes:"1.284",time:"20:00"},{p:"facebook",name:"Deszy",handle:"Trang Facebook",text:"Flash sale 48h \u2014 gi\u1EA3m \u0111\u1EBFn 40% to\xE0n b\u1ED9 ph\u1EE5 ki\u1EC7n.",img:1,likes:"842",time:"20:00"},{p:"tiktok",name:"kiu.chun",handle:"TikTok",text:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi c\xF9ng team studio",img:7,likes:"12,4K",time:"20:00"},{p:"linkedin",name:"TalentChoice",handle:"LinkedIn",text:"H\u1EADu tr\u01B0\u1EDDng m\u1ED9t ng\xE0y l\xE0m vi\u1EC7c t\u1EA1i studio.",img:10,likes:"86",time:"20:00"},{p:"threads",name:"_ticrn",handle:"Threads",text:"B\u1EA1n ch\u1ECDn d\xE2y da hay d\xE2y kim lo\u1EA1i?",img:8,likes:"214",time:"20:00"}];function RC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);(0,fe.useEffect)(()=>{if(t)return;let d=setInterval(()=>a(s=>(s+1)%Hl.length),2800);return()=>clearInterval(d)},[t]);let u=d=>(d-e+Hl.length)%Hl.length,o=d=>{let s=["translate-x-0 translate-y-0 rotate-0 scale-100 opacity-100 z-30","translate-x-10 translate-y-4 rotate-[6deg] scale-[0.94] opacity-100 z-20","translate-x-20 translate-y-8 rotate-[12deg] scale-[0.88] opacity-90 z-10","translate-x-24 translate-y-10 rotate-[14deg] scale-[0.84] opacity-0 z-0"];return d===Hl.length-1?"-translate-x-28 -translate-y-6 -rotate-[14deg] scale-95 opacity-0 z-40":s[Math.min(d,3)]};return(0,f.jsxs)("div",{className:"hero-card-stack relative mx-auto h-[440px] sm:h-[480px] lg:h-[500px] w-full max-w-[310px] sm:max-w-[360px] lg:max-w-[420px]",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[Hl.map((d,s)=>{let n=u(s);return(0,f.jsx)("div",{className:`absolute left-2 sm:left-3 lg:left-4 top-2 sm:top-4 w-[240px] sm:w-[270px] lg:w-[300px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${o(n)}`,children:(0,f.jsxs)("div",{className:"overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_30px_60px_-24px_rgba(24,24,27,0.35)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-2.5 p-3.5",children:[(0,f.jsx)("span",{className:"grid size-9 place-items-center rounded-full bg-brand-100 text-[12px] font-semibold text-brand-700",children:d.name[0].toUpperCase()}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 leading-tight",children:[(0,f.jsx)("div",{className:"truncate text-[13px] font-semibold",children:d.name}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:d.handle})]}),(0,f.jsx)(de,{platform:d.p,className:"size-6"})]}),(0,f.jsx)("img",{src:Re[d.img].src,alt:"",className:"aspect-[4/3.6] w-full object-cover"}),(0,f.jsxs)("div",{className:"p-3.5",children:[(0,f.jsx)("p",{className:"text-[13px] leading-snug text-zinc-800",children:d.text}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-3 text-[11px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(La,{className:"size-3.5"})," ",d.likes]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(Be,{className:"size-3.5"})," 24"]}),(0,f.jsxs)("span",{className:"ml-auto flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700",children:[(0,f.jsx)(_e,{className:"size-3",strokeWidth:3})," \u0110\xE3 \u0111\u0103ng ",d.time]})]})]})]})},d.name)}),(0,f.jsxs)("div",{className:"absolute -left-1 sm:left-1 lg:-left-6 bottom-4 sm:bottom-6 z-40 w-[255px] sm:w-64 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-xl backdrop-blur",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[11px]",children:[(0,f.jsx)("span",{className:"font-semibold",children:"\u0110ang \u0111\u0103ng l\xEAn"}),(0,f.jsxs)("span",{className:"font-mono text-zinc-400",children:[e+1,"/",Hl.length]})]}),(0,f.jsx)("div",{className:"mt-2 flex gap-1.5",children:Hl.map((d,s)=>(0,f.jsx)("button",{onClick:()=>a(s),className:`grid size-8 place-items-center rounded-lg transition ${s===e?"bg-zinc-900 ring-2 ring-brand-400":"bg-zinc-100"}`,children:(0,f.jsx)(de,{platform:d.p,className:"size-4"})},d.name))}),(0,f.jsx)("div",{className:"mt-2.5 h-1 overflow-hidden rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:`h-full origin-left bg-brand-400 ${t?"scale-x-100 opacity-50":"animate-progress"}`,style:{animationDuration:"2800ms"}},`${e}-${t}`)})]})]})}var qC=[{name:"Starter",desc:"Cho c\xE1 nh\xE2n b\u1EAFt \u0111\u1EA7u x\xE2y k\xEAnh.",price:0,features:["3 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","30 b\xE0i vi\u1EBFt / th\xE1ng","L\u1ECBch n\u1ED9i dung","Xem tr\u01B0\u1EDBc theo n\u1EC1n t\u1EA3ng","1 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"B\u1EAFt \u0111\u1EA7u mi\u1EC5n ph\xED"},{name:"Pro",desc:"Cho th\u01B0\u01A1ng hi\u1EC7u v\xE0 creator nghi\xEAm t\xFAc.",price:499e3,popular:!0,features:["10 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","300 b\xE0i vi\u1EBFt / th\xE1ng","Tr\u1EE3 l\xFD AI \xB7 1.000 l\u01B0\u1EE3t / th\xE1ng","Chi\u1EBFn l\u01B0\u1EE3c, tr\u1EE5 c\u1ED9t, g\xF3c khai th\xE1c","UTM & li\xEAn k\u1EBFt theo d\xF5i","Ph\xE2n t\xEDch n\xE2ng cao","10 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"D\xF9ng th\u1EED Pro 14 ng\xE0y"},{name:"Agency",desc:"Cho agency qu\u1EA3n l\xFD nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u.",price:129e4,features:["Kh\xF4ng gi\u1EDBi h\u1EA1n k\xEAnh","Kh\xF4ng gi\u1EDBi h\u1EA1n b\xE0i vi\u1EBFt","Nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u & th\xE0nh vi\xEAn","Ph\xE2n quy\u1EC1n, duy\u1EC7t b\xE0i","B\xE1o c\xE1o white-label","H\u1ED7 tr\u1EE3 \u01B0u ti\xEAn 1:1"],cta:"Li\xEAn h\u1EC7 t\u01B0 v\u1EA5n"}],OC=[{q:"SocialChoice h\u1ED7 tr\u1EE3 nh\u1EEFng n\u1EC1n t\u1EA3ng n\xE0o?",a:"Hi\u1EC7n t\u1EA1i SocialChoice h\u1ED7 tr\u1EE3 Facebook (Trang), Instagram (t\xE0i kho\u1EA3n doanh nghi\u1EC7p), Threads, X, TikTok v\xE0 LinkedIn. B\u1EA1n c\xF3 th\u1EC3 \u0111\u0103ng c\xF9ng l\xFAc l\xEAn t\u1EA5t c\u1EA3 ho\u1EB7c ch\u1ECDn t\u1EEBng k\xEAnh."},{q:"T\xF4i c\xF3 th\u1EC3 vi\u1EBFt n\u1ED9i dung kh\xE1c nhau cho t\u1EEBng k\xEAnh kh\xF4ng?",a:"C\xF3. B\u1EA1n vi\u1EBFt m\u1ED9t n\u1ED9i dung chung, sau \u0111\xF3 b\u1EADt \u201CTu\u1EF3 ch\u1EC9nh ri\xEAng\u201D cho k\xEAnh b\u1EA5t k\u1EF3. SocialChoice t\u1EF1 c\u1EA3nh b\xE1o khi n\u1ED9i dung v\u01B0\u1EE3t gi\u1EDBi h\u1EA1n k\xFD t\u1EF1 c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, v\xED d\u1EE5 280 k\xFD t\u1EF1 tr\xEAn X."},{q:"B\xE0i \u0111\xE3 h\u1EB9n gi\u1EDD c\xF3 \u0111\u0103ng khi t\xF4i t\u1EAFt m\xE1y kh\xF4ng?",a:"C\xF3. B\xE0i \u0111\u01B0\u1EE3c l\u01B0u tr\xEAn m\xE1y ch\u1EE7 v\xE0 t\u1EF1 \u0111\u1ED9ng \u0111\u0103ng \u0111\xFAng gi\u1EDD theo m\xFAi gi\u1EDD b\u1EA1n ch\u1ECDn, k\u1EC3 c\u1EA3 khi b\u1EA1n \u0111\xF3ng tr\xECnh duy\u1EC7t."},{q:"Tr\u1EE3 l\xFD AI ho\u1EA1t \u0111\u1ED9ng nh\u01B0 th\u1EBF n\xE0o?",a:"Tr\u1EE3 l\xFD AI gi\xFAp g\u1EE3i \xFD d\xE0n \xFD, vi\u1EBFt l\u1EA1i h\u1EA5p d\u1EABn h\u01A1n, r\xFAt g\u1ECDn cho t\u1EEBng n\u1EC1n t\u1EA3ng v\xE0 \u0111\u1EC1 xu\u1EA5t hashtag. B\u1EA1n lu\xF4n xem l\u1EA1i v\xE0 ch\u1EC9nh s\u1EEDa tr\u01B0\u1EDBc khi \u0111\u0103ng."},{q:"T\xF4i c\xF3 th\u1EC3 \u0111\u1ED5i g\xF3i ho\u1EB7c hu\u1EF7 b\u1EA5t c\u1EE9 l\xFAc n\xE0o kh\xF4ng?",a:"C\xF3. B\u1EA1n c\xF3 th\u1EC3 n\xE2ng c\u1EA5p, h\u1EA1 c\u1EA5p ho\u1EB7c hu\u1EF7 g\xF3i trong ph\u1EA7n Qu\u1EA3n l\xFD license. Khi hu\u1EF7, g\xF3i v\u1EABn d\xF9ng \u0111\u01B0\u1EE3c \u0111\u1EBFn h\u1EBFt chu k\u1EF3 \u0111\xE3 thanh to\xE1n."},{q:"D\u1EEF li\u1EC7u v\xE0 t\xE0i kho\u1EA3n c\u1EE7a t\xF4i c\xF3 an to\xE0n kh\xF4ng?",a:"SocialChoice k\u1EBFt n\u1ED1i qua API ch\xEDnh th\u1EE9c c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, kh\xF4ng l\u01B0u m\u1EADt kh\u1EA9u m\u1EA1ng x\xE3 h\u1ED9i. B\u1EA1n c\xF3 th\u1EC3 thu h\u1ED3i quy\u1EC1n truy c\u1EADp b\u1EA5t c\u1EE9 l\xFAc n\xE0o."}];
-var qC_EN = [
-  { name: "Starter", desc: "For individuals starting their channel growth.", price: 0, features: ["3 social media channels", "30 scheduled posts / mo", "Visual content calendar", "Per-platform preview", "1 GB media library"], cta: "Start free" },
-  { name: "Pro", desc: "For growing brands and serious creators.", price: 499e3, popular: !0, features: ["10 social media channels", "300 scheduled posts / mo", "AI Assistant · 1,000 runs / mo", "Strategy, pillars & angles", "UTM builder & click analytics", "Advanced analytics & reports", "10 GB media library"], cta: "Try Pro for 14 days" },
-  { name: "Agency", desc: "For agencies managing multiple client brands.", price: 129e4, features: ["Unlimited social channels", "Unlimited posts & scheduling", "Multiple brands & team seats", "Role permissions & approvals", "White-label client reports", "Priority 1:1 onboarding"], cta: "Contact Sales" }
+var WEB_PLANS_DATA = [
+  {
+    key: "free",
+    name: { vi: "Free", en: "Free" },
+    badge: { vi: "Đủ 100% tính năng", en: "100% Features Included" },
+    desc: {
+      vi: "Trải nghiệm trọn vẹn mọi tính năng với hạn mức dùng thử.",
+      en: "Experience every single feature with starter trial quotas."
+    },
+    price: {
+      vn: { monthly: 0, yearly: 0 },
+      intl: { monthly: 0, yearly: 0 },
+      whop: { monthly: 0, yearly: 0, lifetime: null }
+    },
+    cta: { vi: "Bắt đầu miễn phí", en: "Start for free" },
+    features: {
+      vi: [
+        "1 Thương hiệu (Brand) · 2 Tài khoản MXH thật",
+        "Teams: 1 Owner + 1 Thành viên Nháp (Coming soon)",
+        "5 bài đăng & hẹn giờ tự động / tháng",
+        "10 MB đệm Ảnh/Video (tự giải phóng sau khi đăng)",
+        "Nhập Excel/CSV: tối đa 5 dòng / lần",
+        "1 Bài đăng lặp lại (Evergreen) · 3 Tracked Shortlinks",
+        "Ảnh tương tác: 5 vùng bấm / ảnh · 2 Mẫu bài viết",
+        "Trợ lý AI & Autopilot: 3 lượt / tháng (BYOK)"
+      ],
+      en: [
+        "1 Brand · 2 connected social accounts",
+        "Teams: 1 Owner + 1 Draft-only member (Coming soon)",
+        "5 scheduled & auto-published posts / mo",
+        "10 MB staging media (auto-released after publish)",
+        "Bulk Excel/CSV import: up to 5 rows / batch",
+        "1 Evergreen recurring post · 3 Tracked Shortlinks",
+        "Interactive Images: 5 regions / image · 2 Templates",
+        "AI Assistant & Autopilot: 3 runs / mo (BYOK)"
+      ]
+    }
+  },
+  {
+    key: "starter",
+    name: { vi: "Starter", en: "Starter" },
+    desc: {
+      vi: "Cho cá nhân, freelancer và chủ shop xây dựng thương hiệu.",
+      en: "For solo creators, freelancers, and small shop owners."
+    },
+    price: {
+      vn: { monthly: 99000, yearly: 790000 },
+      intl: { monthly: 9, yearly: 79 },
+      whop: { monthly: 15, yearly: 119, lifetime: null }
+    },
+    cta: { vi: "Chọn gói Starter", en: "Choose Starter" },
+    features: {
+      vi: [
+        "1 Thương hiệu (Brand) · 5 Tài khoản MXH thật",
+        "Teams: 1 Thành viên + 3 Link chia sẻ lịch cho khách",
+        "100 bài đăng & hẹn giờ tự động 24/7 / tháng",
+        "50 MB đệm Ảnh/Video (giải phóng 24h sau đăng)",
+        "Nhập Excel/CSV: 30 dòng / lần · 15 Mẫu bài viết",
+        "3 Bài đăng lặp lại (Evergreen) · 25 Tracked Shortlinks",
+        "Ảnh tương tác: 10 vùng bấm / ảnh",
+        "ChatAgent AI không giới hạn (BYOK) · Analytics 30 ngày"
+      ],
+      en: [
+        "1 Brand · 5 connected social accounts",
+        "Teams: 1 Member + 3 Guest calendar share links",
+        "100 auto-published posts / mo (24/7 cloud runner)",
+        "50 MB staging media (released 24h after publish)",
+        "Bulk Excel/CSV: 30 rows / batch · 15 Post Templates",
+        "3 Evergreen recurring posts · 25 Tracked Shortlinks",
+        "Interactive Images: 10 regions / image",
+        "Unlimited AI ChatAgent (BYOK) · 30-day Analytics"
+      ]
+    }
+  },
+  {
+    key: "professional",
+    popular: true,
+    name: { vi: "Professional", en: "Professional" },
+    badge: { vi: "Phổ biến nhất", en: "Most Popular" },
+    desc: {
+      vi: "Cho marketer, nhà sáng tạo đa kênh và nhóm tăng trưởng.",
+      en: "For marketers, multi-channel creators, and growth teams."
+    },
+    price: {
+      vn: { monthly: 199000, yearly: 1590000 },
+      intl: { monthly: 19, yearly: 149 },
+      whop: { monthly: 29, yearly: 199, lifetime: 149 }
+    },
+    cta: { vi: "Nâng cấp Professional", en: "Get Professional" },
+    features: {
+      vi: [
+        "5 Thương hiệu (Brands) · 20 Tài khoản MXH thật",
+        "Teams: 3 Thành viên + Phân quyền Owner/Editor & Ghi chú",
+        "Không giới hạn bài đăng, Pillars & Angles",
+        "150 MB đệm Ảnh/Video (giữ 7 ngày sau khi đăng)",
+        "Nhập Excel/CSV tối đa 200 dòng / lần (Full)",
+        "25 Bài lặp lại (Evergreen) · 250 Tracked Shortlinks",
+        "Ảnh tương tác: 20 vùng bấm (Full) · Mẫu không giới hạn",
+        "Full AI Autopilot + Chiến lược AI (BYOK) · Toàn bộ lịch sử"
+      ],
+      en: [
+        "5 Brands · 20 connected social accounts",
+        "Teams: 3 Team Seats + Owner/Editor roles & Internal notes",
+        "Unlimited scheduled posts, Pillars & Angles",
+        "150 MB staging media (retained 7 days post-publish)",
+        "Full Bulk Excel/CSV import (200 rows / batch)",
+        "25 Evergreen recurring posts · 250 Tracked Shortlinks",
+        "Interactive Images: 20 regions (Full) · Unlimited templates",
+        "Full AI Autopilot & Strategy (BYOK) · Full Analytics history"
+      ]
+    }
+  },
+  {
+    key: "business",
+    name: { vi: "Business / Agency", en: "Business / Agency" },
+    desc: {
+      vi: "Cho agency và đội ngũ vận hành nhiều thương hiệu khách hàng.",
+      en: "For agencies and teams managing multiple client brands."
+    },
+    price: {
+      vn: { monthly: 399000, yearly: 3290000 },
+      intl: { monthly: 39, yearly: 299 },
+      whop: { monthly: 59, yearly: 399, lifetime: 299 }
+    },
+    cta: { vi: "Chọn gói Business", en: "Choose Business" },
+    features: {
+      vi: [
+        "25 Thương hiệu (Brands) · 60 Tài khoản MXH thật",
+        "Teams: 10 Thành viên + Phân quyền theo từng Brand",
+        "Luồng Phê duyệt bài viết (Approval Workflow) & Nhật ký nhóm",
+        "200 MB đệm Media + Kết nối Google Drive / R2 riêng",
+        "100 Bài lặp lại (Evergreen) · 1.000 Tracked Shortlinks",
+        "Nhập Excel 200 dòng · Full Interactive Images (20 vùng)",
+        "Full AI Autopilot + Đồng bộ danh mục ảnh Drive/R2",
+        "Thống kê đa kênh toàn diện & Xuất báo cáo khách hàng"
+      ],
+      en: [
+        "25 Brands · 60 connected social accounts",
+        "Teams: 10 Team Seats + Brand-level access isolation",
+        "Client & Manager Approval Workflow + Team Audit Log",
+        "200 MB staging media + Custom Google Drive / R2 sync",
+        "100 Evergreen recurring posts · 1,000 Tracked Shortlinks",
+        "200-row Excel import · Full Interactive Images (20 regions)",
+        "Full AI Autopilot + Drive/R2 asset catalog ingestion",
+        "Comprehensive multi-brand Analytics & Report exports"
+      ]
+    }
+  }
 ];
+
+var DESKTOP_PLANS_DATA = [
+  {
+    key: "desktop-solo",
+    name: { vi: "Desktop Solo", en: "Desktop Solo" },
+    devices: { vi: "1 Máy tính (PC hoặc Laptop)", en: "1 Computer (PC or Laptop)" },
+    desc: {
+      vi: "Mua đứt 1 lần, lưu dữ liệu & kho ảnh/video trên ổ cứng máy bạn.",
+      en: "One-time purchase. Unlimited local SQLite & media on your disk."
+    },
+    price: {
+      vn: { once: 390000, update: 99000 },
+      intl: { once: 39, update: 9 },
+      whop: { once: 49, update: 12 }
+    },
+    cta: { vi: "Mua bản Desktop Solo", en: "Buy Desktop Solo" },
+    features: {
+      vi: [
+        "Kích hoạt cố định trên 1 máy tính Windows (SC2)",
+        "Tối đa 3 Thương hiệu (Brands) & 10 Tài khoản MXH",
+        "Kho Media & Bài nháp KHÔNG GIỚI HẠN theo ổ cứng máy",
+        "Kéo thả ảnh/video 4K nhận tức thì (0 giây chờ upload)",
+        "Bảo mật Token & khóa AI bằng Windows DPAPI cục bộ",
+        "Sở hữu vĩnh viễn + Miễn phí 12 tháng cập nhật đầu tiên",
+        "Từ năm thứ 2: Dùng bản hiện tại mãi mãi hoặc Update Pass"
+      ],
+      en: [
+        "Hardware-bound license for 1 Windows computer (SC2)",
+        "Up to 3 Brands & 10 connected social accounts",
+        "UNLIMITED local Media Library & drafts on your hard drive",
+        "Instant 4K video/photo attach (0s cloud upload wait)",
+        "Local Windows DPAPI encryption for tokens & BYOK AI keys",
+        "Perpetual ownership + 12 months of free updates included",
+        "Year 2+: Keep current version forever or optional Update Pass"
+      ]
+    }
+  },
+  {
+    key: "desktop-pro",
+    popular: true,
+    name: { vi: "Desktop Pro", en: "Desktop Pro" },
+    badge: { vi: "Bán chạy nhất", en: "Best Value" },
+    devices: { vi: "2 Máy tính (PC + Laptop)", en: "2 Computers (PC + Laptop)" },
+    desc: {
+      vi: "Dành cho người dùng cả máy bàn lẫn laptop, không giới hạn tính năng.",
+      en: "Perfect for desktop + laptop workflow with zero feature limits."
+    },
+    price: {
+      vn: { once: 590000, update: 149000 },
+      intl: { once: 59, update: 15 },
+      whop: { once: 79, update: 19 }
+    },
+    cta: { vi: "Mua bản Desktop Pro", en: "Buy Desktop Pro" },
+    features: {
+      vi: [
+        "Kích hoạt trên 2 máy tính Windows (VD: 1 PC + 1 Laptop)",
+        "KHÔNG GIỚI HẠN Brands, Tài khoản MXH & Bài viết",
+        "Kho Media, Nhập Excel, Shortlinks, Templates không giới hạn",
+        "Full AI Autopilot & gợi ý chiến lược (BYOK OpenAI/Gemini)",
+        "Xuất / Nhập toàn bộ Workspace ra file Backup (.zip) di động",
+        "Sở hữu vĩnh viễn + Miễn phí 12 tháng cập nhật đầu tiên",
+        "Từ năm thứ 2: Dùng mãi mãi hoặc gia hạn Update Pass (~25%)"
+      ],
+      en: [
+        "Activates on 2 Windows computers (e.g. Desktop + Laptop)",
+        "UNLIMITED Brands, social accounts & scheduled plans",
+        "Unlimited local Media Vault, Excel imports, Shortlinks & Templates",
+        "Full AI Autopilot & strategy generation (BYOK OpenAI/Gemini)",
+        "Export / Import portable transactional Workspace backup (.zip)",
+        "Perpetual ownership + 12 months of free updates included",
+        "Year 2+: Keep forever or optional Update Pass (~25%)"
+      ]
+    }
+  },
+  {
+    key: "desktop-agency",
+    name: { vi: "Desktop Agency Pack", en: "Desktop Agency Pack" },
+    devices: { vi: "5 Máy tính cho đội nhóm", en: "5 Computers for Teams" },
+    desc: {
+      vi: "Trang bị cho cả đội ngũ 5 máy với chi phí mua 1 lần duy nhất.",
+      en: "Equip 5 workstations for your agency with a single payment."
+    },
+    price: {
+      vn: { once: 1190000, update: 299000 },
+      intl: { once: 119, update: 29 },
+      whop: { once: 159, update: 39 }
+    },
+    cta: { vi: "Mua gói 5 Máy Agency", en: "Buy 5-PC Agency Pack" },
+    features: {
+      vi: [
+        "Bản quyền thương mại cho 5 máy tính Windows độc lập",
+        "Mở khóa 100% tính năng & dung lượng ổ cứng không giới hạn",
+        "Chia sẻ dữ liệu dự án giữa các máy qua file Backup (.zip)",
+        "Dữ liệu khách hàng nằm 100% nội bộ (Đạt chuẩn NDA bảo mật)",
+        "Full AI Autopilot (BYOK) & Interactive Images trên cả 5 máy",
+        "Sở hữu vĩnh viễn + Miễn phí 12 tháng cập nhật đầu tiên",
+        "Từ năm thứ 2: Update Pass cả 5 máy chỉ ~25% giá gốc"
+      ],
+      en: [
+        "Commercial licenses for 5 Windows computers",
+        "100% unlocked features & unlimited local disk media storage",
+        "Share client workspaces across machines via portable (.zip) backups",
+        "100% on-device client data isolation (NDA & privacy friendly)",
+        "Full AI Autopilot (BYOK) & Interactive Images on all 5 PCs",
+        "Perpetual ownership + 12 months of free updates included",
+        "Year 2+: Optional Update Pass for all 5 PCs at ~25%"
+      ]
+    }
+  }
+];
+
+function formatMoney(amount, market) {
+  if (amount === 0) return market === "vn" ? "0₫" : "$0";
+  if (market === "vn") return `${amount.toLocaleString("vi-VN")}₫`;
+  return `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
+}
+
+function ModeIcon({ type, className = "size-4" }) {
+  if (type === "cloud") {
+    return (0, f.jsxs)("svg", {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className,
+      children: [
+        (0, f.jsx)("path", { d: "M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z" })
+      ]
+    });
+  }
+  if (type === "custom") {
+    return (0, f.jsxs)("svg", {
+      viewBox: "0 0 24 24",
+      fill: "none",
+      stroke: "currentColor",
+      strokeWidth: "2",
+      strokeLinecap: "round",
+      strokeLinejoin: "round",
+      className,
+      children: [
+        (0, f.jsx)("line", { x1: "4", x2: "10", y1: "6", y2: "6" }),
+        (0, f.jsx)("line", { x1: "14", x2: "20", y1: "6", y2: "6" }),
+        (0, f.jsx)("circle", { cx: "12", cy: "6", r: "2" }),
+        (0, f.jsx)("line", { x1: "4", x2: "14", y1: "12", y2: "12" }),
+        (0, f.jsx)("line", { x1: "18", x2: "20", y1: "12", y2: "12" }),
+        (0, f.jsx)("circle", { cx: "16", cy: "12", r: "2" }),
+        (0, f.jsx)("line", { x1: "4", x2: "6", y1: "18", y2: "18" }),
+        (0, f.jsx)("line", { x1: "10", x2: "20", y1: "18", y2: "18" }),
+        (0, f.jsx)("circle", { cx: "8", cy: "18", r: "2" })
+      ]
+    });
+  }
+  return (0, f.jsxs)("svg", {
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: "2",
+    strokeLinecap: "round",
+    strokeLinejoin: "round",
+    className,
+    children: [
+      (0, f.jsx)("rect", { width: "20", height: "14", x: "2", y: "3", rx: "2" }),
+      (0, f.jsx)("line", { x1: "8", x2: "16", y1: "21", y2: "21" }),
+      (0, f.jsx)("line", { x1: "12", x2: "12", y1: "17", y2: "21" })
+    ]
+  });
+}
+
+function PricingSectionEnhanced({ lang }) {
+  let [market, setMarket] = (0, fe.useState)(() => (lang === "en" ? "intl" : "vn"));
+  let [mode, setMode] = (0, fe.useState)("cloud");
+  let [yearly, setYearly] = (0, fe.useState)(false);
+
+  let [cAccounts, setCAccounts] = (0, fe.useState)(10);
+  let [cSeats, setCSeats] = (0, fe.useState)(1);
+  let [cBrands, setCBrands] = (0, fe.useState)(1);
+  let [cStorage, setCStorage] = (0, fe.useState)(50);
+  let [cAutomation, setCAutomation] = (0, fe.useState)(false);
+  let [cApproval, setCApproval] = (0, fe.useState)(false);
+
+  (0, fe.useEffect)(() => {
+    setMarket(prev => {
+      if (lang === "vi" && prev === "intl") return "vn";
+      if (lang === "en" && prev === "vn") return "intl";
+      return prev;
+    });
+  }, [lang]);
+
+  let rates = {
+    vn: {
+      base: 49000,
+      freeBaseThreshold: 150000,
+      account: 15000,
+      seat: 30000,
+      brand: 20000,
+      storageStep: 20000,
+      automation: 40000,
+      approval: 35000,
+      proMonthly: 199000
+    },
+    intl: {
+      base: 5,
+      freeBaseThreshold: 15,
+      account: 1,
+      seat: 3,
+      brand: 1.5,
+      storageStep: 1.5,
+      automation: 4,
+      approval: 3.5,
+      proMonthly: 19
+    },
+    whop: {
+      base: 9,
+      freeBaseThreshold: 25,
+      account: 1.5,
+      seat: 5,
+      brand: 2,
+      storageStep: 2.5,
+      automation: 6,
+      approval: 5,
+      proMonthly: 29
+    }
+  }[market];
+
+  let itemsSubtotal =
+    cAccounts * rates.account +
+    cSeats * rates.seat +
+    Math.max(0, cBrands - 1) * rates.brand +
+    Math.max(0, (cStorage - 50) / 50) * rates.storageStep +
+    (cAutomation ? rates.automation : 0) +
+    (cApproval ? rates.approval : 0);
+
+  let appliedBase = itemsSubtotal >= rates.freeBaseThreshold ? 0 : rates.base;
+  let customMonthly = itemsSubtotal + appliedBase;
+  let customDisplayPrice = yearly
+    ? (market === "vn" ? Math.round((customMonthly * 0.8) / 1000) * 1000 : Math.round(customMonthly * 0.8 * 10) / 10)
+    : customMonthly;
+
+  let fitsInPro =
+    cAccounts <= 20 &&
+    cBrands <= 5 &&
+    cSeats <= 2 &&
+    cStorage <= 150 &&
+    !cApproval;
+  let showProUpsell = fitsInPro && customMonthly > rates.proMonthly;
+
+  return (0, f.jsxs)("section", {
+    id: "bang-gia",
+    className: "scroll-mt-16 px-6 py-24",
+    children: [
+      (0, f.jsx)(NC, {
+        eyebrow: lang === "en" ? "Pricing" : "Bảng giá",
+        title: lang === "en"
+          ? "Simple, transparent, no hidden fees"
+          : "Đơn giản, minh bạch, không phí ẩn",
+        desc: lang === "en"
+          ? "Start free with 100% of features unlocked. Upgrade to a Cloud plan, customize exact quotas, or own the Desktop app."
+          : "Bắt đầu miễn phí đủ 100% tính năng. Nâng cấp gói Cloud, tự thiết kế hạn mức riêng, hoặc mua đứt bản Desktop."
+      }),
+
+      /* Row 1: Minimalist Segmented Control for Mode */
+      (0, f.jsx)("div", {
+        className: "mt-8 flex justify-center",
+        children: (0, f.jsx)("div", {
+          className: "inline-flex items-center rounded-full border border-zinc-200/80 bg-zinc-100/90 p-1",
+          children: [
+            ["cloud", lang === "en" ? "Cloud Plans" : "Gói Cloud"],
+            ["custom", lang === "en" ? "Custom Builder" : "Tự thiết kế gói"],
+            ["desktop", lang === "en" ? "Desktop App" : "Bản Desktop"]
+          ].map(([key, label]) => {
+            let active = mode === key;
+            return (0, f.jsxs)("button", {
+              type: "button",
+              onClick: () => setMode(key),
+              className: `flex h-9 items-center gap-2 whitespace-nowrap rounded-full px-4 text-[13px] font-medium outline-none focus:outline-none focus-visible:outline-none transition ${
+                active
+                  ? "bg-white font-semibold text-zinc-900 shadow-sm"
+                  : "text-zinc-500 hover:text-zinc-900"
+              }`,
+              children: [
+                (0, f.jsx)(ModeIcon, {
+                  type: key,
+                  className: `size-3.5 shrink-0 transition ${active ? "text-zinc-900" : "text-zinc-400"}`
+                }),
+                (0, f.jsx)("span", { children: label })
+              ]
+            }, key);
+          })
+        })
+      }),
+
+      /* Row 2: Whisper-quiet Inline Sub-bar (Billing Switch + Micro Currency Selector) */
+      (0, f.jsxs)("div", {
+        className: "mt-4 flex flex-wrap items-center justify-center gap-3 text-[12.5px]",
+        children: [
+          mode !== "desktop" && (0, f.jsxs)("div", {
+            className: "inline-flex items-center gap-2.5",
+            children: [
+              (0, f.jsx)("button", {
+                type: "button",
+                onClick: () => setYearly(false),
+                className: `outline-none focus:outline-none focus-visible:outline-none transition ${
+                  !yearly ? "font-semibold text-zinc-900" : "text-zinc-400 hover:text-zinc-700"
+                }`,
+                children: lang === "en" ? "Monthly" : "Theo tháng"
+              }),
+              (0, f.jsx)("button", {
+                type: "button",
+                role: "switch",
+                "aria-checked": yearly,
+                onClick: () => setYearly(prev => !prev),
+                className: `relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full p-0.5 outline-none focus:outline-none focus-visible:outline-none transition-colors ${
+                  yearly ? "bg-zinc-900" : "bg-zinc-200"
+                }`,
+                children: (0, f.jsx)("span", {
+                  style: { transform: yearly ? "translateX(16px)" : "translateX(0px)" },
+                  className: "size-4 rounded-full bg-white shadow-sm transition-transform"
+                })
+              }),
+              (0, f.jsxs)("button", {
+                type: "button",
+                onClick: () => setYearly(true),
+                className: `inline-flex items-center gap-1.5 outline-none focus:outline-none focus-visible:outline-none transition ${
+                  yearly ? "font-semibold text-zinc-900" : "text-zinc-400 hover:text-zinc-700"
+                }`,
+                children: [
+                  lang === "en" ? "Yearly" : "Theo năm",
+                  (0, f.jsx)("span", {
+                    className: "rounded-full bg-brand-400 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-zinc-900",
+                    children: "−20%"
+                  })
+                ]
+              })
+            ]
+          }),
+
+          mode !== "desktop" && (0, f.jsx)("span", {
+            className: "h-3.5 w-px bg-zinc-200"
+          }),
+
+          (0, f.jsx)("div", {
+            className: "inline-flex items-center rounded-lg border border-zinc-200 bg-zinc-100/90 p-0.5 text-[11px] font-semibold",
+            children: [
+              ["vn", "VNĐ"],
+              ["intl", "USD"]
+            ].map(([mKey, mLabel]) => (
+              (0, f.jsx)("button", {
+                type: "button",
+                onClick: () => setMarket(mKey),
+                className: `rounded-md px-2.5 py-0.5 outline-none focus:outline-none focus-visible:outline-none transition ${
+                  market === mKey
+                    ? "bg-white text-zinc-950 shadow-sm"
+                    : "text-zinc-500 hover:text-zinc-900"
+                }`,
+                children: mLabel
+              }, mKey)
+            ))
+          })
+        ]
+      }),
+
+      /* MODE 1: CLOUD WEB PLANS (4 TIERS) */
+      mode === "cloud" && (0, f.jsxs)("div", {
+        className: "mx-auto mt-10 max-w-6xl",
+        children: [
+          (0, f.jsx)("div", {
+            className: "grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-4",
+            children: WEB_PLANS_DATA.map((plan) => {
+              let pObj = plan.price[market];
+              let displayPrice = yearly
+                ? (pObj.yearly === 0 ? 0 : (market === "vn" ? Math.round(pObj.yearly / 12 / 1000) * 1000 : Math.round((pObj.yearly / 12) * 10) / 10))
+                : pObj.monthly;
+              let planName = plan.name[lang === "en" ? "en" : "vi"];
+              let planDesc = plan.desc[lang === "en" ? "en" : "vi"];
+              let planFeatures = plan.features[lang === "en" ? "en" : "vi"];
+              let planCta = plan.cta[lang === "en" ? "en" : "vi"];
+
+              return (0, f.jsxs)("div", {
+                className: `relative flex flex-col rounded-2xl p-6 transition ${
+                  plan.popular
+                    ? "bg-zinc-900 text-white shadow-[0_30px_60px_-30px_rgba(24,24,27,0.5)]"
+                    : "border border-zinc-200 bg-white"
+                }`,
+                children: [
+                  plan.popular && plan.badge && (0, f.jsx)("span", {
+                    className: "absolute -top-3 left-6 rounded-full bg-brand-400 px-2.5 py-0.5 text-[11px] font-semibold text-zinc-900",
+                    children: plan.badge[lang === "en" ? "en" : "vi"]
+                  }),
+                  (0, f.jsx)("h3", { className: "text-[16px] font-semibold", children: planName }),
+                  (0, f.jsx)("p", {
+                    className: `mt-1 min-h-[38px] text-[12.5px] leading-snug ${plan.popular ? "text-zinc-300" : "text-zinc-500"}`,
+                    children: planDesc
+                  }),
+                  (0, f.jsxs)("div", {
+                    className: "mt-5 flex items-baseline gap-1",
+                    children: [
+                      (0, f.jsx)("span", {
+                        className: "text-3xl font-semibold tracking-tight",
+                        children: formatMoney(displayPrice, market)
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `text-[12px] ${plan.popular ? "text-zinc-400" : "text-zinc-500"}`,
+                        children: lang === "en" ? "/month" : "/tháng"
+                      })
+                    ]
+                  }),
+                  (0, f.jsx)("div", {
+                    className: `mt-1 min-h-[20px] text-[11px] ${plan.popular ? "text-zinc-400" : "text-zinc-500"}`,
+                    children: pObj.monthly === 0
+                      ? (lang === "en" ? "Free forever · No card required" : "Miễn phí trọn đời · Không cần thẻ")
+                      : yearly
+                        ? (lang === "en"
+                          ? `Billed ${formatMoney(pObj.yearly, market)} / year`
+                          : `Thanh toán ${formatMoney(pObj.yearly, market)} / năm`)
+                        : (lang === "en"
+                          ? `Or ${formatMoney(pObj.yearly, market)} / year (save ~20%)`
+                          : `Hoặc ${formatMoney(pObj.yearly, market)} / năm (tiết kiệm ~20%)`)
+                  }),
+                  market === "whop" && pObj.lifetime && (0, f.jsx)("div", {
+                    className: "mt-2 rounded-lg bg-brand-400/20 px-2.5 py-1 text-[11px] font-semibold text-brand-300",
+                    children: lang === "en"
+                      ? `Whop Lifetime Pass: $${pObj.lifetime} (Limited slots)`
+                      : `Gói Lifetime trên Whop: $${pObj.lifetime} (Giới hạn suất)`
+                  }),
+                  (0, f.jsx)("a", {
+                    href: Aa("create"),
+                    className: `mt-5 flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition ${
+                      plan.popular
+                        ? "bg-brand-400 text-zinc-900 hover:bg-brand-300"
+                        : "border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100"
+                    }`,
+                    children: planCta
+                  }),
+                  (0, f.jsx)("ul", {
+                    className: `mt-6 flex-1 space-y-2.5 border-t pt-5 text-[12.5px] ${
+                      plan.popular ? "border-white/10" : "border-zinc-100"
+                    }`,
+                    children: planFeatures.map((feat) => (
+                      (0, f.jsxs)("li", {
+                        className: "flex items-start gap-2",
+                        children: [
+                          (0, f.jsx)(_e, {
+                            className: `mt-0.5 size-3.5 shrink-0 ${plan.popular ? "text-brand-400" : "text-zinc-900"}`,
+                            strokeWidth: 2.5
+                          }),
+                          (0, f.jsx)("span", {
+                            className: plan.popular ? "text-zinc-200" : "text-zinc-600",
+                            children: feat
+                          })
+                        ]
+                      }, feat)
+                    ))
+                  })
+                ]
+              }, plan.key);
+            })
+          }),
+          /* Subtle callout to Custom Builder */
+          (0, f.jsxs)("div", {
+            className: "mt-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 px-6 py-4 text-[13px]",
+            children: [
+              (0, f.jsx)("span", {
+                className: "text-zinc-600",
+                children: lang === "en"
+                  ? "Need 30 social accounts with just 1 brand, or 8 team seats with only 2 channels?"
+                  : "Bạn cần 30 tài khoản MXH cho 1 Brand, hoặc cần 8 thành viên Teams nhưng chỉ dùng 2 kênh?"
+              }),
+              (0, f.jsx)("button", {
+                type: "button",
+                onClick: () => setMode("custom"),
+                className: "font-semibold text-zinc-900 underline decoration-brand-400 decoration-2 underline-offset-4 hover:text-zinc-700",
+                children: lang === "en" ? "Build your own Custom Plan →" : "Tự thiết kế gói lẻ theo ý bạn →"
+              })
+            ]
+          })
+        ]
+      }),
+
+      /* MODE 2: CUSTOM BUILDER (2x2 COMPACT GRID + BALANCED RECEIPT) */
+      mode === "custom" && (0, f.jsxs)("div", {
+        className: "mx-auto mt-10 grid max-w-6xl grid-cols-1 items-start gap-6 md:grid-cols-[1.65fr_1fr]",
+        children: [
+          /* Left Column: 2x2 Quota Grid & Custom Add-on Cards */
+          (0, f.jsxs)("div", {
+            className: "rounded-2xl border border-zinc-200 bg-white p-6 shadow-sm",
+            children: [
+              /* Header + Free Base Fee Status Pill */
+              (0, f.jsxs)("div", {
+                className: "flex flex-wrap items-center justify-between gap-3 border-b border-zinc-100 pb-4",
+                children: [
+                  (0, f.jsxs)("div", {
+                    children: [
+                      (0, f.jsxs)("h3", {
+                        className: "flex items-center gap-2 text-[16px] font-semibold text-zinc-900",
+                        children: [
+                          (0, f.jsx)(ModeIcon, { type: "custom", className: "size-4 text-zinc-900" }),
+                          lang === "en" ? "Configure Your Exact Quotas" : "Tự chọn hạn mức theo nhu cầu"
+                        ]
+                      }),
+                      (0, f.jsx)("p", {
+                        className: "mt-0.5 text-[12.5px] text-zinc-500",
+                        children: lang === "en"
+                          ? "Drag the sliders or use −/+ buttons to tailor each quota."
+                          : "Kéo thanh trượt hoặc bấm −/+ để chỉnh đúng số lượng bạn cần."
+                      })
+                    ]
+                  }),
+                  (0, f.jsxs)("span", {
+                    className: `inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11.5px] font-semibold ${
+                      appliedBase === 0
+                        ? "bg-emerald-50 text-emerald-700"
+                        : "bg-brand-50 text-brand-700"
+                    }`,
+                    children: [
+                      appliedBase === 0 && (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 2.5 }),
+                      appliedBase === 0
+                        ? (lang === "en"
+                          ? `Base fee (${formatMoney(rates.base, market)}) waived!`
+                          : `Đã miễn phí nền (${formatMoney(rates.base, market)})`)
+                        : (lang === "en"
+                          ? `+${formatMoney(rates.freeBaseThreshold - itemsSubtotal, market)} to waive base fee`
+                          : `Thêm ${formatMoney(rates.freeBaseThreshold - itemsSubtotal, market)} để miễn phí nền`)
+                    ]
+                  })
+                ]
+              }),
+
+              /* 2x2 Grid of Sliders */
+              (0, f.jsx)("div", {
+                className: "mt-5 grid grid-cols-1 gap-3.5 sm:grid-cols-2",
+                children: [
+                  {
+                    key: "accounts",
+                    title: lang === "en" ? "Social Accounts" : "Tài khoản Mạng xã hội",
+                    sub: `${formatMoney(rates.account, market)} / ${lang === "en" ? "channel" : "kênh"}`,
+                    valText: `${cAccounts} ${lang === "en" ? "ch" : "kênh"}`,
+                    cost: cAccounts * rates.account,
+                    min: 1,
+                    max: 60,
+                    step: 1,
+                    val: cAccounts,
+                    setVal: setCAccounts,
+                    rangeText: lang === "en" ? "1 – 60 channels" : "1 – 60 kênh"
+                  },
+                  {
+                    key: "seats",
+                    title: lang === "en" ? "Team Seats (Teams)" : "Thành viên nhóm (Teams)",
+                    sub: `${formatMoney(rates.seat, market)} / ${lang === "en" ? "seat · 1 Owner free" : "người · Có sẵn 1 Chủ"}`,
+                    valText: `+${cSeats} ${lang === "en" ? "seats" : "người"}`,
+                    cost: cSeats * rates.seat,
+                    min: 0,
+                    max: 20,
+                    step: 1,
+                    val: cSeats,
+                    setVal: setCSeats,
+                    rangeText: lang === "en" ? "0 – 20 extra seats" : "0 – 20 thành viên thêm"
+                  },
+                  {
+                    key: "brands",
+                    title: lang === "en" ? "Brands Managed" : "Số Thương hiệu (Brands)",
+                    sub: lang === "en" ? `1st free · +${formatMoney(rates.brand, market)}/extra` : `Miễn phí Brand đầu · +${formatMoney(rates.brand, market)}`,
+                    valText: `${cBrands} Brands`,
+                    cost: Math.max(0, cBrands - 1) * rates.brand,
+                    min: 1,
+                    max: 25,
+                    step: 1,
+                    val: cBrands,
+                    setVal: setCBrands,
+                    rangeText: lang === "en" ? "1 – 25 brands" : "1 – 25 thương hiệu"
+                  },
+                  {
+                    key: "storage",
+                    title: lang === "en" ? "Staging Media Buffer" : "Bộ nhớ đệm Ảnh/Video",
+                    sub: lang === "en" ? `50MB free · +${formatMoney(rates.storageStep, market)}/50MB` : `Có sẵn 50MB · +${formatMoney(rates.storageStep, market)}/50MB`,
+                    valText: `${cStorage} MB`,
+                    cost: Math.max(0, (cStorage - 50) / 50) * rates.storageStep,
+                    min: 50,
+                    max: 300,
+                    step: 50,
+                    val: cStorage,
+                    setVal: setCStorage,
+                    rangeText: "50 – 300 MB"
+                  }
+                ].map((item) => (
+                  (0, f.jsxs)("div", {
+                    className: "flex flex-col justify-between rounded-xl border border-zinc-200 bg-zinc-50/50 p-4 transition hover:border-zinc-300 hover:bg-white",
+                    children: [
+                      (0, f.jsxs)("div", {
+                        className: "flex items-start justify-between gap-2",
+                        children: [
+                          (0, f.jsxs)("div", {
+                            className: "min-w-0",
+                            children: [
+                              (0, f.jsx)("div", {
+                                className: "truncate text-[13.5px] font-semibold text-zinc-900",
+                                children: item.title
+                              }),
+                              (0, f.jsx)("div", {
+                                className: "mt-0.5 truncate text-[11px] text-zinc-500",
+                                children: item.sub
+                              })
+                            ]
+                          }),
+                          /* Stepper Control */
+                          (0, f.jsxs)("div", {
+                            className: "inline-flex shrink-0 items-center rounded-lg border border-zinc-200 bg-white p-0.5 shadow-sm",
+                            children: [
+                              (0, f.jsx)("button", {
+                                type: "button",
+                                onClick: () => item.setVal(Math.max(item.min, item.val - item.step)),
+                                className: "grid size-6 place-items-center rounded-md text-[13px] font-semibold text-zinc-500 outline-none hover:bg-zinc-100 hover:text-zinc-900",
+                                children: "−"
+                              }),
+                              (0, f.jsx)("span", {
+                                className: "min-w-[54px] px-1 text-center font-mono text-[11.5px] font-semibold text-zinc-900",
+                                children: item.valText
+                              }),
+                              (0, f.jsx)("button", {
+                                type: "button",
+                                onClick: () => item.setVal(Math.min(item.max, item.val + item.step)),
+                                className: "grid size-6 place-items-center rounded-md text-[13px] font-semibold text-zinc-500 outline-none hover:bg-zinc-100 hover:text-zinc-900",
+                                children: "+"
+                              })
+                            ]
+                          })
+                        ]
+                      }),
+
+                      (0, f.jsx)("div", {
+                        className: "mt-3.5",
+                        children: (0, f.jsx)("input", {
+                          type: "range",
+                          min: item.min,
+                          max: item.max,
+                          step: item.step,
+                          value: item.val,
+                          onChange: (ev) => item.setVal(Number(ev.target.value)),
+                          className: "w-full cursor-pointer accent-zinc-900"
+                        })
+                      }),
+
+                      (0, f.jsxs)("div", {
+                        className: "mt-1.5 flex items-center justify-between text-[11px]",
+                        children: [
+                          (0, f.jsx)("span", {
+                            className: "font-mono text-zinc-400",
+                            children: item.rangeText
+                          }),
+                          (0, f.jsx)("span", {
+                            className: `font-mono font-semibold ${item.cost > 0 ? "text-zinc-900" : "text-emerald-600"}`,
+                            children: item.cost > 0
+                              ? `+${formatMoney(item.cost, market)}`
+                              : (lang === "en" ? "Included (0)" : "Miễn phí (0₫)")
+                          })
+                        ]
+                      })
+                    ]
+                  }, item.key)
+                ))
+              }),
+
+              /* Add-on Packs Section */
+              (0, f.jsxs)("div", {
+                className: "mt-5 border-t border-zinc-100 pt-4",
+                children: [
+                  (0, f.jsx)("div", {
+                    className: "text-[11px] font-semibold uppercase tracking-wider text-zinc-400",
+                    children: lang === "en" ? "Optional Power-up Packs" : "Gói tính năng mở rộng (Tùy chọn thêm)"
+                  }),
+                  (0, f.jsxs)("div", {
+                    className: "mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2",
+                    children: [
+                      {
+                        checked: cAutomation,
+                        toggle: () => setCAutomation(prev => !prev),
+                        title: lang === "en" ? "Automation Pack" : "Pack Tự Động Hóa",
+                        price: rates.automation,
+                        desc: lang === "en"
+                          ? "AI Autopilot + 200-row Excel import + 25 Evergreen posts"
+                          : "AI Autopilot + Nhập Excel 200 dòng + 25 bài lặp Evergreen"
+                      },
+                      {
+                        checked: cApproval,
+                        toggle: () => setCApproval(prev => !prev),
+                        title: lang === "en" ? "Approval & Links Pack" : "Pack Duyệt Bài & Link",
+                        price: rates.approval,
+                        desc: lang === "en"
+                          ? "Team Approval Workflow + 500 Tracked Shortlinks"
+                          : "Luồng duyệt bài Approval + 500 Tracked Shortlinks"
+                      }
+                    ].map((pack) => (
+                      (0, f.jsxs)("button", {
+                        type: "button",
+                        onClick: pack.toggle,
+                        className: `flex w-full items-start gap-3 rounded-xl border p-3.5 text-left outline-none focus:outline-none transition ${
+                          pack.checked
+                            ? "border-zinc-900 bg-brand-50/50 shadow-sm"
+                            : "border-zinc-200 bg-white hover:border-zinc-300"
+                        }`,
+                        children: [
+                          (0, f.jsx)("span", {
+                            className: `mt-0.5 grid size-4 shrink-0 place-items-center rounded border transition ${
+                              pack.checked
+                                ? "border-zinc-900 bg-zinc-900 text-brand-400"
+                                : "border-zinc-300 bg-white"
+                            }`,
+                            children: pack.checked && (0, f.jsx)(_e, { className: "size-3", strokeWidth: 3 })
+                          }),
+                          (0, f.jsxs)("div", {
+                            className: "min-w-0 flex-1",
+                            children: [
+                              (0, f.jsxs)("div", {
+                                className: "flex items-center justify-between gap-2",
+                                children: [
+                                  (0, f.jsx)("span", {
+                                    className: "text-[13px] font-semibold text-zinc-900",
+                                    children: pack.title
+                                  }),
+                                  (0, f.jsxs)("span", {
+                                    className: `rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
+                                      pack.checked ? "bg-brand-400 text-zinc-900" : "bg-zinc-100 text-zinc-700"
+                                    }`,
+                                    children: ["+", formatMoney(pack.price, market)]
+                                  })
+                                ]
+                              }),
+                              (0, f.jsx)("p", {
+                                className: "mt-1 text-[11.5px] leading-snug text-zinc-500",
+                                children: pack.desc
+                              })
+                            ]
+                          })
+                        ]
+                      }, pack.title)
+                    ))
+                  })
+                ]
+              })
+            ]
+          }),
+
+          /* Right Column: Balanced Live Summary Card */
+          (0, f.jsxs)("div", {
+            className: "rounded-2xl bg-zinc-900 p-6 text-white shadow-[0_30px_60px_-30px_rgba(24,24,27,0.5)] sm:p-7",
+            children: [
+              (0, f.jsxs)("div", {
+                className: "flex items-center justify-between gap-2",
+                children: [
+                  (0, f.jsx)("span", {
+                    className: "inline-block rounded-full bg-brand-400 px-3 py-1 text-[11px] font-semibold text-zinc-900",
+                    children: lang === "en" ? "Custom Plan Summary" : "Tóm tắt Gói Tự Thiết Kế"
+                  }),
+                  (0, f.jsx)("button", {
+                    type: "button",
+                    onClick: () => {
+                      setCAccounts(10);
+                      setCSeats(1);
+                      setCBrands(1);
+                      setCStorage(50);
+                      setCAutomation(false);
+                      setCApproval(false);
+                    },
+                    className: "text-[11px] text-zinc-400 underline underline-offset-2 outline-none hover:text-white",
+                    children: lang === "en" ? "Reset" : "Đặt lại"
+                  })
+                ]
+              }),
+
+              (0, f.jsxs)("div", {
+                className: "mt-4 flex items-baseline gap-1.5",
+                children: [
+                  (0, f.jsx)("span", {
+                    className: "text-4xl font-semibold tracking-tight text-white",
+                    children: formatMoney(customDisplayPrice, market)
+                  }),
+                  (0, f.jsx)("span", {
+                    className: "text-[13px] text-zinc-400",
+                    children: lang === "en" ? "/month" : "/tháng"
+                  })
+                ]
+              }),
+
+              (0, f.jsx)("div", {
+                className: "mt-2.5 rounded-xl bg-white/10 px-3 py-2 text-[11.5px]",
+                children: appliedBase === 0
+                  ? (0, f.jsx)("span", {
+                      className: "font-medium text-brand-300",
+                      children: lang === "en"
+                        ? `✓ Base platform fee waived (Save ${formatMoney(rates.base, market)}/mo)`
+                        : `✓ Đã miễn phí nền tảng cơ bản (Tiết kiệm ${formatMoney(rates.base, market)}/tháng)`
+                    })
+                  : (0, f.jsx)("span", {
+                      className: "text-zinc-300",
+                      children: lang === "en"
+                        ? `Includes ${formatMoney(appliedBase, market)} base fee · Add ${formatMoney(rates.freeBaseThreshold - itemsSubtotal, market)} to waive it`
+                        : `Gồm ${formatMoney(appliedBase, market)} phí nền · Chọn thêm ${formatMoney(rates.freeBaseThreshold - itemsSubtotal, market)} để miễn phí`
+                    })
+              }),
+
+              /* Breakdown List */
+              (0, f.jsxs)("ul", {
+                className: "mt-5 space-y-2.5 border-t border-white/10 pt-4 text-[12.5px]",
+                children: [
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          `${cAccounts} ${lang === "en" ? "Social Accounts" : "Tài khoản MXH"}`
+                        ]
+                      }),
+                      (0, f.jsx)("span", { className: "font-mono font-semibold text-white", children: formatMoney(cAccounts * rates.account, market) })
+                    ]
+                  }),
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          `${1 + cSeats} ${lang === "en" ? "Team Members (1 Owner + " + cSeats + ")" : "Thành viên (1 Chủ + " + cSeats + " Teams)"}`
+                        ]
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `font-mono font-semibold ${cSeats > 0 ? "text-white" : "text-emerald-400"}`,
+                        children: cSeats > 0 ? formatMoney(cSeats * rates.seat, market) : (lang === "en" ? "Free" : "Miễn phí")
+                      })
+                    ]
+                  }),
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          `${cBrands} ${lang === "en" ? "Brands Managed" : "Thương hiệu (Brands)"}`
+                        ]
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `font-mono font-semibold ${cBrands > 1 ? "text-white" : "text-emerald-400"}`,
+                        children: cBrands > 1 ? formatMoney((cBrands - 1) * rates.brand, market) : (lang === "en" ? "Free" : "Miễn phí")
+                      })
+                    ]
+                  }),
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          `${cStorage} MB ${lang === "en" ? "Staging Media" : "Bộ nhớ đệm Media"}`
+                        ]
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `font-mono font-semibold ${cStorage > 50 ? "text-white" : "text-emerald-400"}`,
+                        children: cStorage > 50 ? formatMoney(((cStorage - 50) / 50) * rates.storageStep, market) : (lang === "en" ? "Free" : "Miễn phí")
+                      })
+                    ]
+                  }),
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          lang === "en" ? "All 13 Core Tools & Visual Calendar" : "Đầy đủ 13 công cụ & Lịch kéo thả"
+                        ]
+                      }),
+                      (0, f.jsx)("span", {
+                        className: "font-mono font-semibold text-emerald-400",
+                        children: lang === "en" ? "Included" : "Đã gồm"
+                      })
+                    ]
+                  }),
+                  cAutomation && (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2 text-brand-300",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          lang === "en" ? "Automation Pack (Autopilot & Excel)" : "Pack Tự Động Hóa (Autopilot & Excel)"
+                        ]
+                      }),
+                      (0, f.jsx)("span", { className: "font-mono font-semibold", children: formatMoney(rates.automation, market) })
+                    ]
+                  }),
+                  cApproval && (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2 text-brand-300",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          lang === "en" ? "Approval Workflow & 500 Shortlinks" : "Pack Duyệt Bài & 500 Shortlinks"
+                        ]
+                      }),
+                      (0, f.jsx)("span", { className: "font-mono font-semibold", children: formatMoney(rates.approval, market) })
+                    ]
+                  })
+                ]
+              }),
+
+              /* Smart Upsell Alert when Custom > Professional */
+              showProUpsell && (0, f.jsxs)("div", {
+                className: "mt-4 rounded-xl border border-brand-400/50 bg-brand-400/15 p-3 text-[12px] leading-relaxed text-brand-200",
+                children: [
+                  (0, f.jsx)("div", {
+                    className: "font-semibold text-brand-300",
+                    children: lang === "en" ? "Smart Savings Tip:" : "Gợi ý tiết kiệm hơn cho bạn:"
+                  }),
+                  (0, f.jsx)("p", {
+                    className: "mt-0.5",
+                    children: lang === "en"
+                      ? `Your custom selection fits inside the Professional Plan (${formatMoney(rates.proMonthly, market)}/mo) with 20 channels, 5 brands & 3 seats!`
+                      : `Cấu hình này nằm gọn trong gói Professional (chỉ ${formatMoney(rates.proMonthly, market)}/tháng) với 20 kênh, 5 Brands & 3 ghế Teams!`
+                  }),
+                  (0, f.jsx)("button", {
+                    type: "button",
+                    onClick: () => setMode("cloud"),
+                    className: "mt-2 rounded-lg bg-brand-400 px-3 py-1 text-[11.5px] font-semibold text-zinc-900 hover:bg-brand-300",
+                    children: lang === "en" ? "Switch to Professional Plan" : "Xem gói Professional tiết kiệm hơn"
+                  })
+                ]
+              }),
+
+              (0, f.jsxs)("div", {
+                className: "mt-5 pt-2",
+                children: [
+                  (0, f.jsx)("a", {
+                    href: Aa("create"),
+                    className: "flex h-11 w-full items-center justify-center rounded-xl bg-brand-400 text-[13.5px] font-semibold text-zinc-900 transition hover:bg-brand-300",
+                    children: lang === "en" ? "Activate Custom Plan" : "Đăng ký Gói Tự Thiết Kế này"
+                  }),
+                  (0, f.jsx)("p", {
+                    className: "mt-2 text-center text-[11px] text-zinc-400",
+                    children: lang === "en"
+                      ? "Signed SCW1 custom quota license · Adjust quotas anytime"
+                      : "Cấp mã SCW1 theo đúng hạn mức bạn chọn · Nâng/hạ bất cứ lúc nào"
+                  })
+                ]
+              })
+            ]
+          })
+        ]
+      }),
+
+      /* MODE 3: WINDOWS DESKTOP APP (ONE-TIME PURCHASE + UPDATE PASS ~25%) */
+      mode === "desktop" && (0, f.jsxs)("div", {
+        className: "mx-auto mt-10 max-w-6xl",
+        children: [
+          (0, f.jsxs)("div", {
+            className: "mb-8 flex items-center justify-center gap-2.5 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-center text-[13.5px] text-zinc-700",
+            children: [
+              (0, f.jsx)(ModeIcon, { type: "desktop", active: true }),
+              (0, f.jsx)("span", {
+                children: lang === "en"
+                  ? "Windows Desktop Edition (SC2): 100% local SQLite & unlimited hard-drive media vault · 0s upload wait · Windows DPAPI security · One-time payment includes perpetual ownership + 12 months of free updates (Optional Year 2+ Update Pass at ~25%)."
+                  : "Bản Windows Desktop (SC2): Lưu Database & Kho ảnh/video 4K KHÔNG GIỚI HẠN trực tiếp trên ổ cứng máy tính của bạn · Kéo thả 0 giây chờ upload · Bảo mật Windows DPAPI · Mua 1 lần sở hữu vĩnh viễn + Miễn phí 12 tháng cập nhật đầu (Từ năm thứ 2 dùng bản hiện tại mãi mãi hoặc mua Update Pass chỉ ~25%)."
+              })
+            ]
+          }),
+          (0, f.jsx)("div", {
+            className: "grid grid-cols-1 gap-5 md:grid-cols-3",
+            children: DESKTOP_PLANS_DATA.map((dPlan) => {
+              let pObj = dPlan.price[market];
+              let dName = dPlan.name[lang === "en" ? "en" : "vi"];
+              let dDevices = dPlan.devices[lang === "en" ? "en" : "vi"];
+              let dDesc = dPlan.desc[lang === "en" ? "en" : "vi"];
+              let dFeatures = dPlan.features[lang === "en" ? "en" : "vi"];
+              let dCta = dPlan.cta[lang === "en" ? "en" : "vi"];
+
+              return (0, f.jsxs)("div", {
+                className: `relative flex flex-col rounded-2xl p-7 ${
+                  dPlan.popular
+                    ? "bg-zinc-900 text-white shadow-[0_30px_60px_-30px_rgba(24,24,27,0.5)]"
+                    : "border border-zinc-200 bg-white"
+                }`,
+                children: [
+                  dPlan.badge && (0, f.jsx)("span", {
+                    className: "absolute -top-3 left-7 rounded-full bg-brand-400 px-2.5 py-1 text-[11px] font-semibold text-zinc-900",
+                    children: dPlan.badge[lang === "en" ? "en" : "vi"]
+                  }),
+                  (0, f.jsxs)("div", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsx)("h3", { className: "text-[16px] font-semibold", children: dName }),
+                      (0, f.jsx)("span", {
+                        className: `rounded-lg px-2.5 py-0.5 text-[11px] font-semibold ${
+                          dPlan.popular ? "bg-white/10 text-brand-300" : "bg-zinc-100 text-zinc-700"
+                        }`,
+                        children: dDevices
+                      })
+                    ]
+                  }),
+                  (0, f.jsx)("p", {
+                    className: `mt-1.5 text-[13px] ${dPlan.popular ? "text-zinc-300" : "text-zinc-500"}`,
+                    children: dDesc
+                  }),
+                  (0, f.jsxs)("div", {
+                    className: "mt-6 flex items-baseline gap-1.5",
+                    children: [
+                      (0, f.jsx)("span", {
+                        className: "text-4xl font-semibold tracking-tight",
+                        children: formatMoney(pObj.once, market)
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `text-[12.5px] ${dPlan.popular ? "text-zinc-400" : "text-zinc-500"}`,
+                        children: lang === "en" ? "one-time" : "/ mua đứt 1 lần"
+                      })
+                    ]
+                  }),
+                  (0, f.jsx)("div", {
+                    className: `mt-2 rounded-lg px-3 py-1.5 text-[12px] font-medium ${
+                      dPlan.popular ? "bg-white/10 text-brand-300" : "bg-zinc-100 text-zinc-700"
+                    }`,
+                    children: lang === "en"
+                      ? `Year 2+ Update Pass (Optional ~25%): ${formatMoney(pObj.update, market)}/yr`
+                      : `Gia hạn Update năm thứ 2+ (Tùy chọn ~25%): ${formatMoney(pObj.update, market)}/năm`
+                  }),
+                  (0, f.jsx)("a", {
+                    href: Aa("login"),
+                    className: `mt-6 flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition ${
+                      dPlan.popular
+                        ? "bg-brand-400 text-zinc-900 hover:bg-brand-300"
+                        : "border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100"
+                    }`,
+                    children: dCta
+                  }),
+                  (0, f.jsx)("ul", {
+                    className: `mt-7 flex-1 space-y-2.5 border-t pt-6 text-[13px] ${
+                      dPlan.popular ? "border-white/10" : "border-zinc-100"
+                    }`,
+                    children: dFeatures.map((feat) => (
+                      (0, f.jsxs)("li", {
+                        className: "flex items-start gap-2.5",
+                        children: [
+                          (0, f.jsx)(_e, {
+                            className: `mt-0.5 size-4 shrink-0 ${dPlan.popular ? "text-brand-400" : "text-zinc-900"}`,
+                            strokeWidth: 2.5
+                          }),
+                          (0, f.jsx)("span", {
+                            className: dPlan.popular ? "text-zinc-200" : "text-zinc-600",
+                            children: feat
+                          })
+                        ]
+                      }, feat)
+                    ))
+                  })
+                ]
+              }, dPlan.key);
+            })
+          })
+        ]
+      })
+    ]
+  });
+}
 
 var OC_EN = [
   { q: "Which platforms does SocialChoice support?", a: "SocialChoice currently supports Facebook (Pages), Instagram (Business & Creator accounts), Threads, X (Twitter), TikTok, and LinkedIn. You can publish simultaneously to all networks or tailor posts individually." },
@@ -837,7 +2047,6 @@ function Sr(){
   let d = bC();
 
   let navItems = lang === "en" ? pg_EN : pg;
-  let pricingItems = lang === "en" ? qC_EN : qC;
   let faqItems = lang === "en" ? OC_EN : OC;
 
   let footerCols = lang === "en" ? [
@@ -1098,72 +2307,7 @@ function Sr(){
       }),
       (0, f.jsx)(ng, {}),
       (0, f.jsx)(ig, {}),
-      (0, f.jsxs)("section", {
-        id: "bang-gia",
-        className: "scroll-mt-16 px-6 py-24",
-        children: [
-          (0, f.jsx)(NC, {
-            eyebrow: lang === "en" ? "Pricing" : "Bảng giá",
-            title: lang === "en" ? "Simple, transparent, no hidden fees" : "Đơn giản, minh bạch, không phí ẩn",
-            desc: lang === "en" ? "Start for free. Upgrade whenever you're ready." : "Bắt đầu miễn phí. Nâng cấp khi bạn sẵn sàng."
-          }),
-          (0, f.jsx)("div", {
-            className: "mt-8 flex justify-center",
-            children: (0, f.jsx)("div", {
-              className: "inline-flex items-center rounded-full bg-zinc-100 p-1",
-              children: [
-                [!1, lang === "en" ? "Monthly" : "Theo tháng"],
-                [!0, lang === "en" ? "Yearly" : "Theo năm"]
-              ].map(([s, n]) => (
-                (0, f.jsxs)("button", {
-                  onClick: () => a(s),
-                  className: `flex h-8 items-center gap-2 rounded-full px-4 text-[13px] font-medium transition ${e === s ? "bg-white text-zinc-900 shadow-sm" : "text-zinc-500"}`,
-                  children: [n, s && (0, f.jsx)("span", { className: "rounded-full bg-brand-400 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-900", children: "\u221220%" })]
-                }, n)
-              ))
-            })
-          }),
-          (0, f.jsx)("div", {
-            className: "mx-auto mt-12 grid max-w-6xl grid-cols-1 gap-4 sm:gap-5 md:grid-cols-3",
-            children: pricingItems.map((s, n) => {
-              let i = e ? Math.round(s.price * .8 / 1e3) * 1e3 : s.price;
-              return (0, f.jsxs)("div", {
-                style: Pe(n * 120),
-                className: `reveal relative flex flex-col rounded-2xl p-7 ${s.popular ? "bg-zinc-900 text-white shadow-[0_30px_60px_-30px_rgba(24,24,27,0.5)] lg:-my-3 lg:py-10" : "border border-zinc-200 bg-white"}`,
-                children: [
-                  s.popular && (0, f.jsx)("span", { className: "absolute -top-3 left-7 rounded-full bg-brand-400 px-2.5 py-1 text-[11px] font-semibold text-zinc-900", children: lang === "en" ? "Most Popular" : "Phổ biến nhất" }),
-                  (0, f.jsx)("h3", { className: "text-[15px] font-semibold", children: s.name }),
-                  (0, f.jsx)("p", { className: `mt-1 text-[13px] ${s.popular ? "text-zinc-400" : "text-zinc-500"}`, children: s.desc }),
-                  (0, f.jsxs)("div", {
-                    className: "mt-6 flex items-baseline gap-1",
-                    children: [
-                      (0, f.jsx)("span", { className: "animate-fade-up text-4xl font-semibold tracking-tight [animation-duration:0.45s]", children: i === 0 ? "0₫" : `${i.toLocaleString("vi-VN")}₫` }, `${s.name}-${e}`),
-                      (0, f.jsx)("span", { className: `text-[13px] ${s.popular, "text-zinc-400"}`, children: lang === "en" ? "/month" : "/tháng" })
-                    ]
-                  }),
-                  (0, f.jsx)("div", {
-                    className: `mt-1 h-4 text-[11px] ${s.popular ? "text-zinc-500" : "text-zinc-400"}`,
-                    children: i > 0 && e && (lang === "en" ? `Billed ${(i * 12).toLocaleString("vi-VN")}₫ annually` : `Thanh toán ${(i * 12).toLocaleString("vi-VN")}₫ mỗi năm`)
-                  }),
-                  (0, f.jsx)("a", { href: Aa("create"), className: `mt-6 flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition ${s.popular ? "bg-brand-400 text-zinc-900 hover:bg-brand-300" : "border border-zinc-200 text-zinc-800 hover:border-zinc-300 hover:bg-zinc-50"}`, children: s.cta }),
-                  (0, f.jsx)("ul", {
-                    className: `mt-7 space-y-3 border-t pt-7 text-[13px] ${s.popular ? "border-white/10" : "border-zinc-100"}`,
-                    children: s.features.map(x => (
-                      (0, f.jsxs)("li", {
-                        className: "flex items-start gap-2.5",
-                        children: [
-                          (0, f.jsx)(_e, { className: `mt-0.5 size-4 shrink-0 ${s.popular ? "text-brand-400" : "text-zinc-900"}`, strokeWidth: 2.5 }),
-                          (0, f.jsx)("span", { className: s.popular ? "text-zinc-200" : "text-zinc-600", children: x })
-                        ]
-                      }, x)
-                    ))
-                  })
-                ]
-              }, s.name);
-            })
-          })
-        ]
-      }),
+      (0, f.jsx)(PricingSectionEnhanced, { lang }),
       (0, f.jsxs)("section", {
         id: "faq",
         className: "scroll-mt-16 border-t border-zinc-100 bg-zinc-50/60 px-6 py-24",

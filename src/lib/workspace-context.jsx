@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { appClient } from '@/api/app-client';
 import { seedDemoWorkspace } from './demo-seed';
-import { seedStarterWorkspace, STARTER_SEED_STORAGE_KEY } from './starter-seed';
+import { seedStarterWorkspace, ensureActiveBrandPillars, STARTER_SEED_STORAGE_KEY } from './starter-seed';
 
 const WorkspaceContext = createContext(null);
 
@@ -49,6 +49,8 @@ export function WorkspaceProvider({ children }) {
                     } finally {
                         if (active) setSeeding(false);
                     }
+                } else if (active && items.length > 0) {
+                    await ensureActiveBrandPillars(items);
                 }
             } catch { /* The shell displays the stored error. */ }
             finally { if (active) setLoading(false); }

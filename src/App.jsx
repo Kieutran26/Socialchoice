@@ -29,6 +29,8 @@ import TermsOfService from '@/pages/TermsOfService';
 import CookiePolicy from '@/pages/CookiePolicy';
 import DataDeletion from '@/pages/DataDeletion';
 import LandingPage from '@/pages/LandingPage';
+import LandingPage2 from '@/pages/LandingPage2';
+import ContentStrategy2 from '@/pages/ContentStrategy2';
 import LoginPage from '@/pages/LoginPage';
 import OAuthConsent from '@/pages/OAuthConsent';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
@@ -76,6 +78,8 @@ export default function App() {
                             {/* Public routes — accessible immediately without auth */}
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/landing" element={<LandingPage />} />
+                            <Route path="/landing-2" element={<LandingPage2 />} />
+                            <Route path="/strategy-2" element={<ContentStrategy2 />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/oauth/consent" element={<OAuthConsent />} />
                             <Route path="/privacy" element={<PrivacyPolicy />} />

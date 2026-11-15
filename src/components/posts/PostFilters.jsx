@@ -1,4 +1,4 @@
-import { isDesktop } from '@/api/desktop/runtime';
+﻿import { isDesktop } from '@/api/desktop/runtime';
 import { useTranslation } from '@/lib/i18n';
 import { PLATFORMS } from '@/lib/constants';
 import { Button } from '@/components/ui/button';
@@ -52,7 +52,7 @@ export default function PostFilters({
     };
 
     return (
-        <div className="panel p-3 mb-5 space-y-3 bg-card border border-border rounded-2xl shadow-2xs">
+        <div className="panel p-3 mb-5 space-y-3 bg-card border border-border rounded-2xl">
             {/* Unified Smart Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Left: Segmented Status Pills */}
@@ -67,7 +67,7 @@ export default function PostFilters({
                                     onClick={() => onTabChange(tab.key)}
                                     className={`flex items-center shrink-0 gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                                         isActive
-                                            ? 'bg-card text-foreground font-bold shadow-2xs'
+                                            ? 'bg-card text-foreground font-bold'
                                             : 'text-muted-foreground hover:text-foreground'
                                     }`}
                                 >
@@ -76,7 +76,7 @@ export default function PostFilters({
                                     <span
                                         className={`min-w-[18px] h-5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                             isActive
-                                                ? 'bg-zinc-900 text-white'
+                                                ? 'bg-brand text-brand-ink'
                                                 : 'bg-muted text-muted-foreground'
                                         }`}
                                     >
@@ -214,7 +214,7 @@ export default function PostFilters({
                                 onClick={() => setViewMode('table')}
                                 className={`flex items-center justify-center h-7 w-7 rounded-lg text-xs transition-colors cursor-pointer ${
                                     viewMode === 'table'
-                                        ? 'bg-card text-foreground shadow-2xs font-bold'
+                                        ? 'bg-card text-foreground font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                                 title={t('Table view')}
@@ -227,7 +227,7 @@ export default function PostFilters({
                                 onClick={() => setViewMode('grid')}
                                 className={`flex items-center justify-center h-7 w-7 rounded-lg text-xs transition-colors cursor-pointer ${
                                     viewMode === 'grid'
-                                        ? 'bg-card text-foreground shadow-2xs font-bold'
+                                        ? 'bg-card text-foreground font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                                 title={t('Grid view')}

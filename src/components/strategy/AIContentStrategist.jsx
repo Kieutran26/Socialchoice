@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { useToast } from '@/components/ui/use-toast';
 import { Button } from '@/components/ui/button';
@@ -41,7 +41,7 @@ const PLATFORM_OPTIONS = [
     { key: 'facebook', label: 'Facebook', short: 'FB', icon: FacebookLogo, color: '#1877F2', activeBg: 'bg-blue-50 text-[#1877F2] border-blue-300' },
     { key: 'instagram', label: 'Instagram', short: 'IG', icon: InstagramLogo, color: '#E4405F', activeBg: 'bg-pink-50 text-[#E4405F] border-pink-300' },
     { key: 'linkedin', label: 'LinkedIn', short: 'LI', icon: LinkedinLogo, color: '#0A66C2', activeBg: 'bg-sky-50 text-[#0A66C2] border-sky-300' },
-    { key: 'tiktok', label: 'TikTok', short: 'TT', icon: TiktokLogo, color: '#000000', activeBg: 'bg-neutral-900 text-white border-neutral-900' },
+    { key: 'tiktok', label: 'TikTok', short: 'TT', icon: TiktokLogo, color: '#000000', activeBg: 'bg-brand text-brand-ink border-brand-dark' },
     { key: 'threads', label: 'Threads', short: 'TH', icon: ThreadsLogo, color: '#000000', activeBg: 'bg-neutral-800 text-white border-neutral-800' },
 ];
 
@@ -49,7 +49,7 @@ const renderPlatformBadge = (platform) => {
     const key = (platform || '').toLowerCase();
     if (key === 'facebook') {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200/90 text-[#1877F2] font-semibold text-[10.5px] uppercase tracking-wide shadow-2xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-blue-50 border border-blue-200/90 text-[#1877F2] font-semibold text-[10.5px] uppercase tracking-wide whitespace-nowrap">
                 <FacebookLogo size={13} weight="fill" className="text-[#1877F2] shrink-0" />
                 <span>Facebook</span>
             </span>
@@ -57,7 +57,7 @@ const renderPlatformBadge = (platform) => {
     }
     if (key === 'instagram') {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-pink-50 border border-pink-200/90 text-[#E4405F] font-semibold text-[10.5px] uppercase tracking-wide shadow-2xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-pink-50 border border-pink-200/90 text-[#E4405F] font-semibold text-[10.5px] uppercase tracking-wide whitespace-nowrap">
                 <InstagramLogo size={13} weight="fill" className="text-[#E4405F] shrink-0" />
                 <span>Instagram</span>
             </span>
@@ -65,7 +65,7 @@ const renderPlatformBadge = (platform) => {
     }
     if (key === 'linkedin') {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-sky-50 border border-sky-200/90 text-[#0A66C2] font-semibold text-[10.5px] uppercase tracking-wide shadow-2xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-sky-50 border border-sky-200/90 text-[#0A66C2] font-semibold text-[10.5px] uppercase tracking-wide whitespace-nowrap">
                 <LinkedinLogo size={13} weight="fill" className="text-[#0A66C2] shrink-0" />
                 <span>LinkedIn</span>
             </span>
@@ -73,7 +73,7 @@ const renderPlatformBadge = (platform) => {
     }
     if (key === 'tiktok') {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-neutral-900 border border-neutral-900 text-white font-semibold text-[10.5px] uppercase tracking-wide shadow-2xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-brand border border-brand-dark text-brand-ink font-semibold text-[10.5px] uppercase tracking-wide whitespace-nowrap">
                 <TiktokLogo size={13} weight="fill" className="shrink-0" />
                 <span>TikTok</span>
             </span>
@@ -81,7 +81,7 @@ const renderPlatformBadge = (platform) => {
     }
     if (key === 'threads') {
         return (
-            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-neutral-800 border border-neutral-800 text-white font-semibold text-[10.5px] uppercase tracking-wide shadow-2xs whitespace-nowrap">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-neutral-800 border border-neutral-800 text-white font-semibold text-[10.5px] uppercase tracking-wide whitespace-nowrap">
                 <ThreadsLogo size={13} weight="fill" className="shrink-0" />
                 <span>Threads</span>
             </span>
@@ -391,7 +391,7 @@ export default function AIContentStrategist({
                         size="sm"
                         onClick={handleSeedAssets}
                         disabled={seedingAssets}
-                        className="bg-neutral-900 hover:bg-neutral-800 text-white rounded-xl shrink-0 text-xs font-semibold h-8 px-3.5"
+                        className="bg-brand hover:bg-[#ffe059] text-brand-ink rounded-xl shrink-0 text-xs font-semibold h-8 px-3.5"
                     >
                         <Plus size={14} weight="bold" />
                         <span>{seedingAssets ? t('Đang nạp…') : t('Nạp 20 assets mẫu ngay')}</span>
@@ -405,7 +405,7 @@ export default function AIContentStrategist({
                 <button
                     type="button"
                     onClick={() => onOpenKnowledge?.()}
-                    className="p-3.5 rounded-xl bg-white border border-neutral-200 shadow-2xs flex items-center gap-3 text-left transition-all hover:border-neutral-300 cursor-pointer"
+                    className="p-3.5 rounded-xl bg-white border border-neutral-200 flex items-center gap-3 text-left transition-all hover:border-neutral-300 cursor-pointer"
                 >
                     <div className="size-8 rounded-lg bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center font-bold text-xs shrink-0">
                         <Check size={14} weight="bold" />
@@ -427,7 +427,7 @@ export default function AIContentStrategist({
                 </button>
 
                 {/* Step 2 */}
-                <div className="p-3.5 rounded-xl bg-white border border-neutral-200 shadow-2xs flex items-center gap-3">
+                <div className="p-3.5 rounded-xl bg-white border border-neutral-200 flex items-center gap-3">
                     <div className="size-8 rounded-lg bg-neutral-100 text-neutral-900 border border-neutral-200 flex items-center justify-center font-bold text-xs shrink-0">
                         <Check size={14} weight="bold" />
                     </div>
@@ -448,7 +448,7 @@ export default function AIContentStrategist({
                 </div>
 
                 {/* Step 3 (Active) */}
-                <div className="p-3.5 rounded-xl bg-neutral-900 text-white shadow-2xs flex items-center gap-3">
+                <div className="p-3.5 rounded-xl bg-brand text-brand-ink flex items-center gap-3">
                     <div className="size-8 rounded-lg bg-white text-neutral-950 flex items-center justify-center font-bold text-xs shrink-0">
                         3
                     </div>
@@ -469,7 +469,7 @@ export default function AIContentStrategist({
             {/* ========================================================================= */}
             {/* TẦNG 1: INLINE PARAMETER COCKPIT BAR (OPTION B) */}
             {/* ========================================================================= */}
-            <div className="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
+            <div className="p-4 bg-white border border-neutral-200 rounded-2xl flex flex-col xl:flex-row items-start xl:items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs w-full xl:w-auto">
                     {/* Duration Segmented Control */}
                     <div className="h-9 flex items-center gap-1 bg-neutral-100 p-1 rounded-xl border border-neutral-200/60 shrink-0">
@@ -480,7 +480,7 @@ export default function AIContentStrategist({
                                 type="button"
                                 onClick={() => setDays(d)}
                                 className={`h-7 px-2.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${days === d
-                                    ? 'bg-neutral-900 text-white shadow-2xs'
+                                    ? 'bg-brand text-brand-ink'
                                     : 'text-neutral-600 hover:text-neutral-900'
                                     }`}
                             >
@@ -495,7 +495,7 @@ export default function AIContentStrategist({
                         <select
                             value={frequency}
                             onChange={(e) => setFrequency(e.target.value)}
-                            className="h-9 px-3 text-xs rounded-xl border border-neutral-200 bg-neutral-50 font-medium text-neutral-800 focus:outline-none focus:ring-1 focus:ring-neutral-900 cursor-pointer"
+                            className="h-9 px-3 text-xs rounded-xl border border-neutral-200 bg-neutral-50 font-medium text-neutral-800 focus:outline-none focus:ring-1 focus:ring-brand-dark cursor-pointer"
                         >
                             <option value="1_per_day">{t('1 bài / ngày (Chuẩn 30 bài)')}</option>
                             <option value="2_per_day">{t('2 bài / ngày (Sáng & Tối)')}</option>
@@ -516,7 +516,7 @@ export default function AIContentStrategist({
                                     type="button"
                                     onClick={() => togglePlatform(p.key)}
                                     className={`h-9 px-3 rounded-xl text-xs transition-all cursor-pointer flex items-center gap-1.5 whitespace-nowrap shrink-0 ${isSelected
-                                        ? `${p.activeBg} font-semibold shadow-2xs border`
+                                        ? `${p.activeBg} font-semibold border`
                                         : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium border border-neutral-200/60'
                                         }`}
                                 >
@@ -534,7 +534,7 @@ export default function AIContentStrategist({
                     type="button"
                     onClick={handleGenerate}
                     disabled={generating}
-                    className="h-9 px-5 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer transition disabled:opacity-60 shrink-0 w-full xl:w-auto"
+                    className="h-9 px-5 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-semibold flex items-center justify-center gap-2 whitespace-nowrap cursor-pointer transition disabled:opacity-60 shrink-0 w-full xl:w-auto"
                 >
                     <Lightning size={15} weight="fill" className="shrink-0" />
                     <span className="whitespace-nowrap">
@@ -546,7 +546,7 @@ export default function AIContentStrategist({
             {/* ========================================================================= */}
             {/* TẦNG 2: STRATEGY DISTRIBUTION HUD (OPTION B) */}
             {/* ========================================================================= */}
-            <div className="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-3">
+            <div className="p-4 bg-white border border-neutral-200 rounded-2xl space-y-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
                     <div className="flex items-center gap-2">
                         <SlidersHorizontal size={16} weight="bold" className="text-neutral-900" />
@@ -589,7 +589,7 @@ export default function AIContentStrategist({
             {/* ========================================================================= */}
             {/* TẦNG 3: REVIEW WORKSPACE & TRI-VIEW SWITCHER (TABLE + CARDS + CALENDAR OPTION C) */}
             {/* ========================================================================= */}
-            <div className="bg-white border border-neutral-200 rounded-2xl shadow-2xs overflow-hidden space-y-0">
+            <div className="bg-white border border-neutral-200 rounded-2xl overflow-hidden space-y-0">
                 {/* Control Header Toolbar */}
                 <div className="p-4 border-b border-neutral-200 bg-neutral-50/50 flex flex-col xl:flex-row items-start xl:items-center justify-between gap-3">
                     <div className="flex flex-wrap items-center gap-3 w-full xl:w-auto">
@@ -599,7 +599,7 @@ export default function AIContentStrategist({
                                     count: currentPlan?.totalPosts || 0,
                                 })}
                             </h4>
-                            <span className="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-mono text-[10px] font-semibold whitespace-nowrap">
+                            <span className="px-2 py-0.5 rounded-md bg-brand text-brand-ink font-mono text-[10px] font-semibold whitespace-nowrap">
                                 DRAFT PLAN
                             </span>
                         </div>
@@ -648,7 +648,7 @@ export default function AIContentStrategist({
                                 type="button"
                                 onClick={() => setViewMode('table')}
                                 className={`h-7 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${viewMode === 'table'
-                                    ? 'bg-neutral-900 text-white shadow-2xs'
+                                    ? 'bg-brand text-brand-ink'
                                     : 'text-neutral-600 hover:text-neutral-900'
                                     }`}
                                 title={t('Xem dạng Bảng (Table)')}
@@ -661,7 +661,7 @@ export default function AIContentStrategist({
                                 type="button"
                                 onClick={() => setViewMode('cards')}
                                 className={`h-7 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${viewMode === 'cards'
-                                    ? 'bg-neutral-900 text-white shadow-2xs'
+                                    ? 'bg-brand text-brand-ink'
                                     : 'text-neutral-600 hover:text-neutral-900'
                                     }`}
                                 title={t('Xem dạng Lưới thẻ (Cards)')}
@@ -674,7 +674,7 @@ export default function AIContentStrategist({
                                 type="button"
                                 onClick={() => setViewMode('calendar')}
                                 className={`h-7 px-3 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 whitespace-nowrap transition-all cursor-pointer ${viewMode === 'calendar'
-                                    ? 'bg-neutral-900 text-white shadow-2xs'
+                                    ? 'bg-brand text-brand-ink'
                                     : 'text-neutral-600 hover:text-neutral-900'
                                     }`}
                                 title={t('Xem dạng Lịch tháng 30 ngày (Option C)')}
@@ -689,7 +689,7 @@ export default function AIContentStrategist({
                             type="button"
                             onClick={handleApplyPlan}
                             disabled={applying || !currentPlan?.posts?.length}
-                            className="h-9 px-4 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-2xs flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer transition disabled:opacity-60"
+                            className="h-9 px-4 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-semibold flex items-center justify-center gap-2 whitespace-nowrap shrink-0 cursor-pointer transition disabled:opacity-60"
                         >
                             <CheckSquareOffset size={15} weight="bold" className="shrink-0" />
                             <span className="whitespace-nowrap">{applying ? t('Đang lưu…') : t('Áp dụng vào lịch')}</span>
@@ -803,7 +803,7 @@ export default function AIContentStrategist({
                         {filteredPosts.map((post) => (
                             <div
                                 key={post.id}
-                                className="p-4 bg-white border border-neutral-200 rounded-2xl shadow-2xs flex flex-col justify-between hover:border-neutral-300 transition-all space-y-3"
+                                className="p-4 bg-white border border-neutral-200 rounded-2xl flex flex-col justify-between hover:border-neutral-300 transition-all space-y-3"
                             >
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between gap-2 text-[11px]">
@@ -818,7 +818,7 @@ export default function AIContentStrategist({
 
                                         <div className="flex items-center gap-1.5">
                                             {renderPlatformBadge(post.platform)}
-                                            <span className="rounded bg-neutral-900 text-white px-1.5 py-0.5 text-[9px] font-bold">
+                                            <span className="rounded bg-brand text-brand-ink px-1.5 py-0.5 text-[9px] font-bold">
                                                 DRAFT
                                             </span>
                                         </div>
@@ -943,7 +943,7 @@ export default function AIContentStrategist({
                                 <div
                                     key={post.id}
                                     onClick={() => handleOpenEdit(post)}
-                                    className="p-2.5 rounded-xl border border-neutral-200 bg-white hover:border-neutral-900 hover:shadow-2xs min-h-[110px] flex flex-col justify-between space-y-1.5 cursor-pointer transition-all group"
+                                    className="p-2.5 rounded-xl border border-neutral-200 bg-white hover:border-brand-dark hover:shadow-2xs min-h-[110px] flex flex-col justify-between space-y-1.5 cursor-pointer transition-all group"
                                     title={t('Nhấp để chỉnh sửa bài viết')}
                                 >
                                     <div className="flex items-center justify-between text-[10px]">
@@ -959,7 +959,7 @@ export default function AIContentStrategist({
                                                 post.platform === 'facebook' ? 'bg-blue-50 text-[#1877F2] border border-blue-200' :
                                                 post.platform === 'instagram' ? 'bg-pink-50 text-[#E4405F] border border-pink-200' :
                                                 post.platform === 'linkedin' ? 'bg-sky-50 text-[#0A66C2] border border-sky-200' :
-                                                'bg-neutral-900 text-white'
+                                                'bg-brand text-brand-ink'
                                             }`}>
                                                 {post.platform.slice(0, 2)}
                                             </span>
@@ -989,7 +989,7 @@ export default function AIContentStrategist({
 
             {/* Edit Item Modal (Monochrome) */}
             <Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-                <DialogContent className="max-w-xl bg-white border border-neutral-200 rounded-2xl p-6 shadow-xs">
+                <DialogContent className="max-w-xl bg-white border border-neutral-200 rounded-2xl p-6">
                     <DialogHeader>
                         <DialogTitle className="text-base font-bold text-neutral-900">
                             {t('Chỉnh sửa bài viết Ngày {day}', { day: editingItem?.dayIndex })}
@@ -1108,7 +1108,7 @@ export default function AIContentStrategist({
                         <button
                             type="button"
                             onClick={handleSaveEdit}
-                            className="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-semibold shadow-xs"
+                            className="px-4 py-2 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-semibold"
                         >
                             {t('Lưu thay đổi')}
                         </button>

@@ -1,4 +1,4 @@
-import { isDesktop } from '@/api/desktop/runtime';
+﻿import { isDesktop } from '@/api/desktop/runtime';
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { aiRequest } from '@/api/ai';
@@ -94,7 +94,7 @@ export default function DesktopAiWriter({ form, disabled, onApply, onApplyPlatfo
                 onClick={() => setIsOpen((prev) => !prev)}
             >
                 <div className="flex items-center gap-2 text-foreground">
-                    <Sparkle size={18} weight="fill" className="shrink-0 text-amber-500" />
+                    <Sparkle size={18} weight="fill" className="shrink-0 text-brand-dark" />
                     <h2 className="text-[15px] font-semibold text-foreground">{t('AI writing assistant')}</h2>
                 </div>
                 <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export default function DesktopAiWriter({ form, disabled, onApply, onApplyPlatfo
                                         </>
                                     ) : (
                                         <>
-                                            <Sparkle size={15} weight="fill" className="mr-2 text-amber-500" />
+                                            <Sparkle size={15} weight="fill" className="mr-2 text-brand-dark" />
                                             {t('Generate AI suggestion')}
                                         </>
                                     )}
@@ -286,7 +286,7 @@ export default function DesktopAiWriter({ form, disabled, onApply, onApplyPlatfo
                             />
 
                             {stale && (
-                                <p role="status" className="text-xs text-amber-700 font-medium">
+                                <p role="status" className="text-xs text-brand-ink font-medium">
                                     {t('The draft changed. Generate again or copy the suggestion manually.')}
                                 </p>
                             )}

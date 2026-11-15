@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+﻿import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import {
     PenNib,
@@ -175,11 +175,11 @@ export default function SignaturesSettingsCard() {
     }, [accounts, activeBrand?.id, formData.platform]);
 
     return (
-        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
             {/* Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-border/60 pb-3">
                 <div className="flex items-center gap-2.5">
-                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15 text-amber-600 dark:text-amber-400">
+                    <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-amber-500/15 text-brand-ink dark:text-amber-400">
                         <PenNib size={18} weight="bold" />
                     </span>
                     <div>
@@ -195,7 +195,7 @@ export default function SignaturesSettingsCard() {
                 <button
                     type="button"
                     onClick={openCreateModal}
-                    className="btn-skew inline-flex items-center gap-1.5 text-xs py-1.5 px-3.5 shadow-2xs cursor-pointer shrink-0"
+                    className="btn-skew inline-flex items-center gap-1.5 text-xs py-1.5 px-3.5 cursor-pointer shrink-0"
                 >
                     <Plus size={14} weight="bold" />
                     <span>{t('Thêm chữ ký')}</span>
@@ -239,7 +239,7 @@ export default function SignaturesSettingsCard() {
                                                 {sig.name}
                                             </span>
                                             {sig.is_default && (
-                                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                                                <span className="inline-flex items-center gap-1 rounded-md bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-semibold text-brand-ink dark:text-amber-400 border border-amber-500/20">
                                                     <Star size={11} weight="fill" />
                                                     {t('Mặc định')}
                                                 </span>
@@ -304,7 +304,7 @@ export default function SignaturesSettingsCard() {
                     <div className="relative w-full max-w-lg rounded-2xl bg-card border border-border p-5 shadow-xl space-y-4">
                         <div className="flex items-center justify-between border-b border-border/60 pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-amber-600">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-500/15 text-brand-ink">
                                     <PenNib size={16} weight="bold" />
                                 </span>
                                 <h3 className="text-sm font-semibold text-foreground">
@@ -425,7 +425,7 @@ export default function SignaturesSettingsCard() {
                                 <button
                                     type="submit"
                                     disabled={saving}
-                                    className="btn-skew text-xs py-1.5 px-4 shadow-2xs cursor-pointer disabled:opacity-60"
+                                    className="btn-skew text-xs py-1.5 px-4 cursor-pointer disabled:opacity-60"
                                 >
                                     {saving ? t('Đang lưu…') : t('Lưu chữ ký')}
                                 </button>

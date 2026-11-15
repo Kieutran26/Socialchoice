@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import PostFilters from '../posts/PostFilters';
 import { Button } from '../ui/button';
 import {
@@ -28,7 +28,7 @@ export default function CalendarToolbar(
             <div className="flex flex-wrap items-center justify-between gap-3">
                 {/* Date Navigation */}
                 <div className="flex items-center gap-2">
-                    <div className="flex items-center rounded-xl border border-border bg-card p-0.5 shadow-2xs">
+                    <div className="flex items-center rounded-xl border border-border bg-card p-0.5">
                         <Button
                             variant="ghost"
                             size="icon"
@@ -62,7 +62,7 @@ export default function CalendarToolbar(
                 </div>
 
                 {/* View Switcher: Tháng (Option A), Theo kênh (Option C), Tuần, Danh sách */}
-                <div className="flex items-center rounded-xl border border-border bg-muted/60 p-0.5 shadow-2xs">
+                <div className="flex items-center rounded-xl border border-border bg-muted/60 p-0.5">
                     {VIEW_OPTIONS.map((v) => {
                         const Icon = v.icon;
                         const isActive = view === v.id;
@@ -75,7 +75,7 @@ export default function CalendarToolbar(
                                 onClick={() => setView(v.id)}
                                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
                                     isActive
-                                        ? 'bg-card text-foreground font-bold shadow-2xs'
+                                        ? 'bg-card text-foreground font-bold'
                                         : 'text-muted-foreground hover:text-foreground font-medium'
                                 }`}
                             >

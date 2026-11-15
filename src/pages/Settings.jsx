@@ -1,4 +1,4 @@
-import { requireNoTemplateReferences } from '@/lib/post-templates';
+﻿import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -243,11 +243,11 @@ export default function Settings() {
 
     if (loadError)
         return (
-            <div role="alert" className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
+            <div role="alert" className="panel p-5 bg-card border border-border/80 rounded-2xl">
                 <p className="mb-3 text-xs text-dangerFg font-medium">{t(loadError)}</p>
                 <button
                     type="button"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-xs font-medium text-brand-ink hover:bg-[#ffe059] transition-colors"
                     onClick={load}
                 >
                     {t('Retry')}
@@ -321,7 +321,7 @@ export default function Settings() {
             {/* Option A Layout: Left Vertical Category Sidebar + Right Canvas */}
             <div className="grid grid-cols-1 md:grid-cols-[240px_1fr] gap-6 items-start">
                 {/* Left Navigation Sidebar */}
-                <nav className="panel p-2.5 space-y-4 sticky top-20 bg-card border border-border/80 rounded-2xl shadow-2xs">
+                <nav className="panel p-2.5 space-y-4 sticky top-20 bg-card border border-border/80 rounded-2xl">
                     <div>
                         <div className="px-2.5 py-1 text-[10.5px] font-bold uppercase tracking-wider text-muted-foreground font-mono">
                             {t('Core & Assistant')}
@@ -332,7 +332,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('ai')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'ai'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -348,7 +348,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('publishing')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'publishing'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -373,7 +373,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('brands')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'brands'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -384,7 +384,7 @@ export default function Settings() {
                                 <span
                                     className={`px-1.5 py-0.2 rounded-md text-[10px] font-mono ${
                                         activeTab === 'brands'
-                                            ? 'bg-background/20 text-background'
+                                            ? 'bg-brand-dark/20 text-brand-ink'
                                             : 'bg-muted text-muted-foreground'
                                     }`}
                                 >
@@ -397,7 +397,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('signatures')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'signatures'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -412,7 +412,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('shortlinks')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'shortlinks'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -434,7 +434,7 @@ export default function Settings() {
                                 onClick={() => setActiveTab('workspace')}
                                 className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                     activeTab === 'workspace'
-                                        ? 'bg-foreground text-background font-semibold shadow-xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                 }`}
                             >
@@ -451,7 +451,7 @@ export default function Settings() {
                                     onClick={() => setActiveTab('license')}
                                     className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                         activeTab === 'license'
-                                            ? 'bg-foreground text-background font-semibold shadow-xs'
+                                            ? 'bg-brand text-brand-ink font-semibold'
                                             : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                     }`}
                                 >
@@ -469,7 +469,7 @@ export default function Settings() {
                                     onClick={() => setActiveTab('all')}
                                     className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
                                         activeTab === 'all'
-                                            ? 'bg-foreground text-background font-semibold shadow-xs'
+                                            ? 'bg-brand text-brand-ink font-semibold'
                                             : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
                                     }`}
                                 >
@@ -499,7 +499,7 @@ export default function Settings() {
 
                     {/* Brands Management */}
                     {(activeTab === 'all' || activeTab === 'brands') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
                             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
                                 <div className="flex items-center gap-2.5">
                                     <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
@@ -518,7 +518,7 @@ export default function Settings() {
                                 </div>
                                 <button
                                     type="button"
-                                    className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-xs font-medium text-brand-ink hover:bg-[#ffe059] transition-colors"
                                     onClick={() => {
                                         setEditing(null);
                                         setFormOpen(true);
@@ -544,7 +544,7 @@ export default function Settings() {
                                             >
                                                 <div className="min-w-0 flex items-start gap-3">
                                                     <span
-                                                        className="h-9 w-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs text-white shadow-2xs ring-1 ring-border/50"
+                                                        className="h-9 w-9 rounded-xl shrink-0 flex items-center justify-center font-bold text-xs text-white ring-1 ring-border/50"
                                                         style={{
                                                             backgroundColor: brand.color || '#18181b',
                                                         }}
@@ -655,7 +655,7 @@ export default function Settings() {
 
                     {/* Publishing Engine Status */}
                     {(activeTab === 'all' || activeTab === 'publishing') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
                             <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
                                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                                     <Broadcast size={17} weight="duotone" />
@@ -744,7 +744,7 @@ export default function Settings() {
 
                     {/* Language & Account Preferences */}
                     {(activeTab === 'all' || activeTab === 'workspace') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
                             <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
                                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted text-foreground">
                                     <GearSix size={17} weight="duotone" />
@@ -792,7 +792,7 @@ export default function Settings() {
                             {/* Account Details */}
                             <div className="pt-3 border-t border-border/60 space-y-3">
                                 <div className="flex items-center gap-3">
-                                    <div className="h-10 w-10 rounded-xl bg-foreground text-background font-bold text-sm flex items-center justify-center shrink-0">
+                                    <div className="h-10 w-10 rounded-xl bg-brand text-brand-ink font-bold text-sm flex items-center justify-center shrink-0">
                                         {user?.email
                                             ? user.email.slice(0, 2).toUpperCase()
                                             : 'WO'}
@@ -847,7 +847,7 @@ export default function Settings() {
 
                     {/* Starter Workspace Data */}
                     {(activeTab === 'all' || activeTab === 'workspace') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
                             <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
                                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                                     <Sparkle size={17} weight="duotone" />
@@ -885,7 +885,7 @@ export default function Settings() {
 
                     {/* Workspace Demo Data */}
                     {!isDesktop() && (activeTab === 'all' || activeTab === 'workspace') && (
-                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs space-y-4">
+                        <section className="panel p-5 bg-card border border-border/80 rounded-2xl space-y-4">
                             <div className="flex items-center gap-2.5 border-b border-border/60 pb-3">
                                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-muted/60 text-foreground border border-border/60">
                                     <Database size={17} weight="duotone" />

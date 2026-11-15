@@ -1,4 +1,4 @@
-import PostizConnectionCard from '@/components/accounts/postiz-connection-card';
+﻿import PostizConnectionCard from '@/components/accounts/postiz-connection-card';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import AddChannelDialog, { hasConnectionReturn } from '@/components/accounts/add-channel-dialog';
 import { useTranslation } from '@/lib/i18n';
@@ -335,7 +335,7 @@ export default function SocialAccounts() {
                     <button
                         type="button"
                         onClick={() => setChannelOpen(true)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-4 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors"
                     >
                         <Plus size={16} weight="bold" /> {t("Add channel")}
                     </button>
@@ -405,7 +405,7 @@ export default function SocialAccounts() {
                                         onClick={() => setPlatformFilter('all')}
                                         className={`rounded-lg px-2.5 py-1 text-xs transition-colors ${
                                             platformFilter === 'all'
-                                                ? 'bg-foreground text-background font-medium shadow-2xs'
+                                                ? 'bg-brand text-brand-ink font-medium'
                                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                         }`}
                                     >
@@ -422,11 +422,11 @@ export default function SocialAccounts() {
                                                 onClick={() => setPlatformFilter(isSelected ? 'all' : platform)}
                                                 className={`inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition-colors ${
                                                     isSelected
-                                                        ? 'bg-foreground text-background font-medium shadow-2xs'
+                                                        ? 'bg-brand text-brand-ink font-medium'
                                                         : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                                                 }`}
                                             >
-                                                <Icon size={14} weight={cfg.weight} className={isSelected ? 'text-background' : cfg.text} />
+                                                <Icon size={14} weight={cfg.weight} className={isSelected ? 'text-brand-ink' : cfg.text} />
                                                 <span>{PLATFORM_LABEL[platform] || platform}</span>
                                             </button>
                                         );
@@ -436,7 +436,7 @@ export default function SocialAccounts() {
                         </div>
 
                         {/* View Mode Switcher: Grid (Ô) / List (Danh sách) */}
-                        <div className="flex items-center self-end md:self-auto rounded-lg border border-border bg-card p-0.5 shrink-0 shadow-2xs">
+                        <div className="flex items-center self-end md:self-auto rounded-lg border border-border bg-card p-0.5 shrink-0">
                             <button
                                 type="button"
                                 title={t("Grid view")}
@@ -444,7 +444,7 @@ export default function SocialAccounts() {
                                 onClick={() => setViewMode('grid')}
                                 className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
                                     viewMode === 'grid'
-                                        ? 'bg-foreground text-background font-medium shadow-2xs'
+                                        ? 'bg-brand text-brand-ink font-medium'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -458,7 +458,7 @@ export default function SocialAccounts() {
                                 onClick={() => setViewMode('list')}
                                 className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors ${
                                     viewMode === 'list'
-                                        ? 'bg-foreground text-background font-medium shadow-2xs'
+                                        ? 'bg-brand text-brand-ink font-medium'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -827,7 +827,7 @@ export default function SocialAccounts() {
                                                                 disabled={isDesktop() && !!account.credential_id}
                                                                 onValueChange={(value) => setBrand(account, value)}
                                                             >
-                                                                <SelectTrigger className="h-8 w-[145px] rounded-lg text-[12px] bg-background border-border shadow-2xs font-medium">
+                                                                <SelectTrigger className="h-8 w-[145px] rounded-lg text-[12px] bg-background border-border font-medium">
                                                                     <SelectValue placeholder={t("Assign brand")} />
                                                                 </SelectTrigger>
                                                                 <SelectContent>

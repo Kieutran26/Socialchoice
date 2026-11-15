@@ -1,4 +1,4 @@
-import LoadError from '@/components/common/load-error';
+﻿import LoadError from '@/components/common/load-error';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -352,7 +352,7 @@ export default function ContentStrategy() {
                 )}
                 actions={
                     <div className="flex items-center gap-2">
-                        <span className="px-3 py-1.5 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-700 shadow-2xs">
+                        <span className="px-3 py-1.5 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-700">
                             {t('Thương hiệu')}: <strong className="text-neutral-900">{currentBrand?.name || t('Brand')}</strong> · {assets.length} {t('assets sẵn sàng')}
                         </span>
                     </div>
@@ -365,7 +365,7 @@ export default function ContentStrategy() {
                     type="button"
                     onClick={() => setActiveTab('strategist')}
                     className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'strategist'
-                        ? 'bg-foreground text-background shadow-xs'
+                        ? 'bg-brand text-brand-ink'
                         : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
@@ -380,7 +380,7 @@ export default function ContentStrategy() {
                     type="button"
                     onClick={() => setActiveTab('knowledge')}
                     className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'knowledge'
-                        ? 'bg-foreground text-background shadow-xs'
+                        ? 'bg-brand text-brand-ink'
                         : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
@@ -392,7 +392,7 @@ export default function ContentStrategy() {
                     type="button"
                     onClick={() => setActiveTab('analytics')}
                     className={`inline-flex items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-medium transition-all whitespace-nowrap ${activeTab === 'analytics'
-                        ? 'bg-foreground text-background shadow-xs'
+                        ? 'bg-brand text-brand-ink'
                         : 'text-neutral-500 hover:bg-neutral-100 hover:text-neutral-900'
                         }`}
                 >
@@ -441,7 +441,7 @@ export default function ContentStrategy() {
                     {/* OPTION 1 · FULL-WIDTH EXECUTIVE FLOW (BÁO CÁO PHÂN TẦNG TOÀN MÀN HÌNH) */}
 
                     {/* BLOCK 1: Top KPI Panel with Stacked 100% Strategy Bar */}
-                    <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                    <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                             <div>
                                 <span className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
@@ -563,7 +563,7 @@ export default function ContentStrategy() {
                     ) : (
                         <div className="space-y-6">
                             {/* BLOCK 2: Full-Width Data-Dense Target vs Actual Table */}
-                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div>
                                         <div className="flex items-center gap-2">
@@ -585,7 +585,7 @@ export default function ContentStrategy() {
                                                 type="button"
                                                 disabled={activating}
                                                 onClick={handleActivateDefaultPillars}
-                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium shadow-xs transition-all"
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-medium transition-all"
                                             >
                                                 <Sparkle size={13} weight="fill" />
                                                 <span>{activating ? t('Đang lưu...') : t('⚡ Áp dụng 4 trụ cột này')}</span>
@@ -651,7 +651,7 @@ export default function ContentStrategy() {
                                                                 />
                                                                 {pillar.target_percentage > 0 && (
                                                                     <span
-                                                                        className="absolute top-0 bottom-0 w-1 bg-neutral-900 shadow-xs z-10"
+                                                                        className="absolute top-0 bottom-0 w-1 bg-brand z-10"
                                                                         title={`Mục tiêu: ${pillar.target_percentage}%`}
                                                                         style={{ left: `calc(${pillar.target_percentage}% - 2px)` }}
                                                                     />
@@ -663,7 +663,7 @@ export default function ContentStrategy() {
                                                         </td>
                                                         <td className="p-3">
                                                             {isBalanced && (
-                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[11px] shadow-2xs">
+                                                                <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-brand text-brand-ink font-medium text-[11px]">
                                                                     ✓ {t('Balanced')}
                                                                 </span>
                                                             )}
@@ -682,7 +682,7 @@ export default function ContentStrategy() {
                                                             {isUnder ? (
                                                                 <Link
                                                                     to="/create"
-                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-neutral-900 text-white hover:bg-neutral-800 font-medium text-[11px] transition-all"
+                                                                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-brand text-brand-ink hover:bg-[#ffe059] font-medium text-[11px] transition-all"
                                                                 >
                                                                     <span>+ {t('Lên bài')}</span>
                                                                 </Link>
@@ -706,7 +706,7 @@ export default function ContentStrategy() {
                             {/* BLOCK 3: Dual Grid 50/50 (Angles Matrix + Weekly Cadence) */}
                             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
                                 {/* Left Half: Angles Breakdown */}
-                                <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                                <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
                                     <div className="flex items-center justify-between">
                                         <div className="flex items-center gap-2">
                                             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
@@ -744,7 +744,7 @@ export default function ContentStrategy() {
                                                     <span className="font-semibold text-neutral-600 text-[11px]">{angle.actual}%</span>
                                                 </div>
                                                 <div className="h-1.5 w-full bg-neutral-200 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-neutral-900 rounded-full" style={{ width: `${Math.min(100, angle.actual)}%` }} />
+                                                    <div className="h-full bg-brand rounded-full" style={{ width: `${Math.min(100, angle.actual)}%` }} />
                                                 </div>
                                             </div>
                                         ))}
@@ -756,7 +756,7 @@ export default function ContentStrategy() {
                             </div>
 
                             {/* BLOCK 4: Bulk Tagging Table for Unassigned Posts */}
-                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                            <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
                                 <div className="flex flex-wrap items-center justify-between gap-3">
                                     <div className="flex items-center gap-2">
                                         <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900">
@@ -767,7 +767,7 @@ export default function ContentStrategy() {
                                                 <h3 className="text-[15px] font-semibold text-neutral-900">
                                                     {t('Khay xử lý bài viết chưa phân loại (Unassigned Queue)')}
                                                 </h3>
-                                                <span className="rounded-md bg-neutral-900 text-white px-2 py-0.5 text-xs font-semibold">
+                                                <span className="rounded-md bg-brand text-brand-ink px-2 py-0.5 text-xs font-semibold">
                                                     {unassignedPillarCount} {t('bài')}
                                                 </span>
                                             </div>
@@ -788,7 +788,7 @@ export default function ContentStrategy() {
                                         <button
                                             type="button"
                                             onClick={() => setActiveTab('strategist')}
-                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium shadow-xs transition-all"
+                                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-medium transition-all"
                                         >
                                             <Sparkle size={13} weight="fill" />
                                             <span>{t('⚡ AI tự động phân bổ')}</span>
@@ -825,7 +825,7 @@ export default function ContentStrategy() {
                                                         disabled={assigningPostId === post.id}
                                                         onChange={(e) => handleAssignPillar(post.id, e.target.value)}
                                                         defaultValue="none"
-                                                        className="text-xs h-7.5 px-2.5 rounded-lg border border-neutral-300 bg-white font-medium text-neutral-900 cursor-pointer hover:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                                        className="text-xs h-7.5 px-2.5 rounded-lg border border-neutral-300 bg-white font-medium text-neutral-900 cursor-pointer hover:border-brand-dark focus:outline-none focus:ring-1 focus:ring-brand-dark"
                                                     >
                                                         <option value="none" disabled>+ {t('Gán trụ cột...')}</option>
                                                         {activePillarStats.map((p) => (

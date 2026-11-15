@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+﻿import { Link } from 'react-router-dom';
 import { useTranslation } from '@/lib/i18n';
 import { formatNumber, formatDateTime } from '@/lib/format';
 import {
@@ -35,7 +35,7 @@ export default function PerformanceTables({ report, timezone }) {
                 <div className="flex items-center justify-between pb-3 border-b border-border/50">
                     <div className="flex items-center gap-2.5">
                         {/* Monochrome Neutral Icon Box */}
-                        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-neutral-300 bg-white text-neutral-900 shadow-2xs">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl border border-brand-dark/40 bg-brand/20 text-brand-ink">
                             {isPage ? <FacebookLogo size={18} weight="fill" /> : <Stack size={18} weight="bold" />}
                         </span>
                         <div>
@@ -45,8 +45,8 @@ export default function PerformanceTables({ report, timezone }) {
                     <span
                         className={`label-xs font-semibold px-2 py-0.5 rounded-md border ${
                             isPage
-                                ? 'bg-blue-500/10 text-blue-800 border-blue-500/25'
-                                : 'bg-purple-500/10 text-purple-800 border-purple-500/25'
+                                ? 'bg-brand/20 text-brand-ink border-brand-dark/40'
+                                : 'bg-brand/20 text-brand-ink border-brand-dark/40'
                         }`}
                     >
                         {groups.length} {isPage ? t('Pages') : t('All pillars').toLowerCase()}
@@ -97,7 +97,7 @@ export default function PerformanceTables({ report, timezone }) {
                                             {/* Micro volume distribution bar - Monochrome */}
                                             <div className="mt-1.5 h-1.5 w-full max-w-28 rounded-full bg-neutral-100 overflow-hidden">
                                                 <div
-                                                    className="h-full bg-neutral-900 rounded-full transition-all"
+                                                    className="h-full bg-brand-dark rounded-full transition-all"
                                                     style={{ width: `${Math.max(8, pct)}%` }}
                                                 />
                                             </div>
@@ -114,7 +114,7 @@ export default function PerformanceTables({ report, timezone }) {
                                             <span
                                                 className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-semibold border ${
                                                     measuredCount > 0
-                                                        ? 'bg-emerald-500/10 text-emerald-800 border-emerald-500/25'
+                                                        ? 'bg-successBg text-successFg border-transparent'
                                                         : 'bg-muted/70 text-muted-foreground border-border/60'
                                                 }`}
                                             >
@@ -153,7 +153,7 @@ export default function PerformanceTables({ report, timezone }) {
                 <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-border/50">
                     <div className="flex items-center gap-2.5">
                         {/* Monochrome Neutral Icon Box */}
-                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-white text-neutral-900 border border-neutral-300 shadow-2xs">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand/20 text-brand-ink border border-brand-dark/40">
                             <TrendUp size={18} weight="bold" />
                         </span>
                         <div>
@@ -165,7 +165,7 @@ export default function PerformanceTables({ report, timezone }) {
                             </p>
                         </div>
                     </div>
-                    <span className="label-xs text-neutral-900 font-semibold bg-white border border-neutral-300 px-2.5 py-1 rounded-md">
+                    <span className="label-xs text-brand-ink font-semibold bg-brand/20 border border-brand-dark/40 px-2.5 py-1 rounded-md">
                         {report.rows.length} {t('Content').toLowerCase()}
                     </span>
                 </div>
@@ -246,8 +246,8 @@ export default function PerformanceTables({ report, timezone }) {
                                             <span
                                                 className={`inline-block mt-1 rounded-md px-2 py-0.5 text-[10px] font-semibold border ${
                                                     row.pillarName
-                                                        ? 'bg-purple-500/10 text-purple-800 border-purple-500/25'
-                                                        : 'bg-amber-500/10 text-amber-900 border-amber-500/25'
+                                                        ? 'bg-brand/20 text-brand-ink border-brand-dark/40'
+                                                        : 'bg-warnBg text-warnFg border-transparent'
                                                 }`}
                                             >
                                                 {row.pillarName || t('Unassigned')}

@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import { CONNECTION_LABEL, PLATFORM_LABEL } from '@/lib/constants';
 import {
     FacebookLogo,
@@ -54,7 +54,7 @@ export default function AccountPicker({ accounts, selectedIds, onToggle, onSelec
                     <div
                         className={`flex h-4 w-4 items-center justify-center rounded border transition-colors ${
                             allSelected
-                                ? 'bg-foreground border-foreground text-background'
+                                ? 'bg-brand border-foreground text-brand-ink'
                                 : 'border-border bg-background'
                         }`}
                     >
@@ -109,7 +109,7 @@ export default function AccountPicker({ accounts, selectedIds, onToggle, onSelec
                                 <div
                                     className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-md border transition-colors ${
                                         isSelected
-                                            ? 'bg-foreground border-foreground text-background'
+                                            ? 'bg-brand border-foreground text-brand-ink'
                                             : 'border-border bg-background'
                                     }`}
                                 >

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     CopySimple,
@@ -281,7 +281,7 @@ export default function PostTemplates() {
             />
 
             {/* Unified Smart Toolbar */}
-            <div className="panel p-3 mb-6 space-y-3 bg-card border border-border rounded-2xl shadow-2xs">
+            <div className="panel p-3 mb-6 space-y-3 bg-card border border-border rounded-2xl">
                 <div className="flex flex-wrap items-center justify-between gap-3">
                     {/* Left: Format Segmented Capsule Pills */}
                     <div className="flex items-center gap-1 bg-muted/50 p-1 rounded-xl overflow-x-auto scroll-slim">
@@ -290,7 +290,7 @@ export default function PostTemplates() {
                             onClick={() => setFormatFilter('all')}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                                 formatFilter === 'all'
-                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    ? 'bg-card text-foreground font-bold'
                                     : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
@@ -298,7 +298,7 @@ export default function PostTemplates() {
                             <span
                                 className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                     formatFilter === 'all'
-                                        ? 'bg-foreground text-background'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted text-muted-foreground'
                                 }`}
                             >
@@ -310,16 +310,16 @@ export default function PostTemplates() {
                             onClick={() => setFormatFilter('text')}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                                 formatFilter === 'text'
-                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    ? 'bg-card text-foreground font-bold'
                                     : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
-                            <FileText size={13} weight="bold" className="text-amber-500" />
+                            <FileText size={13} weight="bold" className="text-brand-dark" />
                             <span>{t('Text only')}</span>
                             <span
                                 className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                     formatFilter === 'text'
-                                        ? 'bg-foreground text-background'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted text-muted-foreground'
                                 }`}
                             >
@@ -331,7 +331,7 @@ export default function PostTemplates() {
                             onClick={() => setFormatFilter('image')}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                                 formatFilter === 'image'
-                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    ? 'bg-card text-foreground font-bold'
                                     : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
@@ -340,7 +340,7 @@ export default function PostTemplates() {
                             <span
                                 className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                     formatFilter === 'image'
-                                        ? 'bg-foreground text-background'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted text-muted-foreground'
                                 }`}
                             >
@@ -352,7 +352,7 @@ export default function PostTemplates() {
                             onClick={() => setFormatFilter('video')}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition cursor-pointer whitespace-nowrap ${
                                 formatFilter === 'video'
-                                    ? 'bg-card text-foreground font-bold shadow-2xs'
+                                    ? 'bg-card text-foreground font-bold'
                                     : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
@@ -361,7 +361,7 @@ export default function PostTemplates() {
                             <span
                                 className={`min-w-[18px] h-4.5 px-1 rounded-full flex items-center justify-center text-[10px] font-bold ${
                                     formatFilter === 'video'
-                                        ? 'bg-foreground text-background'
+                                        ? 'bg-brand text-brand-ink'
                                         : 'bg-muted text-muted-foreground'
                                 }`}
                             >
@@ -384,7 +384,7 @@ export default function PostTemplates() {
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                                 placeholder={t('Search templates…')}
-                                className="w-full h-8.5 pl-8 pr-7 text-xs rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-zinc-900/10 transition-all"
+                                className="w-full h-8.5 pl-8 pr-7 text-xs rounded-xl border border-border bg-white text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-brand/30 transition-all"
                             />
                             {search && (
                                 <button
@@ -402,7 +402,7 @@ export default function PostTemplates() {
                             <select
                                 value={brandFilter}
                                 onChange={(e) => setBrandFilter(e.target.value)}
-                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer"
+                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 cursor-pointer"
                             >
                                 <option value="all">{t('All brands')}</option>
                                 {brands.map((b) => (
@@ -418,7 +418,7 @@ export default function PostTemplates() {
                             <select
                                 value={pillarFilter}
                                 onChange={(e) => setPillarFilter(e.target.value)}
-                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-zinc-900/10 cursor-pointer"
+                                className="h-8.5 px-2.5 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-brand/30 cursor-pointer"
                             >
                                 <option value="all">{t('All pillars')}</option>
                                 {pillars.map((p) => (
@@ -450,7 +450,7 @@ export default function PostTemplates() {
                                 title={t('Grid view')}
                                 className={`flex h-7.5 w-7.5 items-center justify-center rounded-lg transition-all cursor-pointer ${
                                     viewMode === 'grid'
-                                        ? 'bg-white text-foreground shadow-2xs font-bold'
+                                        ? 'bg-white text-foreground font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -462,7 +462,7 @@ export default function PostTemplates() {
                                 title={t('List view')}
                                 className={`flex h-7.5 w-7.5 items-center justify-center rounded-lg transition-all cursor-pointer ${
                                     viewMode === 'table'
-                                        ? 'bg-white text-foreground shadow-2xs font-bold'
+                                        ? 'bg-white text-foreground font-bold'
                                         : 'text-muted-foreground hover:text-foreground'
                                 }`}
                             >
@@ -541,7 +541,7 @@ export default function PostTemplates() {
                         return (
                             <article
                                 key={template.id}
-                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card shadow-2xs hover:shadow-lg transition-all duration-200 overflow-hidden h-full"
+                                className="group relative flex flex-col justify-between rounded-2xl border border-border bg-card hover:shadow-lg transition-all duration-200 overflow-hidden h-full"
                             >
                                 <div>
                                     {/* 1. TOP 16:9 BANNER */}
@@ -549,7 +549,7 @@ export default function PostTemplates() {
                                         {firstMedia ? (
                                             isVideo ? (
                                                 <div
-                                                    className="relative w-full h-full cursor-pointer bg-zinc-900"
+                                                    className="relative w-full h-full cursor-pointer bg-brand"
                                                     onClick={() => startFromTemplate(template)}
                                                 >
                                                     <video
@@ -596,17 +596,17 @@ export default function PostTemplates() {
                                         <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between z-10 pointer-events-none">
                                             <div className="pointer-events-auto">
                                                 {format === 'video' ? (
-                                                    <span className="px-2 py-0.5 rounded-md bg-purple-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                    <span className="px-2 py-0.5 rounded-md bg-purple-600/90 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
                                                         <VideoCamera size={11} weight="fill" />
                                                         <span>Video</span>
                                                     </span>
                                                 ) : format === 'image' ? (
-                                                    <span className="px-2 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                    <span className="px-2 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
                                                         <Images size={11} weight="bold" />
                                                         <span>{mediaIds.length} {t('photos')}</span>
                                                     </span>
                                                 ) : (
-                                                    <span className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-amber-700 text-[10px] font-bold border border-amber-200/80 shadow-2xs flex items-center gap-1">
+                                                    <span className="px-2 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-brand-ink text-[10px] font-bold border border-amber-200/80 flex items-center gap-1">
                                                         <FileText size={11} weight="bold" />
                                                         <span>{t('Text post')}</span>
                                                     </span>
@@ -619,7 +619,7 @@ export default function PostTemplates() {
                                                     <DropdownMenu.Trigger asChild>
                                                         <button
                                                             type="button"
-                                                            className="h-7 w-7 rounded-lg bg-white/95 backdrop-blur-md text-zinc-700 hover:text-zinc-900 hover:bg-white flex items-center justify-center shadow-xs border border-zinc-200/60 cursor-pointer transition-colors"
+                                                            className="h-7 w-7 rounded-lg bg-white/95 backdrop-blur-md text-zinc-700 hover:text-zinc-900 hover:bg-white flex items-center justify-center border border-zinc-200/60 cursor-pointer transition-colors"
                                                             title={t('Options')}
                                                             onClick={(e) => e.stopPropagation()}
                                                         >
@@ -671,7 +671,7 @@ export default function PostTemplates() {
                                                 type="button"
                                                 disabled={busy}
                                                 onClick={() => startFromTemplate(template)}
-                                                className="h-8 px-4 rounded-xl bg-zinc-900 text-white hover:bg-black text-xs font-bold shadow-md flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
+                                                className="h-8 px-4 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-transform active:scale-95"
                                             >
                                                 <CopySimple size={14} weight="bold" />
                                                 <span>{t('Dùng mẫu ngay')}</span>
@@ -749,7 +749,7 @@ export default function PostTemplates() {
                                                         return (
                                                             <div
                                                                 key={acc.id}
-                                                                className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                                className="relative h-7 w-7 rounded-full ring-2 ring-white shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
                                                                 style={{ width: '28px', height: '28px' }}
                                                             >
                                                                 <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
@@ -775,7 +775,7 @@ export default function PostTemplates() {
                                                                 </div>
                                                                 {/* Platform corner badge */}
                                                                 <span
-                                                                    className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white"
+                                                                    className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white flex items-center justify-center ring-1 ring-white"
                                                                     style={{ width: '14px', height: '14px' }}
                                                                 >
                                                                     <Icon size={9} weight="fill" className={cfg.color} />
@@ -786,7 +786,7 @@ export default function PostTemplates() {
 
                                                     {templateAccounts.length > 2 && (
                                                         <div
-                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shrink-0 hover:bg-zinc-200 transition-colors"
                                                             style={{ width: '28px', height: '28px' }}
                                                         >
                                                             +{templateAccounts.length - 2}
@@ -872,7 +872,7 @@ export default function PostTemplates() {
                                             type="button"
                                             disabled={busy}
                                             onClick={() => startFromTemplate(template)}
-                                            className="h-7 px-3 text-xs font-bold rounded-lg bg-zinc-900 text-white hover:bg-black gap-1.5 cursor-pointer flex items-center shadow-xs transition-colors"
+                                            className="h-7 px-3 text-xs font-bold rounded-lg bg-brand text-brand-ink hover:bg-[#ffe059] gap-1.5 cursor-pointer flex items-center transition-colors"
                                             title={t('Create post from this template')}
                                         >
                                             <CopySimple size={13} weight="bold" />
@@ -886,7 +886,7 @@ export default function PostTemplates() {
                 </div>
             ) : (
                 /* Table View (Dạng danh sách) */
-                <div className="panel bg-card border border-border rounded-2xl shadow-2xs overflow-hidden">
+                <div className="panel bg-card border border-border rounded-2xl overflow-hidden">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left text-xs border-collapse">
                             <thead>
@@ -969,7 +969,7 @@ export default function PostTemplates() {
                                                                     return (
                                                                         <div
                                                                             key={acc.id}
-                                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                                            className="relative h-7 w-7 rounded-full ring-2 ring-white shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
                                                                             style={{ width: '28px', height: '28px' }}
                                                                         >
                                                                             <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
@@ -994,7 +994,7 @@ export default function PostTemplates() {
                                                                                 </span>
                                                                             </div>
                                                                             <span
-                                                                                className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white"
+                                                                                className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white flex items-center justify-center ring-1 ring-white"
                                                                                 style={{ width: '14px', height: '14px' }}
                                                                             >
                                                                                 <Icon size={9} weight="fill" className={cfg.color} />
@@ -1005,7 +1005,7 @@ export default function PostTemplates() {
 
                                                                 {templateAccounts.length > 3 && (
                                                                     <div
-                                                                        className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                                        className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shrink-0 hover:bg-zinc-200 transition-colors"
                                                                         style={{ width: '28px', height: '28px' }}
                                                                     >
                                                                         +{templateAccounts.length - 3}
@@ -1085,7 +1085,7 @@ export default function PostTemplates() {
                                                         <span>{mediaIds.length} {t('photos')}</span>
                                                     </span>
                                                 ) : (
-                                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-amber-700 bg-amber-50 rounded-md px-2 py-0.5 border border-amber-200">
+                                                    <span className="inline-flex items-center gap-1 text-[11px] font-medium text-brand-ink bg-amber-50 rounded-md px-2 py-0.5 border border-amber-200">
                                                         <FileText size={13} weight="fill" />
                                                         <span>{t('Text post')}</span>
                                                     </span>
@@ -1111,7 +1111,7 @@ export default function PostTemplates() {
                                                         type="button"
                                                         disabled={busy}
                                                         onClick={() => startFromTemplate(template)}
-                                                        className="h-7 px-2.5 text-[11px] font-semibold rounded-lg bg-zinc-900 text-white hover:bg-black gap-1 cursor-pointer flex items-center shadow-xs transition-colors"
+                                                        className="h-7 px-2.5 text-[11px] font-semibold rounded-lg bg-brand text-brand-ink hover:bg-[#ffe059] gap-1 cursor-pointer flex items-center transition-colors"
                                                         title={t('Create post from this template')}
                                                     >
                                                         <NotePencil size={13} weight="bold" />

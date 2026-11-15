@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { useTranslation } from '@/lib/i18n';
 import { appClient } from '@/api/app-client';
 import { useToast } from '@/components/ui/use-toast';
@@ -134,7 +134,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
             {/* Left Column: Structured Form (7 cols / 58%) - Monochrome Style */}
             <form
                 onSubmit={handleSave}
-                className="xl:col-span-7 min-w-0 p-6 rounded-2xl bg-white border border-neutral-200 shadow-2xs space-y-6"
+                className="xl:col-span-7 min-w-0 p-6 rounded-2xl bg-white border border-neutral-200 space-y-6"
             >
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-neutral-100 pb-4">
                     <div className="flex items-center gap-3">
@@ -154,7 +154,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                     <button
                         type="submit"
                         disabled={saving}
-                        className="px-4 py-2 rounded-xl bg-neutral-900 hover:bg-neutral-800 text-white text-xs font-medium shadow-xs flex items-center gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
+                        className="px-4 py-2 rounded-xl bg-brand hover:bg-[#ffe059] text-brand-ink text-xs font-medium flex items-center gap-2 cursor-pointer transition disabled:opacity-60 shrink-0"
                     >
                         <FloppyDisk size={15} weight="bold" />
                         <span>{saving ? t('Đang lưu…') : t('Lưu tri thức thương hiệu')}</span>
@@ -174,7 +174,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                 value={form.products}
                                 onChange={(e) => setForm({ ...form, products: e.target.value })}
                                 placeholder={t('VD: Cà phê hạt Single Origin Ethiopia & Cầu Đất, Cold Brew đóng chai, Phin Pour-over thủ công…')}
-                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-dark"
                             />
                             <p className="text-[11px] text-neutral-500">
                                 {t('Liệt kê các dòng sản phẩm hoặc dịch vụ mà bạn muốn nội dung tập trung quảng bá.')}
@@ -192,7 +192,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                 value={form.target_audience}
                                 onChange={(e) => setForm({ ...form, target_audience: e.target.value })}
                                 placeholder={t('VD: Người yêu cà phê đặc sản 22-38 tuổi tại TP.HCM, dân văn phòng sáng tạo, người thích tự pha tại nhà…')}
-                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-dark"
                             />
                             <p className="text-[11px] text-neutral-500">
                                 {t('Độ tuổi, phong cách sống, sở thích và nỗi đau (pain points) của khách hàng.')}
@@ -211,7 +211,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                             value={form.tone_of_voice}
                             onChange={(e) => setForm({ ...form, tone_of_voice: e.target.value })}
                             placeholder={t('VD: Chân thực, ấm áp, đam mê hương vị, truyền cảm hứng…')}
-                            className="h-10 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                            className="h-10 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-dark"
                         />
                         <div className="flex flex-wrap gap-1.5 pt-1">
                             {TONE_PRESETS.map((preset) => {
@@ -222,7 +222,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                         type="button"
                                         onClick={() => setForm({ ...form, tone_of_voice: preset })}
                                         className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${isActive
-                                            ? 'bg-neutral-900 text-white font-semibold shadow-2xs'
+                                            ? 'bg-brand text-brand-ink font-semibold'
                                             : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium border border-neutral-200/60'
                                             }`}
                                     >
@@ -245,7 +245,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                             value={form.goals}
                             onChange={(e) => setForm({ ...form, goals: e.target.value })}
                             placeholder={t('VD: Tăng đơn hàng túi cà phê pha tại nhà, xây dựng thói quen uống specialty coffee…')}
-                            className="h-10 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                            className="h-10 text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-dark"
                         />
                         <div className="flex flex-wrap gap-1.5 pt-1">
                             {GOAL_PRESETS.map((goal) => {
@@ -256,7 +256,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                         type="button"
                                         onClick={() => setForm({ ...form, goals: goal })}
                                         className={`px-2.5 py-1 rounded-lg text-[11px] transition-all cursor-pointer ${isActive
-                                            ? 'bg-neutral-900 text-white font-semibold shadow-2xs'
+                                            ? 'bg-brand text-brand-ink font-semibold'
                                             : 'bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium border border-neutral-200/60'
                                             }`}
                                     >
@@ -278,7 +278,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                             <select
                                 value={form.posting_frequency}
                                 onChange={(e) => setForm({ ...form, posting_frequency: e.target.value })}
-                                className="w-full h-10 text-xs rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900 cursor-pointer"
+                                className="w-full h-10 text-xs rounded-xl border border-neutral-200 bg-neutral-50/50 px-3 text-neutral-900 focus:outline-none focus:ring-1 focus:ring-brand-dark cursor-pointer"
                             >
                                 <option value="1 bài/ngày">{t('1 bài / ngày (Khuyên dùng cho lịch 30 ngày)')}</option>
                                 <option value="2 bài/ngày">{t('2 bài / ngày (Sáng và Tối)')}</option>
@@ -300,7 +300,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                 value={form.description}
                                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                                 placeholder={t('Giới thiệu tổng quan về thương hiệu, quy mô, địa chỉ chi nhánh…')}
-                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-neutral-900"
+                                className="text-xs rounded-xl border-neutral-200 bg-neutral-50/50 focus:bg-white focus:outline-none focus:ring-1 focus:ring-brand-dark"
                             />
                         </div>
                     </div>
@@ -309,11 +309,11 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
 
             {/* Right Column: Live Enterprise Brand Guidelines Sheet (5 cols / 42% - Sticky) */}
             <div className="xl:col-span-5 min-w-0 space-y-5 sticky top-20">
-                <div className="rounded-2xl bg-white border border-neutral-200 shadow-2xs overflow-hidden">
+                <div className="rounded-2xl bg-white border border-neutral-200 overflow-hidden">
                     {/* Top Header: Brand Identity Bar */}
                     <div className="p-4 border-b border-neutral-100 bg-neutral-50/60 flex flex-wrap items-center justify-between gap-3">
                         <div className="flex items-center gap-3 min-w-0">
-                            <div className="size-10 rounded-xl bg-neutral-900 text-white font-bold text-sm flex items-center justify-center shadow-2xs shrink-0 tracking-wider">
+                            <div className="size-10 rounded-xl bg-brand text-brand-ink font-bold text-sm flex items-center justify-center shrink-0 tracking-wider">
                                 {brand.name.slice(0, 2).toUpperCase()}
                             </div>
                             <div className="min-w-0">
@@ -321,7 +321,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                     <h4 className="text-sm font-bold text-neutral-900 truncate">
                                         {brand.name} · {t('Brand Guidelines Spec')}
                                     </h4>
-                                    <span className="px-2 py-0.5 rounded-md bg-neutral-900 text-white text-[10px] font-semibold shrink-0">
+                                    <span className="px-2 py-0.5 rounded-md bg-brand text-brand-ink text-[10px] font-semibold shrink-0">
                                         ACTIVE SPEC
                                     </span>
                                 </div>
@@ -410,7 +410,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                         .map((kw, idx) => (
                                             <span
                                                 key={idx}
-                                                className="px-2 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10.5px] shadow-2xs"
+                                                className="px-2 py-0.5 rounded-md bg-brand text-brand-ink font-medium text-[10.5px]"
                                             >
                                                 {kw}
                                             </span>
@@ -462,7 +462,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                     {t('Thư viện tài nguyên đính kèm')}
                                 </span>
                             </div>
-                            <span className="px-2.5 py-0.5 rounded-md bg-neutral-900 text-white font-medium text-[10.5px] shrink-0">
+                            <span className="px-2.5 py-0.5 rounded-md bg-brand text-brand-ink font-medium text-[10.5px] shrink-0">
                                 {assetsCount}/20 Assets ({Math.round((assetsCount / 20) * 100)}% Quota)
                             </span>
                         </div>
@@ -472,7 +472,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                             {assets.slice(0, 5).map((asset, idx) => (
                                 <div
                                     key={asset.id || idx}
-                                    className="aspect-square rounded-xl overflow-hidden border border-neutral-200 shadow-2xs bg-white min-w-0"
+                                    className="aspect-square rounded-xl overflow-hidden border border-neutral-200 bg-white min-w-0"
                                     title={asset.name}
                                 >
                                     {asset.file_url ? (
@@ -505,7 +505,7 @@ export default function BrandKnowledgeBase({ brand, onUpdated, assetsCount = 0, 
                                     .map((url, i) => (
                                         <div
                                             key={`fallback-${i}`}
-                                            className="aspect-square rounded-xl overflow-hidden border border-neutral-200 shadow-2xs bg-white min-w-0"
+                                            className="aspect-square rounded-xl overflow-hidden border border-neutral-200 bg-white min-w-0"
                                         >
                                             <img src={url} alt="mock asset" className="w-full h-full object-cover" />
                                         </div>

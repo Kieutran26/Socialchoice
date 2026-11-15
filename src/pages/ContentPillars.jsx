@@ -1,4 +1,4 @@
-import LoadError from '@/components/common/load-error';
+﻿import LoadError from '@/components/common/load-error';
 import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useState } from 'react';
@@ -29,7 +29,7 @@ import { percent } from '@/lib/format';
 const PASTEL_PALETTE = [
     { color: '#93C5FD', label: 'Pastel Blue', border: 'border-blue-200/80', bg: 'bg-blue-50/70', text: 'text-blue-700' },
     { color: '#C4B5FD', label: 'Pastel Lavender', border: 'border-purple-200/80', bg: 'bg-purple-50/70', text: 'text-purple-700' },
-    { color: '#FED7AA', label: 'Pastel Peach', border: 'border-amber-200/80', bg: 'bg-amber-50/70', text: 'text-amber-700' },
+    { color: '#FED7AA', label: 'Pastel Peach', border: 'border-amber-200/80', bg: 'bg-amber-50/70', text: 'text-brand-ink' },
     { color: '#A7F3D0', label: 'Pastel Mint', border: 'border-emerald-200/80', bg: 'bg-emerald-50/70', text: 'text-emerald-700' },
     { color: '#FBCFE8', label: 'Pastel Rose', border: 'border-rose-200/80', bg: 'bg-rose-50/70', text: 'text-rose-700' },
     { color: '#FEF08A', label: 'Pastel Butter', border: 'border-yellow-200/80', bg: 'bg-yellow-50/70', text: 'text-yellow-800' },
@@ -183,7 +183,7 @@ export default function ContentPillars() {
             ) : (
                 <div className="space-y-6">
                     {/* OPTION A: TOP STRATEGY HUD BAR (BENTO OVERVIEW) */}
-                    <div className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs space-y-4">
+                    <div className="p-5 bg-white border border-neutral-200 rounded-2xl space-y-4">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
                             <div className="flex items-center gap-3">
                                 <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-neutral-100 text-neutral-900 border border-neutral-200 shrink-0">
@@ -204,7 +204,7 @@ export default function ContentPillars() {
                             </div>
 
                             <div className="flex items-center gap-2 shrink-0">
-                                <span className="px-3 py-1 rounded-lg bg-neutral-900 text-white font-mono text-xs font-semibold shadow-2xs">
+                                <span className="px-3 py-1 rounded-lg bg-brand text-brand-ink font-mono text-xs font-semibold">
                                     {targetTotal}% {t('Mục tiêu')}
                                 </span>
                                 <span className="px-3 py-1 rounded-lg bg-neutral-100 text-neutral-800 font-mono text-xs font-semibold border border-neutral-200">
@@ -214,7 +214,7 @@ export default function ContentPillars() {
                         </div>
 
                         {/* Full-Width Stacked 100% Bar (Pastel Palette) */}
-                        <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200 shadow-2xs">
+                        <div className="h-3 w-full bg-neutral-100 rounded-full overflow-hidden flex border border-neutral-200">
                             {activePillars.map((pillar, idx) => {
                                 const pastel = getPastelForPillar(pillar, idx);
                                 return (
@@ -238,7 +238,7 @@ export default function ContentPillars() {
                                 return (
                                     <span key={pillar.id} className="flex items-center gap-1.5">
                                         <span
-                                            className="w-2.5 h-2.5 rounded-full shrink-0 shadow-2xs"
+                                            className="w-2.5 h-2.5 rounded-full shrink-0"
                                             style={{ backgroundColor: pastel.color }}
                                         />
                                         <span className="font-semibold text-neutral-800">{pillar.name}</span>
@@ -255,7 +255,7 @@ export default function ContentPillars() {
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-2">
                                     <span
-                                        className="h-3 w-3 rounded-full shrink-0 shadow-2xs"
+                                        className="h-3 w-3 rounded-full shrink-0"
                                         style={{ backgroundColor: group.brand?.color || '#93C5FD' }}
                                     />
                                     <h2 className="text-sm font-bold text-neutral-900 font-heading">
@@ -291,14 +291,14 @@ export default function ContentPillars() {
                                     return (
                                         <div
                                             key={pillar.id}
-                                            className="p-5 bg-white border border-neutral-200 rounded-2xl shadow-2xs hover:border-neutral-300 transition-all flex flex-col justify-between space-y-4"
+                                            className="p-5 bg-white border border-neutral-200 rounded-2xl hover:border-neutral-300 transition-all flex flex-col justify-between space-y-4"
                                         >
                                             {/* Card Header: Brand pastel dot, Name, Description, Pastel Status Badge */}
                                             <div className="space-y-2">
                                                 <div className="flex items-start justify-between gap-3">
                                                     <div className="flex items-center gap-2.5 min-w-0">
                                                         <span
-                                                            className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs ring-2 ring-white"
+                                                            className="w-3.5 h-3.5 rounded-full shrink-0 ring-2 ring-white"
                                                             style={{ backgroundColor: pastel.color }}
                                                         />
                                                         <div className="min-w-0">
@@ -313,7 +313,7 @@ export default function ContentPillars() {
                                                         {pillar.status === 'archived' ? (
                                                             <StatusBadge tone="neutral">{t('Archived')}</StatusBadge>
                                                         ) : isBalanced ? (
-                                                            <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/90 text-emerald-700 font-semibold text-[10.5px] shadow-2xs flex items-center gap-1">
+                                                            <span className="px-2.5 py-0.5 rounded-md bg-emerald-50 border border-emerald-200/90 text-emerald-700 font-semibold text-[10.5px] flex items-center gap-1">
                                                                 <Check size={11} weight="bold" />
                                                                 <span>{t('Cân bằng')}</span>
                                                             </span>
@@ -364,7 +364,7 @@ export default function ContentPillars() {
                                                     />
                                                     {target > 0 && (
                                                         <span
-                                                            className="absolute top-0 bottom-0 w-1 bg-neutral-950 z-10 shadow-xs"
+                                                            className="absolute top-0 bottom-0 w-1 bg-neutral-950 z-10"
                                                             style={{ left: `calc(${Math.min(100, target)}% - 2px)` }}
                                                             title={`Mục tiêu: ${target}%`}
                                                         />

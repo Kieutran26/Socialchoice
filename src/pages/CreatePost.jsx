@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
     FloppyDisk,
@@ -19,15 +19,12 @@ import {
     TextB,
     TextUnderline,
     Clock,
-    ArrowClockwise,
     ArrowsClockwise,
     Globe,
     Plus,
     Tag,
     ListBullets,
     MagicWand,
-    ChatCircleDots,
-    SlidersHorizontal,
     BookmarkSimple,
     Quotes,
 } from '@phosphor-icons/react';
@@ -45,10 +42,9 @@ import { PLATFORM_CONFIG } from '@/components/common/PlatformBadge';
 import { getAccountAvatarUrl } from '@/lib/account-avatar';
 import { toUnicodeBold, toUnicodeUnderline, PLATFORM_CHAR_LIMITS } from '@/lib/unicode-formatting';
 import { aiRequest } from '@/api/ai';
-import { getShortlinkPreference } from '@/components/settings/ShortlinkSettingsCard';
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
-import { PUBLISHING_PLATFORMS, destinationIssues, resolveMedia, referencedMediaIds } from '@/lib/publishing-content';
+import { PUBLISHING_PLATFORMS, referencedMediaIds } from '@/lib/publishing-content';
 import { useTranslation } from '@/lib/i18n';
 
 const URL_REGEX = /https?:\/\/[^\s]+/i;
@@ -782,80 +778,180 @@ export default function CreatePost() {
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
                 {/* LEFT COLUMN: Main studio editor */}
                 <div className="min-w-0 space-y-5">
-                    {/* Header */}
-                    <div className="flex items-center justify-between gap-4">
-                        <div>
-                            <h1 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                                {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
-                            </h1>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                onClick={() => setIsTemplatePickerOpen(true)}
-                                className="flex h-7 items-center gap-1.5 rounded-lg border border-zinc-200 bg-white px-2.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50 shadow-2xs transition cursor-pointer"
-                            >
-                                <Quotes size={13} weight="bold" className="text-amber-500" />
-                                <span>{t('Dùng mẫu bài viết')}</span>
-                            </button>
-                            <span className="flex h-7 items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 text-[11px] font-medium text-emerald-700">
-                                <span className="size-1.5 rounded-full bg-emerald-500" />
-                                {t('Đã lưu tự động')}
-                            </span>
-                            {existing && (
-                                <>
-                                    <button
-                                        type="button"
-                                        onClick={() => navigate(`/create?duplicate=${existing.id}`)}
-                                        className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700 transition"
-                                        title={t('Nhân bản')}
-                                    >
-                                        <Copy size={15} />
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setDeleteOpen(true)}
-                                        className="grid size-7 place-items-center rounded-lg text-zinc-400 hover:bg-red-50 hover:text-red-600 transition"
-                                        title={t('Xoá')}
-                                    >
-                                        <Trash size={15} />
-                                    </button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Top Connected Accounts Circular Buttons Bar (Restored Channel Frame) */}
-                    <div className="flex flex-wrap items-center gap-3 p-3 rounded-2xl bg-zinc-50/70 border border-zinc-200/80">
-                        <span className="text-[11px] font-bold uppercase tracking-wider text-zinc-500 mr-1 flex items-center gap-1.5">
-                            <Globe size={14} className="text-zinc-800" />
-                            {t('Kênh phân phối')}:
-                        </span>
-                        {connectedAccounts.map((account) => {
-                            const isSelected = form.account_ids.includes(account.id);
-                            const cfg = PLATFORM_CONFIG[account.platform] || { icon: Globe, color: 'text-zinc-600' };
-                            const PlatformIcon = cfg.icon;
-
-                            return (
+                    {/* Studio Header & Quick Metadata Strip */}
+                    <section className="panel p-4 sm:p-5 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-border/80">
+                            <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-dark bg-brand text-brand-ink">
+                                    <PaperPlaneTilt size={20} weight="duotone" />
+                                </div>
+                                <div className="min-w-0">
+                                    <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-foreground truncate">
+                                        {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
+                                    </h1>
+                                    <p className="label-xs text-muted-foreground truncate">
+                                        {t('Soạn thảo đa kênh, tuỳ chỉnh nội dung riêng và kiểm tra hiển thị trực tiếp')}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
                                 <button
-                                    key={account.id}
                                     type="button"
-                                    onClick={() => toggleAccountSelection(account.id)}
-                                    title={`${account.name} · @${account.platform}`}
-                                    className="group relative cursor-pointer focus:outline-hidden"
+                                    onClick={() => setIsTemplatePickerOpen(true)}
+                                    className="flex h-8 items-center gap-1.5 rounded-xl border border-brand-dark/50 bg-brand/15 px-3 text-xs font-semibold text-brand-ink hover:bg-brand/30 transition cursor-pointer"
                                 >
-                                    {/* The Main Account Avatar */}
-                                    {(() => {
-                                        const avatarUrl = getAccountAvatarUrl(account);
-                                        const initials = (account.name || account.platform).slice(0, 2).toUpperCase();
-                                        return (
-                                            <div
-                                                className={`size-11 rounded-full overflow-hidden transition flex items-center justify-center font-bold text-xs ${
-                                                    isSelected
-                                                        ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-2xs'
-                                                        : 'border border-zinc-200 opacity-60 hover:opacity-100'
-                                                } ${avatarUrl ? 'bg-zinc-100' : 'bg-gradient-to-br from-zinc-100 to-zinc-200 text-zinc-700'}`}
-                                            >
+                                    <Quotes size={14} weight="bold" className="text-brand-dark" />
+                                    <span>{t('Dùng mẫu bài viết')}</span>
+                                </button>
+                                <span className="flex h-8 items-center gap-1.5 rounded-xl border border-border bg-surface px-2.5 text-[11px] font-medium text-muted-foreground">
+                                    <span className="size-1.5 rounded-full bg-emerald-500" />
+                                    {t('Đã lưu tự động')}
+                                </span>
+                                {existing && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate(`/create?duplicate=${existing.id}`)}
+                                            className="grid size-8 place-items-center rounded-xl border border-border bg-card text-muted-foreground hover:border-brand-dark hover:bg-brand/10 hover:text-brand-ink transition cursor-pointer"
+                                            title={t('Nhân bản')}
+                                        >
+                                            <Copy size={15} />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDeleteOpen(true)}
+                                            className="grid size-8 place-items-center rounded-xl border border-border bg-card text-muted-foreground hover:border-dangerFg hover:bg-dangerBg hover:text-dangerFg transition cursor-pointer"
+                                            title={t('Xoá')}
+                                        >
+                                            <Trash size={15} />
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Always-visible Post Metadata Strip: Title, Brand, Pillar, Angle */}
+                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            <div className="sm:col-span-2 lg:col-span-1">
+                                <label htmlFor="post-internal-title" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                    {t('Tiêu đề nội bộ')} <span className="text-dangerFg">*</span>
+                                </label>
+                                <input
+                                    id="post-internal-title"
+                                    type="text"
+                                    value={form.title}
+                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                    placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
+                                    className="h-9 w-full rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark focus:ring-1 focus:ring-brand-dark"
+                                />
+                            </div>
+
+                            <div>
+                                <label htmlFor="post-brand-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                    {t('Thương hiệu')}
+                                </label>
+                                <select
+                                    id="post-brand-select"
+                                    value={form.brand_id}
+                                    onChange={(e) => applyBrand(e.target.value)}
+                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                >
+                                    {brands.map((b) => (
+                                        <option key={b.id} value={b.id}>
+                                            {b.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="post-pillar-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                    {t('Trụ cột nội dung')}
+                                </label>
+                                <select
+                                    id="post-pillar-select"
+                                    value={form.pillar_id}
+                                    onChange={(e) => setForm({ ...form, pillar_id: e.target.value, angle_id: '' })}
+                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                >
+                                    <option value="">{t('Chưa phân loại')}</option>
+                                    {brandPillars.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
+                            <div>
+                                <label htmlFor="post-angle-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                    {t('Góc khai thác')}
+                                </label>
+                                <select
+                                    id="post-angle-select"
+                                    value={form.angle_id}
+                                    onChange={(e) => setForm({ ...form, angle_id: e.target.value })}
+                                    disabled={!form.pillar_id}
+                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer disabled:bg-muted/50 disabled:text-muted-foreground"
+                                >
+                                    <option value="">
+                                        {form.pillar_id ? t('Chọn góc khai thác') : t('Chọn trụ cột trước')}
+                                    </option>
+                                    {brandAngles.map((a) => (
+                                        <option key={a.id} value={a.id}>
+                                            {a.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    {/* Unified Channel Picker & Per-Channel Mode Switcher */}
+                    <section className="panel p-4 sm:p-5 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand/25 text-brand-ink border border-brand-dark/40">
+                                    <Globe size={14} weight="bold" />
+                                </span>
+                                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
+                                    {t('1. Chọn kênh phân phối')}
+                                </span>
+                                <span className="rounded-full bg-brand/20 border border-brand-dark/30 px-2 py-0.5 text-[11px] font-semibold text-brand-ink">
+                                    {selectedAccounts.length}/{connectedAccounts.length} {t('đã chọn')}
+                                </span>
+                            </div>
+                            <Link
+                                to="/accounts"
+                                className="inline-flex items-center gap-1 rounded-lg border border-dashed border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:border-brand-dark hover:bg-brand/10 hover:text-brand-ink"
+                            >
+                                <Plus size={13} weight="bold" />
+                                <span>{t('Kết nối kênh mới')}</span>
+                            </Link>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2.5">
+                            {connectedAccounts.map((account) => {
+                                const isSelected = form.account_ids.includes(account.id);
+                                const cfg = PLATFORM_CONFIG[account.platform] || { icon: Globe, color: 'text-zinc-600' };
+                                const PlatformIcon = cfg.icon;
+                                const avatarUrl = getAccountAvatarUrl(account);
+                                const initials = (account.name || account.platform).slice(0, 2).toUpperCase();
+
+                                return (
+                                    <button
+                                        key={account.id}
+                                        type="button"
+                                        onClick={() => toggleAccountSelection(account.id)}
+                                        title={`${account.name} · @${account.platform}`}
+                                        className={`group relative flex items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition cursor-pointer focus:outline-hidden ${
+                                            isSelected
+                                                ? 'border-brand-dark bg-brand/20 text-brand-ink'
+                                                : 'border-border bg-surface/60 text-muted-foreground hover:border-brand-dark/50 hover:bg-brand/5 hover:text-foreground'
+                                        }`}
+                                    >
+                                        <div className="relative shrink-0">
+                                            <div className="size-8 rounded-full overflow-hidden flex items-center justify-center font-bold text-[11px] bg-card border border-border text-foreground">
                                                 {avatarUrl ? (
                                                     <img
                                                         src={avatarUrl}
@@ -873,505 +969,448 @@ export default function CreatePost() {
                                                     {initials}
                                                 </span>
                                             </div>
-                                        );
-                                    })()}
-
-                                    {/* Platform Logo Badge: Authentic Brand Color Icon */}
-                                    <span
-                                        className="absolute -bottom-1 -right-1 size-5 rounded-full bg-white ring-2 ring-white shadow-2xs flex items-center justify-center"
-                                        title={cfg.label || account.platform}
-                                    >
-                                        <PlatformIcon size={12} weight="fill" className={cfg.color} />
-                                    </span>
-
-                                    {/* Checkmark when selected */}
-                                    {isSelected && (
-                                        <span className="absolute -top-1 -left-1 size-4 bg-emerald-500 text-white rounded-full flex items-center justify-center text-[9px] font-bold ring-2 ring-white shadow-2xs">
-                                            ✓
-                                        </span>
-                                    )}
-                                </button>
-                            );
-                        })}
-                        <Link
-                            to="/accounts"
-                            title={t('Kết nối kênh mới')}
-                            className="grid size-11 place-items-center rounded-full border border-dashed border-zinc-300 bg-white text-zinc-400 transition hover:border-zinc-500 hover:text-zinc-800"
-                        >
-                            <Plus size={16} />
-                        </Link>
-                    </div>
-
-                    {/* Channel Customizer Tabs Sub-bar (Hình tròn đồng bộ như trên) */}
-                    <div className="flex flex-wrap items-center gap-3">
-                        {/* Default Tab: Hình tròn Địa Cầu */}
-                        <button
-                            type="button"
-                            onClick={() => setActiveTab('default')}
-                            title={t('Nội dung chung (Tất cả kênh)')}
-                            className={`group relative size-10 rounded-full flex items-center justify-center transition cursor-pointer ${
-                                activeTab === 'default'
-                                    ? 'bg-zinc-900 text-white ring-2 ring-zinc-900 ring-offset-2 shadow-2xs'
-                                    : 'bg-white text-zinc-600 hover:bg-zinc-100 border border-zinc-200'
-                            }`}
-                        >
-                            <Globe size={18} />
-                        </button>
-
-                        {/* Selected Account Tabs: Hình tròn Avatar + Icon Platform có màu giống hàng trên */}
-                        {selectedAccounts.map((tab) => {
-                            const isSelectedTab = activeTab === tab.id;
-                            const isExceeded = !isSelectedTab && getResolvedAccountText(tab).length > (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
-                            const isCustomized = form.destination_settings[tab.id]?.caption !== undefined;
-                            const cfg = PLATFORM_CONFIG[tab.platform] || { icon: Globe, color: 'text-zinc-600' };
-                            const TabIcon = cfg.icon;
-
-                            return (
-                                <button
-                                    key={tab.id}
-                                    type="button"
-                                    onClick={() => setActiveTab(tab.id)}
-                                    title={t(`Tuỳ chỉnh cho ${tab.name}`)}
-                                    className="group relative cursor-pointer focus:outline-hidden"
-                                >
-                                    {/* Circular Avatar */}
-                                    {(() => {
-                                        const avatarUrl = getAccountAvatarUrl(tab);
-                                        const initials = (tab.name || tab.platform).slice(0, 2).toUpperCase();
-                                        return (
-                                            <div
-                                                className={`size-10 rounded-full overflow-hidden transition flex items-center justify-center font-bold text-xs ${
-                                                    isSelectedTab
-                                                        ? 'ring-2 ring-zinc-900 ring-offset-2 shadow-2xs bg-zinc-900 text-white'
-                                                        : 'border border-zinc-200 opacity-70 hover:opacity-100 bg-white text-zinc-700'
-                                                }`}
+                                            <span
+                                                className="absolute -bottom-1 -right-1 size-4 rounded-full bg-white ring-1 ring-border flex items-center justify-center"
+                                                title={cfg.label || account.platform}
                                             >
-                                                {avatarUrl ? (
-                                                    <img
-                                                        src={avatarUrl}
-                                                        alt={tab.name}
-                                                        className="size-full object-cover"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none';
-                                                            if (e.currentTarget.nextSibling) {
-                                                                e.currentTarget.nextSibling.style.display = 'inline';
-                                                            }
-                                                        }}
-                                                    />
-                                                ) : null}
-                                                <span style={{ display: avatarUrl ? 'none' : 'inline' }}>
-                                                    {initials}
-                                                </span>
-                                            </div>
-                                        );
-                                    })()}
+                                                <PlatformIcon size={10} weight="fill" className={cfg.color} />
+                                            </span>
+                                        </div>
 
-                                    {/* Platform Logo Badge: Authentic Brand Color Icon */}
-                                    <span
-                                        className="absolute -bottom-1 -right-1 size-4.5 rounded-full bg-white ring-1.5 ring-white shadow-2xs flex items-center justify-center"
-                                        title={cfg.label || tab.platform}
-                                    >
-                                        <TabIcon size={11} weight="fill" className={cfg.color} />
-                                    </span>
+                                        <div className="min-w-0 pr-1">
+                                            <p className="text-xs font-semibold truncate max-w-[130px] text-foreground">
+                                                {account.name}
+                                            </p>
+                                            <p className="text-[10px] text-muted-foreground truncate">
+                                                {cfg.label || account.platform}
+                                            </p>
+                                        </div>
 
-                                    {/* Status Indicator */}
-                                    {isExceeded ? (
-                                        <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-red-500 ring-1.5 ring-white" />
-                                    ) : isCustomized ? (
-                                        <span className="absolute -top-0.5 -right-0.5 size-2.5 rounded-full bg-blue-500 ring-1.5 ring-white" />
-                                    ) : null}
-                                </button>
-                            );
-                        })}
+                                        <span
+                                            className={`ml-1 grid size-4 shrink-0 place-items-center rounded-full border text-[10px] transition ${
+                                                isSelected
+                                                    ? 'border-brand-dark bg-brand text-brand-ink font-bold'
+                                                    : 'border-border bg-card text-transparent group-hover:border-brand-dark/50'
+                                            }`}
+                                        >
+                                            <Check size={10} weight="bold" />
+                                        </span>
+                                    </button>
+                                );
+                            })}
+                        </div>
 
+                        {/* Step 2: Editor Tab Bar for Global vs Per-Account Content */}
                         {selectedAccounts.length > 0 && (
-                            <span className="ml-2 text-[12px] text-zinc-500 font-medium">
-                                {currentTabAccount ? (
-                                    <>
-                                        {t('Đang chỉnh cho')}:{' '}
-                                        <span className="font-bold text-zinc-900">{currentTabAccount.name}</span>
-                                    </>
-                                ) : (
-                                    t('Nội dung dùng chung (tất cả kênh)')
-                                )}
-                            </span>
-                        )}
-                    </div>
+                            <div className="pt-3 border-t border-border/70 flex flex-wrap items-center gap-2">
+                                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">
+                                    {t('2. Soạn theo kênh')}:
+                                </span>
 
-                        {/* Main Composer Box */}
-                        <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/40 transition focus-within:border-zinc-400 focus-within:bg-white focus-within:ring-2 focus-within:ring-zinc-900/10">
-                            {/* Card Header */}
-                            <div className="flex items-center justify-between gap-3 px-4 pt-3.5">
-                                <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('default')}
+                                    className={`flex h-8 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium transition cursor-pointer ${
+                                        activeTab === 'default'
+                                            ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
+                                            : 'border-border bg-card text-muted-foreground hover:border-brand-dark/50 hover:text-foreground'
+                                    }`}
+                                >
+                                    <Globe size={14} weight={activeTab === 'default' ? 'fill' : 'regular'} />
+                                    <span>{t('Nội dung chung')}</span>
+                                </button>
+
+                                {selectedAccounts.map((tab) => {
+                                    const isSelectedTab = activeTab === tab.id;
+                                    const isExceeded = !isSelectedTab && getResolvedAccountText(tab).length > (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
+                                    const isCustomized = form.destination_settings[tab.id]?.caption !== undefined;
+                                    const cfg = PLATFORM_CONFIG[tab.platform] || { icon: Globe, color: 'text-zinc-600' };
+                                    const TabIcon = cfg.icon;
+
+                                    return (
+                                        <button
+                                            key={tab.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setActiveTab(tab.id);
+                                                setPreviewAccountId(tab.id);
+                                            }}
+                                            title={t(`Tuỳ chỉnh cho ${tab.name}`)}
+                                            className={`relative flex h-8 items-center gap-1.5 rounded-xl border px-2.5 text-xs transition cursor-pointer ${
+                                                isSelectedTab
+                                                    ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
+                                                    : 'border-border bg-card text-muted-foreground hover:border-brand-dark/50 hover:text-foreground font-medium'
+                                            }`}
+                                        >
+                                            <TabIcon size={13} weight="fill" className={isSelectedTab ? 'text-brand-ink' : cfg.color} />
+                                            <span className="truncate max-w-[110px]">{tab.name}</span>
+                                            {isExceeded ? (
+                                                <span className="size-2 rounded-full bg-dangerFg" title={t('Vượt giới hạn ký tự')} />
+                                            ) : isCustomized ? (
+                                                <span className="size-2 rounded-full bg-brand-dark" title={t('Đã tuỳ chỉnh riêng')} />
+                                            ) : null}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </section>
+
+                    {/* Main Composer Studio Box */}
+                    <div className="panel overflow-hidden transition focus-within:border-brand-dark focus-within:ring-2 focus-within:ring-brand/25">
+                        {/* Card Header */}
+                        <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-surface/60 px-4 py-3">
+                            <div className="flex items-center gap-2 min-w-0">
+                                <span className="h-2 w-2 rounded-full bg-brand border border-brand-dark shrink-0" />
+                                <span className="text-xs font-semibold uppercase tracking-wider text-foreground truncate">
                                     {currentTabAccount
                                         ? `${t('Nội dung riêng')} · ${currentTabAccount.name}`
                                         : t('Nội dung dùng chung (tất cả kênh)')}
                                 </span>
-                                <div className="flex items-center gap-3">
-                                    {currentTabAccount && (
-                                        <label className="flex items-center gap-2 text-[12px] font-medium text-zinc-600 cursor-pointer">
-                                            <span>{t('Tuỳ chỉnh riêng')}</span>
-                                            <input
-                                                type="checkbox"
-                                                checked={hasCustomCaption}
-                                                onChange={(e) => toggleCustomTab(e.target.checked)}
-                                                className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
-                                            />
-                                        </label>
-                                    )}
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsComposerExpanded((p) => !p)}
-                                        className="grid size-6 place-items-center rounded-md text-zinc-400 hover:bg-zinc-100"
-                                    >
-                                        {isComposerExpanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
-                                    </button>
-                                </div>
                             </div>
-
-                            {/* Card Body */}
-                            {isComposerExpanded && (
-                                <>
-                                    <textarea
-                                        ref={textareaRef}
-                                        value={currentEditorValue}
-                                        readOnly={currentTabAccount && !hasCustomCaption}
-                                        onChange={(e) => handleTextChange(e.target.value)}
-                                        rows={8}
-                                        placeholder={
-                                            currentTabAccount && !hasCustomCaption
-                                                ? ''
-                                                : t('Viết điều gì đó… (hỗ trợ tag {platform} tự động thay tên kênh)')
-                                        }
-                                        className={`block w-full resize-none bg-transparent px-4 py-3 text-[14px] leading-relaxed outline-none placeholder:text-zinc-400 ${currentTabAccount && !hasCustomCaption ? 'cursor-default text-zinc-400' : ''
-                                            }`}
-                                    />
-
-                                    {currentTabAccount && !hasCustomCaption && (
-                                        <div className="mx-4 mb-2 rounded-lg bg-zinc-100 px-3 py-2 text-[12px] text-zinc-500">
-                                            {t('Kênh này đang dùng nội dung chung. Bật “Tuỳ chỉnh riêng” để viết phiên bản khác.')}
-                                        </div>
-                                    )}
-
-                                    {signatureKey !== 'none' && PRESET_SIGNATURES[signatureKey] && (
-                                        <div className="whitespace-pre-wrap px-4 pb-2 text-[12px] italic text-zinc-400">
-                                            {PRESET_SIGNATURES[signatureKey].trim()}
-                                        </div>
-                                    )}
-
-                                    {/* Attached Media Thumbnails Strip */}
-                                    {form.media.length > 0 && (
-                                        <div className="flex flex-wrap gap-2 px-4 pb-3">
-                                            {form.media.map((asset, idx) => (
-                                                <div
-                                                    key={asset.id || idx}
-                                                    className="group relative size-16 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-zinc-200"
-                                                >
-                                                    <img
-                                                        src={asset.file_url || asset.url || asset.src}
-                                                        alt={asset.name || 'Attachment'}
-                                                        className="size-full object-cover"
-                                                    />
-                                                    {idx === 0 && (
-                                                        <span className="absolute inset-x-0 bottom-0 bg-black/55 text-center text-[9px] font-medium text-white">
-                                                            {t('Bìa')}
-                                                        </span>
-                                                    )}
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => handleRemoveMedia(idx)}
-                                                        className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-black/60 text-white opacity-0 transition group-hover:opacity-100"
-                                                    >
-                                                        <X size={10} />
-                                                    </button>
-                                                </div>
-                                            ))}
-                                        </div>
-                                    )}
-
-                                    {/* Action Toolbar */}
-                                    <div className="flex items-center gap-1 overflow-x-auto border-t border-zinc-100 px-3 py-2">
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsMediaDrawerOpen((p) => !p)}
-                                            className={`flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition cursor-pointer ${isMediaDrawerOpen ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
-                                                }`}
-                                        >
-                                            <ImageSquare size={15} />
-                                            <span>{t('Chèn media')}</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsAiDrawerOpen((p) => !p)}
-                                            className={`flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium transition cursor-pointer ${isAiDrawerOpen ? 'bg-zinc-900 text-white' : 'text-zinc-600 hover:bg-zinc-100'
-                                                }`}
-                                        >
-                                            <Sparkle size={15} weight="duotone" className="text-amber-500" />
-                                            <span>{t('Trợ lý AI')}</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsTemplatePickerOpen(true)}
-                                            className="flex h-8 items-center gap-1.5 rounded-lg px-2.5 text-[12px] font-medium text-zinc-600 hover:bg-zinc-100 transition cursor-pointer"
-                                        >
-                                            <Quotes size={15} weight="duotone" className="text-amber-500" />
-                                            <span>{t('Dùng mẫu')}</span>
-                                        </button>
-
-                                        {/* Signature Dropdown */}
-                                        <div className="relative shrink-0">
-                                            <select
-                                                value={signatureKey}
-                                                onChange={(e) => setSignatureKey(e.target.value)}
-                                                className="h-8 appearance-none rounded-lg border border-zinc-200 bg-white pl-7 pr-7 text-[12px] font-medium text-zinc-700 outline-none hover:border-zinc-300 cursor-pointer"
-                                            >
-                                                <option value="none">{t('Chữ ký: Không')}</option>
-                                                <option value="brand">{t('Chữ ký thương hiệu')}</option>
-                                                <option value="contact">{t('Lời kêu gọi liên hệ')}</option>
-                                            </select>
-                                            <BookmarkSimple size={14} className="pointer-events-none absolute left-2 top-1/2 -translate-y-1/2 text-zinc-500" />
-                                            <CaretDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-zinc-400" />
-                                        </div>
-
-                                        <span className="mx-1 h-4 w-px shrink-0 bg-zinc-200" />
-
-                                        {/* Formatting Buttons */}
-                                        <button
-                                            type="button"
-                                            onClick={() => applyTextTransform(toUnicodeUnderline)}
-                                            title={t('Gạch chân (Unicode)')}
-                                            className="grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
-                                        >
-                                            <TextUnderline size={15} />
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => applyTextTransform(toUnicodeBold)}
-                                            title={t('In đậm (Unicode)')}
-                                            className="grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
-                                        >
-                                            <TextB size={15} />
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => insertTextAtCursor('✨')}
-                                            title={t('Chèn biểu tượng ✨')}
-                                            className="grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
-                                        >
-                                            <span>✨</span>
-                                        </button>
-
-                                        <button
-                                            type="button"
-                                            onClick={() => {
-                                                setIsSettingsOpen(true);
-                                                setIsUtmOpen(true);
-                                            }}
-                                            title={t('Mở UTM Link Builder')}
-                                            className="grid size-8 place-items-center rounded-lg text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
-                                        >
-                                            <LinkSimple size={15} />
-                                        </button>
-
-                                        {/* Character Counter */}
-                                        <span
-                                            className={`ml-auto flex h-8 shrink-0 items-center gap-1.5 rounded-lg border px-2.5 font-mono text-[11px] ${currentTabCharCount > currentTabLimit
-                                                    ? 'border-red-200 bg-red-50 text-red-600 font-semibold'
-                                                    : 'border-zinc-200 bg-white text-zinc-500'
-                                                }`}
-                                            title={
-                                                currentTabAccount
-                                                    ? `Giới hạn ${currentTabAccount.name}`
-                                                    : 'Giới hạn thấp nhất trong các kênh đã chọn'
-                                            }
-                                        >
-                                            {currentTabCharCount > currentTabLimit && (
-                                                <WarningCircle size={14} className="text-red-500" />
-                                            )}
-                                            {currentTabCharCount.toLocaleString('vi-VN')} / {currentTabLimit.toLocaleString('vi-VN')}
-                                        </span>
-                                    </div>
-
-                                    {/* Inline Media Drawer */}
-                                    {isMediaDrawerOpen && (
-                                        <div className="border-t border-zinc-100 p-3 bg-zinc-50/50">
-                                            <div className="mb-2 flex items-center justify-between text-[12px]">
-                                                <span className="font-medium text-zinc-700">
-                                                    {t('Thư viện tệp')}{' '}
-                                                    <span className="font-normal text-zinc-400">· {t('tối đa 10 ảnh')}</span>
-                                                </span>
-                                                <div className="flex items-center gap-3">
-                                                    <input
-                                                        type="file"
-                                                        ref={fileInputRef}
-                                                        onChange={handleFileUpload}
-                                                        multiple
-                                                        accept="image/*,video/*"
-                                                        className="hidden"
-                                                    />
-                                                    <button
-                                                        type="button"
-                                                        disabled={uploading}
-                                                        onClick={() => fileInputRef.current?.click()}
-                                                        className="flex items-center gap-1 text-zinc-600 hover:text-zinc-900 cursor-pointer text-[12px] font-medium"
-                                                    >
-                                                        <UploadSimple size={14} />
-                                                        {uploading ? t('Đang tải...') : t('Tải lên')}
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        onClick={() => setIsMediaDrawerOpen(false)}
-                                                        className="font-medium text-zinc-900 cursor-pointer"
-                                                    >
-                                                        {t('Xong')}
-                                                    </button>
-                                                </div>
-                                            </div>
-
-                                            {mediaLibrary.length === 0 ? (
-                                                <div className="rounded-lg border border-dashed border-zinc-200 py-6 text-center text-xs text-zinc-400">
-                                                    {t('Chưa có ảnh trong thư viện. Bấm "Tải lên" để thêm.')}
-                                                </div>
-                                            ) : (
-                                                <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
-                                                    {mediaLibrary.map((item) => {
-                                                        const isSelected = form.media.some((m) => m.id === item.id);
-                                                        return (
-                                                            <button
-                                                                key={item.id}
-                                                                type="button"
-                                                                onClick={() => handleToggleMedia(item)}
-                                                                className={`relative aspect-square overflow-hidden rounded-md ring-offset-1 transition cursor-pointer ${isSelected
-                                                                        ? 'ring-2 ring-zinc-900'
-                                                                        : 'opacity-80 hover:opacity-100'
-                                                                    }`}
-                                                            >
-                                                                <img
-                                                                    src={item.file_url || item.url}
-                                                                    alt={item.name}
-                                                                    className="size-full object-cover"
-                                                                />
-                                                                {isSelected && (
-                                                                    <span className="absolute right-1 top-1 grid size-4 place-items-center rounded bg-zinc-900 text-white">
-                                                                        <Check size={10} weight="bold" />
-                                                                    </span>
-                                                                )}
-                                                            </button>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-                                        </div>
-                                    )}
-
-                                    {/* Inline AI Assistant Drawer */}
-                                    {isAiDrawerOpen && (
-                                        <div className="rounded-b-2xl border-t border-zinc-200 bg-zinc-50 p-3">
-                                            <div className="mb-2.5 flex items-center gap-2 text-[11px] text-zinc-500">
-                                                <span className="size-1.5 rounded-full bg-emerald-500" />
-                                                <span>{aiConfig?.provider || 'AI Assistant'}</span>
-                                                <code className="rounded bg-white px-1.5 py-0.5 font-mono text-[10px] ring-1 ring-zinc-200">
-                                                    {aiConfig?.model || 'gpt-4o-mini'}
-                                                </code>
-                                                {aiBusy && (
-                                                    <span className="ml-auto text-amber-600 font-medium">
-                                                        {t('Đang xử lý…')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <div className="flex flex-wrap gap-1.5">
-                                                {[
-                                                    ['outline', t('Gợi ý dàn ý'), ListBullets],
-                                                    ['hook', t('Viết lại hấp dẫn hơn'), MagicWand],
-                                                    ['shorten_x', t('Rút gọn cho X'), Sparkle],
-                                                    ['hashtags', t('Thêm hashtag'), Tag],
-                                                    ['create_image', t('Tạo ảnh AI'), ImageSquare],
-                                                ].map(([actionId, actionLabel, IconComp]) => (
-                                                    <button
-                                                        key={actionId}
-                                                        type="button"
-                                                        disabled={aiBusy}
-                                                        onClick={() => handleAiChip(actionId)}
-                                                        className="flex items-center gap-1.5 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] text-zinc-700 transition hover:border-zinc-300 cursor-pointer disabled:opacity-50"
-                                                    >
-                                                        <IconComp size={14} className="text-zinc-400" />
-                                                        <span>{actionLabel}</span>
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </>
-                            )}
+                            <div className="flex items-center gap-3 shrink-0">
+                                {currentTabAccount && (
+                                    <label className="flex items-center gap-2 rounded-lg border border-brand-dark/40 bg-brand/15 px-2.5 py-1 text-xs font-semibold text-brand-ink cursor-pointer">
+                                        <span>{t('Tuỳ chỉnh riêng')}</span>
+                                        <input
+                                            type="checkbox"
+                                            checked={hasCustomCaption}
+                                            onChange={(e) => toggleCustomTab(e.target.checked)}
+                                            className="h-4 w-4 rounded border-brand-dark text-brand-dark focus:ring-brand-dark cursor-pointer"
+                                        />
+                                    </label>
+                                )}
+                                <button
+                                    type="button"
+                                    onClick={() => setIsComposerExpanded((p) => !p)}
+                                    className="grid size-7 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:border-brand-dark hover:text-brand-ink cursor-pointer"
+                                >
+                                    {isComposerExpanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
+                                </button>
+                            </div>
                         </div>
 
-                        {/* Character Limit Exceeded Alert Banner */}
-                        {exceededAccounts.length > 0 && (
-                            <div className="mt-3 flex items-start gap-2 rounded-lg bg-red-50 px-3 py-2 text-[12px] text-red-700">
-                                <WarningCircle size={15} className="mt-0.5 shrink-0 text-red-500" />
-                                <div>
-                                    <span>{t('Vượt giới hạn ký tự trên: ')}</span>
-                                    {exceededAccounts.map((acc, idx) => (
-                                        <button
-                                            key={acc.id}
-                                            type="button"
-                                            onClick={() => setActiveTab(acc.id)}
-                                            className="font-medium underline underline-offset-2 cursor-pointer ml-1"
+                        {/* Card Body */}
+                        {isComposerExpanded && (
+                            <>
+                                <textarea
+                                    ref={textareaRef}
+                                    value={currentEditorValue}
+                                    readOnly={currentTabAccount && !hasCustomCaption}
+                                    onChange={(e) => handleTextChange(e.target.value)}
+                                    rows={8}
+                                    placeholder={
+                                        currentTabAccount && !hasCustomCaption
+                                            ? ''
+                                            : t('Viết điều gì đó… (hỗ trợ tag {platform} tự động thay tên kênh)')
+                                    }
+                                    className={`block w-full resize-none bg-card px-4 py-3.5 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground ${currentTabAccount && !hasCustomCaption ? 'cursor-default text-muted-foreground bg-surface/40' : ''
+                                        }`}
+                                />
+
+                                {currentTabAccount && !hasCustomCaption && (
+                                    <div className="mx-4 mb-3 rounded-xl border border-brand-dark/40 bg-brand/15 px-3 py-2 text-xs text-brand-ink">
+                                        {t('Kênh này đang dùng nội dung chung. Bật “Tuỳ chỉnh riêng” để viết phiên bản khác.')}
+                                    </div>
+                                )}
+
+                                {signatureKey !== 'none' && PRESET_SIGNATURES[signatureKey] && (
+                                    <div className="mx-4 mb-3 rounded-xl border border-dashed border-border bg-surface/60 px-3 py-2 whitespace-pre-wrap text-xs italic text-muted-foreground">
+                                        {PRESET_SIGNATURES[signatureKey].trim()}
+                                    </div>
+                                )}
+
+                                {/* Attached Media Thumbnails Strip */}
+                                {form.media.length > 0 && (
+                                    <div className="flex flex-wrap gap-2.5 border-t border-border/60 bg-surface/40 px-4 py-3">
+                                        {form.media.map((asset, idx) => (
+                                            <div
+                                                key={asset.id || idx}
+                                                className="group relative size-16 overflow-hidden rounded-xl border border-border bg-muted"
+                                            >
+                                                <img
+                                                    src={asset.file_url || asset.url || asset.src}
+                                                    alt={asset.name || 'Attachment'}
+                                                    className="size-full object-cover"
+                                                />
+                                                {idx === 0 && (
+                                                    <span className="absolute inset-x-0 bottom-0 bg-brand/95 text-center text-[9px] font-bold text-brand-ink">
+                                                        {t('Bìa')}
+                                                    </span>
+                                                )}
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveMedia(idx)}
+                                                    className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-black/65 text-white opacity-0 transition group-hover:opacity-100 cursor-pointer"
+                                                >
+                                                    <X size={10} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+
+                                {/* Action Toolbar */}
+                                <div className="flex items-center gap-1.5 overflow-x-auto border-t border-border/80 bg-surface/70 px-3 py-2.5">
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsMediaDrawerOpen((p) => !p)}
+                                        className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition cursor-pointer ${isMediaDrawerOpen
+                                                ? 'border-brand-dark bg-brand text-brand-ink'
+                                                : 'border-border bg-card text-foreground hover:border-brand-dark/50 hover:bg-brand/10'
+                                            }`}
+                                    >
+                                        <ImageSquare size={15} weight="duotone" />
+                                        <span>{t('Chèn media')}</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsAiDrawerOpen((p) => !p)}
+                                        className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition cursor-pointer ${isAiDrawerOpen
+                                                ? 'border-brand-dark bg-brand text-brand-ink'
+                                                : 'border-border bg-card text-foreground hover:border-brand-dark/50 hover:bg-brand/10'
+                                            }`}
+                                    >
+                                        <Sparkle size={15} weight="fill" className={isAiDrawerOpen ? 'text-brand-ink' : 'text-brand-dark'} />
+                                        <span>{t('Trợ lý AI')}</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => setIsTemplatePickerOpen(true)}
+                                        className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-medium text-foreground hover:border-brand-dark/50 hover:bg-brand/10 transition cursor-pointer"
+                                    >
+                                        <Quotes size={15} weight="duotone" className="text-brand-dark" />
+                                        <span>{t('Dùng mẫu')}</span>
+                                    </button>
+
+                                    {/* Signature Dropdown */}
+                                    <div className="relative shrink-0">
+                                        <select
+                                            value={signatureKey}
+                                            onChange={(e) => setSignatureKey(e.target.value)}
+                                            className="h-8 appearance-none rounded-xl border border-border bg-card pl-7 pr-7 text-xs font-medium text-foreground outline-none hover:border-brand-dark/50 cursor-pointer"
                                         >
-                                            {acc.name} ({PLATFORM_CHAR_LIMITS[acc.platform]})
-                                            {idx < exceededAccounts.length - 1 ? ',' : '.'}
-                                        </button>
-                                    ))}
+                                            <option value="none">{t('Chữ ký: Không')}</option>
+                                            <option value="brand">{t('Chữ ký thương hiệu')}</option>
+                                            <option value="contact">{t('Lời kêu gọi liên hệ')}</option>
+                                        </select>
+                                        <BookmarkSimple size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-dark" />
+                                        <CaretDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                    </div>
+
+                                    <span className="mx-1 h-4 w-px shrink-0 bg-border" />
+
+                                    {/* Formatting Buttons */}
+                                    <button
+                                        type="button"
+                                        onClick={() => applyTextTransform(toUnicodeUnderline)}
+                                        title={t('Gạch chân (Unicode)')}
+                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                    >
+                                        <TextUnderline size={15} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => applyTextTransform(toUnicodeBold)}
+                                        title={t('In đậm (Unicode)')}
+                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                    >
+                                        <TextB size={15} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => insertTextAtCursor('✨')}
+                                        title={t('Chèn biểu tượng ✨')}
+                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                    >
+                                        <span>✨</span>
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setIsSettingsOpen(true);
+                                            setIsUtmOpen(true);
+                                        }}
+                                        title={t('Mở UTM Link Builder')}
+                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                    >
+                                        <LinkSimple size={15} />
+                                    </button>
+
+                                    {/* Character Counter */}
+                                    <span
+                                        className={`ml-auto flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 font-mono text-[11px] ${currentTabCharCount > currentTabLimit
+                                                ? 'border-dangerFg bg-dangerBg text-dangerFg font-semibold'
+                                                : 'border-brand-dark/30 bg-brand/10 text-brand-ink font-medium'
+                                            }`}
+                                        title={
+                                            currentTabAccount
+                                                ? `Giới hạn ${currentTabAccount.name}`
+                                                : 'Giới hạn thấp nhất trong các kênh đã chọn'
+                                        }
+                                    >
+                                        {currentTabCharCount > currentTabLimit && (
+                                            <WarningCircle size={14} className="text-dangerFg" />
+                                        )}
+                                        {currentTabCharCount.toLocaleString('vi-VN')} / {currentTabLimit.toLocaleString('vi-VN')}
+                                    </span>
+                                </div>
+
+                                {/* Inline Media Drawer */}
+                                {isMediaDrawerOpen && (
+                                    <div className="border-t border-brand-dark/30 bg-brand/10 p-3.5">
+                                        <div className="mb-2.5 flex items-center justify-between text-xs">
+                                            <span className="font-semibold text-brand-ink">
+                                                {t('Thư viện tệp')}{' '}
+                                                <span className="font-normal text-muted-foreground">· {t('tối đa 10 ảnh')}</span>
+                                            </span>
+                                            <div className="flex items-center gap-3">
+                                                <input
+                                                    type="file"
+                                                    ref={fileInputRef}
+                                                    onChange={handleFileUpload}
+                                                    multiple
+                                                    accept="image/*,video/*"
+                                                    className="hidden"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    disabled={uploading}
+                                                    onClick={() => fileInputRef.current?.click()}
+                                                    className="flex items-center gap-1 rounded-lg border border-brand-dark bg-brand px-2.5 py-1 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] cursor-pointer"
+                                                >
+                                                    <UploadSimple size={14} weight="bold" />
+                                                    {uploading ? t('Đang tải...') : t('Tải lên')}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setIsMediaDrawerOpen(false)}
+                                                    className="text-xs font-semibold text-brand-ink hover:underline cursor-pointer"
+                                                >
+                                                    {t('Xong')}
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {mediaLibrary.length === 0 ? (
+                                            <div className="rounded-xl border border-dashed border-brand-dark/40 bg-card/80 py-6 text-center text-xs text-muted-foreground">
+                                                {t('Chưa có ảnh trong thư viện. Bấm "Tải lên" để thêm.')}
+                                            </div>
+                                        ) : (
+                                            <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
+                                                {mediaLibrary.map((item) => {
+                                                    const isSelected = form.media.some((m) => m.id === item.id);
+                                                    return (
+                                                        <button
+                                                            key={item.id}
+                                                            type="button"
+                                                            onClick={() => handleToggleMedia(item)}
+                                                            className={`relative aspect-square overflow-hidden rounded-lg ring-offset-1 transition cursor-pointer ${isSelected
+                                                                    ? 'ring-2 ring-brand-dark'
+                                                                    : 'opacity-80 hover:opacity-100'
+                                                                }`}
+                                                        >
+                                                            <img
+                                                                src={item.file_url || item.url}
+                                                                alt={item.name}
+                                                                className="size-full object-cover"
+                                                            />
+                                                            {isSelected && (
+                                                                <span className="absolute right-1 top-1 grid size-4 place-items-center rounded bg-brand text-brand-ink">
+                                                                    <Check size={10} weight="bold" />
+                                                                </span>
+                                                            )}
+                                                        </button>
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+
+                                {/* Inline AI Assistant Drawer */}
+                                {isAiDrawerOpen && (
+                                    <div className="border-t border-brand-dark/30 bg-brand/10 p-3.5">
+                                        <div className="mb-2.5 flex items-center gap-2 text-[11px] text-brand-ink">
+                                            <span className="size-2 rounded-full bg-brand border border-brand-dark" />
+                                            <span className="font-semibold">{aiConfig?.provider || 'AI Assistant'}</span>
+                                            <code className="rounded bg-card px-1.5 py-0.5 font-mono text-[10px] border border-brand-dark/30">
+                                                {aiConfig?.model || 'gpt-4o-mini'}
+                                            </code>
+                                            {aiBusy && (
+                                                <span className="ml-auto text-brand-ink font-semibold">
+                                                    {t('Đang xử lý…')}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1.5">
+                                            {[
+                                                ['outline', t('Gợi ý dàn ý'), ListBullets],
+                                                ['hook', t('Viết lại hấp dẫn hơn'), MagicWand],
+                                                ['shorten_x', t('Rút gọn cho X'), Sparkle],
+                                                ['hashtags', t('Thêm hashtag'), Tag],
+                                                ['create_image', t('Tạo ảnh AI'), ImageSquare],
+                                            ].map(([actionId, actionLabel, IconComp]) => (
+                                                <button
+                                                    key={actionId}
+                                                    type="button"
+                                                    disabled={aiBusy}
+                                                    onClick={() => handleAiChip(actionId)}
+                                                    className="flex items-center gap-1.5 rounded-full border border-brand-dark/40 bg-card px-3 py-1 text-xs font-medium text-brand-ink transition hover:bg-brand hover:border-brand-dark cursor-pointer disabled:opacity-50"
+                                                >
+                                                    <IconComp size={14} weight="duotone" className="text-brand-dark" />
+                                                    <span>{actionLabel}</span>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+                    </div>
+
+                    {/* Character Limit Exceeded Alert Banner */}
+                    {exceededAccounts.length > 0 && (
+                        <div className="flex items-start gap-2 rounded-xl border border-dangerFg/40 bg-dangerBg px-3.5 py-2.5 text-xs text-dangerFg">
+                            <WarningCircle size={15} className="mt-0.5 shrink-0" />
+                            <div>
+                                <span>{t('Vượt giới hạn ký tự trên: ')}</span>
+                                {exceededAccounts.map((acc, idx) => (
+                                    <button
+                                        key={acc.id}
+                                        type="button"
+                                        onClick={() => setActiveTab(acc.id)}
+                                        className="font-semibold underline underline-offset-2 cursor-pointer ml-1"
+                                    >
+                                        {acc.name} ({PLATFORM_CHAR_LIMITS[acc.platform]})
+                                        {idx < exceededAccounts.length - 1 ? ',' : '.'}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Comment Chain & UTM Link Builder Row */}
+                    <section className="panel p-4 sm:p-5 space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/20 text-brand-ink font-heading text-xs font-bold">
+                                    {(form.comments || []).length}
+                                </span>
+                                <div>
+                                    <h2 className="font-heading text-sm font-semibold text-foreground">
+                                        {t('Chuỗi bình luận & bài nối tiếp')}
+                                    </h2>
+                                    <p className="label-xs text-muted-foreground">
+                                        {t('Tự động đăng bình luận đầu tiên (chèn link/hashtag) hoặc chuỗi bài nối tiếp')}
+                                    </p>
                                 </div>
                             </div>
-                        )}
-
-                        {/* Comment Chain (Chuỗi bình luận) */}
-                        <div className="mt-6 space-y-3">
-                            {(form.comments || []).map((comment, index) => (
-                                <div key={index} className="relative pl-6">
-                                    <span className="absolute left-2 top-0 h-full w-px bg-zinc-200" />
-                                    <span className="absolute left-[5px] top-4 size-2 rounded-full bg-zinc-300" />
-                                    <div className="rounded-xl border border-zinc-200 bg-white focus-within:border-zinc-400 focus-within:ring-2 focus-within:ring-zinc-900/10">
-                                        <div className="flex items-center justify-between px-3 pt-2.5">
-                                            <span className="text-[11px] font-semibold uppercase tracking-wider text-zinc-400">
-                                                {t('Bình luận')} {index + 1}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={() =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        comments: prev.comments.filter((_, i) => i !== index),
-                                                    }))
-                                                }
-                                                className="grid size-6 place-items-center rounded-md text-zinc-400 hover:bg-red-50 hover:text-red-600 cursor-pointer"
-                                            >
-                                                <Trash size={14} />
-                                            </button>
-                                        </div>
-                                        <textarea
-                                            value={comment.message || ''}
-                                            onChange={(e) =>
-                                                setForm((prev) => ({
-                                                    ...prev,
-                                                    comments: prev.comments.map((c, i) =>
-                                                        i === index ? { ...c, message: e.target.value } : c
-                                                    ),
-                                                }))
-                                            }
-                                            rows={2}
-                                            placeholder={t('Bình luận đầu tiên hoặc bài tiếp theo trong chuỗi…')}
-                                            className="block w-full resize-none bg-transparent px-3 pb-3 pt-1 text-[13px] outline-none placeholder:text-zinc-400"
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-
                             <button
                                 type="button"
                                 onClick={() =>
@@ -1380,524 +1419,499 @@ export default function CreatePost() {
                                         comments: [...(prev.comments || []), { message: '', delay_minutes: 0 }],
                                     }))
                                 }
-                                className="flex h-8 items-center gap-1.5 rounded-full bg-zinc-900 px-3.5 text-[12px] font-medium text-white transition hover:bg-zinc-800 cursor-pointer"
+                                className="flex h-8 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition hover:bg-[#ffe059] cursor-pointer"
                             >
-                                <Plus size={14} />
+                                <Plus size={14} weight="bold" />
                                 <span>{t('Thêm bình luận / bài tiếp')}</span>
                             </button>
                         </div>
 
-                        {/* Collapsible "Cài đặt" (Thương hiệu · chiến lược · UTM) */}
-                        <div className="mt-6 overflow-hidden rounded-2xl border border-zinc-200">
-                            <button
-                                type="button"
-                                onClick={() => setIsSettingsOpen((p) => !p)}
-                                className={`flex w-full items-center gap-2.5 px-4 py-3 text-left text-[13px] font-semibold transition cursor-pointer ${isSettingsOpen ? 'bg-zinc-50 border-b border-zinc-200 text-zinc-900' : 'bg-white hover:bg-zinc-50 text-zinc-800'
-                                    }`}
-                            >
-                                <SlidersHorizontal size={16} className="text-zinc-700" />
-                                <span>{t('Cài đặt')}</span>
-                                <span className="ml-1 text-[11px] font-normal text-zinc-400">
-                                    {t('Thương hiệu · chiến lược · UTM')}
-                                </span>
-                                <CaretDown size={16} className={`ml-auto text-zinc-400 transition ${isSettingsOpen ? 'rotate-180' : ''}`} />
-                            </button>
+                        {(form.comments || []).length > 0 && (
+                            <div className="space-y-3 pt-1">
+                                {(form.comments || []).map((comment, index) => (
+                                    <div key={index} className="relative pl-6">
+                                        <span className="absolute left-2.5 top-0 h-full w-px bg-brand-dark/40" />
+                                        <span className="absolute left-1 top-3.5 size-3 rounded-full border border-brand-dark bg-brand" />
+                                        <div className="rounded-xl border border-border bg-surface/40 focus-within:border-brand-dark focus-within:bg-card focus-within:ring-2 focus-within:ring-brand/25">
+                                            <div className="flex items-center justify-between px-3 pt-2.5">
+                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-ink">
+                                                    {t('Bình luận')} #{index + 1}
+                                                </span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setForm((prev) => ({
+                                                            ...prev,
+                                                            comments: prev.comments.filter((_, i) => i !== index),
+                                                        }))
+                                                    }
+                                                    className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-dangerBg hover:text-dangerFg cursor-pointer"
+                                                >
+                                                    <Trash size={14} />
+                                                </button>
+                                            </div>
+                                            <textarea
+                                                value={comment.message || ''}
+                                                onChange={(e) =>
+                                                    setForm((prev) => ({
+                                                        ...prev,
+                                                        comments: prev.comments.map((c, i) =>
+                                                            i === index ? { ...c, message: e.target.value } : c
+                                                        ),
+                                                    }))
+                                                }
+                                                rows={2}
+                                                placeholder={t('Bình luận đầu tiên hoặc bài tiếp theo trong chuỗi…')}
+                                                className="block w-full resize-none bg-transparent px-3 pb-3 pt-1 text-[13px] outline-none placeholder:text-muted-foreground"
+                                            />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </section>
 
-                            {isSettingsOpen && (
-                                <div className="divide-y divide-zinc-100 bg-white">
-                                    {/* Row 1: Tiêu đề nội bộ, Thương hiệu, Trụ cột, Góc khai thác */}
-                                    <div className="grid grid-cols-1 gap-4 p-4 sm:grid-cols-2">
+                    {/* Collapsible UTM & Shortlink Tracking Panel */}
+                    <section className="panel overflow-hidden">
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setIsSettingsOpen((p) => !p);
+                                setIsUtmOpen(true);
+                            }}
+                            className={`flex w-full items-center gap-2.5 px-4 py-3.5 text-left text-[13px] font-semibold transition cursor-pointer ${isSettingsOpen
+                                    ? 'bg-brand/15 border-b border-brand-dark/30 text-brand-ink'
+                                    : 'bg-card hover:bg-brand/10 text-foreground'
+                                }`}
+                        >
+                            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/25 text-brand-ink shrink-0">
+                                <LinkSimple size={15} weight="bold" />
+                            </span>
+                            <div>
+                                <span className="block">{t('Tạo UTM & Theo dõi liên kết rút gọn')}</span>
+                                <span className="block text-[11px] font-normal text-muted-foreground">
+                                    {t('Gắn mã chiến dịch và đếm lượt nhấp theo từng kênh')}
+                                </span>
+                            </div>
+                            <span className="ml-auto mr-2 rounded-full border border-brand-dark/30 bg-brand/20 px-2 py-0.5 text-[10px] font-semibold text-brand-ink">
+                                {trackedLinks.length} {t('link')}
+                            </span>
+                            <CaretDown size={16} className={`text-muted-foreground transition ${isSettingsOpen ? 'rotate-180 text-brand-ink' : ''}`} />
+                        </button>
+
+                        {isSettingsOpen && (
+                            <div className="divide-y divide-border/70 bg-card p-4 space-y-4">
+                                <div className="space-y-4">
+                                    <p className="text-xs leading-relaxed text-muted-foreground">
+                                        {t('Gắn UTM cho liên kết trong nội dung trước khi áp dụng. Để trống nguồn để dùng nền tảng của từng tài khoản.')}
+                                    </p>
+
+                                    <div>
+                                        <div className="flex items-center justify-between mb-1">
+                                            <label className="text-xs font-medium text-foreground">
+                                                {t('URL đích')}
+                                            </label>
+                                            {!utmForm.url && detectedUrlInCaption && (
+                                                <span className="text-[11px] text-successFg font-medium">
+                                                    {t('Đang dùng liên kết trong nội dung')}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={utmForm.url}
+                                            onChange={(e) => setUtmForm({ ...utmForm, url: e.target.value })}
+                                            placeholder={detectedUrlInCaption || 'https://deszy.vn/san-pham'}
+                                            className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div>
-                                            <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                {t('Tiêu đề nội bộ')} <span className="text-red-500">*</span>
+                                            <label className="block text-xs font-medium text-foreground mb-1">
+                                                {t('Nguồn')} <span className="text-[11px] text-muted-foreground font-normal">({t('Trống = nền tảng')})</span>
                                             </label>
                                             <input
                                                 type="text"
-                                                value={form.title}
-                                                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                                placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
-                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-900 focus:ring-1 focus:ring-zinc-900"
+                                                value={utmForm.source}
+                                                onChange={(e) => setUtmForm({ ...utmForm, source: e.target.value })}
+                                                placeholder="{platform}"
+                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
                                             />
                                         </div>
 
                                         <div>
-                                            <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                {t('Thương hiệu')}
+                                            <label className="block text-xs font-medium text-foreground mb-1">
+                                                {t('Phương tiện')} <span className="text-dangerFg">*</span>
                                             </label>
-                                            <select
-                                                value={form.brand_id}
-                                                onChange={(e) => applyBrand(e.target.value)}
-                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400 cursor-pointer bg-white"
-                                            >
-                                                {brands.map((b) => (
-                                                    <option key={b.id} value={b.id}>
-                                                        {b.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <input
+                                                type="text"
+                                                value={utmForm.medium}
+                                                onChange={(e) => setUtmForm({ ...utmForm, medium: e.target.value })}
+                                                placeholder="social"
+                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                            />
                                         </div>
 
                                         <div>
-                                            <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                {t('Trụ cột')}
+                                            <label className="block text-xs font-medium text-foreground mb-1">
+                                                {t('Chiến dịch')} <span className="text-dangerFg">*</span>
                                             </label>
-                                            <select
-                                                value={form.pillar_id}
-                                                onChange={(e) => setForm({ ...form, pillar_id: e.target.value, angle_id: '' })}
-                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400 cursor-pointer bg-white"
-                                            >
-                                                <option value="">{t('Chưa phân loại')}</option>
-                                                {brandPillars.map((p) => (
-                                                    <option key={p.id} value={p.id}>
-                                                        {p.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <input
+                                                type="text"
+                                                value={utmForm.campaign}
+                                                onChange={(e) => setUtmForm({ ...utmForm, campaign: e.target.value })}
+                                                placeholder="flash_sale_t11"
+                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                            />
                                         </div>
 
                                         <div>
-                                            <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                {t('Góc khai thác')}
+                                            <label className="block text-xs font-medium text-foreground mb-1">
+                                                {t('Nội dung')}
                                             </label>
-                                            <select
-                                                value={form.angle_id}
-                                                onChange={(e) => setForm({ ...form, angle_id: e.target.value })}
-                                                disabled={!form.pillar_id}
-                                                className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400 cursor-pointer bg-white disabled:bg-zinc-50 disabled:text-zinc-400"
-                                            >
-                                                <option value="">
-                                                    {form.pillar_id ? t('Chọn góc khai thác') : t('Chọn trụ cột trước')}
-                                                </option>
-                                                {brandAngles.map((a) => (
-                                                    <option key={a.id} value={a.id}>
-                                                        {a.name}
-                                                    </option>
-                                                ))}
-                                            </select>
+                                            <input
+                                                type="text"
+                                                value={utmForm.content}
+                                                onChange={(e) => setUtmForm({ ...utmForm, content: e.target.value })}
+                                                placeholder="banner_a"
+                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                            />
+                                        </div>
+
+                                        <div>
+                                            <label className="block text-xs font-medium text-foreground mb-1">
+                                                {t('Từ khoá')}
+                                            </label>
+                                            <input
+                                                type="text"
+                                                value={utmForm.term}
+                                                onChange={(e) => setUtmForm({ ...utmForm, term: e.target.value })}
+                                                placeholder="socialchoice"
+                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                            />
                                         </div>
                                     </div>
 
-                                    {/* Sub-accordion: UTM Link Builder */}
-                                    <div>
-                                        <button
-                                            type="button"
-                                            onClick={() => setIsUtmOpen((p) => !p)}
-                                            className="flex w-full items-center gap-2.5 px-4 py-3 text-left hover:bg-zinc-50 cursor-pointer"
-                                        >
-                                            <LinkSimple size={16} className="text-zinc-500" />
-                                            <span className="text-[13px] font-medium text-zinc-800">
-                                                {t('Tạo UTM và theo dõi liên kết')}
+                                    <div className="divide-y divide-border/70 rounded-xl border border-border">
+                                        <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
+                                            <span>
+                                                <span className="block text-[13px] font-medium text-foreground">
+                                                    {t('Liên kết chuyển hướng có thống kê')}
+                                                </span>
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {t('Đếm lượt nhấp qua đường dẫn rút gọn.')}
+                                                </span>
                                             </span>
-                                            <span className="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500">
-                                                {t('Tuỳ chọn')}
+                                            <input
+                                                type="checkbox"
+                                                checked={useShortlink}
+                                                onChange={(e) => setUseShortlink(e.target.checked)}
+                                                className="h-4 w-4 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
+                                            />
+                                        </label>
+
+                                        <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
+                                            <span>
+                                                <span className="block text-[13px] font-medium text-foreground">
+                                                    {t('Thay các giá trị UTM đã có')}
+                                                </span>
+                                                <span className="block text-xs text-muted-foreground">
+                                                    {t('Ghi đè tham số utm_ sẵn có trong URL.')}
+                                                </span>
                                             </span>
-                                            <CaretDown size={14} className={`ml-auto text-zinc-400 transition ${isUtmOpen ? 'rotate-180' : ''}`} />
-                                        </button>
+                                            <input
+                                                type="checkbox"
+                                                checked={overrideExistingUtm}
+                                                onChange={(e) => setOverrideExistingUtm(e.target.checked)}
+                                                className="h-4 w-4 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
+                                            />
+                                        </label>
+                                    </div>
 
-                                        {isUtmOpen && (
-                                            <div className="space-y-4 px-4 pb-4">
-                                                <p className="text-[12px] leading-relaxed text-zinc-500">
-                                                    {t('Gắn UTM cho liên kết trong nội dung trước khi áp dụng. Để trống nguồn để dùng nền tảng của từng tài khoản.')}
-                                                </p>
-
-                                                <div>
-                                                    <div className="flex items-center justify-between mb-1">
-                                                        <label className="text-[12px] font-medium text-zinc-700">
-                                                            {t('URL đích')}
-                                                        </label>
-                                                        {!utmForm.url && detectedUrlInCaption && (
-                                                            <span className="text-[11px] text-emerald-700 font-medium">
-                                                                {t('Đang dùng liên kết trong nội dung')}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                    <input
-                                                        type="text"
-                                                        value={utmForm.url}
-                                                        onChange={(e) => setUtmForm({ ...utmForm, url: e.target.value })}
-                                                        placeholder={detectedUrlInCaption || 'https://deszy.vn/san-pham'}
-                                                        className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                    />
-                                                </div>
-
-                                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-                                                    <div>
-                                                        <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                            {t('Nguồn')} <span className="text-[11px] text-zinc-400 font-normal">({t('Trống = nền tảng')})</span>
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={utmForm.source}
-                                                            onChange={(e) => setUtmForm({ ...utmForm, source: e.target.value })}
-                                                            placeholder="{platform}"
-                                                            className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                            {t('Phương tiện')} <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={utmForm.medium}
-                                                            onChange={(e) => setUtmForm({ ...utmForm, medium: e.target.value })}
-                                                            placeholder="social"
-                                                            className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                            {t('Chiến dịch')} <span className="text-red-500">*</span>
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={utmForm.campaign}
-                                                            onChange={(e) => setUtmForm({ ...utmForm, campaign: e.target.value })}
-                                                            placeholder="flash_sale_t11"
-                                                            className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                            {t('Nội dung')}
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={utmForm.content}
-                                                            onChange={(e) => setUtmForm({ ...utmForm, content: e.target.value })}
-                                                            placeholder="banner_a"
-                                                            className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                        />
-                                                    </div>
-
-                                                    <div>
-                                                        <label className="block text-[12px] font-medium text-zinc-700 mb-1">
-                                                            {t('Từ khoá')}
-                                                        </label>
-                                                        <input
-                                                            type="text"
-                                                            value={utmForm.term}
-                                                            onChange={(e) => setUtmForm({ ...utmForm, term: e.target.value })}
-                                                            placeholder="socialchoice"
-                                                            className="h-9 w-full rounded-lg border border-zinc-200 px-3 text-[13px] outline-none transition focus:border-zinc-400"
-                                                        />
-                                                    </div>
-                                                </div>
-
-                                                <div className="divide-y divide-zinc-100 rounded-xl border border-zinc-200">
-                                                    <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
-                                                        <span>
-                                                            <span className="block text-[13px] font-medium text-zinc-800">
-                                                                {t('Liên kết chuyển hướng có thống kê')}
-                                                            </span>
-                                                            <span className="block text-[12px] text-zinc-500">
-                                                                {t('Đếm lượt nhấp qua đường dẫn rút gọn.')}
-                                                            </span>
-                                                        </span>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={useShortlink}
-                                                            onChange={(e) => setUseShortlink(e.target.checked)}
-                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
-                                                        />
-                                                    </label>
-
-                                                    <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
-                                                        <span>
-                                                            <span className="block text-[13px] font-medium text-zinc-800">
-                                                                {t('Thay các giá trị UTM đã có')}
-                                                            </span>
-                                                            <span className="block text-[12px] text-zinc-500">
-                                                                {t('Ghi đè tham số utm_ sẵn có trong URL.')}
-                                                            </span>
-                                                        </span>
-                                                        <input
-                                                            type="checkbox"
-                                                            checked={overrideExistingUtm}
-                                                            onChange={(e) => setOverrideExistingUtm(e.target.checked)}
-                                                            className="h-4 w-4 rounded border-zinc-300 text-zinc-900 focus:ring-zinc-900 cursor-pointer"
-                                                        />
-                                                    </label>
-                                                </div>
-
-                                                {/* Link Preview Card */}
-                                                <div className="rounded-xl bg-zinc-50 p-4">
-                                                    <div className="mb-2 text-[12px] font-medium text-zinc-700">
-                                                        {t('Xem trước liên kết')}
-                                                    </div>
-                                                    {generatedUtmUrl ? (
-                                                        <>
-                                                            <code className="block break-all font-mono text-[12px] text-zinc-900 bg-white p-2 rounded border border-zinc-200">
-                                                                {displayUtmShortUrl}
-                                                            </code>
-                                                            {useShortlink && (
-                                                                <code className="mt-1.5 block break-all font-mono text-[11px] text-zinc-400">
-                                                                    → {displayUtmTargetUrl}
-                                                                </code>
-                                                            )}
-                                                        </>
-                                                    ) : (
-                                                        <p className="text-[12px] text-zinc-400">
-                                                            {t('Cần nhập URL, phương tiện và chiến dịch.')}
-                                                        </p>
-                                                    )}
-                                                    <div className="mt-3 flex justify-end">
-                                                        <button
-                                                            type="button"
-                                                            disabled={!generatedUtmUrl}
-                                                            onClick={applyUtmToDraft}
-                                                            className="h-8 rounded-lg bg-zinc-900 px-3 text-[12px] font-medium text-white transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-400 cursor-pointer"
-                                                        >
-                                                            {t('Áp dụng liên kết vào bản nháp')}
-                                                        </button>
-                                                    </div>
-                                                </div>
-
-                                                {/* Tracked Links Table */}
-                                                <div>
-                                                    <div className="mb-2 flex items-center justify-between">
-                                                        <span className="text-[13px] font-medium text-zinc-800">
-                                                            {t('Liên kết được theo dõi')} · {brands.find((b) => b.id === form.brand_id)?.name || 'Brand'}
-                                                        </span>
-                                                        <button
-                                                            type="button"
-                                                            onClick={refreshTrackedLinks}
-                                                            className="flex items-center gap-1.5 rounded-md px-2 py-1 text-[12px] text-zinc-500 transition hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer"
-                                                        >
-                                                            <ArrowsClockwise size={14} />
-                                                            {t('Cập nhật lúc')} {linksUpdatedAt}
-                                                        </button>
-                                                    </div>
-
-                                                    <ul className="divide-y divide-zinc-100 rounded-xl border border-zinc-200 overflow-hidden bg-white">
-                                                        {trackedLinks.length === 0 ? (
-                                                            <li className="p-4 text-center text-xs text-zinc-400">
-                                                                {t('Chưa có liên kết theo dõi nào cho thương hiệu này.')}
-                                                            </li>
-                                                        ) : (
-                                                            trackedLinks.map((item) => (
-                                                                <li key={item.id || item.url} className="flex items-center gap-3 px-4 py-2.5 text-[12px]">
-                                                                    <LinkSimple size={14} className="text-zinc-400 shrink-0" />
-                                                                    <span className="flex-1 truncate font-mono text-zinc-800">
-                                                                        {item.short_url || item.url}
-                                                                    </span>
-                                                                    <span className="hidden text-zinc-400 sm:inline truncate max-w-[120px]">
-                                                                        {item.campaign || 'campaign'}
-                                                                    </span>
-                                                                    <span className="w-20 text-right font-mono font-medium text-zinc-900">
-                                                                        {(item.clicks || 0).toLocaleString('vi-VN')} {t('lượt')}
-                                                                    </span>
-                                                                </li>
-                                                            ))
-                                                        )}
-                                                    </ul>
-                                                </div>
-                                            </div>
+                                    {/* Link Preview Card */}
+                                    <div className="rounded-xl border border-brand-dark/30 bg-brand/10 p-4">
+                                        <div className="mb-2 text-xs font-semibold text-brand-ink">
+                                            {t('Xem trước liên kết')}
+                                        </div>
+                                        {generatedUtmUrl ? (
+                                            <>
+                                                <code className="block break-all font-mono text-xs text-foreground bg-card p-2 rounded-lg border border-brand-dark/30">
+                                                    {displayUtmShortUrl}
+                                                </code>
+                                                {useShortlink && (
+                                                    <code className="mt-1.5 block break-all font-mono text-[11px] text-muted-foreground">
+                                                        → {displayUtmTargetUrl}
+                                                    </code>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <p className="text-xs text-muted-foreground">
+                                                {t('Cần nhập URL, phương tiện và chiến dịch.')}
+                                            </p>
                                         )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* RIGHT COLUMN: Sticky preview & checklist */}
-                    <aside className="flex flex-col">
-                        <div className="sticky top-4 flex flex-col rounded-2xl border border-zinc-200 bg-white p-5 lg:p-6 shadow-2xs space-y-4">
-                            {/* Preview Header */}
-                            <div className="flex items-center justify-between">
-                                <h2 className="text-[15px] font-semibold text-zinc-900">
-                                    {t('Xem trước bài viết')}
-                                </h2>
-                                <Link
-                                    to="/posts"
-                                    title={t('Đóng')}
-                                    className="grid size-8 place-items-center rounded-lg text-zinc-400 transition hover:bg-zinc-200/60 hover:text-zinc-900"
-                                >
-                                    <X size={16} />
-                                </Link>
-                            </div>
-
-                            {/* Account Switcher Pills */}
-                            {selectedAccounts.length > 0 && (
-                                <div className="mt-4 flex gap-1 overflow-x-auto pb-1">
-                                    {selectedAccounts.map((account) => {
-                                        const isCurrent = (currentPreviewAccount?.id || selectedAccounts[0]?.id) === account.id;
-                                        return (
+                                        <div className="mt-3 flex justify-end">
                                             <button
-                                                key={account.id}
                                                 type="button"
-                                                onClick={() => {
-                                                    setPreviewAccountId(account.id);
-                                                    if (activeTab !== 'default') {
-                                                        setActiveTab(account.id);
-                                                    }
-                                                }}
-                                                className={`flex h-8 shrink-0 items-center gap-1.5 rounded-full px-2.5 text-[11px] font-medium transition cursor-pointer ${isCurrent
-                                                        ? 'bg-zinc-900 text-white'
-                                                        : 'bg-white text-zinc-600 ring-1 ring-zinc-200 hover:ring-zinc-300'
-                                                    }`}
+                                                disabled={!generatedUtmUrl}
+                                                onClick={applyUtmToDraft}
+                                                className="h-8 rounded-lg border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition hover:bg-[#ffe059] disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground cursor-pointer"
                                             >
-                                                {(() => {
-                                                    const avatarUrl = getAccountAvatarUrl(account);
-                                                    return avatarUrl ? (
-                                                        <div className="size-4.5 rounded-full overflow-hidden shrink-0 border border-white/20">
-                                                            <img
-                                                                src={avatarUrl}
-                                                                alt=""
-                                                                className="size-full object-cover"
-                                                                onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                            />
-                                                        </div>
-                                                    ) : null;
-                                                })()}
-                                                <PlatformLogo platform={account.platform} className="size-3.5" />
-                                                <span className="truncate max-w-[100px]">{account.name}</span>
+                                                {t('Áp dụng liên kết vào bản nháp')}
                                             </button>
-                                        );
-                                    })}
-                                </div>
-                            )}
-
-                            {/* Mockup Preview Container */}
-                            <div className="mt-4 min-h-[360px] rounded-2xl border border-zinc-200 bg-white p-4 shadow-2xs">
-                                {currentPreviewAccount ? (
-                                    <SocialMockupPreview
-                                        account={currentPreviewAccount}
-                                        text={getResolvedAccountText(currentPreviewAccount) || t('🚀 Nội dung bài viết đang được soạn thảo sẽ hiển thị trực quan tại đây theo thời gian thực...')}
-                                        media={form.media}
-                                        when={t('Vừa xong')}
-                                    />
-                                ) : (
-                                    <div className="grid h-full min-h-[328px] place-items-center text-center">
-                                        <div>
-                                            <div className="mx-auto grid size-10 place-items-center rounded-full bg-zinc-100">
-                                                <ImageSquare size={16} className="text-zinc-400" />
-                                            </div>
-                                            <p className="mt-3 text-[13px] font-medium text-zinc-600">
-                                                {selectedAccounts.length > 0
-                                                    ? t('Bắt đầu viết để xem trước')
-                                                    : t('Chọn tài khoản để xem trước')}
-                                            </p>
-                                            <p className="mt-0.5 text-[12px] text-zinc-400">
-                                                {t('Mô phỏng giao diện từng nền tảng')}
-                                            </p>
                                         </div>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* "Trước khi đăng" Checklist */}
-                            <div className="mt-5">
-                                <div className="mb-2 flex items-center justify-between">
-                                    <span className="text-[12px] font-semibold text-zinc-800">
-                                        {t('Trước khi đăng')}
-                                    </span>
-                                    <span className="font-mono text-[11px] text-zinc-400">
-                                        {checklistPassedCount}/{checklistItems.length}
-                                    </span>
-                                </div>
-
-                                <div className="mb-3 h-1 overflow-hidden rounded-full bg-zinc-200/70">
-                                    <div
-                                        className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                                        style={{ width: `${(checklistPassedCount / checklistItems.length) * 100}%` }}
-                                    />
-                                </div>
-
-                                <ul className="space-y-1.5">
-                                    {checklistItems.map((item) => (
-                                        <li key={item.label} className="flex items-start gap-2 text-[12px]">
-                                            {item.ok ? (
-                                                <CheckCircle size={14} weight="fill" className="mt-0.5 shrink-0 text-emerald-500" />
-                                            ) : (
-                                                <WarningCircle size={14} className="mt-0.5 shrink-0 text-zinc-300" />
-                                            )}
-                                            <span className={item.ok ? 'text-zinc-400 line-through' : 'text-zinc-600'}>
-                                                {item.label}
+                                    {/* Tracked Links Table */}
+                                    <div>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <span className="text-[13px] font-semibold text-foreground">
+                                                {t('Liên kết được theo dõi')} · {brands.find((b) => b.id === form.brand_id)?.name || 'Brand'}
                                             </span>
-                                        </li>
-                                    ))}
-                                </ul>
+                                            <button
+                                                type="button"
+                                                onClick={refreshTrackedLinks}
+                                                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted-foreground transition hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                            >
+                                                <ArrowsClockwise size={14} />
+                                                {t('Cập nhật lúc')} {linksUpdatedAt}
+                                            </button>
+                                        </div>
+
+                                        <ul className="divide-y divide-border/70 rounded-xl border border-border overflow-hidden bg-card">
+                                            {trackedLinks.length === 0 ? (
+                                                <li className="p-4 text-center text-xs text-muted-foreground">
+                                                    {t('Chưa có liên kết theo dõi nào cho thương hiệu này.')}
+                                                </li>
+                                            ) : (
+                                                trackedLinks.map((item) => (
+                                                    <li key={item.id || item.url} className="flex items-center gap-3 px-4 py-2.5 text-xs">
+                                                        <LinkSimple size={14} className="text-brand-dark shrink-0" />
+                                                        <span className="flex-1 truncate font-mono text-foreground">
+                                                            {item.short_url || item.url}
+                                                        </span>
+                                                        <span className="hidden text-muted-foreground sm:inline truncate max-w-[120px]">
+                                                            {item.campaign || 'campaign'}
+                                                        </span>
+                                                        <span className="w-20 text-right font-mono font-semibold text-brand-ink">
+                                                            {(item.clicks || 0).toLocaleString('vi-VN')} {t('lượt')}
+                                                        </span>
+                                                    </li>
+                                                ))
+                                            )}
+                                        </ul>
+                                    </div>
+                                </div>
                             </div>
-                        </div>
-                    </aside>
+                        )}
+                    </section>
                 </div>
 
-                {/* Sticky Bottom Action Bar */}
-                <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200/90 bg-white/95 px-6 py-3.5 backdrop-blur-md shadow-xs">
+                {/* RIGHT COLUMN: Sticky preview & checklist */}
+                <aside className="flex flex-col">
+                    <div className="sticky top-4 panel p-5 space-y-4">
+                        {/* Preview Header */}
+                        <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                            <div className="flex items-center gap-2">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/25 text-brand-ink">
+                                    <ImageSquare size={15} weight="duotone" />
+                                </span>
+                                <div>
+                                    <h2 className="font-heading text-[15px] font-semibold text-foreground">
+                                        {t('Xem trước trực tiếp')}
+                                    </h2>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {t('Mô phỏng hiển thị theo thời gian thực')}
+                                    </p>
+                                </div>
+                            </div>
+                            <Link
+                                to="/posts"
+                                title={t('Đóng')}
+                                className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground transition hover:border-brand-dark hover:bg-brand/15 hover:text-brand-ink"
+                            >
+                                <X size={15} />
+                            </Link>
+                        </div>
+
+                        {/* Account Switcher Pills */}
+                        {selectedAccounts.length > 0 && (
+                            <div className="flex gap-1.5 overflow-x-auto pb-1">
+                                {selectedAccounts.map((account) => {
+                                    const isCurrent = (currentPreviewAccount?.id || selectedAccounts[0]?.id) === account.id;
+                                    return (
+                                        <button
+                                            key={account.id}
+                                            type="button"
+                                            onClick={() => {
+                                                setPreviewAccountId(account.id);
+                                                if (activeTab !== 'default') {
+                                                    setActiveTab(account.id);
+                                                }
+                                            }}
+                                            className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-[11px] font-semibold transition cursor-pointer ${isCurrent
+                                                    ? 'border-brand-dark bg-brand text-brand-ink'
+                                                    : 'border-border bg-surface text-muted-foreground hover:border-brand-dark/50 hover:text-foreground'
+                                                }`}
+                                        >
+                                            {(() => {
+                                                const avatarUrl = getAccountAvatarUrl(account);
+                                                return avatarUrl ? (
+                                                    <div className="size-4.5 rounded-full overflow-hidden shrink-0 border border-white/20">
+                                                        <img
+                                                            src={avatarUrl}
+                                                            alt=""
+                                                            className="size-full object-cover"
+                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                                        />
+                                                    </div>
+                                                ) : null;
+                                            })()}
+                                            <PlatformLogo platform={account.platform} className="size-3.5" />
+                                            <span className="truncate max-w-[100px]">{account.name}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Mockup Preview Container */}
+                        <div className="min-h-[360px] rounded-2xl border border-border bg-surface/60 p-4">
+                            {currentPreviewAccount ? (
+                                <SocialMockupPreview
+                                    account={currentPreviewAccount}
+                                    text={getResolvedAccountText(currentPreviewAccount) || t('🚀 Nội dung bài viết đang được soạn thảo sẽ hiển thị trực quan tại đây theo thời gian thực...')}
+                                    media={form.media}
+                                    when={t('Vừa xong')}
+                                />
+                            ) : (
+                                <div className="grid h-full min-h-[328px] place-items-center text-center">
+                                    <div>
+                                        <div className="mx-auto grid size-11 place-items-center rounded-2xl border border-brand-dark/40 bg-brand/20 text-brand-ink">
+                                            <ImageSquare size={18} weight="duotone" />
+                                        </div>
+                                        <p className="mt-3 text-[13px] font-semibold text-foreground">
+                                            {selectedAccounts.length > 0
+                                                ? t('Bắt đầu viết để xem trước')
+                                                : t('Chọn tài khoản để xem trước')}
+                                        </p>
+                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                            {t('Mô phỏng giao diện từng nền tảng')}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* "Trước khi đăng" Checklist */}
+                        <div className="rounded-xl border border-brand-dark/30 bg-brand/10 p-3.5">
+                            <div className="mb-2 flex items-center justify-between">
+                                <span className="text-xs font-semibold text-brand-ink">
+                                    {t('Kiểm tra trước khi đăng')}
+                                </span>
+                                <span className="rounded-md border border-brand-dark/40 bg-brand px-1.5 py-0.5 font-mono text-[11px] font-bold text-brand-ink">
+                                    {checklistPassedCount}/{checklistItems.length}
+                                </span>
+                            </div>
+
+                            <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-card border border-brand-dark/20">
+                                <div
+                                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
+                                    style={{ width: `${(checklistPassedCount / checklistItems.length) * 100}%` }}
+                                />
+                            </div>
+
+                            <ul className="space-y-1.5">
+                                {checklistItems.map((item) => (
+                                    <li key={item.label} className="flex items-start gap-2 text-xs">
+                                        {item.ok ? (
+                                            <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-emerald-600" />
+                                        ) : (
+                                            <WarningCircle size={15} weight="duotone" className="mt-0.5 shrink-0 text-brand-dark" />
+                                        )}
+                                        <span className={item.ok ? 'text-muted-foreground line-through' : 'font-medium text-brand-ink'}>
+                                            {item.label}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            {/* Sticky Bottom Action Bar */}
+            <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-brand-dark/40 bg-card/95 px-5 py-3.5 backdrop-blur-md">
+                <button
+                    type="button"
+                    disabled={saving}
+                    onClick={() => submit('draft')}
+                    className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 text-xs font-semibold text-foreground transition hover:border-brand-dark hover:bg-brand/15 hover:text-brand-ink cursor-pointer disabled:opacity-50"
+                >
+                    <FloppyDisk size={16} weight="duotone" />
+                    <span>{t('Lưu nháp')}</span>
+                </button>
+
+                <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+
+                <UseTemplateDialog
+                    brandId={form.brand_id}
+                    demoMode={demoMode}
+                    disabled={saving || uploading || loading}
+                    open={isTemplatePickerOpen}
+                    onOpenChange={setIsTemplatePickerOpen}
+                />
+
+                <div className="ml-auto flex flex-wrap items-center gap-2">
+                    {/* Date & Time Picker */}
+                    <div className="flex h-9 items-center gap-2 rounded-xl border border-brand-dark/40 bg-brand/10 px-3 text-xs">
+                        <CalendarBlank size={15} weight="duotone" className="text-brand-ink shrink-0" />
+                        <input
+                            type="date"
+                            value={form.date}
+                            onChange={(e) => setForm({ ...form, date: e.target.value })}
+                            className="bg-transparent outline-none font-medium text-brand-ink text-xs"
+                        />
+                        <span className="h-4 w-px bg-brand-dark/30" />
+                        <Clock size={15} weight="duotone" className="text-brand-ink shrink-0" />
+                        <input
+                            type="time"
+                            value={form.time}
+                            onChange={(e) => setForm({ ...form, time: e.target.value })}
+                            className="bg-transparent outline-none font-medium text-brand-ink text-xs"
+                        />
+                        <span className="hidden font-mono text-[10px] font-semibold text-brand-ink/70 md:inline">
+                            GMT+7
+                        </span>
+                    </div>
+
+                    {/* Thêm vào lịch Button */}
                     <button
                         type="button"
-                        disabled={saving}
-                        onClick={() => submit('draft')}
-                        className="flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900 cursor-pointer disabled:opacity-50"
+                        disabled={!canSubmit || saving}
+                        onClick={() => submit('schedule')}
+                        title={t(`Lên lịch ${form.date} ${form.time}`)}
+                        className="flex h-9 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand/20 px-3.5 text-xs font-semibold text-brand-ink transition hover:bg-brand/35 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                     >
-                        <FloppyDisk size={16} />
-                        <span>{t('Lưu nháp')}</span>
+                        <CalendarBlank size={16} weight="bold" />
+                        <span>{t('Thêm vào lịch')}</span>
                     </button>
 
-                    <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
-
-                    <UseTemplateDialog
-                        brandId={form.brand_id}
-                        demoMode={demoMode}
-                        disabled={saving || uploading || loading}
-                        open={isTemplatePickerOpen}
-                        onOpenChange={setIsTemplatePickerOpen}
-                    />
-
-                    <div className="ml-auto flex flex-wrap items-center gap-2">
-                        {/* Date & Time Picker */}
-                        <div className="flex h-9 items-center gap-2 rounded-xl border border-zinc-200 bg-white px-2.5 text-xs shadow-xs">
-                            <CalendarBlank size={16} className="text-zinc-400 shrink-0" />
-                            <input
-                                type="date"
-                                value={form.date}
-                                onChange={(e) => setForm({ ...form, date: e.target.value })}
-                                className="bg-transparent outline-none text-zinc-800 text-[13px]"
-                            />
-                            <span className="h-4 w-px bg-zinc-200" />
-                            <Clock size={16} className="text-zinc-400 shrink-0" />
-                            <input
-                                type="time"
-                                value={form.time}
-                                onChange={(e) => setForm({ ...form, time: e.target.value })}
-                                className="bg-transparent outline-none text-zinc-800 text-[13px]"
-                            />
-                            <span className="hidden font-mono text-[10px] text-zinc-400 md:inline">
-                                GMT+7
-                            </span>
-                        </div>
-
-                        {/* Thêm vào lịch Button */}
-                        <button
-                            type="button"
-                            disabled={!canSubmit || saving}
-                            onClick={() => submit('schedule')}
-                            title={t(`Lên lịch ${form.date} ${form.time}`)}
-                            className="flex h-9 items-center gap-1.5 rounded-xl border border-zinc-200 bg-white px-3.5 text-xs font-medium text-zinc-800 transition hover:border-zinc-300 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer shadow-xs"
-                        >
-                            <CalendarBlank size={16} />
-                            <span>{t('Thêm vào lịch')}</span>
-                        </button>
-
-                        {/* Đăng ngay Button */}
-                        <button
-                            type="button"
-                            disabled={!canSubmit || saving}
-                            onClick={() => submit('publish')}
-                            className="btn-skew disabled:opacity-40 disabled:cursor-not-allowed"
-                        >
-                            <PaperPlaneTilt size={16} weight="bold" />
-                            <span>
-                                {t('Đăng ngay')}
-                                {selectedAccounts.length > 0 ? ` · ${selectedAccounts.length} kênh` : ''}
-                            </span>
-                        </button>
-                    </div>
+                    {/* Đăng ngay Button */}
+                    <button
+                        type="button"
+                        disabled={!canSubmit || saving}
+                        onClick={() => submit('publish')}
+                        className="btn-skew disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                        <PaperPlaneTilt size={16} weight="bold" />
+                        <span>
+                            {t('Đăng ngay')}
+                            {selectedAccounts.length > 0 ? ` · ${selectedAccounts.length} kênh` : ''}
+                        </span>
+                    </button>
                 </div>
+            </div>
 
             {/* Publishing Confirmation Dialog */}
             {publishReview && (

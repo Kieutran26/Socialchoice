@@ -1,4 +1,4 @@
-import { DEFAULT_TIMEZONE } from './constants.js';
+﻿import { DEFAULT_TIMEZONE } from './constants.js';
 import { addDays, toUtcIso, todayInZone } from './tz.js';
 
 export const STARTER_SEED_STORAGE_KEY = 'socialchoice_starter_seeded_v1';
@@ -32,7 +32,7 @@ const BRANDS = [
         key: 'b_skincare',
         name: 'Lumina Skincare',
         description: 'Mỹ phẩm chăm sóc da tối giản, công thức khoa học dịu nhẹ cho khí hậu nhiệt đới nóng ẩm.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         status: 'active',
         timezone: DEFAULT_TIMEZONE,
         is_demo: false,
@@ -46,7 +46,7 @@ const BRANDS = [
         key: 'b_tech',
         name: 'Kiên Tech Studio',
         description: 'Studio thiết kế sản phẩm số, phát triển web app & tự động hóa quy trình bằng AI cho doanh nghiệp vừa và nhỏ.',
-        color: '#4F7CA8',
+        color: '#93C5FD',
         status: 'active',
         timezone: DEFAULT_TIMEZONE,
         is_demo: false,
@@ -150,7 +150,7 @@ const PILLARS = [
         brandKey: 'b_coffee',
         name: 'Hành trình hạt cà phê',
         description: 'Câu chuyện nông trại Cầu Đất, Đắk Lắk, quy trình sơ chế và mẻ rang mới mỗi tuần.',
-        color: '#79D94B',
+        color: '#A7F3D0',
         target_percentage: 25,
         status: 'active',
         is_demo: false,
@@ -160,7 +160,7 @@ const PILLARS = [
         brandKey: 'b_coffee',
         name: 'Nhịp sống chậm',
         description: 'Góc quán bình yên, thói quen buổi sáng và những câu chuyện nhỏ cùng khách quen.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         target_percentage: 25,
         status: 'active',
         is_demo: false,
@@ -170,7 +170,7 @@ const PILLARS = [
         brandKey: 'b_coffee',
         name: 'Sản phẩm & Ưu đãi',
         description: 'Giới thiệu combo hạt rang, drip bag văn phòng và chương trình ưu đãi theo mùa.',
-        color: '#C2705F',
+        color: '#FBCFE8',
         target_percentage: 15,
         status: 'active',
         is_demo: false,
@@ -182,7 +182,7 @@ const PILLARS = [
         brandKey: 'b_skincare',
         name: 'Kiến thức da khoa học',
         description: 'Giải mã hoạt chất, cách kết hợp routine sáng/tối và chăm sóc da vùng khí hậu nóng ẩm.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         target_percentage: 35,
         status: 'active',
         is_demo: false,
@@ -192,7 +192,7 @@ const PILLARS = [
         brandKey: 'b_skincare',
         name: 'Bảng thành phần minh bạch',
         description: 'Nguồn gốc nguyên liệu, nồng độ hoạt chất an toàn và tiêu chuẩn kiểm nghiệm lâm sàng.',
-        color: '#4F7CA8',
+        color: '#93C5FD',
         target_percentage: 25,
         status: 'active',
         is_demo: false,
@@ -202,7 +202,7 @@ const PILLARS = [
         brandKey: 'b_skincare',
         name: 'Nhật ký làn da',
         description: 'Trải nghiệm thực tế từ khách hàng sau 14–28 ngày sử dụng routine tối giản.',
-        color: '#79D94B',
+        color: '#A7F3D0',
         target_percentage: 25,
         status: 'active',
         is_demo: false,
@@ -212,7 +212,7 @@ const PILLARS = [
         brandKey: 'b_skincare',
         name: 'Routine & Combo',
         description: 'Gợi ý bộ sản phẩm theo từng loại da và ưu đãi đặc quyền cho thành viên.',
-        color: '#C2705F',
+        color: '#FBCFE8',
         target_percentage: 15,
         status: 'active',
         is_demo: false,
@@ -224,7 +224,7 @@ const PILLARS = [
         brandKey: 'b_tech',
         name: 'Case Study & Sản phẩm',
         description: 'Phân tích bài toán thực tế, kiến trúc hệ thống và kết quả đo lường sau khi bàn giao.',
-        color: '#4F7CA8',
+        color: '#93C5FD',
         target_percentage: 35,
         status: 'active',
         is_demo: false,
@@ -234,7 +234,7 @@ const PILLARS = [
         brandKey: 'b_tech',
         name: 'AI & Tự động hóa',
         description: 'Ứng dụng AI workflow giúp doanh nghiệp SME tiết kiệm thời gian vận hành mỗi ngày.',
-        color: '#79D94B',
+        color: '#A7F3D0',
         target_percentage: 30,
         status: 'active',
         is_demo: false,
@@ -244,7 +244,7 @@ const PILLARS = [
         brandKey: 'b_tech',
         name: 'Thiết kế UI/UX thực chiến',
         description: 'Nguyên tắc tối ưu trải nghiệm người dùng, tốc độ tải trang và tỷ lệ chuyển đổi.',
-        color: '#8A7FB5',
+        color: '#C4B5FD',
         target_percentage: 20,
         status: 'active',
         is_demo: false,
@@ -254,7 +254,7 @@ const PILLARS = [
         brandKey: 'b_tech',
         name: 'Hậu trường Studio',
         description: 'Văn hóa làm việc, quy trình sprint và chia sẻ góc nhìn từ đội ngũ kỹ sư.',
-        color: '#C6A15B',
+        color: '#FED7AA',
         target_percentage: 15,
         status: 'active',
         is_demo: false,
@@ -987,4 +987,163 @@ export async function seedStarterWorkspace({ force = false } = {}) {
         activeSeedPromise = null;
     });
     return activeSeedPromise;
+}
+
+const DEFAULT_BRAND_PILLARS = [
+    {
+        name: 'Đào tạo & Kiến thức',
+        color: '#A7F3D0',
+        target_percentage: 30,
+        description: 'Chia sẻ kiến thức chuyên môn, hướng dẫn thực chiến và giải đáp thắc mắc giúp khách hàng tối ưu hiệu quả.',
+        angles: [
+            { name: 'Hướng dẫn từng bước (How-to)', description: 'Quy trình thực hiện chi tiết, dễ áp dụng ngay.' },
+            { name: 'Sai lầm thường gặp & Cách khắc phục', description: 'Chỉ ra những lỗi phổ biến và giải pháp thực tế.' },
+            { name: 'Checklist & Mẹo tối ưu nhanh', description: 'Danh sách kiểm tra ngắn gọn giúp tiết kiệm thời gian.' },
+        ],
+    },
+    {
+        name: 'Case Study & Kết quả',
+        color: '#93C5FD',
+        target_percentage: 25,
+        description: 'Phân tích bài toán thực tế, số liệu tăng trưởng trước & sau triển khai và câu chuyện thành công của khách hàng.',
+        angles: [
+            { name: 'Phân tích Trước & Sau (Before/After)', description: 'So sánh trực quan sự thay đổi sau khi triển khai giải pháp.' },
+            { name: 'Số liệu tăng trưởng & ROI thực tế', description: 'Báo cáo kết quả đo lường được bằng con số cụ thể.' },
+            { name: 'Đánh giá & Phản hồi từ khách hàng', description: 'Chia sẻ chân thực từ khách hàng và đối tác đồng hành.' },
+        ],
+    },
+    {
+        name: 'Câu chuyện Thương hiệu',
+        color: '#FED7AA',
+        target_percentage: 20,
+        description: 'Hậu trường vận hành, văn hóa đội ngũ, giá trị cốt lõi và hành trình phát triển sản phẩm mỗi ngày.',
+        angles: [
+            { name: 'Hậu trường đội ngũ (Behind the Scenes)', description: 'Góc nhìn chân thực về quy trình làm việc mỗi ngày.' },
+            { name: 'Giá trị cốt lõi & Triết lý sản phẩm', description: 'Những nguyên tắc chất lượng mà thương hiệu kiên định theo đuổi.' },
+            { name: 'Cột mốc phát triển & Nhìn lại', description: 'Đánh dấu những bước tiến quan trọng cùng cộng đồng.' },
+        ],
+    },
+    {
+        name: 'Ưu đãi & Chuyển đổi',
+        color: '#FBCFE8',
+        target_percentage: 15,
+        description: 'Giới thiệu giải pháp, gói combo tiết kiệm, chương trình ưu đãi giới hạn và lời kêu gọi hành động.',
+        angles: [
+            { name: 'Gói giải pháp & Combo tiết kiệm', description: 'Thiết kế gói sản phẩm tối ưu chi phí cho khách hàng.' },
+            { name: 'Ra mắt tính năng & Sản phẩm mới', description: 'Giới thiệu điểm mới nổi bật và lợi ích thiết thực.' },
+            { name: 'Ưu đãi đặc quyền theo chiến dịch', description: 'Chương trình quà tặng và ưu đãi có thời hạn.' },
+        ],
+    },
+    {
+        name: 'Xu hướng & Cộng đồng',
+        color: '#C4B5FD',
+        target_percentage: 10,
+        description: 'Cập nhật xu hướng thị trường, thảo luận mở, khảo sát ý kiến và kết nối cộng đồng người dùng.',
+        angles: [
+            { name: 'Thảo luận & Hỏi đáp cộng đồng', description: 'Đặt câu hỏi gợi mở và lắng nghe ý kiến từ người theo dõi.' },
+            { name: 'Bắt nhịp xu hướng ngành mới nhất', description: 'Phân tích nhanh các chuyển dịch mới trên thị trường.' },
+            { name: 'Vinh danh thành viên & Đối tác', description: 'Tri ân những đóng góp tích cực từ cộng đồng.' },
+        ],
+    },
+];
+
+let activeBackfillPromise = null;
+
+export async function ensureActiveBrandPillars(brands = []) {
+    if (!Array.isArray(brands) || brands.length === 0) return;
+    if (activeBackfillPromise) return activeBackfillPromise;
+
+    activeBackfillPromise = (async () => {
+        try {
+            const { appClient } = await import('@/api/app-client');
+            const [pillarsRes, anglesRes, postsRes] = await Promise.all([
+                appClient.entities.ContentPillar.filter({ is_demo: false, status: 'active' }, { limit: 300 }),
+                appClient.entities.ContentAngle.filter({ is_demo: false, status: 'active' }, { limit: 500 }),
+                appClient.entities.Post.filter({ is_demo: false }, { limit: 200 }),
+            ]);
+
+            const allPillars = pillarsRes?.items || [];
+            const allAngles = anglesRes?.items || [];
+            const allPosts = postsRes?.items || [];
+
+            for (const brand of brands) {
+                if (!brand?.id || brand.is_demo) continue;
+                let brandPillars = allPillars.filter((p) => p.brand_id === brand.id);
+                let brandAngles = allAngles.filter((a) => a.brand_id === brand.id);
+
+                if (brandPillars.length < 4) {
+                    const missingDefs = DEFAULT_BRAND_PILLARS.filter(
+                        (def) => !brandPillars.some((p) => p.name === def.name)
+                    );
+                    if (missingDefs.length > 0) {
+                        const createdPillars = await appClient.entities.ContentPillar.bulkCreate(
+                            missingDefs.map((def) => ({
+                                brand_id: brand.id,
+                                name: def.name,
+                                description: def.description,
+                                color: def.color,
+                                target_percentage: def.target_percentage,
+                                status: 'active',
+                                is_demo: false,
+                            }))
+                        );
+                        brandPillars = [...brandPillars, ...createdPillars];
+
+                        const anglePayloads = [];
+                        createdPillars.forEach((createdPil, idx) => {
+                            const def = missingDefs[idx];
+                            (def?.angles || []).forEach((ang) => {
+                                anglePayloads.push({
+                                    brand_id: brand.id,
+                                    pillar_id: createdPil.id,
+                                    name: ang.name,
+                                    description: ang.description,
+                                    status: 'active',
+                                    is_demo: false,
+                                });
+                            });
+                        });
+                        if (anglePayloads.length > 0) {
+                            const createdAngles = await appClient.entities.ContentAngle.bulkCreate(anglePayloads);
+                            brandAngles = [...brandAngles, ...createdAngles];
+                        }
+                    }
+                }
+
+                // Assign pillars/angles only to editable uncategorized posts (skip locked published/processing posts)
+                const LOCKED_POST_STATUSES = new Set(['published', 'partially_published', 'processing', 'unknown']);
+                const uncategorizedPosts = allPosts.filter(
+                    (p) =>
+                        p.brand_id === brand.id &&
+                        !p.pillar_id &&
+                        (p.is_demo || !LOCKED_POST_STATUSES.has(p.status))
+                );
+                if (uncategorizedPosts.length > 0 && brandPillars.length > 0) {
+                    const distOrder = [0, 0, 1, 1, 2, 2, 3, 4, 0, 1];
+                    await Promise.all(
+                        uncategorizedPosts.map(async (post, idx) => {
+                            const targetPillar = brandPillars[distOrder[idx % distOrder.length] % brandPillars.length];
+                            if (!targetPillar) return;
+                            const matchingAngles = brandAngles.filter((a) => a.pillar_id === targetPillar.id);
+                            const targetAngle = matchingAngles[idx % (matchingAngles.length || 1)];
+                            try {
+                                await appClient.entities.Post.update(post.id, {
+                                    pillar_id: targetPillar.id,
+                                    ...(targetAngle ? { angle_id: targetAngle.id } : {}),
+                                });
+                            } catch {
+                                // Published posts with locked execution history are handled by UI normalization.
+                            }
+                        })
+                    );
+                }
+            }
+        } catch {
+            // Silent best-effort backfill
+        } finally {
+            activeBackfillPromise = null;
+        }
+    })();
+
+    return activeBackfillPromise;
 }

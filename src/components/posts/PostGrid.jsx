@@ -1,4 +1,4 @@
-import { useTranslation } from '@/lib/i18n';
+﻿import { useTranslation } from '@/lib/i18n';
 import { formatDateTime } from '@/lib/format';
 import { PLATFORM_CONFIG } from '../common/PlatformBadge';
 import StatusBadge from '../common/StatusBadge';
@@ -95,7 +95,7 @@ export default function PostGrid({
                                 {firstMedia ? (
                                     isVideo ? (
                                         <div
-                                            className="relative w-full h-full cursor-pointer bg-zinc-900"
+                                            className="relative w-full h-full cursor-pointer bg-brand"
                                             onClick={() => onOpen(post)}
                                         >
                                             <video
@@ -157,25 +157,25 @@ export default function PostGrid({
                                                                 : selected.filter((id) => id !== post.id)
                                                         )
                                                     }
-                                                    className="h-3.5 w-3.5 rounded-sm border-border bg-white text-primary shadow-xs cursor-pointer accent-foreground"
+                                                    className="h-3.5 w-3.5 rounded-sm border-border bg-white text-primary cursor-pointer accent-foreground"
                                                 />
                                             </label>
                                         )}
 
                                         {firstMedia ? (
                                             isVideo ? (
-                                                <span className="px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                <span className="px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
                                                     <Play size={10} weight="fill" />
                                                     <span>Video</span>
                                                 </span>
                                             ) : mediaCount > 1 ? (
-                                                <span className="px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1 shadow-xs">
+                                                <span className="px-1.5 py-0.5 rounded-md bg-black/65 backdrop-blur-md text-white text-[10px] font-bold flex items-center gap-1">
                                                     <Images size={10} weight="bold" />
                                                     <span>{mediaCount}</span>
                                                 </span>
                                             ) : null
                                         ) : (
-                                            <span className="px-1.5 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-zinc-600 text-[10px] font-semibold border border-zinc-200/80 shadow-2xs flex items-center gap-1">
+                                            <span className="px-1.5 py-0.5 rounded-md bg-white/95 backdrop-blur-md text-zinc-600 text-[10px] font-semibold border border-zinc-200/80 flex items-center gap-1">
                                                 <FileText size={11} weight="bold" />
                                                 <span>{t('Văn bản')}</span>
                                             </span>
@@ -192,21 +192,21 @@ export default function PostGrid({
                                     <button
                                         type="button"
                                         onClick={() => onOpen(post)}
-                                        className="h-7 px-2.5 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                                        className="h-7 px-2.5 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-bold hover:bg-white flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
                                     >
                                         <Eye size={13} weight="bold" />
                                         <span>{t('Xem')}</span>
                                     </button>
                                     <Link
                                         to={`/create?edit=${post.id}`}
-                                        className="h-7 px-2.5 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-bold hover:bg-white shadow-md flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
+                                        className="h-7 px-2.5 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 text-[11px] font-bold hover:bg-white flex items-center gap-1 cursor-pointer transition-transform active:scale-95"
                                     >
                                         <PencilSimple size={13} weight="bold" />
                                         <span>{t('Sửa')}</span>
                                     </Link>
                                     <Link
                                         to={`/create?duplicate=${post.id}`}
-                                        className="h-7 w-7 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 hover:bg-white shadow-md flex items-center justify-center cursor-pointer transition-transform active:scale-95"
+                                        className="h-7 w-7 rounded-lg bg-white/95 backdrop-blur-md text-zinc-900 hover:bg-white flex items-center justify-center cursor-pointer transition-transform active:scale-95"
                                         title={t('Nhân bản')}
                                     >
                                         <CopySimple size={13} weight="bold" />
@@ -286,7 +286,7 @@ export default function PostGrid({
                                                 return (
                                                     <div
                                                         key={acc.id}
-                                                        className="relative h-7 w-7 rounded-full ring-2 ring-white shadow-2xs shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
+                                                        className="relative h-7 w-7 rounded-full ring-2 ring-white shrink-0 transition-transform hover:-translate-y-0.5 hover:scale-110 hover:z-20 bg-zinc-100"
                                                         style={{ width: '28px', height: '28px' }}
                                                     >
                                                         <div className="h-full w-full rounded-full overflow-hidden flex items-center justify-center">
@@ -312,7 +312,7 @@ export default function PostGrid({
                                                         </div>
                                                         {/* Platform corner badge */}
                                                         <span
-                                                            className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white shadow-2xs flex items-center justify-center ring-1 ring-white"
+                                                            className="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full bg-white flex items-center justify-center ring-1 ring-white"
                                                             style={{ width: '14px', height: '14px' }}
                                                         >
                                                             <Icon size={9} weight="fill" className={cfg.color} />
@@ -323,7 +323,7 @@ export default function PostGrid({
 
                                             {postAccounts.length > 2 && (
                                                 <div
-                                                    className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shadow-2xs shrink-0 hover:bg-zinc-200 transition-colors"
+                                                    className="relative h-7 w-7 rounded-full ring-2 ring-white bg-zinc-100 text-zinc-700 font-bold text-[10px] flex items-center justify-center shrink-0 hover:bg-zinc-200 transition-colors"
                                                     style={{ width: '28px', height: '28px' }}
                                                 >
                                                     +{postAccounts.length - 2}

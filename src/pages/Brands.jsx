@@ -1,4 +1,4 @@
-import { requireNoTemplateReferences } from '@/lib/post-templates';
+﻿import { requireNoTemplateReferences } from '@/lib/post-templates';
 import { useTranslation } from '@/lib/i18n';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -195,11 +195,11 @@ export default function Brands() {
 
     if (loadError) {
         return (
-            <div role="alert" className="panel p-5 bg-card border border-border/80 rounded-2xl shadow-2xs">
+            <div role="alert" className="panel p-5 bg-card border border-border/80 rounded-2xl">
                 <p className="mb-3 text-xs text-dangerFg font-medium">{t(loadError)}</p>
                 <button
                     type="button"
-                    className="inline-flex items-center gap-1.5 rounded-xl bg-foreground px-3.5 py-2 text-xs font-medium text-background hover:bg-foreground/90 transition-colors shadow-xs"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3.5 py-2 text-xs font-medium text-brand-ink hover:bg-[#ffe059] transition-colors"
                     onClick={load}
                 >
                     {t('Retry')}
@@ -223,7 +223,7 @@ export default function Brands() {
                             setEditing(null);
                             setFormOpen(true);
                         }}
-                        className="btn-skew shadow-2xs"
+                        className="btn-skew"
                     >
                         <Plus size={16} weight="bold" />
                         <span>{t('New brand')}</span>
@@ -293,7 +293,7 @@ export default function Brands() {
                                 onClick={() => setStatusFilter(tab.id)}
                                 className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
                                     isCurrent
-                                        ? 'bg-foreground text-background font-semibold shadow-2xs'
+                                        ? 'bg-brand text-brand-ink font-semibold'
                                         : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
                                 }`}
                             >
@@ -361,7 +361,7 @@ export default function Brands() {
                         return (
                             <section
                                 key={brand.id}
-                                className={`panel p-5 flex flex-col justify-between transition-all rounded-2xl shadow-2xs border ${
+                                className={`panel p-5 flex flex-col justify-between transition-all rounded-2xl border ${
                                     isSelected
                                         ? 'border-brand-dark/80 ring-2 ring-primary/20 bg-card'
                                         : 'border-border/80 hover:border-border'
@@ -372,7 +372,7 @@ export default function Brands() {
                                     <div className="flex items-start justify-between gap-3 pb-3 border-b border-border/60">
                                         <div className="flex items-center gap-3 min-w-0">
                                             <div
-                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-heading font-bold text-sm text-white shadow-2xs border border-black/10"
+                                                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl font-heading font-bold text-sm text-white border border-black/10"
                                                 style={{ backgroundColor: brand.color || '#18181b' }}
                                             >
                                                 {brand.name ? brand.name.slice(0, 2).toUpperCase() : 'BR'}
