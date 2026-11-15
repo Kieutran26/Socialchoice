@@ -1123,17 +1123,1095 @@ function ModeIcon({ type, className = "size-4" }) {
   });
 }
 
-function PricingSectionEnhanced({ lang }) {
+function PricingComparisonTable({ lang, market, yearly, setMode, onSelectPlan }) {
+  let isEn = lang === "en";
+  let isVn = market === "vn";
+
+  let planCols = [
+    {
+      key: "free",
+      name: "Free",
+      price: isVn ? "0₫" : "$0",
+      sub: isEn ? "Forever free" : "Miễn phí mãi mãi",
+      cta: isEn ? "Start free" : "Dùng miễn phí",
+      type: "cloud"
+    },
+    {
+      key: "starter",
+      name: "Starter",
+      price: isVn ? "99.000₫" : "$9",
+      sub: isEn ? "/ month" : "/ tháng",
+      cta: isEn ? "Choose Plan" : "Chọn Starter",
+      type: "cloud"
+    },
+    {
+      key: "pro",
+      name: "Professional",
+      badge: isEn ? "Most Popular" : "Phổ biến nhất",
+      popular: true,
+      price: isVn ? "199.000₫" : "$19",
+      sub: isEn ? "/ month" : "/ tháng",
+      cta: isEn ? "Choose Pro" : "Nâng cấp Pro",
+      type: "cloud"
+    },
+    {
+      key: "business",
+      name: "Business",
+      price: isVn ? "399.000₫" : "$39",
+      sub: isEn ? "/ month" : "/ tháng",
+      cta: isEn ? "Choose Business" : "Chọn Business",
+      type: "cloud"
+    },
+    {
+      key: "custom",
+      name: isEn ? "Custom Plan" : "Tự thiết kế",
+      price: isVn ? "Từ 64.000₫" : "From $6",
+      sub: isEn ? "Pay per quota" : "Trả theo nhu cầu",
+      cta: isEn ? "Customize" : "Tự kéo gói",
+      type: "custom"
+    },
+    {
+      key: "desktop",
+      name: isEn ? "Desktop (SC2)" : "Bản Desktop",
+      price: isVn ? "Từ 390.000₫" : "From $39",
+      sub: isEn ? "One-time buy" : "Mua đứt 1 lần",
+      cta: isEn ? "View Desktop" : "Xem Desktop",
+      type: "desktop"
+    }
+  ];
+
+  let groups = [
+    {
+      title: isEn ? "1. Workspace & Social Accounts" : "1. Quy mô Không gian & Tài khoản MXH",
+      rows: [
+        {
+          label: isEn ? "Independent Brands (Workspaces)" : "Số Thương hiệu độc lập (Brands)",
+          desc: isEn ? "Separate workspaces for each brand or client" : "Không gian làm việc, lịch và chiến lược tách biệt",
+          values: [
+            "1 Brand",
+            "1 Brand",
+            { text: "5 Brands", bold: true },
+            { text: "25 Brands", bold: true },
+            { text: "1 – 25 Brands", bold: true, sub: isVn ? "Miễn phí Brand đầu (+20k)" : "1st free (+$1.5/brand)" },
+            { text: isEn ? "3 → Unlimited" : "3 → Không giới hạn", bold: true, sub: "Solo: 3 · Pro/Agency: ∞" }
+          ]
+        },
+        {
+          label: isEn ? "Connected Social Accounts" : "Tài khoản Mạng xã hội kết nối thật",
+          desc: "Facebook, Instagram, TikTok, Threads, X, LinkedIn",
+          values: [
+            isEn ? "2 channels" : "2 kênh",
+            isEn ? "5 channels" : "5 kênh",
+            { text: isEn ? "20 channels" : "20 kênh", bold: true },
+            { text: isEn ? "60 channels" : "60 kênh", bold: true },
+            { text: isEn ? "1 – 60 channels" : "1 – 60 kênh", bold: true, sub: isVn ? "15.000₫ / kênh" : "$1 / channel" },
+            { text: isEn ? "10 → Unlimited" : "10 → Không giới hạn", bold: true, sub: "Solo: 10 · Pro/Agency: ∞" }
+          ]
+        },
+        {
+          label: isEn ? "Scheduled & Auto-Published Posts" : "Bài đăng & Hẹn giờ tự động / tháng",
+          desc: isEn ? "24/7 automatic publishing in your timezone" : "Tự động đăng đúng giờ 24/7 kể cả khi tắt máy",
+          values: [
+            isEn ? "5 posts / mo" : "5 bài / tháng",
+            isEn ? "100 posts / mo" : "100 bài / tháng",
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        }
+      ]
+    },
+    {
+      title: isEn ? "2. Multi-Channel Publishing & Automation" : "2. Xuất bản Đa kênh & Tự động hóa Lịch đăng",
+      rows: [
+        {
+          label: isEn ? "Multi-channel composer & per-channel customization" : "Đăng đa kênh cùng lúc & Tùy chỉnh nội dung từng kênh",
+          desc: isEn ? "Write once, customize caption/hashtags per network" : "Soạn 1 lần, tùy biến riêng caption & cảnh báo giới hạn ký tự",
+          values: [true, true, true, true, true, true]
+        },
+        {
+          label: isEn ? "Visual Drag & Drop Content Calendar" : "Lịch nội dung kéo thả trực quan (Tháng / Tuần / Danh sách)",
+          desc: isEn ? "Reschedule posts easily with drag-and-drop" : "Kéo thả đổi ngày giờ đăng, lọc theo kênh và trụ cột nội dung",
+          values: [true, true, true, true, true, true]
+        },
+        {
+          label: isEn ? "Auto First Comment (Link in comment)" : "Tự động bình luận đầu tiên (First Comment)",
+          desc: isEn ? "Auto-post affiliate/website links in first comment" : "Tự động chèn link bán hàng dưới bình luận để tránh bóp tương tác",
+          values: [true, true, true, true, true, true]
+        },
+        {
+          label: isEn ? "Bulk Schedule Import via Excel / CSV" : "Nhập lịch đăng hàng loạt từ file Excel / CSV",
+          desc: isEn ? "Batch schedule dozens of posts from a spreadsheet" : "Tải file bảng tính để lên lịch hàng loạt bài viết cùng lúc",
+          values: [
+            isEn ? "5 rows / batch" : "5 dòng / lần",
+            isEn ? "30 rows / batch" : "30 dòng / lần",
+            { text: isEn ? "200 rows / batch" : "200 dòng / lần", bold: true, sub: "Full Cloud" },
+            { text: isEn ? "200 rows / batch" : "200 dòng / lần", bold: true, sub: "Full Cloud" },
+            { text: isEn ? "200 rows / batch" : "200 dòng / lần", bold: true, sub: isEn ? "Included" : "Có sẵn mặc định" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Evergreen Recurring Posts" : "Bài đăng lặp lại tự động (Evergreen Posts)",
+          desc: isEn ? "Automatically recycle high-performing posts" : "Tự động xoay vòng đăng lại các bài bán hàng hiệu quả cao",
+          values: [
+            isEn ? "1 rule" : "1 bài lặp",
+            isEn ? "3 rules" : "3 bài lặp",
+            { text: isEn ? "25 rules" : "25 bài lặp", bold: true },
+            { text: isEn ? "100 rules" : "100 bài lặp", bold: true },
+            { text: isEn ? "25 rules" : "25 bài lặp", bold: true, sub: isEn ? "Included" : "Có sẵn mặc định" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Reusable Post Templates & Frameworks" : "Thư viện Mẫu bài viết & Khung nội dung (Templates)",
+          desc: isEn ? "Save hooks, CTAs, and signature blocks" : "Lưu sẵn cấu trúc bài viết, chữ ký và bộ hashtag thương hiệu",
+          values: [
+            isEn ? "2 templates" : "2 mẫu",
+            isEn ? "15 templates" : "15 mẫu",
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        }
+      ]
+    },
+    {
+      title: isEn ? "3. Teams, Roles & Client Approvals" : "3. Làm việc nhóm & Phê duyệt (Teams & Collaboration)",
+      rows: [
+        {
+          label: isEn ? "Team Members (Workspace Seats)" : "Số thành viên cùng làm việc (Team Seats)",
+          desc: isEn ? "Collaborate without sharing social passwords" : "Mời nhân sự cùng soạn bài mà không cần chia sẻ mật khẩu MXH",
+          values: [
+            { text: isEn ? "1 Owner + 1 Draft" : "1 Chủ + 1 Nháp", sub: isEn ? "Trial flow" : "Dùng thử nhóm" },
+            isEn ? "1 Owner" : "1 Chủ sở hữu",
+            { text: isEn ? "3 Members" : "3 Thành viên", bold: true },
+            { text: isEn ? "10 Members" : "10 Thành viên", bold: true },
+            { text: isEn ? "1 – 21 Members" : "1 – 21 người", bold: true, sub: isVn ? "+30.000₫ / người" : "+$3 / seat" },
+            { text: isEn ? "1 – 5 PCs" : "1 – 5 Máy tính", bold: true, sub: isEn ? "Via .zip backup" : "Chia sẻ file .zip" }
+          ]
+        },
+        {
+          label: isEn ? "Client Calendar Share Links (Guest View)" : "Link chia sẻ lịch cho khách xem trước (Guest Link)",
+          desc: isEn ? "Read-only calendar link for clients (no login required)" : "Gửi link xem lịch bài đăng cho sếp/khách hàng không cần đăng nhập",
+          values: [
+            { text: "1 link", sub: isEn ? "7-day expiry" : "Hiệu lực 7 ngày" },
+            isEn ? "3 active links" : "3 link hoạt động",
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Local Export" : "Xuất báo cáo", sub: "Offline" }
+          ]
+        },
+        {
+          label: isEn ? "Role Permissions (Owner / Editor / Drafter) & Notes" : "Phân quyền vai trò (Owner / Editor / Drafter) & Ghi chú",
+          desc: isEn ? "Assign roles and leave internal feedback per post" : "Phân quyền người soạn nháp, biên tập viên và ghi chú dưới từng bài",
+          values: [
+            { text: isEn ? "Draft-only role" : "Quyền tạo nháp", sub: "Drafter" },
+            false,
+            true,
+            true,
+            true,
+            false
+          ]
+        },
+        {
+          label: isEn ? "Post Approval Workflow & Brand-Level Isolation" : "Luồng phê duyệt bài viết (Approval) & Tách quyền theo Brand",
+          desc: isEn ? "Require manager/client approval before publishing" : "Bắt buộc duyệt bài trước khi đăng & giới hạn nhân sự theo từng Brand",
+          values: [
+            false,
+            false,
+            false,
+            { text: isEn ? "Full + Audit Log" : "Đầy đủ + Audit Log", bold: true, sub: isEn ? "Brand isolation" : "Chuẩn Agency" },
+            { text: isEn ? "Included" : "Có sẵn mặc định", bold: true },
+            false
+          ]
+        }
+      ]
+    },
+    {
+      title: isEn ? "4. AI Assistant, Content Strategy & MCP Connector" : "4. Trợ lý AI, Chiến lược Nội dung & Kết nối MCP",
+      rows: [
+        {
+          label: isEn ? "AI Writing Assistant (ChatAgent — BYOK)" : "Trợ lý AI viết bài (ChatAgent — BYOK OpenAI / Gemini)",
+          desc: isEn ? "Generate captions, hooks, and platform variations" : "Gợi ý ý tưởng, viết bài chuẩn giọng thương hiệu bằng khóa API riêng",
+          values: [
+            isEn ? "3 runs / mo" : "3 lượt / tháng",
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true, sub: "BYOK" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true, sub: "BYOK" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true, sub: "BYOK" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true, sub: "BYOK" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true, sub: "BYOK + DPAPI" }
+          ]
+        },
+        {
+          label: isEn ? "AI Weekly Autopilot & Strategy Generator" : "AI tự viết bài & Tự lên lịch cả tuần (AI Autopilot)",
+          desc: isEn ? "Auto-plan and fill an entire week of multi-channel posts" : "Tự động lập kế hoạch và điền lịch đăng bài mới cho cả tuần",
+          values: [
+            isEn ? "3 runs / mo" : "3 lượt / tháng",
+            isEn ? "Basic suggestions" : "Gợi ý cơ bản",
+            { text: "Full AI Autopilot", bold: true },
+            { text: isEn ? "Full AI + Drive/R2" : "Full AI + Drive/R2", bold: true, sub: isEn ? "Catalog sync" : "Đồng bộ kho ảnh" },
+            { text: "Full AI Autopilot", bold: true, sub: isEn ? "Included free" : "Có sẵn mặc định" },
+            { text: "Full AI Autopilot", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Content Pillars & Strategic Angles" : "Trụ cột & Góc khai thác nội dung (Pillars & Angles)",
+          desc: isEn ? "Keep content balanced across brand topics" : "Quản lý tỷ lệ chủ đề và góc tiếp cận khách hàng",
+          values: [
+            "2 Pillars · 4 Angles",
+            "5 Pillars · 15 Angles",
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "AI MCP Server Integration (Claude / ChatGPT / Cursor)" : "Điều khiển qua giao thức AI MCP (Claude / ChatGPT / Cursor)",
+          desc: isEn ? "100% synced with your account's real-time plan quotas" : "Ra lệnh lên lịch từ Claude/ChatGPT, đồng bộ 100% hạn mức gói với Web",
+          values: [
+            { text: isEn ? "Synced (5 posts)" : "Có sẵn (5 bài)", sub: isEn ? "Shared quota" : "Chung hạn mức" },
+            { text: isEn ? "Synced (100 posts)" : "Có sẵn (100 bài)", sub: isEn ? "Shared quota" : "Chung hạn mức" },
+            { text: isEn ? "Unlimited MCP" : "MCP Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited MCP" : "MCP Không giới hạn", bold: true },
+            { text: isEn ? "Unlimited MCP" : "MCP Không giới hạn", bold: true },
+            { text: isEn ? "Local MCP Server" : "MCP Cục bộ", bold: true }
+          ]
+        }
+      ]
+    },
+    {
+      title: isEn ? "5. Growth Tools, Media Storage & Security" : "5. Công cụ Tăng trưởng, Lưu trữ Media & Bảo mật",
+      rows: [
+        {
+          label: isEn ? "Interactive Clickable Images (Hotspot Regions)" : "Ảnh tương tác đa vùng bấm (Interactive Images)",
+          desc: isEn ? "Attach product tags, popups, and links inside images" : "Gắn thẻ sản phẩm, popup thông tin và link mua hàng trực tiếp lên ảnh",
+          values: [
+            isEn ? "5 regions / image" : "5 vùng bấm / ảnh",
+            isEn ? "10 regions / image" : "10 vùng bấm / ảnh",
+            { text: isEn ? "20 regions (Full)" : "20 vùng bấm (Full)", bold: true },
+            { text: isEn ? "20 regions (Full)" : "20 vùng bấm (Full)", bold: true },
+            { text: isEn ? "20 regions (Full)" : "20 vùng bấm (Full)", bold: true },
+            { text: isEn ? "20 regions (Full)" : "20 vùng bấm (Full)", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Tracked Shortlinks & Click Analytics (UTM)" : "Rút gọn link & Đo lường lượt nhấp (Shortlinks + UTM)",
+          desc: isEn ? "Track clicks, referrers, and devices per campaign" : "Theo dõi số lượt click, nguồn truy cập và thiết bị theo thời gian thực",
+          values: [
+            "3 links",
+            "25 links",
+            { text: "250 links", bold: true },
+            { text: "1.000 links", bold: true },
+            { text: "10 – 500 links", bold: true, sub: isVn ? "5.000₫ / 10 link" : "$0.5 / 10 links" },
+            { text: isEn ? "Unlimited" : "Không giới hạn", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Staging Media Storage (Photos & Videos)" : "Bộ nhớ đệm Ảnh/Video chờ đăng (Staging Media)",
+          desc: isEn ? "Auto-released after publishing so you never run out" : "Tự động giải phóng dung lượng sau khi bài đã đăng lên MXH",
+          values: [
+            { text: "10 MB", sub: isEn ? "Auto-freed on post" : "Xóa ngay sau đăng" },
+            { text: "50 MB", sub: isEn ? "Kept 24h post-publish" : "Giữ 24h sau đăng" },
+            { text: "150 MB", bold: true, sub: isEn ? "Kept 7 days" : "Giữ 7 ngày sau đăng" },
+            { text: "200 MB + Drive/R2", bold: true, sub: isEn ? "Kept 30 days" : "Giữ 30 ngày + Kho riêng" },
+            { text: "50 – 500 MB", bold: true, sub: isVn ? "Có sẵn 50MB (+20k/50MB)" : "50MB incl. (+$1.5/50MB)" },
+            { text: isEn ? "Unlimited Local Disk" : "Ổ cứng máy (∞)", bold: true, sub: isEn ? "0s upload wait (4K)" : "Ảnh/Video 4K không giới hạn" }
+          ]
+        },
+        {
+          label: isEn ? "Multi-Channel Analytics & Reporting History" : "Lịch sử Phân tích & Báo cáo đa kênh (Analytics)",
+          desc: isEn ? "Track reach, engagement, and top posts across channels" : "Biểu đồ tiếp cận, tương tác và top bài viết hiệu quả nhất",
+          values: [
+            isEn ? "Last 7 days" : "7 ngày gần nhất",
+            isEn ? "30 days" : "30 ngày",
+            { text: isEn ? "Full history" : "Toàn bộ lịch sử", bold: true },
+            { text: isEn ? "Full + Report Export" : "Toàn bộ + Xuất báo cáo", bold: true },
+            { text: isEn ? "Full history" : "Toàn bộ lịch sử", bold: true },
+            { text: isEn ? "Permanent local DB" : "Lưu cục bộ vĩnh viễn", bold: true }
+          ]
+        },
+        {
+          label: isEn ? "Database Architecture & Token Security" : "Hạ tầng Cơ sở dữ liệu & Bảo mật Token",
+          desc: isEn ? "Official OAuth 2.0 APIs; never stores your password" : "Kết nối API chính thức của các nền tảng, tuyệt đối không lưu mật khẩu",
+          values: [
+            { text: "Cloudflare D1", sub: "OAuth 2.0" },
+            { text: "Cloudflare D1", sub: "OAuth 2.0" },
+            { text: "Cloudflare D1", bold: true, sub: "OAuth 2.0" },
+            { text: "Cloudflare D1", bold: true, sub: "OAuth 2.0 + Audit" },
+            { text: "Cloudflare D1", bold: true, sub: "OAuth 2.0" },
+            { text: "SQLite + DPAPI", bold: true, sub: isEn ? "100% On-Device" : "Mã hóa Windows cục bộ" }
+          ]
+        }
+      ]
+    }
+  ];
+
+  let renderCell = (val, isProCol) => {
+    if (val === true) {
+      return (0, f.jsx)("span", {
+        className: `inline-flex size-5 items-center justify-center rounded-full ${isProCol ? "bg-brand-400 text-zinc-950" : "bg-emerald-50 text-emerald-700"}`,
+        children: (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 })
+      });
+    }
+    if (val === false) {
+      return (0, f.jsx)("span", { className: "text-[14px] text-zinc-300 select-none", children: "—" });
+    }
+    if (typeof val === "object" && val !== null) {
+      return (0, f.jsxs)("div", {
+        className: "leading-snug",
+        children: [
+          (0, f.jsx)("span", {
+            className: `text-[12.5px] ${val.bold ? "font-bold text-zinc-950" : "font-medium text-zinc-700"}`,
+            children: val.text
+          }),
+          val.sub && (0, f.jsx)("span", {
+            className: "mt-0.5 block text-[10.5px] font-normal text-zinc-400",
+            children: val.sub
+          })
+        ]
+      });
+    }
+    return (0, f.jsx)("span", { className: "text-[12.5px] font-medium text-zinc-600", children: val });
+  };
+
+  return (0, f.jsxs)("div", {
+    id: "so-sanh-tinh-nang",
+    className: "mx-auto mt-20 max-w-6xl scroll-mt-20",
+    children: [
+      /* Header of Comparison Table */
+      (0, f.jsxs)("div", {
+        className: "text-center",
+        children: [
+          (0, f.jsx)(vr, { children: isEn ? "Feature Matrix" : "Bảng đối chiếu chi tiết" }),
+          (0, f.jsx)("h3", {
+            className: "mt-3 text-2xl font-semibold tracking-tight text-zinc-900 sm:text-3xl",
+            children: isEn
+              ? "Compare every feature across all plans"
+              : "So sánh chi tiết từng tính năng trong từng gói"
+          }),
+          (0, f.jsx)("p", {
+            className: "mx-auto mt-2.5 max-w-2xl text-[14px] leading-relaxed text-zinc-500",
+            children: isEn
+              ? "Every plan unlocks 100% of core tools. Compare exact quotas for Cloud plans, Custom Builder, and Windows Desktop."
+              : "Tất cả các gói đều mở khóa 100% tính năng cốt lõi. Dưới đây là bảng đối chiếu chi tiết hạn mức giữa các gói Cloud, Tự thiết kế và Bản Desktop."
+          })
+        ]
+      }),
+
+      /* Table Container */
+      (0, f.jsx)("div", {
+        className: "mt-10 overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-sm",
+        children: (0, f.jsx)("div", {
+          className: "overflow-x-auto",
+          children: (0, f.jsxs)("table", {
+            className: "pricing-compare-table text-left",
+            children: [
+              /* Table Head */
+              (0, f.jsx)("thead", {
+                children: (0, f.jsxs)("tr", {
+                  className: "border-b border-zinc-200 bg-zinc-50/80",
+                  children: [
+                    (0, f.jsxs)("th", {
+                      className: "w-[270px] p-5 align-bottom",
+                      children: [
+                        (0, f.jsx)("div", {
+                          className: "text-[11px] font-semibold uppercase tracking-wider text-zinc-400",
+                          children: isEn ? "Features & Quotas" : "Danh mục tính năng"
+                        }),
+                        (0, f.jsx)("div", {
+                          className: "mt-1 text-[15px] font-bold text-zinc-900",
+                          children: isEn ? "22 Detailed Capabilities" : "22 Hạng mục đối chiếu"
+                        })
+                      ]
+                    }),
+                    planCols.map((col) => (
+                      (0, f.jsxs)("th", {
+                        className: `p-4 text-center align-bottom ${
+                          col.popular ? "bg-brand-50/60 border-x border-brand-200" : ""
+                        }`,
+                        children: [
+                          col.badge && (0, f.jsx)("div", {
+                            className: "mb-1.5",
+                            children: (0, f.jsx)("span", {
+                              className: "inline-block rounded-full bg-brand-400 px-2.5 py-0.5 text-[10px] font-bold text-zinc-950",
+                              children: col.badge
+                            })
+                          }),
+                          (0, f.jsx)("div", {
+                            className: "text-[14px] font-bold text-zinc-950",
+                            children: col.name
+                          }),
+                          (0, f.jsx)("div", {
+                            className: "mt-1 font-mono text-[15px] font-bold tracking-tight text-zinc-900",
+                            children: col.price
+                          }),
+                          (0, f.jsx)("div", {
+                            className: "text-[11px] font-normal text-zinc-500",
+                            children: col.sub
+                          })
+                        ]
+                      }, col.key)
+                    ))
+                  ]
+                })
+              }),
+
+              /* Table Body */
+              (0, f.jsx)("tbody", {
+                className: "divide-y divide-zinc-200/70",
+                children: groups.map((group) => (
+                  (0, f.jsxs)(fe.Fragment, {
+                    children: [
+                      /* Group Category Row */
+                      (0, f.jsx)("tr", {
+                        className: "bg-zinc-100/70",
+                        children: (0, f.jsx)("td", {
+                          colSpan: 7,
+                          className: "px-5 py-3 text-[12px] font-bold uppercase tracking-wider text-zinc-800",
+                          children: group.title
+                        })
+                      }),
+                      /* Feature Rows in Group */
+                      group.rows.map((row) => (
+                        (0, f.jsxs)("tr", {
+                          className: "transition hover:bg-zinc-50/70",
+                          children: [
+                            (0, f.jsxs)("td", {
+                              className: "px-5 py-3.5",
+                              children: [
+                                (0, f.jsx)("div", {
+                                  className: "text-[13px] font-semibold text-zinc-900",
+                                  children: row.label
+                                }),
+                                row.desc && (0, f.jsx)("div", {
+                                  className: "mt-0.5 text-[11.5px] leading-snug text-zinc-500",
+                                  children: row.desc
+                                })
+                              ]
+                            }),
+                            row.values.map((val, cIdx) => {
+                              let isProCol = planCols[cIdx]?.popular;
+                              return (0, f.jsx)("td", {
+                                className: `px-3 py-3.5 text-center ${
+                                  isProCol ? "bg-brand-50/30 border-x border-brand-200/60" : ""
+                                }`,
+                                children: renderCell(val, isProCol)
+                              }, planCols[cIdx].key);
+                            })
+                          ]
+                        }, row.label)
+                      ))
+                    ]
+                  }, group.title)
+                ))
+              }),
+
+              /* Table Footer with Action Buttons */
+              (0, f.jsx)("tfoot", {
+                children: (0, f.jsxs)("tr", {
+                  className: "border-t border-zinc-200 bg-zinc-50/60",
+                  children: [
+                    (0, f.jsx)("td", {
+                      className: "px-5 py-4 text-[12.5px] font-semibold text-zinc-600",
+                      children: isEn ? "Ready to get started?" : "Chọn phương án phù hợp với bạn:"
+                    }),
+                    planCols.map((col) => (
+                      (0, f.jsx)("td", {
+                        className: `p-3 text-center ${
+                          col.popular ? "bg-brand-50/60 border-x border-brand-200" : ""
+                        }`,
+                        children: col.key === "free"
+                          ? (0, f.jsx)("a", {
+                              href: Aa("create"),
+                              className: "inline-flex h-9 w-full items-center justify-center rounded-xl border border-zinc-200 bg-white px-3 text-[12px] font-semibold text-zinc-900 transition hover:bg-zinc-100",
+                              children: col.cta
+                            })
+                          : col.type === "cloud"
+                            ? (0, f.jsx)("button", {
+                                type: "button",
+                                "data-internal-nav": "true",
+                                onClick: () => {
+                                  let fullKey = col.key === "pro" ? "professional" : col.key;
+                                  let matched = WEB_PLANS_DATA.find((p) => p.key === fullKey);
+                                  let pObj = matched ? matched.price[market] : { monthly: 199000, yearly: 1590000 };
+                                  let qMap = {
+                                    starter: { brands: 1, accounts: 5, seats: 1, storageMb: 50, links: 25 },
+                                    professional: { brands: 5, accounts: 20, seats: 3, storageMb: 150, links: 250 },
+                                    business: { brands: 25, accounts: 60, seats: 10, storageMb: 200, links: 1000 }
+                                  };
+                                  onSelectPlan && onSelectPlan({
+                                    kind: "cloud",
+                                    planKey: fullKey,
+                                    planName: `Cloud ${col.name}`,
+                                    billingCycle: yearly ? "yearly" : "monthly",
+                                    amount: yearly ? pObj.yearly : pObj.monthly,
+                                    quotas: qMap[fullKey]
+                                  });
+                                },
+                                className: `inline-flex h-9 w-full items-center justify-center rounded-xl px-3 text-[12px] font-semibold transition ${
+                                  col.popular
+                                    ? "bg-brand-400 text-zinc-950 hover:bg-brand-300 shadow-sm"
+                                    : "border border-zinc-200 bg-white text-zinc-900 hover:bg-zinc-100"
+                                }`,
+                                children: col.cta
+                              })
+                            : (0, f.jsx)("button", {
+                                type: "button",
+                                "data-internal-nav": "true",
+                                onClick: () => {
+                                  setMode(col.type);
+                                  document.getElementById("bang-gia")?.scrollIntoView({ behavior: "smooth", block: "start" });
+                                },
+                                className: "inline-flex h-9 w-full items-center justify-center rounded-xl border border-zinc-900 bg-zinc-900 px-3 text-[12px] font-semibold text-white transition hover:bg-zinc-800",
+                                children: col.cta
+                              })
+                      }, col.key)
+                    ))
+                  ]
+                })
+              })
+            ]
+          })
+        })
+      })
+    ]
+  });
+}
+
+function generateSc2Keys(planKey, count) {
+  let prefix = planKey === "desktop-agency" ? "SC2-AGY" : planKey === "desktop-pro" ? "SC2-PRO" : "SC2-SOLO";
+  let chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let seg = (len) => {
+    let out = "";
+    for (let i = 0; i < len; i++) out += chars[Math.floor(Math.random() * chars.length)];
+    return out;
+  };
+  let list = [];
+  for (let i = 0; i < count; i++) {
+    list.push(`${prefix}-2026-${seg(4)}-${seg(4)}-M${i + 1}`);
+  }
+  return list;
+}
+
+function downloadScLicenseBundle(order) {
+  let payload = {
+    schema: 2,
+    product: order.kind === "desktop" ? "socialchoice-desktop-sc2" : "socialchoice-cloud",
+    order_code: order.orderCode,
+    plan_key: order.planKey,
+    plan_name: order.planName,
+    licensed_to: order.customerName,
+    email: order.email,
+    issued_at: order.activatedAt,
+    keys: order.keys || [],
+    quotas: order.quotas || null
+  };
+  let blob = new Blob([JSON.stringify(payload, null, 2) + "\n"], { type: "application/json;charset=utf-8" });
+  let url = URL.createObjectURL(blob);
+  let a = document.createElement("a");
+  a.href = url;
+  a.download = `socialchoice-${order.orderCode.toLowerCase()}.scweblicense`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+function HybridCheckoutModal({ item, lang, market, onClose }) {
+  let isEn = lang === "en";
+  let isDesktopOrder = item?.kind === "desktop";
+
+  let [email, setEmail] = (0, fe.useState)(() => {
+    try {
+      return window.localStorage.getItem("socialchoice.customer_email") || "";
+    } catch {
+      return "";
+    }
+  });
+  let [customerName, setCustomerName] = (0, fe.useState)(() => {
+    try {
+      return window.localStorage.getItem("socialchoice.customer_name") || "";
+    } catch {
+      return "";
+    }
+  });
+  let [step, setStep] = (0, fe.useState)("form");
+  let [copiedKey, setCopiedKey] = (0, fe.useState)(null);
+  let [orderResult, setOrderResult] = (0, fe.useState)(null);
+  let [orderCode] = (0, fe.useState)(() => {
+    let prefix = isDesktopOrder ? "SC2" : "SCC";
+    return `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
+  });
+
+  if (!item) return null;
+
+  let handleConfirmPayment = (ev) => {
+    ev.preventDefault();
+    let cleanEmail = (email || "").trim().toLowerCase() || "user@socialchoice.site";
+    let cleanName = (customerName || "").trim() || cleanEmail.split("@")[0];
+    let nowIso = new Date().toISOString();
+
+    try {
+      window.localStorage.setItem("socialchoice.customer_email", cleanEmail);
+      window.localStorage.setItem("socialchoice.customer_name", cleanName);
+    } catch {}
+
+    if (isDesktopOrder) {
+      let keys = generateSc2Keys(item.planKey, item.devicesCount || 1);
+      let desktopRecord = {
+        kind: "desktop",
+        orderCode,
+        planKey: item.planKey,
+        planName: item.planName,
+        devicesCount: item.devicesCount || 1,
+        devicesLabel: item.devicesLabel,
+        amount: item.amount,
+        market,
+        email: cleanEmail,
+        customerName: cleanName,
+        keys,
+        activatedAt: nowIso
+      };
+      try {
+        let prev = JSON.parse(window.localStorage.getItem("socialchoice.desktop_licenses") || "[]");
+        window.localStorage.setItem("socialchoice.desktop_licenses", JSON.stringify([desktopRecord, ...prev].slice(0, 20)));
+        window.dispatchEvent(new Event("socialchoice:subscription"));
+      } catch {}
+      setOrderResult(desktopRecord);
+      setStep("done");
+    } else {
+      let cloudRecord = {
+        kind: item.kind,
+        orderCode,
+        planKey: item.planKey,
+        planName: item.planName,
+        billingCycle: item.billingCycle || "monthly",
+        amount: item.amount,
+        market,
+        email: cleanEmail,
+        customerName: cleanName,
+        quotas: item.quotas,
+        mcpSynced: true,
+        activatedAt: nowIso
+      };
+      try {
+        window.localStorage.setItem("socialchoice.subscription", JSON.stringify(cloudRecord));
+        window.dispatchEvent(new Event("socialchoice:subscription"));
+      } catch {}
+      setOrderResult(cloudRecord);
+      setStep("done");
+    }
+  };
+
+  let qrUrl = `https://img.vietqr.io/image/MB-0388889999-compact2.png?amount=${item.amount}&addInfo=${encodeURIComponent(orderCode)}&accountName=${encodeURIComponent("SOCIALCHOICE")}`;
+
+  return (0, f.jsx)("div", {
+    className: "hybrid-checkout-backdrop",
+    onClick: (ev) => {
+      if (ev.target === ev.currentTarget) onClose();
+    },
+    children: (0, f.jsxs)("div", {
+      className: "hybrid-checkout-dialog rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-2xl sm:p-7",
+      children: [
+        /* Top Modal Header */
+        (0, f.jsxs)("div", {
+          className: "flex items-start justify-between gap-4 border-b border-zinc-100 pb-4",
+          children: [
+            (0, f.jsxs)("div", {
+              children: [
+                (0, f.jsxs)("span", {
+                  className: `inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${
+                    isDesktopOrder ? "bg-zinc-900 text-brand-400" : "bg-emerald-50 text-emerald-700"
+                  }`,
+                  children: [
+                    (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 }),
+                    isDesktopOrder
+                      ? (isEn ? "Desktop Hybrid: Instant Key + Email Backup" : "Bản Desktop: Cấp mã SC2 tại chỗ + Gửi Email lưu trữ")
+                      : (isEn ? "Cloud Hybrid: Instant Account Activation + Email Receipt" : "Gói Cloud: Kích hoạt tự động vào tài khoản + Gửi biên lai Email")
+                  ]
+                }),
+                (0, f.jsx)("h3", {
+                  className: "mt-2 text-[19px] font-bold tracking-tight text-zinc-950",
+                  children: step === "done"
+                    ? (isDesktopOrder
+                        ? (isEn ? "Your Desktop License Keys Are Ready!" : "Đã cấp Mã bản quyền Desktop (SC2)!")
+                        : (isEn ? "Account Upgraded Automatically!" : "Đã kích hoạt gói tự động vào tài khoản!"))
+                    : item.planName
+                })
+              ]
+            }),
+            (0, f.jsx)("button", {
+              type: "button",
+              "data-internal-nav": "true",
+              onClick: onClose,
+              className: "grid size-8 shrink-0 place-items-center rounded-full bg-zinc-100 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-900",
+              children: (0, f.jsx)(ll, { className: "size-4" })
+            })
+          ]
+        }),
+
+        step === "form"
+          ? (0, f.jsxs)("form", {
+              onSubmit: handleConfirmPayment,
+              className: "mt-5 space-y-4",
+              children: [
+                /* Summary Box */
+                (0, f.jsxs)("div", {
+                  className: "flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4",
+                  children: [
+                    (0, f.jsxs)("div", {
+                      children: [
+                        (0, f.jsx)("div", {
+                          className: "text-[12px] font-medium text-zinc-500",
+                          children: isDesktopOrder
+                            ? (isEn ? `Perpetual License · ${item.devicesLabel}` : `Bản quyền vĩnh viễn · ${item.devicesLabel}`)
+                            : (item.billingCycle === "yearly"
+                                ? (isEn ? "Annual Cloud Subscription (−20%)" : "Thuê bao Cloud theo năm (Đã giảm 20%)")
+                                : (isEn ? "Monthly Cloud Subscription" : "Thuê bao Cloud theo tháng"))
+                        }),
+                        !isDesktopOrder && item.quotas && (0, f.jsx)("div", {
+                          className: "mt-1 text-[12px] font-semibold text-zinc-800",
+                          children: `${item.quotas.brands} Brands · ${item.quotas.accounts} ${isEn ? "Channels" : "Kênh MXH"} · ${item.quotas.seats} ${isEn ? "Seats" : "Thành viên"} · ${item.quotas.storageMb}MB · ${item.quotas.links} Links`
+                        }),
+                        isDesktopOrder && (0, f.jsx)("div", {
+                          className: "mt-1 text-[12px] font-semibold text-zinc-800",
+                          children: isEn
+                            ? "Includes 12 months free updates · Optional ~25% Year 2+ Update Pass"
+                            : "Tặng 12 tháng cập nhật đầu · Từ năm 2 dùng mãi mãi hoặc Update Pass ~25%"
+                        })
+                      ]
+                    }),
+                    (0, f.jsxs)("div", {
+                      className: "text-right",
+                      children: [
+                        (0, f.jsx)("div", {
+                          className: "font-mono text-2xl font-bold text-zinc-950",
+                          children: formatMoney(item.amount, market)
+                        }),
+                        (0, f.jsx)("div", {
+                          className: "font-mono text-[10.5px] text-zinc-400",
+                          children: `#${orderCode}`
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                /* Customer Inputs */
+                (0, f.jsxs)("div", {
+                  className: "grid grid-cols-1 gap-3 sm:grid-cols-2",
+                  children: [
+                    (0, f.jsxs)("div", {
+                      children: [
+                        (0, f.jsx)("label", {
+                          className: "block text-[11.5px] font-semibold text-zinc-700",
+                          children: isDesktopOrder
+                            ? (isEn ? "Email to receive SC2 License Key *" : "Email nhận mã License SC2 & lưu trữ *")
+                            : (isEn ? "Account Email for Instant Activation *" : "Email tài khoản kích hoạt tự động *")
+                        }),
+                        (0, f.jsx)("input", {
+                          type: "email",
+                          required: true,
+                          value: email,
+                          onChange: (ev) => setEmail(ev.target.value),
+                          placeholder: "ban@congty.vn",
+                          className: "mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13px] text-zinc-900 outline-none focus:border-zinc-900"
+                        })
+                      ]
+                    }),
+                    (0, f.jsxs)("div", {
+                      children: [
+                        (0, f.jsx)("label", {
+                          className: "block text-[11.5px] font-semibold text-zinc-700",
+                          children: isDesktopOrder
+                            ? (isEn ? "Licensed To (Name / Company) *" : "Tên cá nhân / Công ty sở hữu *")
+                            : (isEn ? "Your Name / Brand Name *" : "Tên của bạn / Thương hiệu *")
+                        }),
+                        (0, f.jsx)("input", {
+                          type: "text",
+                          required: true,
+                          value: customerName,
+                          onChange: (ev) => setCustomerName(ev.target.value),
+                          placeholder: isEn ? "e.g. Acme Studio" : "VD: Nguyễn Văn A / Minh Studio",
+                          className: "mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13px] text-zinc-900 outline-none focus:border-zinc-900"
+                        })
+                      ]
+                    })
+                  ]
+                }),
+
+                /* Payment Gateway Box (VietQR for VNĐ, Polar/Lemon Squeezy for USD) */
+                market === "vn"
+                  ? (0, f.jsxs)("div", {
+                      className: "grid grid-cols-1 items-center gap-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4 sm:grid-cols-[140px_1fr]",
+                      children: [
+                        (0, f.jsx)("div", {
+                          className: "mx-auto overflow-hidden rounded-xl border border-zinc-200 bg-white p-1.5 shadow-sm",
+                          children: (0, f.jsx)("img", {
+                            src: qrUrl,
+                            alt: "VietQR Payment",
+                            className: "size-32 object-contain"
+                          })
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "space-y-1.5 text-[12.5px]",
+                          children: [
+                            (0, f.jsxs)("div", {
+                              className: "flex items-center gap-1.5 font-bold text-zinc-900",
+                              children: [
+                                (0, f.jsx)("span", { className: "size-2 rounded-full bg-emerald-500" }),
+                                "Cổng VietQR Tự Động (SePay / PayOS — Phí 0₫)"
+                              ]
+                            }),
+                            (0, f.jsx)("p", {
+                              className: "text-[11.5px] leading-relaxed text-zinc-500",
+                              children: isDesktopOrder
+                                ? "Mở bất kỳ App Ngân hàng hoặc MoMo/ZaloPay nào quét mã QR. Hệ thống tự động xuất mã License SC2 trên màn hình và gửi về Email ngay sau 2–3 giây."
+                                : "Mở bất kỳ App Ngân hàng hoặc MoMo/ZaloPay nào quét mã QR. Webhook tự động nâng cấp thẳng vào tài khoản của bạn ngay sau 2–3 giây."
+                            }),
+                            (0, f.jsxs)("div", {
+                              className: "mt-2 flex flex-wrap gap-2 pt-1 font-mono text-[11.5px]",
+                              children: [
+                                (0, f.jsxs)("span", {
+                                  className: "rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-zinc-700",
+                                  children: ["Số tiền: ", (0, f.jsx)("strong", { className: "text-zinc-950", children: formatMoney(item.amount, "vn") })]
+                                }),
+                                (0, f.jsxs)("span", {
+                                  className: "rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-zinc-700",
+                                  children: ["Nội dung: ", (0, f.jsx)("strong", { className: "text-zinc-950", children: orderCode })]
+                                })
+                              ]
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  : (0, f.jsxs)("div", {
+                      className: "rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-[12.5px]",
+                      children: [
+                        (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between font-bold text-zinc-900",
+                          children: [
+                            (0, f.jsx)("span", { children: "Global Checkout (Polar.sh / Lemon Squeezy)" }),
+                            (0, f.jsx)("span", { className: "rounded-md bg-zinc-200/80 px-2 py-0.5 font-mono text-[11px]", children: "Visa · Mastercard · Apple Pay" })
+                          ]
+                        }),
+                        (0, f.jsx)("p", {
+                          className: "mt-1.5 text-[11.5px] leading-relaxed text-zinc-500",
+                          children: isDesktopOrder
+                            ? "Instant global card processing. Your SC2 license keys and .scweblicense file will appear right on this screen and be sent to your email."
+                            : "Instant global card processing. Your SocialChoice web & MCP account quotas will be upgraded automatically upon completion."
+                        })
+                      ]
+                    }),
+
+                /* Submit / Activate Button */
+                (0, f.jsxs)("div", {
+                  className: "flex items-center justify-end gap-2.5 pt-2",
+                  children: [
+                    (0, f.jsx)("button", {
+                      type: "button",
+                      "data-internal-nav": "true",
+                      onClick: onClose,
+                      className: "h-10 rounded-xl border border-zinc-200 px-4 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100",
+                      children: isEn ? "Cancel" : "Đóng"
+                    }),
+                    (0, f.jsxs)("button", {
+                      type: "submit",
+                      "data-internal-nav": "true",
+                      className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 shadow-sm transition hover:bg-brand-300",
+                      children: [
+                        isDesktopOrder
+                          ? (isEn ? "Complete & Get SC2 License Key" : "Xác nhận thanh toán & Nhận mã SC2 ngay")
+                          : (isEn ? "Complete & Auto-Activate Account" : "Xác nhận thanh toán & Kích hoạt ngay"),
+                        (0, f.jsx)(Ta, { className: "size-3.5" })
+                      ]
+                    })
+                  ]
+                })
+              ]
+            })
+          : /* STEP 2: HYBRID ACTIVATION RESULT */
+            (0, f.jsxs)("div", {
+              className: "mt-5 space-y-4",
+              children: [
+                isDesktopOrder
+                  ? /* DESKTOP HYBRID RESULT: ON-SCREEN KEYS + FILE DOWNLOAD + EMAIL BACKUP */
+                    (0, f.jsxs)(fe.Fragment, {
+                      children: [
+                        (0, f.jsxs)("div", {
+                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-[12.5px] text-emerald-900",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "font-bold",
+                              children: isEn
+                                ? `✓ Sent backup copy of ${orderResult.keys.length} license key(s) & .scweblicense file to ${orderResult.email}`
+                                : `✓ Đã gửi bản lưu ${orderResult.keys.length} mã License SC2 + File .scweblicense về hộp thư ${orderResult.email}`
+                            }),
+                            (0, f.jsx)("div", {
+                              className: "mt-1 text-[11.5px] text-emerald-700",
+                              children: isEn
+                                ? "You can also copy your keys or download the license file directly below for immediate offline activation."
+                                : "Bạn có thể sao chép mã hoặc tải file bản quyền ngay bên dưới để dán vào phần mềm trên máy tính Windows:"
+                            })
+                          ]
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "space-y-2 rounded-2xl border border-zinc-200 bg-zinc-50 p-4",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "text-[11.5px] font-bold uppercase tracking-wider text-zinc-500",
+                              children: isEn
+                                ? `Your Windows Desktop (SC2) Keys (${orderResult.devicesLabel})`
+                                : `Mã khóa kích hoạt phần mềm Windows (${orderResult.devicesLabel})`
+                            }),
+                            orderResult.keys.map((k, idx) => (
+                              (0, f.jsxs)("div", {
+                                className: "flex items-center justify-between gap-2 rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5",
+                                children: [
+                                  (0, f.jsxs)("div", {
+                                    className: "min-w-0",
+                                    children: [
+                                      (0, f.jsx)("span", {
+                                        className: "mr-2 rounded bg-zinc-100 px-1.5 py-0.5 text-[10.5px] font-semibold text-zinc-600",
+                                        children: isEn ? `PC #${idx + 1}` : `Máy #${idx + 1}`
+                                      }),
+                                      (0, f.jsx)("span", {
+                                        className: "font-mono text-[13px] font-bold text-zinc-950",
+                                        children: k
+                                      })
+                                    ]
+                                  }),
+                                  (0, f.jsx)("button", {
+                                    type: "button",
+                                    "data-internal-nav": "true",
+                                    onClick: () => {
+                                      try { navigator.clipboard.writeText(k); } catch {}
+                                      setCopiedKey(k);
+                                    },
+                                    className: "shrink-0 rounded-lg border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11.5px] font-semibold text-zinc-800 hover:bg-zinc-100",
+                                    children: copiedKey === k ? (isEn ? "✓ Copied" : "✓ Đã chép") : (isEn ? "Copy Key" : "Sao chép mã")
+                                  })
+                                ]
+                              }, k)
+                            ))
+                          ]
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "flex flex-wrap items-center justify-between gap-2.5 pt-2",
+                          children: [
+                            (0, f.jsx)("button", {
+                              type: "button",
+                              "data-internal-nav": "true",
+                              onClick: () => downloadScLicenseBundle(orderResult),
+                              className: "inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-900 bg-zinc-900 px-4 text-[12.5px] font-semibold text-white hover:bg-zinc-800",
+                              children: isEn ? "Download .scweblicense File" : "Tải file bản quyền (.scweblicense)"
+                            }),
+                            (0, f.jsxs)("a", {
+                              href: "/settings?tab=license",
+                              className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[12.5px] font-bold text-zinc-950 hover:bg-brand-300",
+                              children: [
+                                isEn ? "Open License Manager in App" : "Mở Quản lý Bản quyền trong App",
+                                (0, f.jsx)(Ta, { className: "size-3.5" })
+                              ]
+                            })
+                          ]
+                        })
+                      ]
+                    })
+                  : /* CLOUD / CUSTOM HYBRID RESULT: INSTANT ACCOUNT ACTIVATION + EMAIL RECEIPT */
+                    (0, f.jsxs)(fe.Fragment, {
+                      children: [
+                        (0, f.jsxs)("div", {
+                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-[13px] text-emerald-950",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "font-bold",
+                              children: isEn
+                                ? `⚡ Account ${orderResult.email} is now active on ${orderResult.planName}!`
+                                : `⚡ Đã kích hoạt thẳng gói ${orderResult.planName} vào tài khoản ${orderResult.email}!`
+                            }),
+                            (0, f.jsx)("div", {
+                              className: "mt-1 text-[12px] text-emerald-800",
+                              children: isEn
+                                ? `✓ Payment receipt (#${orderResult.orderCode}) has been emailed to ${orderResult.email}. No manual license key entry needed.`
+                                : `✓ Hóa đơn xác nhận (#${orderResult.orderCode}) đã được gửi về ${orderResult.email}. Bạn không cần nhập mã thủ công.`
+                            })
+                          ]
+                        }),
+                        orderResult.quotas && (0, f.jsxs)("div", {
+                          className: "rounded-2xl border border-zinc-200 bg-zinc-50 p-4",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "text-[11.5px] font-bold uppercase tracking-wider text-zinc-500",
+                              children: isEn ? "Unlocked Quotas (Synced across Web & AI MCP)" : "Hạn mức đã mở khóa ngay (Đồng bộ 100% trên Web & AI MCP)"
+                            }),
+                            (0, f.jsx)("div", {
+                              className: "mt-3 grid grid-cols-2 gap-2.5 sm:grid-cols-3",
+                              children: [
+                                [isEn ? "Brands" : "Thương hiệu", `${orderResult.quotas.brands} Brands`],
+                                [isEn ? "Social Accounts" : "Tài khoản MXH", `${orderResult.quotas.accounts} ${isEn ? "channels" : "kênh"}`],
+                                [isEn ? "Team Members" : "Thành viên Teams", `${orderResult.quotas.seats} ${isEn ? "seats" : "người"}`],
+                                [isEn ? "Staging Media" : "Bộ nhớ đệm Media", `${orderResult.quotas.storageMb} MB`],
+                                [isEn ? "Tracked Shortlinks" : "Link rút gọn", `${orderResult.quotas.links} links`],
+                                [isEn ? "AI & MCP Quota" : "Đồng bộ AI MCP", isEn ? "Active 100%" : "Đã kích hoạt"]
+                              ].map(([k, v]) => (
+                                (0, f.jsxs)("div", {
+                                  className: "rounded-xl border border-zinc-200 bg-white px-3 py-2",
+                                  children: [
+                                    (0, f.jsx)("div", { className: "text-[11px] text-zinc-500", children: k }),
+                                    (0, f.jsx)("div", { className: "mt-0.5 font-mono text-[13px] font-bold text-zinc-950", children: v })
+                                  ]
+                                }, k)
+                              ))
+                            })
+                          ]
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "flex items-center justify-end gap-2.5 pt-2",
+                          children: [
+                            (0, f.jsx)("button", {
+                              type: "button",
+                              "data-internal-nav": "true",
+                              onClick: onClose,
+                              className: "h-10 rounded-xl border border-zinc-200 px-4 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100",
+                              children: isEn ? "Close" : "Đóng"
+                            }),
+                            (0, f.jsxs)("a", {
+                              href: Aa("overview"),
+                              className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 shadow-sm hover:bg-brand-300",
+                              children: [
+                                isEn ? "Enter Workspace Now" : "Vào Bảng điều khiển ngay",
+                                (0, f.jsx)(Ta, { className: "size-3.5" })
+                              ]
+                            })
+                          ]
+                        })
+                      ]
+                    })
+              ]
+            })
+      ]
+    })
+  });
+}
+
+function PricingSectionEnhanced({ lang, isDedicatedPage = false, onOpenPricingPage }) {
   let [market, setMarket] = (0, fe.useState)(() => (lang === "en" ? "intl" : "vn"));
   let [mode, setMode] = (0, fe.useState)("cloud");
   let [yearly, setYearly] = (0, fe.useState)(false);
+  let [checkoutItem, setCheckoutItem] = (0, fe.useState)(null);
 
   let [cAccounts, setCAccounts] = (0, fe.useState)(10);
   let [cSeats, setCSeats] = (0, fe.useState)(1);
   let [cBrands, setCBrands] = (0, fe.useState)(1);
   let [cStorage, setCStorage] = (0, fe.useState)(50);
-  let [cAutomation, setCAutomation] = (0, fe.useState)(false);
-  let [cApproval, setCApproval] = (0, fe.useState)(false);
+  let [cLinks, setCLinks] = (0, fe.useState)(10);
 
   (0, fe.useEffect)(() => {
     setMarket(prev => {
@@ -1151,8 +2229,7 @@ function PricingSectionEnhanced({ lang }) {
       seat: 30000,
       brand: 20000,
       storageStep: 20000,
-      automation: 40000,
-      approval: 35000,
+      linkStep: 5000,
       proMonthly: 199000
     },
     intl: {
@@ -1162,8 +2239,7 @@ function PricingSectionEnhanced({ lang }) {
       seat: 3,
       brand: 1.5,
       storageStep: 1.5,
-      automation: 4,
-      approval: 3.5,
+      linkStep: 0.5,
       proMonthly: 19
     },
     whop: {
@@ -1173,8 +2249,7 @@ function PricingSectionEnhanced({ lang }) {
       seat: 5,
       brand: 2,
       storageStep: 2.5,
-      automation: 6,
-      approval: 5,
+      linkStep: 0.5,
       proMonthly: 29
     }
   }[market];
@@ -1184,8 +2259,7 @@ function PricingSectionEnhanced({ lang }) {
     cSeats * rates.seat +
     Math.max(0, cBrands - 1) * rates.brand +
     Math.max(0, (cStorage - 50) / 50) * rates.storageStep +
-    (cAutomation ? rates.automation : 0) +
-    (cApproval ? rates.approval : 0);
+    (cLinks / 10) * rates.linkStep;
 
   let appliedBase = itemsSubtotal >= rates.freeBaseThreshold ? 0 : rates.base;
   let customMonthly = itemsSubtotal + appliedBase;
@@ -1198,7 +2272,7 @@ function PricingSectionEnhanced({ lang }) {
     cBrands <= 5 &&
     cSeats <= 2 &&
     cStorage <= 150 &&
-    !cApproval;
+    cLinks <= 250;
   let showProUpsell = fitsInPro && customMonthly > rates.proMonthly;
 
   return (0, f.jsxs)("section", {
@@ -1379,15 +2453,37 @@ function PricingSectionEnhanced({ lang }) {
                       ? `Whop Lifetime Pass: $${pObj.lifetime} (Limited slots)`
                       : `Gói Lifetime trên Whop: $${pObj.lifetime} (Giới hạn suất)`
                   }),
-                  (0, f.jsx)("a", {
-                    href: Aa("create"),
-                    className: `mt-5 flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition ${
-                      plan.popular
-                        ? "bg-brand-400 text-zinc-900 hover:bg-brand-300"
-                        : "border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100"
-                    }`,
-                    children: planCta
-                  }),
+                  plan.key === "free"
+                    ? (0, f.jsx)("a", {
+                        href: Aa("create"),
+                        className: "mt-5 flex h-10 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-50 text-[13px] font-semibold text-zinc-900 transition hover:bg-zinc-100",
+                        children: planCta
+                      })
+                    : (0, f.jsx)("button", {
+                        type: "button",
+                        "data-internal-nav": "true",
+                        onClick: () => {
+                          let qMap = {
+                            starter: { brands: 1, accounts: 5, seats: 1, storageMb: 50, links: 25 },
+                            professional: { brands: 5, accounts: 20, seats: 3, storageMb: 150, links: 250 },
+                            business: { brands: 25, accounts: 60, seats: 10, storageMb: 200, links: 1000 }
+                          };
+                          setCheckoutItem({
+                            kind: "cloud",
+                            planKey: plan.key,
+                            planName: `Cloud ${planName}`,
+                            billingCycle: yearly ? "yearly" : "monthly",
+                            amount: yearly ? pObj.yearly : pObj.monthly,
+                            quotas: qMap[plan.key]
+                          });
+                        },
+                        className: `mt-5 flex h-10 w-full items-center justify-center rounded-xl text-[13px] font-semibold transition ${
+                          plan.popular
+                            ? "bg-brand-400 text-zinc-900 hover:bg-brand-300"
+                            : "border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100"
+                        }`,
+                        children: planCta
+                      }),
                   (0, f.jsx)("ul", {
                     className: `mt-6 flex-1 space-y-2.5 border-t pt-5 text-[12.5px] ${
                       plan.popular ? "border-white/10" : "border-zinc-100"
@@ -1482,12 +2578,13 @@ function PricingSectionEnhanced({ lang }) {
                 ]
               }),
 
-              /* 2x2 Grid of Sliders */
-              (0, f.jsx)("div", {
+              /* 3x2 Grid of Sliders + Default Included Card */
+              (0, f.jsxs)("div", {
                 className: "mt-5 grid grid-cols-1 gap-3.5 sm:grid-cols-2",
                 children: [
-                  {
-                    key: "accounts",
+                  ...[
+                    {
+                      key: "accounts",
                     title: lang === "en" ? "Social Accounts" : "Tài khoản Mạng xã hội",
                     sub: `${formatMoney(rates.account, market)} / ${lang === "en" ? "channel" : "kênh"}`,
                     valText: `${cAccounts} ${lang === "en" ? "ch" : "kênh"}`,
@@ -1537,6 +2634,19 @@ function PricingSectionEnhanced({ lang }) {
                     val: cStorage,
                     setVal: setCStorage,
                     rangeText: "50 – 300 MB"
+                  },
+                  {
+                    key: "links",
+                    title: lang === "en" ? "Shortened Links (Shortlinks)" : "Rút gọn link & Đo lượt nhấp",
+                    sub: lang === "en" ? `${formatMoney(rates.linkStep, market)} / 10 links` : `${formatMoney(rates.linkStep, market)} / 10 link`,
+                    valText: `${cLinks} link`,
+                    cost: (cLinks / 10) * rates.linkStep,
+                    min: 0,
+                    max: 200,
+                    step: 10,
+                    val: cLinks,
+                    setVal: setCLinks,
+                    rangeText: "0 – 200 link"
                   }
                 ].map((item) => (
                   (0, f.jsxs)("div", {
@@ -1613,84 +2723,47 @@ function PricingSectionEnhanced({ lang }) {
                       })
                     ]
                   }, item.key)
-                ))
-              }),
+                )),
 
-              /* Add-on Packs Section */
-              (0, f.jsxs)("div", {
-                className: "mt-5 border-t border-zinc-100 pt-4",
-                children: [
-                  (0, f.jsx)("div", {
-                    className: "text-[11px] font-semibold uppercase tracking-wider text-zinc-400",
-                    children: lang === "en" ? "Optional Power-up Packs" : "Gói tính năng mở rộng (Tùy chọn thêm)"
-                  }),
-                  (0, f.jsxs)("div", {
-                    className: "mt-2.5 grid grid-cols-1 gap-3 sm:grid-cols-2",
-                    children: [
-                      {
-                        checked: cAutomation,
-                        toggle: () => setCAutomation(prev => !prev),
-                        title: lang === "en" ? "Automation Pack" : "Pack Tự Động Hóa",
-                        price: rates.automation,
-                        desc: lang === "en"
-                          ? "AI Autopilot + 200-row Excel import + 25 Evergreen posts"
-                          : "AI Autopilot + Nhập Excel 200 dòng + 25 bài lặp Evergreen"
-                      },
-                      {
-                        checked: cApproval,
-                        toggle: () => setCApproval(prev => !prev),
-                        title: lang === "en" ? "Approval & Links Pack" : "Pack Duyệt Bài & Link",
-                        price: rates.approval,
-                        desc: lang === "en"
-                          ? "Team Approval Workflow + 500 Tracked Shortlinks"
-                          : "Luồng duyệt bài Approval + 500 Tracked Shortlinks"
-                      }
-                    ].map((pack) => (
-                      (0, f.jsxs)("button", {
-                        type: "button",
-                        onClick: pack.toggle,
-                        className: `flex w-full items-start gap-3 rounded-xl border p-3.5 text-left outline-none focus:outline-none transition ${
-                          pack.checked
-                            ? "border-zinc-900 bg-brand-50/50 shadow-sm"
-                            : "border-zinc-200 bg-white hover:border-zinc-300"
-                        }`,
-                        children: [
-                          (0, f.jsx)("span", {
-                            className: `mt-0.5 grid size-4 shrink-0 place-items-center rounded border transition ${
-                              pack.checked
-                                ? "border-zinc-900 bg-zinc-900 text-brand-400"
-                                : "border-zinc-300 bg-white"
-                            }`,
-                            children: pack.checked && (0, f.jsx)(_e, { className: "size-3", strokeWidth: 3 })
-                          }),
-                          (0, f.jsxs)("div", {
-                            className: "min-w-0 flex-1",
-                            children: [
-                              (0, f.jsxs)("div", {
-                                className: "flex items-center justify-between gap-2",
-                                children: [
-                                  (0, f.jsx)("span", {
-                                    className: "text-[13px] font-semibold text-zinc-900",
-                                    children: pack.title
-                                  }),
-                                  (0, f.jsxs)("span", {
-                                    className: `rounded-md px-1.5 py-0.5 font-mono text-[11px] font-semibold ${
-                                      pack.checked ? "bg-brand-400 text-zinc-900" : "bg-zinc-100 text-zinc-700"
-                                    }`,
-                                    children: ["+", formatMoney(pack.price, market)]
-                                  })
-                                ]
-                              }),
-                              (0, f.jsx)("p", {
-                                className: "mt-1 text-[11.5px] leading-snug text-zinc-500",
-                                children: pack.desc
-                              })
-                            ]
-                          })
-                        ]
-                      }, pack.title)
-                    ))
-                  })
+                /* 6th Card in the 3x2 Grid: Included Features by Default */
+                (0, f.jsxs)("div", {
+                  className: "flex flex-col justify-between rounded-xl border border-emerald-200/80 bg-emerald-50/40 p-4",
+                  children: [
+                    (0, f.jsxs)("div", {
+                      className: "flex items-center justify-between gap-2",
+                      children: [
+                        (0, f.jsx)("span", {
+                          className: "text-[13px] font-semibold text-zinc-900",
+                          children: lang === "en" ? "Included by Default" : "Mặc định đã có sẵn"
+                        }),
+                        (0, f.jsx)("span", {
+                          className: "rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-800",
+                          children: lang === "en" ? "Free (0)" : "Miễn phí 0₫"
+                        })
+                      ]
+                    }),
+                    (0, f.jsx)("ul", {
+                      className: "mt-2 space-y-1 text-[11.5px] text-zinc-700",
+                      children: (lang === "en" ? [
+                        "AI Auto-Writer & Weekly Planner",
+                        "Multi-Channel & Drag-Drop Calendar",
+                        "Team Approval & Bulk Excel Import"
+                      ] : [
+                        "AI tự viết bài & Tự lên lịch cả tuần",
+                        "Đăng đa kênh & Lịch kéo thả trực quan",
+                        "Duyệt bài nhóm Teams & Nhập Excel"
+                      ]).map((featText) => (
+                        (0, f.jsxs)("li", {
+                          className: "flex items-center gap-1.5",
+                          children: [
+                            (0, f.jsx)(_e, { className: "size-3 shrink-0 text-emerald-600", strokeWidth: 2.5 }),
+                            (0, f.jsx)("span", { className: "truncate", children: featText })
+                          ]
+                        }, featText)
+                      ))
+                    })
+                  ]
+                })
                 ]
               })
             ]
@@ -1714,8 +2787,7 @@ function PricingSectionEnhanced({ lang }) {
                       setCSeats(1);
                       setCBrands(1);
                       setCStorage(50);
-                      setCAutomation(false);
-                      setCApproval(false);
+                      setCLinks(10);
                     },
                     className: "text-[11px] text-zinc-400 underline underline-offset-2 outline-none hover:text-white",
                     children: lang === "en" ? "Reset" : "Đặt lại"
@@ -1826,39 +2898,29 @@ function PricingSectionEnhanced({ lang }) {
                         className: "flex items-center gap-2 text-zinc-200",
                         children: [
                           (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
-                          lang === "en" ? "All 13 Core Tools & Visual Calendar" : "Đầy đủ 13 công cụ & Lịch kéo thả"
+                          `${cLinks} ${lang === "en" ? "Shortened Links" : "Link rút gọn & Đo lượt nhấp"}`
+                        ]
+                      }),
+                      (0, f.jsx)("span", {
+                        className: `font-mono font-semibold ${cLinks > 0 ? "text-white" : "text-emerald-400"}`,
+                        children: cLinks > 0 ? formatMoney((cLinks / 10) * rates.linkStep, market) : (lang === "en" ? "0" : "0₫")
+                      })
+                    ]
+                  }),
+                  (0, f.jsxs)("li", {
+                    className: "flex items-center justify-between gap-2",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "flex items-center gap-2 text-zinc-200",
+                        children: [
+                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
+                          lang === "en" ? "AI Auto-Writer & All Core Tools" : "AI tự viết bài & Đầy đủ công cụ"
                         ]
                       }),
                       (0, f.jsx)("span", {
                         className: "font-mono font-semibold text-emerald-400",
                         children: lang === "en" ? "Included" : "Đã gồm"
                       })
-                    ]
-                  }),
-                  cAutomation && (0, f.jsxs)("li", {
-                    className: "flex items-center justify-between gap-2 text-brand-300",
-                    children: [
-                      (0, f.jsxs)("span", {
-                        className: "flex items-center gap-2",
-                        children: [
-                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
-                          lang === "en" ? "Automation Pack (Autopilot & Excel)" : "Pack Tự Động Hóa (Autopilot & Excel)"
-                        ]
-                      }),
-                      (0, f.jsx)("span", { className: "font-mono font-semibold", children: formatMoney(rates.automation, market) })
-                    ]
-                  }),
-                  cApproval && (0, f.jsxs)("li", {
-                    className: "flex items-center justify-between gap-2 text-brand-300",
-                    children: [
-                      (0, f.jsxs)("span", {
-                        className: "flex items-center gap-2",
-                        children: [
-                          (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-brand-400", strokeWidth: 2.5 }),
-                          lang === "en" ? "Approval Workflow & 500 Shortlinks" : "Pack Duyệt Bài & 500 Shortlinks"
-                        ]
-                      }),
-                      (0, f.jsx)("span", { className: "font-mono font-semibold", children: formatMoney(rates.approval, market) })
                     ]
                   })
                 ]
@@ -1890,16 +2952,33 @@ function PricingSectionEnhanced({ lang }) {
               (0, f.jsxs)("div", {
                 className: "mt-5 pt-2",
                 children: [
-                  (0, f.jsx)("a", {
-                    href: Aa("create"),
+                  (0, f.jsx)("button", {
+                    type: "button",
+                    "data-internal-nav": "true",
+                    onClick: () => {
+                      setCheckoutItem({
+                        kind: "custom",
+                        planKey: "custom",
+                        planName: lang === "en" ? "Custom Cloud Plan" : "Gói Cloud Tự Thiết Kế",
+                        billingCycle: yearly ? "yearly" : "monthly",
+                        amount: customDisplayPrice,
+                        quotas: {
+                          brands: cBrands,
+                          accounts: cAccounts,
+                          seats: 1 + cSeats,
+                          storageMb: cStorage,
+                          links: cLinks
+                        }
+                      });
+                    },
                     className: "flex h-11 w-full items-center justify-center rounded-xl bg-brand-400 text-[13.5px] font-semibold text-zinc-900 transition hover:bg-brand-300",
                     children: lang === "en" ? "Activate Custom Plan" : "Đăng ký Gói Tự Thiết Kế này"
                   }),
                   (0, f.jsx)("p", {
                     className: "mt-2 text-center text-[11px] text-zinc-400",
                     children: lang === "en"
-                      ? "Signed SCW1 custom quota license · Adjust quotas anytime"
-                      : "Cấp mã SCW1 theo đúng hạn mức bạn chọn · Nâng/hạ bất cứ lúc nào"
+                      ? "Instant account activation + email receipt · Adjust quotas anytime"
+                      : "Kích hoạt tự động thẳng vào tài khoản + Gửi biên lai Email"
                   })
                 ]
               })
@@ -1912,16 +2991,71 @@ function PricingSectionEnhanced({ lang }) {
       mode === "desktop" && (0, f.jsxs)("div", {
         className: "mx-auto mt-10 max-w-6xl",
         children: [
-          (0, f.jsxs)("div", {
-            className: "mb-8 flex items-center justify-center gap-2.5 rounded-2xl border border-zinc-200 bg-zinc-50 p-5 text-center text-[13.5px] text-zinc-700",
-            children: [
-              (0, f.jsx)(ModeIcon, { type: "desktop", active: true }),
-              (0, f.jsx)("span", {
-                children: lang === "en"
-                  ? "Windows Desktop Edition (SC2): 100% local SQLite & unlimited hard-drive media vault · 0s upload wait · Windows DPAPI security · One-time payment includes perpetual ownership + 12 months of free updates (Optional Year 2+ Update Pass at ~25%)."
-                  : "Bản Windows Desktop (SC2): Lưu Database & Kho ảnh/video 4K KHÔNG GIỚI HẠN trực tiếp trên ổ cứng máy tính của bạn · Kéo thả 0 giây chờ upload · Bảo mật Windows DPAPI · Mua 1 lần sở hữu vĩnh viễn + Miễn phí 12 tháng cập nhật đầu (Từ năm thứ 2 dùng bản hiện tại mãi mãi hoặc mua Update Pass chỉ ~25%)."
-              })
-            ]
+          /* 4-Column Desktop Highlight Strip with Bold Key Advantages */
+          (0, f.jsx)("div", {
+            className: "mb-8 grid grid-cols-1 gap-3 rounded-2xl border border-zinc-200 bg-white p-3.5 shadow-sm sm:grid-cols-2 lg:grid-cols-4",
+            children: (lang === "en" ? [
+              {
+                title: "Unlimited 4K Media Vault",
+                desc: ["Stored directly on your hard drive with ", "0s upload wait", " & offline drafting."]
+              },
+              {
+                title: "One-Time · Own Forever",
+                desc: ["Pay once for ", "perpetual ownership", " + ", "12 months of free updates", " included."]
+              },
+              {
+                title: "Optional Year 2+ Update (~25%)",
+                desc: ["Never forced to renew — ", "keep using your current version forever", " or renew at ~25%."]
+              },
+              {
+                title: "100% Local & DPAPI Security",
+                desc: ["Local SQLite database, ", "Windows DPAPI encryption", ", and unlimited ", "AI BYOK", "."]
+              }
+            ] : [
+              {
+                title: "Kho Media 4K Không Giới Hạn",
+                desc: ["Lưu trực tiếp trên ổ cứng máy tính, ", "kéo thả 0 giây chờ upload", ", làm việc cả khi Offline."]
+              },
+              {
+                title: "Mua 1 Lần · Sở Hữu Vĩnh Viễn",
+                desc: ["Thanh toán 1 lần ", "dùng trọn đời", ", tặng kèm ", "12 tháng cập nhật miễn phí", " đầu tiên."]
+              },
+              {
+                title: "Update Năm 2+ Chỉ ~25% (Tùy Chọn)",
+                desc: ["Không bắt buộc gia hạn — ", "dùng bản hiện tại mãi mãi", " hoặc mua Update Pass chỉ ", "~25% giá gốc", "."]
+              },
+              {
+                title: "Bảo Mật Cục Bộ Windows DPAPI",
+                desc: ["Database SQLite & khóa ", "AI BYOK không giới hạn", " nằm ", "100% trên máy tính của bạn", "."]
+              }
+            ]).map((hl) => (
+              (0, f.jsxs)("div", {
+                className: "flex items-start gap-3 rounded-xl border border-zinc-100 bg-zinc-50/70 p-3.5",
+                children: [
+                  (0, f.jsx)("span", {
+                    className: "mt-0.5 grid size-7 shrink-0 place-items-center rounded-lg bg-zinc-900 text-brand-400",
+                    children: (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 })
+                  }),
+                  (0, f.jsxs)("div", {
+                    className: "min-w-0 text-left",
+                    children: [
+                      (0, f.jsx)("div", {
+                        className: "text-[13px] font-bold text-zinc-900",
+                        children: hl.title
+                      }),
+                      (0, f.jsx)("p", {
+                        className: "mt-1 text-[11.5px] leading-relaxed text-zinc-600",
+                        children: hl.desc.map((part, idx) =>
+                          idx % 2 === 1
+                            ? (0, f.jsx)("strong", { className: "font-semibold text-zinc-900", children: part }, idx)
+                            : part
+                        )
+                      })
+                    ]
+                  })
+                ]
+              }, hl.title)
+            ))
           }),
           (0, f.jsx)("div", {
             className: "grid grid-cols-1 gap-5 md:grid-cols-3",
@@ -1981,9 +3115,22 @@ function PricingSectionEnhanced({ lang }) {
                       ? `Year 2+ Update Pass (Optional ~25%): ${formatMoney(pObj.update, market)}/yr`
                       : `Gia hạn Update năm thứ 2+ (Tùy chọn ~25%): ${formatMoney(pObj.update, market)}/năm`
                   }),
-                  (0, f.jsx)("a", {
-                    href: Aa("login"),
-                    className: `mt-6 flex h-10 items-center justify-center rounded-xl text-[13px] font-semibold transition ${
+                  (0, f.jsx)("button", {
+                    type: "button",
+                    "data-internal-nav": "true",
+                    onClick: () => {
+                      let devCount = dPlan.key === "desktop-agency" ? 5 : dPlan.key === "desktop-pro" ? 2 : 1;
+                      setCheckoutItem({
+                        kind: "desktop",
+                        planKey: dPlan.key,
+                        planName: dName,
+                        devicesCount: devCount,
+                        devicesLabel: dDevices,
+                        amount: pObj.once,
+                        updatePassAmount: pObj.update
+                      });
+                    },
+                    className: `mt-6 flex h-10 w-full items-center justify-center rounded-xl text-[13px] font-semibold transition ${
                       dPlan.popular
                         ? "bg-brand-400 text-zinc-900 hover:bg-brand-300"
                         : "border border-zinc-200 bg-zinc-50 text-zinc-900 hover:bg-zinc-100"
@@ -2015,6 +3162,33 @@ function PricingSectionEnhanced({ lang }) {
             })
           })
         ]
+      }),
+
+      /* Detailed Feature Comparison Table (on dedicated /pricing page) or CTA to open /pricing */
+      isDedicatedPage
+        ? (0, f.jsx)(PricingComparisonTable, { lang, market, yearly, setMode, onSelectPlan: setCheckoutItem })
+        : (0, f.jsx)("div", {
+            className: "mx-auto mt-12 flex max-w-6xl justify-center",
+            children: (0, f.jsxs)("button", {
+              type: "button",
+              "data-internal-nav": "true",
+              onClick: () => onOpenPricingPage && onOpenPricingPage(true),
+              className: "group inline-flex items-center gap-2.5 rounded-2xl border border-zinc-200 bg-white px-6 py-3.5 text-[13.5px] font-semibold text-zinc-900 shadow-sm transition hover:border-zinc-900 hover:bg-zinc-900 hover:text-white",
+              children: [
+                lang === "en"
+                  ? "View full Pricing Page & Compare all 22+ features"
+                  : "Xem trang Bảng giá riêng & Bảng so sánh chi tiết 22+ tính năng",
+                (0, f.jsx)(Ta, { className: "size-4 transition-transform group-hover:translate-x-0.5" })
+              ]
+            })
+          }),
+
+      /* Hybrid Checkout Modal (Cloud Auto-Activate vs Desktop License Key + Email) */
+      checkoutItem && (0, f.jsx)(HybridCheckoutModal, {
+        item: checkoutItem,
+        lang,
+        market,
+        onClose: () => setCheckoutItem(null)
       })
     ]
   });
@@ -2029,6 +3203,68 @@ var OC_EN = [
   { q: "Are my accounts and data secure?", a: "SocialChoice connects via official partner APIs and never stores your social media passwords. You can revoke access at any time." }
 ];
 
+var PRICING_FAQ_VI = [
+  {
+    q: "Gói Cloud Web, Tự thiết kế gói và Bản Desktop (SC2) khác nhau như thế nào?",
+    a: "Gói Cloud Web (Free, Starter, Pro, Business) và Tự thiết kế chạy trực tiếp trên trình duyệt, lưu dữ liệu đám mây, có máy chủ tự động đăng bài 24/7 kể cả khi bạn tắt máy và hỗ trợ làm việc nhóm (Teams). Trong khi đó, Bản Windows Desktop (SC2) là phần mềm cài trên máy tính, mua đứt 1 lần không thu phí tháng, lưu toàn bộ cơ sở dữ liệu và kho ảnh/video 4K không giới hạn ngay trên ổ cứng của bạn."
+  },
+  {
+    q: "Cách tính phí của mục 'Tự thiết kế gói' (Custom Builder) hoạt động ra sao?",
+    a: "Bạn chỉ trả tiền cho đúng hạn mức mình chọn: 15.000₫/tài khoản MXH, 30.000₫/thành viên Teams mở rộng, 20.000₫/Thương hiệu thêm (miễn phí Brand đầu), 20.000₫/50MB bộ nhớ đệm thêm (có sẵn 50MB) và 5.000₫/10 link rút gọn. Đặc biệt, khi tổng các mục bạn chọn đạt từ 150.000₫/tháng trở lên, phí nền tảng cơ bản (49.000₫/tháng) được MIỄN PHÍ hoàn toàn (0₫)."
+  },
+  {
+    q: "Sau khi thanh toán thì gói cước được kích hoạt như thế nào?",
+    a: "Với Gói Cloud & Tự thiết kế: Hệ thống tự động nâng cấp thẳng vào tài khoản bạn đang đăng nhập ngay lập tức (trong 2–3 giây sau khi quét mã VietQR hoặc thanh toán thẻ quốc tế) kèm biên lai gửi qua Email. Với Bản Desktop (SC2): Bạn nhận ngay mã bản quyền (SC2-...) và bộ cài đặt trên màn hình, đồng thời hệ thống gửi kèm mã qua Email để bạn lưu trữ và kích hoạt trên máy tính."
+  },
+  {
+    q: "Bản Desktop 'Mua 1 lần sở hữu vĩnh viễn' và 'Update Pass ~25%' nghĩa là gì?",
+    a: "Khi mua Bản Desktop (Solo 1 máy, Pro 2 máy hoặc Agency 5 máy), bạn sở hữu phần mềm vĩnh viễn và được miễn phí 100% các bản cập nhật trong 12 tháng đầu tiên. Từ năm thứ 2 trở đi, bạn có toàn quyền dùng phiên bản hiện tại mãi mãi mà không tốn thêm đồng nào, hoặc tùy chọn mua gói gia hạn cập nhật (Update Pass chỉ bằng ~25% giá gốc) nếu muốn nhận các tính năng mới."
+  },
+  {
+    q: "Bộ nhớ đệm Ảnh/Video chờ đăng (Staging Media) trên Cloud có bị đầy dồn theo thời gian không?",
+    a: "Không bị đầy dồn. Bộ nhớ đệm trên Cloud chỉ dùng để giữ các tệp ảnh/video của những bài đang chờ hẹn giờ đăng. Ngay sau khi bài viết đã đăng thành công lên mạng xã hội, hệ thống sẽ tự động giải phóng dung lượng đệm (ngay lập tức ở gói Free, hoặc sau 24h – 30 ngày ở các gói trả phí) để bạn luôn có trống dung lượng tải tệp mới cho các tuần tiếp theo."
+  },
+  {
+    q: "Khi tôi dùng tính năng điều khiển qua AI MCP (Claude / ChatGPT) thì tính hạn mức thế nào?",
+    a: "Toàn bộ thao tác thực hiện qua giao thức MCP (như bảo Claude/ChatGPT lên lịch bài đăng, tạo link rút gọn, quản lý Brand) đều xác thực trực tiếp vào tài khoản của bạn và đồng bộ 100% bộ đếm hạn mức với giao diện Web. Nhờ đó quyền lợi và giới hạn của từng gói luôn minh bạch, nhất quán trên mọi nền tảng."
+  },
+  {
+    q: "Tôi có thể nâng cấp đổi gói giữa chừng hoặc hủy gia hạn bất cứ lúc nào không?",
+    a: "Hoàn toàn được. Bạn có thể nâng cấp lên gói cao hơn, kéo thêm hạn mức ở gói Tự thiết kế hoặc hủy gia hạn tự động bất cứ lúc nào trong mục Cài đặt. Khi hủy, tài khoản của bạn vẫn giữ nguyên đầy đủ quyền lợi của gói đã mua cho đến hết chu kỳ thanh toán hiện tại."
+  }
+];
+
+var PRICING_FAQ_EN = [
+  {
+    q: "What is the difference between Cloud Plans, Custom Builder, and the Desktop Edition (SC2)?",
+    a: "Cloud Plans (Free, Starter, Pro, Business) and Custom Builder run in the browser with 24/7 cloud auto-publishing (even when your PC is off) and multi-user Teams collaboration. The Windows Desktop Edition (SC2) is a one-time perpetual purchase installed on your computer with unlimited local hard-drive storage for 4K photos/videos and local Windows DPAPI encryption."
+  },
+  {
+    q: "How does Custom Builder pricing work?",
+    a: "You slide and pay only for the exact quotas you need: $1/social account, $3/extra team seat, $1.50/extra brand (1st brand is free), $1.50/extra 50MB staging media (50MB included), and $0.50/10 tracked shortlinks. Once your selected items reach $15/mo or more, the $5/mo base platform fee is automatically waived to $0!"
+  },
+  {
+    q: "How is my plan activated after payment?",
+    a: "For Cloud & Custom plans: Your logged-in web account is upgraded automatically within 2–3 seconds of completing VietQR or card checkout, with a receipt sent to your email. For the Desktop Edition (SC2): Your license key (SC2-...) and Windows installer are displayed immediately on screen and emailed to you for safekeeping."
+  },
+  {
+    q: "What does 'One-Time Purchase · Perpetual Ownership' and '~25% Update Pass' mean on Desktop?",
+    a: "Your one-time Desktop purchase includes perpetual ownership plus 12 months of free software updates. Starting in Year 2, you can continue using your current version forever at $0 extra cost, or optionally purchase an annual Update Pass at ~25% of the base price whenever you want new feature releases."
+  },
+  {
+    q: "Will my Cloud Staging Media storage fill up over time?",
+    a: "No. Staging Media only holds photos and videos for posts waiting to be published. Once a scheduled post is published to social networks, its staging media is automatically released (immediately on Free, or after 24h–30 days on paid plans) so your storage stays fresh week after week."
+  },
+  {
+    q: "How do quotas work when using the AI MCP Connector (Claude / ChatGPT / Cursor)?",
+    a: "Every action performed via the MCP Connector authenticates against your account and shares the exact same real-time quota counters as the Web app (scheduled posts, connected accounts, brands, shortlinks)."
+  },
+  {
+    q: "Can I upgrade, customize quotas, or cancel my subscription anytime?",
+    a: "Yes. You can upgrade plans, adjust Custom Builder sliders, or cancel auto-renewal at any time from Settings. When canceled, your paid features remain active until the end of the current billing period."
+  }
+];
+
 var pg_EN = [["gioi-thieu", "About"], ["diem-manh", "Highlights"], ["tinh-nang", "Features"], ["bang-gia", "Pricing"], ["faq", "FAQ"]];
 
 function Sr(){
@@ -2041,13 +3277,84 @@ function Sr(){
     } catch(e) {}
     if (typeof document !== "undefined") document.documentElement.lang = l;
   };
+  let [currentPage, setCurrentPage] = (0, fe.useState)(() => {
+    if (typeof window !== "undefined") {
+      let p = window.location.pathname;
+      let h = window.location.hash;
+      if (p === "/pricing" || p === "/bang-gia" || h === "#/pricing" || h === "#/bang-gia") {
+        return "pricing";
+      }
+    }
+    return "home";
+  });
+
+  (0, fe.useEffect)(() => {
+    let syncRoute = () => {
+      let p = window.location.pathname;
+      let h = window.location.hash;
+      if (p === "/pricing" || p === "/bang-gia" || h === "#/pricing" || h === "#/bang-gia") {
+        setCurrentPage("pricing");
+      } else {
+        setCurrentPage("home");
+      }
+    };
+    window.addEventListener("popstate", syncRoute);
+    return () => window.removeEventListener("popstate", syncRoute);
+  }, []);
+
+  let openPricingPage = (scrollToTable = false) => {
+    setCurrentPage("pricing");
+    if (typeof window !== "undefined" && window.location.pathname !== "/pricing") {
+      window.history.pushState(null, "", "/pricing");
+    }
+    if (scrollToTable) {
+      setTimeout(() => {
+        document.getElementById("so-sanh-tinh-nang")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 60);
+    } else {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  let handleNavClick = (sectionId) => {
+    if (sectionId === "bang-gia") {
+      openPricingPage(false);
+      return;
+    }
+    if (currentPage === "pricing") {
+      if (sectionId === "faq") {
+        gr("faq");
+        return;
+      }
+      setCurrentPage("home");
+      if (typeof window !== "undefined") {
+        window.history.pushState(null, "", "/#" + sectionId);
+      }
+      setTimeout(() => gr(sectionId), 60);
+      return;
+    }
+    gr(sectionId);
+  };
+
+  let goHomeTop = () => {
+    if (currentPage !== "home") {
+      setCurrentPage("home");
+      if (typeof window !== "undefined") {
+        window.history.pushState(null, "", "/");
+      }
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   let [e, a] = (0, fe.useState)(!0);
   let [t, l] = (0, fe.useState)(0);
   let [u, o] = (0, fe.useState)(!1);
   let d = bC();
 
   let navItems = lang === "en" ? pg_EN : pg;
-  let faqItems = lang === "en" ? OC_EN : OC;
+  let faqItems = currentPage === "pricing"
+    ? (lang === "en" ? PRICING_FAQ_EN : PRICING_FAQ_VI)
+    : (lang === "en" ? OC_EN : OC);
 
   let footerCols = lang === "en" ? [
     ["Product", ["Features", "Pricing", "Changelog", "AI Assistant"]],
@@ -2069,12 +3376,22 @@ function Sr(){
           (0, f.jsxs)("div", {
             className: "mx-auto flex h-16 max-w-6xl items-center justify-between px-6",
             children: [
-              (0, f.jsx)("button", { onClick: () => window.scrollTo({ top: 0, behavior: "smooth" }), children: (0, f.jsx)(pr, {}) }),
+              (0, f.jsx)("button", { "data-internal-nav": "true", onClick: goHomeTop, children: (0, f.jsx)(pr, {}) }),
               (0, f.jsx)("nav", {
                 className: "hidden items-center gap-1 lg:flex",
-                children: navItems.map(([s, n]) => (
-                  (0, f.jsx)("button", { onClick: () => gr(s), className: "rounded-lg px-3 py-1.5 text-[13px] text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900", children: n }, s)
-                ))
+                children: navItems.map(([s, n]) => {
+                  let isActivePricing = s === "bang-gia" && currentPage === "pricing";
+                  return (0, f.jsx)("button", {
+                    "data-internal-nav": "true",
+                    onClick: () => handleNavClick(s),
+                    className: `rounded-lg px-3 py-1.5 text-[13px] transition ${
+                      isActivePricing
+                        ? "bg-zinc-900 font-semibold text-white"
+                        : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900"
+                    }`,
+                    children: n
+                  }, s);
+                })
               }),
               (0, f.jsxs)("div", {
                 className: "hidden items-center gap-2 lg:flex",
@@ -2084,12 +3401,14 @@ function Sr(){
                     children: [
                       (0, f.jsx)("button", {
                         type: "button",
+                        "data-internal-nav": "true",
                         onClick: () => handleSetLang("vi"),
                         className: `rounded-md px-2 py-0.5 transition ${lang === "vi" ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`,
                         children: "VI"
                       }),
                       (0, f.jsx)("button", {
                         type: "button",
+                        "data-internal-nav": "true",
                         onClick: () => handleSetLang("en"),
                         className: `rounded-md px-2 py-0.5 transition ${lang === "en" ? "bg-white text-zinc-950 shadow-sm" : "text-zinc-500 hover:text-zinc-900"}`,
                         children: "EN"
@@ -2100,14 +3419,14 @@ function Sr(){
                   (0, f.jsxs)("a", { href: Aa("create"), className: "flex h-9 items-center gap-1.5 rounded-lg bg-brand-400 px-3.5 text-[13px] font-semibold text-zinc-900 transition hover:bg-brand-300", children: [lang === "en" ? "Try free" : "Dùng miễn phí", " ", (0, f.jsx)(Ta, { className: "size-3.5" })] })
                 ]
               }),
-              (0, f.jsx)("button", { onClick: () => o(s => !s), className: "grid size-9 place-items-center rounded-lg hover:bg-zinc-100 lg:hidden", children: u ? (0, f.jsx)(ll, { className: "size-5" }) : (0, f.jsx)(Dl, { className: "size-5" }) })
+              (0, f.jsx)("button", { "data-internal-nav": "true", onClick: () => o(s => !s), className: "grid size-9 place-items-center rounded-lg hover:bg-zinc-100 lg:hidden", children: u ? (0, f.jsx)(ll, { className: "size-5" }) : (0, f.jsx)(Dl, { className: "size-5" }) })
             ]
           }),
           u && (0, f.jsxs)("div", {
             className: "border-t border-zinc-100 px-6 py-3 lg:hidden",
             children: [
               navItems.map(([s, n]) => (
-                (0, f.jsx)("button", { onClick: () => { o(!1); gr(s); }, className: "block w-full py-2 text-left text-[14px] text-zinc-700", children: n }, s)
+                (0, f.jsx)("button", { "data-internal-nav": "true", onClick: () => { o(!1); handleNavClick(s); }, className: `block w-full py-2 text-left text-[14px] ${s === "bang-gia" && currentPage === "pricing" ? "font-bold text-zinc-950" : "text-zinc-700"}`, children: n }, s)
               )),
               (0, f.jsxs)("div", {
                 className: "my-2 flex items-center justify-between border-y border-zinc-100 py-2.5",
@@ -2138,7 +3457,7 @@ function Sr(){
           })
         ]
       }),
-      (0, f.jsxs)("section", {
+      currentPage === "home" && (0, f.jsxs)("section", {
         className: "relative isolate overflow-hidden px-6 pb-20 pt-12 sm:pt-16",
         children: [
           (0, f.jsx)("div", { className: "pointer-events-none absolute right-[-10%] top-[-120px] -z-10 h-[620px] w-[760px] rounded-full bg-[radial-gradient(closest-side,rgba(253,216,53,0.5),rgba(253,216,53,0.12)_60%,transparent)] blur-2xl" }),
@@ -2239,7 +3558,7 @@ function Sr(){
           })
         ]
       }),
-      (0, f.jsx)("section", {
+      currentPage === "home" && (0, f.jsx)("section", {
         id: "gioi-thieu",
         className: "scroll-mt-16 border-t border-zinc-100 bg-zinc-50/60 px-6 py-24",
         children: (0, f.jsxs)("div", {
@@ -2305,53 +3624,74 @@ function Sr(){
           ]
         })
       }),
-      (0, f.jsx)(ng, {}),
-      (0, f.jsx)(ig, {}),
-      (0, f.jsx)(PricingSectionEnhanced, { lang }),
-      (0, f.jsxs)("section", {
+      currentPage === "home" && (0, f.jsx)(ng, {}),
+      currentPage === "home" && (0, f.jsx)(ig, {}),
+      currentPage === "pricing" && (0, f.jsx)(PricingSectionEnhanced, {
+        lang,
+        isDedicatedPage: true,
+        onOpenPricingPage: openPricingPage
+      }),
+      (0, f.jsx)("section", {
         id: "faq",
         className: "scroll-mt-16 border-t border-zinc-100 bg-zinc-50/60 px-6 py-24",
-        children: [
-          (0, f.jsxs)("div", {
-            className: "reveal",
-            children: [
-              (0, f.jsx)(vr, { children: "FAQ" }),
-              (0, f.jsx)("h2", { className: "mt-4 text-3xl font-semibold tracking-tight sm:text-4xl", children: lang === "en" ? "Frequently Asked Questions" : "Câu hỏi thường gặp" }),
-              (0, f.jsx)("p", { className: "mt-4 text-[15px] leading-relaxed text-zinc-500", children: lang === "en" ? "Can't find your answer? Our support team responds within 2 business hours." : "Không tìm thấy câu trả lời? Đội ngũ hỗ trợ của chúng tôi phản hồi trong vòng 2 giờ làm việc." }),
-              (0, f.jsxs)("a", {
-                href: "mailto:hello@socialchoice.site",
-                className: "mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-zinc-900 underline decoration-brand-400 decoration-2 underline-offset-4",
-                children: ["hello@socialchoice.site ", (0, f.jsx)(Ta, { className: "size-3.5" })]
+        children: (0, f.jsxs)("div", {
+          className: "mx-auto grid max-w-6xl grid-cols-1 gap-10 lg:grid-cols-[1fr_1.6fr]",
+          children: [
+            (0, f.jsxs)("div", {
+              className: "reveal",
+              children: [
+                (0, f.jsx)(vr, { children: currentPage === "pricing" ? (lang === "en" ? "Pricing FAQ" : "Giải đáp về gói cước") : "FAQ" }),
+                (0, f.jsx)("h2", {
+                  className: "mt-4 text-3xl font-semibold tracking-tight sm:text-4xl",
+                  children: currentPage === "pricing"
+                    ? (lang === "en" ? "Questions about plans & billing" : "Câu hỏi thường gặp về các gói")
+                    : (lang === "en" ? "Frequently Asked Questions" : "Câu hỏi thường gặp")
+                }),
+                (0, f.jsx)("p", {
+                  className: "mt-4 text-[15px] leading-relaxed text-zinc-500",
+                  children: currentPage === "pricing"
+                    ? (lang === "en"
+                        ? "Everything you need to know about Cloud quotas, Custom Builder sliders, Desktop licenses, and upgrades."
+                        : "Giải đáp chi tiết về hạn mức các gói Cloud, cách tính tiền gói Tự thiết kế, bản quyền Desktop và chính sách nâng cấp.")
+                    : (lang === "en"
+                        ? "Can't find your answer? Our support team responds within 2 business hours."
+                        : "Không tìm thấy câu trả lời? Đội ngũ hỗ trợ của chúng tôi phản hồi trong vòng 2 giờ làm việc.")
+                }),
+                (0, f.jsxs)("a", {
+                  href: "mailto:hello@socialchoice.site",
+                  className: "mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-zinc-900 underline decoration-brand-400 decoration-2 underline-offset-4",
+                  children: ["hello@socialchoice.site ", (0, f.jsx)(Ta, { className: "size-3.5" })]
+                })
+              ]
+            }),
+            (0, f.jsx)("div", {
+              style: Pe(150),
+              className: "reveal divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white",
+              children: faqItems.map((s, n) => {
+                let i = t === n;
+                return (0, f.jsxs)("div", {
+                  children: [
+                    (0, f.jsxs)("button", {
+                      onClick: () => l(i ? null : n),
+                      className: "flex w-full items-center justify-between gap-4 px-6 py-5 text-left",
+                      children: [
+                        (0, f.jsx)("span", { className: "text-[14px] font-medium", children: s.q }),
+                        (0, f.jsx)("span", {
+                          className: `grid size-6 shrink-0 place-items-center rounded-full transition ${i ? "bg-brand-400" : "bg-zinc-100"}`,
+                          children: (0, f.jsx)(Jo, { className: `size-3.5 transition ${i ? "rotate-180" : ""}` })
+                        })
+                      ]
+                    }),
+                    (0, f.jsx)("div", {
+                      className: `grid transition-all duration-300 ${i ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`,
+                      children: (0, f.jsx)("div", { className: "overflow-hidden", children: (0, f.jsx)("p", { className: "px-6 pb-5 text-[13.5px] leading-relaxed text-zinc-500", children: s.a }) })
+                    })
+                  ]
+                }, s.q);
               })
-            ]
-          }),
-          (0, f.jsx)("div", {
-            style: Pe(150),
-            className: "reveal divide-y divide-zinc-200 rounded-2xl border border-zinc-200 bg-white",
-            children: faqItems.map((s, n) => {
-              let i = t === n;
-              return (0, f.jsxs)("div", {
-                children: [
-                  (0, f.jsxs)("button", {
-                    onClick: () => l(i ? null : n),
-                    className: "flex w-full items-center justify-between gap-4 px-6 py-5 text-left",
-                    children: [
-                      (0, f.jsx)("span", { className: "text-[14px] font-medium", children: s.q }),
-                      (0, f.jsx)("span", {
-                        className: `grid size-6 shrink-0 place-items-center rounded-full transition ${i ? "bg-brand-400" : "bg-zinc-100"}`,
-                        children: (0, f.jsx)(Jo, { className: `size-3.5 transition ${i ? "rotate-180" : ""}` })
-                      })
-                    ]
-                  }),
-                  (0, f.jsx)("div", {
-                    className: `grid transition-all duration-300 ${i ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`,
-                    children: (0, f.jsx)("div", { className: "overflow-hidden", children: (0, f.jsx)("p", { className: "px-6 pb-5 text-[13.5px] leading-relaxed text-zinc-500", children: s.a }) })
-                  })
-                ]
-              }, s.q);
             })
-          })
-        ]
+          ]
+        })
       }),
       (0, f.jsx)(mg, {}),
       (0, f.jsxs)("footer", {
@@ -2363,7 +3703,7 @@ function Sr(){
               (0, f.jsxs)("div", {
                 className: "col-span-2",
                 children: [
-                  (0, f.jsx)(pr, {}),
+                  (0, f.jsx)("button", { "data-internal-nav": "true", onClick: goHomeTop, children: (0, f.jsx)(pr, {}) }),
                   (0, f.jsx)("p", { className: "mt-3 max-w-xs text-[13px] leading-relaxed text-zinc-500", children: lang === "en" ? "Unified multi-channel social media management and publishing platform." : "Nền tảng quản lý và đăng bài mạng xã hội cho thương hiệu Việt." })
                 ]
               }),
@@ -2374,7 +3714,7 @@ function Sr(){
                     (0, f.jsx)("ul", {
                       className: "mt-3 space-y-2",
                       children: n.map(i => {
-                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : (i === "Xóa dữ liệu" || i === "Data Deletion") ? "/data-deletion" : (i === "Tính năng" || i === "Features") ? "#tinh-nang" : (i === "Bảng giá" || i === "Pricing") ? "#bang-gia" : (i === "Cập nhật" || i === "Updates") ? "#diem-manh" : (i === "Trợ lý AI" || i === "AI Assistant") ? "/login" : (i === "Về chúng tôi" || i === "About Us") ? "#diem-manh" : (i === "Blog") ? "#diem-manh" : (i === "Tuyển dụng" || i === "Careers") ? "mailto:contact@socialchoice.site" : (i === "Liên hệ" || i === "Contact") ? "mailto:hello@socialchoice.site" : null;
+                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : (i === "Xóa dữ liệu" || i === "Data Deletion") ? "/data-deletion" : (i === "Tính năng" || i === "Features") ? "#tinh-nang" : (i === "Bảng giá" || i === "Pricing") ? "/pricing" : (i === "Cập nhật" || i === "Updates") ? "#diem-manh" : (i === "Trợ lý AI" || i === "AI Assistant") ? "/login" : (i === "Về chúng tôi" || i === "About Us") ? "#diem-manh" : (i === "Blog") ? "#diem-manh" : (i === "Tuyển dụng" || i === "Careers") ? "mailto:contact@socialchoice.site" : (i === "Liên hệ" || i === "Contact") ? "mailto:hello@socialchoice.site" : null;
                         return (0, f.jsx)("li", {
                           className: "text-[13px] text-zinc-500 transition hover:text-zinc-900",
                           children: u ? (0, f.jsx)("a", { href: u, className: "hover:text-zinc-900 transition", children: i }) : i

@@ -78,6 +78,8 @@ export default function App() {
                             {/* Public routes — accessible immediately without auth */}
                             <Route path="/" element={<LandingPage />} />
                             <Route path="/landing" element={<LandingPage />} />
+                            <Route path="/pricing" element={<LandingPage />} />
+                            <Route path="/bang-gia" element={<LandingPage />} />
                             <Route path="/landing-2" element={<LandingPage2 />} />
                             <Route path="/strategy-2" element={<ContentStrategy2 />} />
                             <Route path="/login" element={<LoginPage />} />

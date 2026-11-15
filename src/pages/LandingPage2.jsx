@@ -287,13 +287,12 @@ function PricingWorkspaceSection() {
     const [cSeats, setCSeats] = useState(1);
     const [cBrands, setCBrands] = useState(1);
     const [cStorage, setCStorage] = useState(50);
-    const [cAutomation, setCAutomation] = useState(false);
-    const [cApproval, setCApproval] = useState(false);
+    const [cLinks, setCLinks] = useState(10);
 
     const rates = {
-        vn: { base: 49000, freeThreshold: 150000, account: 15000, seat: 30000, brand: 20000, storageStep: 20000, automation: 40000, approval: 35000, proMonthly: 199000 },
-        intl: { base: 5, freeThreshold: 15, account: 1, seat: 3, brand: 1.5, storageStep: 1.5, automation: 4, approval: 3.5, proMonthly: 19 },
-        whop: { base: 9, freeThreshold: 25, account: 1.5, seat: 5, brand: 2, storageStep: 2.5, automation: 6, approval: 5, proMonthly: 29 },
+        vn: { base: 49000, freeThreshold: 150000, account: 15000, seat: 30000, brand: 20000, storageStep: 20000, linkStep: 5000, proMonthly: 199000 },
+        intl: { base: 5, freeThreshold: 15, account: 1, seat: 3, brand: 1.5, storageStep: 1.5, linkStep: 0.5, proMonthly: 19 },
+        whop: { base: 9, freeThreshold: 25, account: 1.5, seat: 5, brand: 2, storageStep: 2.5, linkStep: 0.5, proMonthly: 29 },
     }[market];
 
     const itemsSubtotal =
@@ -301,12 +300,11 @@ function PricingWorkspaceSection() {
         cSeats * rates.seat +
         Math.max(0, cBrands - 1) * rates.brand +
         Math.max(0, (cStorage - 50) / 50) * rates.storageStep +
-        (cAutomation ? rates.automation : 0) +
-        (cApproval ? rates.approval : 0);
+        (cLinks / 10) * rates.linkStep;
 
     const appliedBase = itemsSubtotal >= rates.freeThreshold ? 0 : rates.base;
     const customMonthly = itemsSubtotal + appliedBase;
-    const fitsInPro = cAccounts <= 20 && cBrands <= 5 && cSeats <= 2 && cStorage <= 150 && !cApproval;
+    const fitsInPro = cAccounts <= 20 && cBrands <= 5 && cSeats <= 2 && cStorage <= 150 && cLinks <= 250;
     const showProUpsell = fitsInPro && customMonthly > rates.proMonthly;
 
     return (
@@ -486,17 +484,29 @@ function PricingWorkspaceSection() {
                                     className="w-full"
                                 />
                             </div>
-                        </div>
 
-                        <div className="grid gap-3 pt-1 text-sm sm:grid-cols-2">
-                            <label className="flex items-start gap-2 rounded-lg border bg-surface p-3">
-                                <input type="checkbox" checked={cAutomation} onChange={e => setCAutomation(e.target.checked)} className="mt-1" />
-                                <span>Pack Tự Động Hóa (+{formatPriceValue(rates.automation, market)}): AI Autopilot + Excel 200 dòng</span>
-                            </label>
-                            <label className="flex items-start gap-2 rounded-lg border bg-surface p-3">
-                                <input type="checkbox" checked={cApproval} onChange={e => setCApproval(e.target.checked)} className="mt-1" />
-                                <span>Pack Duyệt Bài & Link (+{formatPriceValue(rates.approval, market)}): Approval + 500 Shortlinks</span>
-                            </label>
+                            <div className="rounded-lg border bg-surface p-3.5">
+                                <Label htmlFor="custom-links" className="label-xs mb-1.5 block">
+                                    Rút gọn link & Đo lượt nhấp ({formatPriceValue(rates.linkStep, market)}/10 link): {cLinks} link
+                                </Label>
+                                <input
+                                    id="custom-links"
+                                    type="range"
+                                    min={0}
+                                    max={200}
+                                    step={10}
+                                    value={cLinks}
+                                    onChange={e => setCLinks(Number(e.target.value))}
+                                    className="w-full"
+                                />
+                            </div>
+
+                            <div className="rounded-lg border bg-surface p-3.5 text-xs">
+                                <div className="font-medium">Mặc định đã có sẵn (0₫)</div>
+                                <div className="mt-1 text-muted-foreground">
+                                    ✓ AI tự viết bài & lên lịch · ✓ Đăng đa kênh · ✓ Duyệt bài nhóm Teams & Nhập Excel
+                                </div>
+                            </div>
                         </div>
                     </div>
 

@@ -58,15 +58,14 @@ Dành cho khách hàng có nhu cầu đặc thù (ví dụ: chỉ làm 1 mình n
 
 ### 4.1. Bảng đơn giá từng thành phần (Cộng dồn tự động)
 
-| Hạng mục trong Custom Builder | Đơn giá Việt Nam (VNĐ/tháng) | Đơn giá Quốc Tế (USD/tháng) | Đơn giá Add-on trên Whop | Quyền lợi đi kèm |
-| :--- | :--- | :--- | :--- | :--- |
-| **0. Phí nền tảng cơ bản (`Base Fee`)** *(Miễn phí khi chọn từ 150k / \$15)* | **49.000đ** *(Miễn phí từ 150k)* | **\$5.00** *(Miễn phí từ \$15)* | **\$9.00** *(Miễn phí từ \$25)* | Đã gồm: 1 Brand, 1 Owner, Calendar, Pillars/Angles, Templates, Interactive Images, 50MB đệm Media |
-| **1. Tài khoản MXH (`Social Accounts`)** | **+15.000đ** / 1 tài khoản | **+\$1.00** / 1 tài khoản | **+\$10** / cụm 10 tài khoản | Mở thêm hạn mức kết nối OAuth thật |
-| **2. Thành viên nhóm (`Team Seats`)** | **+30.000đ** / 1 thành viên | **+\$3.00** / 1 thành viên | **+\$5** / 1 thành viên | Thêm ghế thành viên vào cùng Workspace |
-| **3. Thương hiệu (`Brands`)** | **+20.000đ** / 1 Brand | **+\$1.50** / 1 Brand | **+\$5** / cụm 3 Brands | Thêm không gian thương hiệu độc lập |
-| **4. Bộ nhớ đệm Ảnh/Video (`Staging Media`)** | **+20.000đ** / +50 MB | **+\$1.50** / +50 MB | **+\$5** / +100 MB | Tăng dung lượng file ảnh/video chờ đăng đồng thời |
-| **5. Pack Tự Động Hóa (`Automation Add-on`)** | **+40.000đ** / trọn bộ | **+\$4.00** / trọn bộ | *(Có sẵn ở gói Pro)* | Mở khóa: AI Autopilot + Nhập Excel 200 dòng + 25 bài lặp lại Evergreen |
-| **6. Pack Duyệt Bài & Link (`Agency Add-on`)** | **+35.000đ** / trọn bộ | **+\$3.50** / trọn bộ | *(Có sẵn ở gói Business)* | Mở khóa: Luồng duyệt bài `Approval Workflow` + 500 Tracked Shortlinks |
+| Hạng mục trong Custom Builder | Đơn giá Việt Nam (VNĐ/tháng) | Đơn giá Quốc Tế (USD/tháng) | Quyền lợi đi kèm |
+| :--- | :--- | :--- | :--- |
+| **0. Phí nền tảng cơ bản (`Base Fee`)** *(Miễn phí khi chọn từ 150k / \$15)* | **49.000đ** *(Miễn phí từ 150k)* | **\$5.00** *(Miễn phí từ \$15)* | Đã gồm: 1 Brand, 1 Owner, AI viết bài & Tự lên lịch cả tuần, Lịch kéo thả, Duyệt bài nhóm, Nhập Excel, 50MB đệm Media |
+| **1. Tài khoản MXH (`Social Accounts`)** | **+15.000đ** / 1 tài khoản | **+\$1.00** / 1 tài khoản | Mở thêm hạn mức kết nối OAuth thật |
+| **2. Thành viên nhóm (`Team Seats`)** | **+30.000đ** / 1 thành viên | **+\$3.00** / 1 thành viên | Thêm ghế thành viên vào cùng Workspace (Đã bao gồm luồng Duyệt bài nhóm) |
+| **3. Thương hiệu (`Brands`)** | **+20.000đ** / 1 Brand | **+\$1.50** / 1 Brand | Brand đầu tiên miễn phí, tính phí từ Brand thứ 2 |
+| **4. Bộ nhớ đệm Ảnh/Video (`Staging Media`)** | **+20.000đ** / +50 MB | **+\$1.50** / +50 MB | 50MB đầu miễn phí, tăng thêm theo từng nấc 50MB |
+| **5. Rút gọn link & Đo lượt nhấp (`Shortlinks`)** | **+5.000đ** / 10 link | **+\$0.50** / 10 link | Tăng hạn mức số lượng link rút gọn theo dõi lượt bấm (UTM & Click Analytics) |
 
 ### 4.2. Quy tắc "Neo giá thông minh" (Smart Upsell Banner)
 * Khi khách hàng kéo thanh trượt Custom Builder mà tổng số tiền **lớn hơn hoặc gần bằng gói `Professional` (199.000đ / \$19)** trong khi thông số chọn vẫn nằm trong trần của `Professional`, giao diện sẽ tự động hiển thị gợi ý:
@@ -143,3 +142,9 @@ Khách hàng mua bản Desktop **không bắt buộc** phải đóng phí hàng 
    * Nếu tài khoản gói **Free** không đăng nhập trong vòng **14 ngày liên tục**, hệ thống tự động tạm dừng các bài đăng lặp lại (`Recurring`) và dọn dẹp bộ nhớ đệm ảnh nháp để không phát sinh lượt chạy `alarm` ngầm trên Cloudflare.
 3. **Thu hồi License khi khách hủy thuê bao (`Revocation Cleanup`):**
    * Khi khách hàng hủy gói Subscription trên Whop hoặc không gia hạn, chủ sở hữu (hoặc Webhook của Whop) gọi `/api/admin/licenses/revoke` để chặn phiên đăng nhập, dừng toàn bộ `alarm` hẹn giờ của Workspace đó và giải phóng `image_chunks` sau thời gian ân hạn 14–30 ngày.
+4. **Đồng bộ 100% hạn mức giữa Web App và cổng MCP (`Claude` / `ChatGPT` Connector):**
+   * Mọi kết nối MCP (`/mcp` qua OAuth 2.1 hoặc Personal Token `sc_mcp_...` trong `server/mcp-server.js`) đều gắn trực tiếp vào cùng **Workspace `store`** của tài khoản đó.
+   * Bộ kiểm tra hạn mức (`Quota Guard`) được đặt ở **tầng Backend (`store` / `savePostPlan` / `importMediaIntoStore` / `executeMcpTool`)**, không chỉ chặn ở giao diện React:
+     * **Dùng chung 1 bộ đếm duy nhất:** Nếu khách ở gói Free đã dùng hết `5/5` bài nháp/hẹn giờ hoặc hết `15 MB` bộ nhớ đệm Media trên Web, khi ra lệnh cho Claude/ChatGPT gọi `create_draft`, `schedule_post`, `upload_media` hoặc `publish_now` qua MCP, hệ thống sẽ từ chối ngay và báo rõ: *"Đã đạt giới hạn gói hiện tại, vui lòng nâng cấp gói SocialChoice"*.
+     * **Không thể vượt trần Brand & Kênh MXH qua MCP:** MCP chỉ có quyền đọc `list_brands` và `list_accounts` đã được tạo hợp lệ trong hạn mức gói trên Web, không có quyền tạo vượt rào.
+     * **Khóa đồng thời khi hết hạn License:** Khi gói thuê bao hết hạn hoặc bị thu hồi, toàn bộ token MCP (`mcp_grants`) của Workspace đó cũng tự động bị chặn quyền `posts:write` và `posts:publish`.

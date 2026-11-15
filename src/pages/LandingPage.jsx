@@ -26,12 +26,22 @@ export default function LandingPage() {
                 const handleClicks = (e) => {
                     const target = e.target.closest('a, button');
                     if (!target) return;
+                    if (target.hasAttribute('data-internal-nav')) return;
                     let href = target.getAttribute('href') || '';
                     const text = (target.textContent || '').trim().toLowerCase();
 
                     // Chuẩn hóa hash routes nếu có (e.g. "#/login" -> "/login")
                     if (href.startsWith('#/')) {
                         href = href.slice(1);
+                    }
+
+                    // 0. Điều hướng trang Bảng giá riêng (/pricing) hoặc về trang chủ (/)
+                    if (href === '/pricing' || href === '/bang-gia') {
+                        e.preventDefault();
+                        window.history.pushState(null, '', '/pricing');
+                        window.dispatchEvent(new Event('popstate'));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
                     }
 
                     // 1. Điều hướng đăng nhập
