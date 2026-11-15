@@ -39,6 +39,11 @@ export default defineConfig(({ mode }) => {
                     changeOrigin: true,
                     secure: false,
                 },
+                '^/s/': {
+                    target,
+                    changeOrigin: true,
+                    secure: false,
+                },
                 '/.well-known': {
                     target,
                     changeOrigin: true,

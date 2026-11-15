@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './landing-bundle.js';
 
 export default function LandingPage() {
     const containerRef = useRef(null);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         // Gắn stylesheet Tailwind v4 chuyên dụng cho Landing Page
@@ -35,12 +36,33 @@ export default function LandingPage() {
                         href = href.slice(1);
                     }
 
-                    // 0. Điều hướng trang Bảng giá riêng (/pricing) hoặc về trang chủ (/)
+                    // 0. Điều hướng trang Bảng giá riêng (/pricing) hoặc trang Checkout (/checkout)
                     if (href === '/pricing' || href === '/bang-gia') {
                         e.preventDefault();
                         window.history.pushState(null, '', '/pricing');
                         window.dispatchEvent(new Event('popstate'));
                         window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+                    if (href === '/checkout' || href === '/thanh-toan') {
+                        e.preventDefault();
+                        window.history.pushState(null, '', '/checkout');
+                        window.dispatchEvent(new Event('popstate'));
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        return;
+                    }
+
+                    // Điều hướng trang Tài liệu hướng dẫn (/docs hoặc /huong-dan)
+                    if (
+                        href === '/docs' ||
+                        href.startsWith('/docs') ||
+                        href === '/huong-dan' ||
+                        href.startsWith('/huong-dan') ||
+                        text === 'tài liệu' ||
+                        text === 'docs'
+                    ) {
+                        e.preventDefault();
+                        navigate('/docs');
                         return;
                     }
 
@@ -94,6 +116,8 @@ export default function LandingPage() {
                         href.startsWith('/cookies') ||
                         href.startsWith('/cookie') ||
                         href.startsWith('/data-deletion') ||
+                        href.startsWith('/docs') ||
+                        href.startsWith('/huong-dan') ||
                         href.startsWith('/app')
                     ) {
                         e.preventDefault();
@@ -148,7 +172,7 @@ export default function LandingPage() {
                         }
                     }
                 };
-            }, [navigate]);
+            }, [navigate, location.pathname, location.search]);
 
     return (
         <div className="landing-page-wrapper w-full min-h-screen bg-white">

@@ -27,6 +27,10 @@ import {
     MagicWand,
     BookmarkSimple,
     Quotes,
+    Lightning,
+    Target,
+    ChatCircleText,
+    PushPin,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -86,6 +90,7 @@ const emptyForm = (brandId) => {
     const nowTime = new Date().toTimeString().slice(0, 5);
     return {
         brand_id: brandId || '',
+        campaign_id: '',
         title: '',
         caption: '',
         platform_captions: {},
@@ -119,6 +124,7 @@ export default function CreatePost() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [accounts, setAccounts] = useState([]);
+    const [campaigns, setCampaigns] = useState([]);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [mediaLibrary, setMediaLibrary] = useState([]);
@@ -142,6 +148,39 @@ export default function CreatePost() {
     const [aiConfig, setAiConfig] = useState(null);
     const [aiBusy, setAiBusy] = useState(false);
 
+    // Quick Post Mode & Auto First Comment states & helpers
+    const [isQuickPostMode, setIsQuickPostMode] = useState(() => {
+        try {
+            return localStorage.getItem('socialchoice:quick_post_mode') === 'true';
+        } catch {
+            return false;
+        }
+    });
+
+    const handleToggleQuickPostMode = (val) => {
+        setIsQuickPostMode(val);
+        try {
+            localStorage.setItem('socialchoice:quick_post_mode', String(val));
+        } catch {}
+    };
+
+    const firstCommentMessage = form.comments?.[0]?.message || '';
+
+    const handleFirstCommentChange = (message) => {
+        setForm((prev) => {
+            const existingComments = prev.comments ? [...prev.comments] : [];
+            if (!message && existingComments.length <= 1) {
+                return { ...prev, comments: [] };
+            }
+            if (existingComments.length === 0) {
+                return { ...prev, comments: [{ message, delay_minutes: 0 }] };
+            }
+            const updated = [...existingComments];
+            updated[0] = { ...updated[0], message, delay_minutes: 0 };
+            return { ...prev, comments: updated };
+        });
+    };
+
     // UTM & Shortlink states
     const [utmForm, setUtmForm] = useState({
         url: '',
@@ -164,14 +203,16 @@ export default function CreatePost() {
         let active = true;
         (async () => {
             try {
-                const [accountPage, pillarPage, anglePage, mediaPage] = await Promise.all([
+                const [accountPage, campaignPage, pillarPage, anglePage, mediaPage] = await Promise.all([
                     appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 300 }),
+                    appClient.entities.Campaign.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }).catch(() => ({ items: [] })),
                     appClient.entities.ContentPillar.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }),
                     appClient.entities.ContentAngle.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 500 }),
                     appClient.entities.MediaAsset.filter({ is_demo: demoMode }, { sort: '-created_at', limit: 100 }).catch(() => ({ items: [] })),
                 ]);
                 if (!active) return;
                 setAccounts(accountPage.items);
+                setCampaigns(campaignPage.items || []);
                 setPillars(pillarPage.items);
                 setAngles(anglePage.items);
                 setMediaLibrary(mediaPage.items || []);
@@ -227,6 +268,7 @@ export default function CreatePost() {
             setForm((prev) => ({
                 ...prev,
                 brand_id: brandId,
+                campaign_id: '',
                 pillar_id: '',
                 angle_id: '',
                 media: [],
@@ -309,6 +351,7 @@ export default function CreatePost() {
                     ),
                     comments: (post.comments || []).map((c) => hydrateCommentFromApi(c, media.items)),
                     account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
+                    campaign_id: post.campaign_id || '',
                     pillar_id: duplicateId && !pillars.some((item) => item.id === post.pillar_id && item.status === 'active') ? '' : post.pillar_id || '',
                     angle_id: duplicateId && (!pillars.some((item) => item.id === post.pillar_id && item.status === 'active') || !angles.some((item) => item.id === post.angle_id && item.status === 'active')) ? '' : post.angle_id || '',
                     date: parts.date,
@@ -339,11 +382,48 @@ export default function CreatePost() {
     }, [brandAccounts, desktop, demoMode]);
 
     const selectedAccounts = useMemo(() => accounts.filter((a) => form.account_ids.includes(a.id)), [accounts, form.account_ids]);
-    const brandPillars = useMemo(() => pillars.filter((p) => !form.brand_id || p.brand_id === form.brand_id), [pillars, form.brand_id]);
+    const brandCampaigns = useMemo(() => campaigns.filter((c) => !form.brand_id || c.brand_id === form.brand_id), [campaigns, form.brand_id]);
+    const brandPillars = useMemo(() => {
+        const list = pillars.filter((p) => !form.brand_id || p.brand_id === form.brand_id);
+        if (form.campaign_id) {
+            const forCampaign = list.filter((p) => p.campaign_id === form.campaign_id);
+            if (forCampaign.length > 0) return forCampaign;
+        }
+        return list;
+    }, [pillars, form.brand_id, form.campaign_id]);
     const brandAngles = useMemo(() => {
         if (!form.pillar_id) return [];
         return angles.filter((a) => a.pillar_id === form.pillar_id);
     }, [angles, form.pillar_id]);
+
+    const handleCampaignChange = (campaignId) => {
+        const found = campaigns.find((c) => c.id === campaignId);
+        setForm((prev) => ({
+            ...prev,
+            campaign_id: campaignId,
+            pillar_id: '',
+            angle_id: '',
+        }));
+        if (found?.utm_campaign) {
+            setUtmForm((prev) => ({ ...prev, campaign: found.utm_campaign }));
+        }
+    };
+
+    useEffect(() => {
+        const cid = params.get('campaign_id');
+        const bid = params.get('brand_id');
+        if (cid && !sourceId) {
+            const found = campaigns.find((c) => c.id === cid);
+            setForm((prev) => ({
+                ...prev,
+                campaign_id: cid,
+                ...(bid ? { brand_id: bid } : {}),
+            }));
+            if (found?.utm_campaign) {
+                setUtmForm((prev) => ({ ...prev, campaign: found.utm_campaign }));
+            }
+        }
+    }, [params, sourceId, campaigns]);
 
     // Maintain preview account & auto-select first account if none selected
     useEffect(() => {
@@ -693,6 +773,7 @@ export default function CreatePost() {
                 media_ids: form.media.map((asset) => asset.id),
                 platform_media_ids: {},
                 account_ids: form.account_ids,
+                campaign_id: form.campaign_id || '',
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
@@ -795,6 +876,34 @@ export default function CreatePost() {
                                 </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
+                                {/* Quick Post vs Strategic Planner Mode Toggle */}
+                                <div className="flex items-center rounded-xl border border-border bg-surface p-0.5 shadow-2xs">
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleQuickPostMode(true)}
+                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
+                                            isQuickPostMode
+                                                ? 'bg-brand text-brand-ink font-semibold border border-brand-dark/40 shadow-xs'
+                                                : 'text-muted-foreground hover:text-foreground font-medium'
+                                        }`}
+                                    >
+                                        <Lightning size={14} weight="fill" className={isQuickPostMode ? 'text-brand-ink' : 'text-amber-500'} />
+                                        <span>{t('Đăng nhanh')}</span>
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => handleToggleQuickPostMode(false)}
+                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
+                                            !isQuickPostMode
+                                                ? 'bg-brand text-brand-ink font-semibold border border-brand-dark/40 shadow-xs'
+                                                : 'text-muted-foreground hover:text-foreground font-medium'
+                                        }`}
+                                    >
+                                        <Target size={14} weight="bold" className={!isQuickPostMode ? 'text-brand-ink' : 'text-muted-foreground'} />
+                                        <span>{t('Chiến lược (Pro)')}</span>
+                                    </button>
+                                </div>
+
                                 <button
                                     type="button"
                                     onClick={() => setIsTemplatePickerOpen(true)}
@@ -830,81 +939,142 @@ export default function CreatePost() {
                             </div>
                         </div>
 
-                        {/* Always-visible Post Metadata Strip: Title, Brand, Pillar, Angle */}
-                        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            <div className="sm:col-span-2 lg:col-span-1">
-                                <label htmlFor="post-internal-title" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                    {t('Tiêu đề nội bộ')} <span className="text-dangerFg">*</span>
-                                </label>
-                                <input
-                                    id="post-internal-title"
-                                    type="text"
-                                    value={form.title}
-                                    onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                    placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
-                                    className="h-9 w-full rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark focus:ring-1 focus:ring-brand-dark"
-                                />
+                        {/* Metadata Strip: Quick Post (Streamlined) or Strategic (Full 4-Col) */}
+                        {isQuickPostMode ? (
+                            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-brand/10 border border-brand-dark/30 text-xs">
+                                <div className="flex items-center gap-2.5 min-w-0">
+                                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-ink font-bold border border-brand-dark/40">
+                                        <Lightning size={15} weight="fill" />
+                                    </span>
+                                    <div className="min-w-0">
+                                        <span className="font-semibold text-brand-ink block truncate">
+                                            {t('Chế độ Đăng Nhanh (30 Giây)')}
+                                        </span>
+                                        <span className="text-muted-foreground text-[11px] block truncate">
+                                            {t('Đã ẩn Pillar/Angle rườm rà. Chọn kênh, viết bài, ghim cmt và bắn ngay.')}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                    <label htmlFor="quick-brand-select" className="font-semibold text-muted-foreground text-[11px]">
+                                        {t('Thương hiệu:')}
+                                    </label>
+                                    <select
+                                        id="quick-brand-select"
+                                        value={form.brand_id}
+                                        onChange={(e) => applyBrand(e.target.value)}
+                                        className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                    >
+                                        {brands.map((b) => (
+                                            <option key={b.id} value={b.id}>
+                                                {b.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
+                                <div className="sm:col-span-2 lg:col-span-1">
+                                    <label htmlFor="post-internal-title" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                        {t('Tiêu đề nội bộ')} <span className="text-dangerFg">*</span>
+                                    </label>
+                                    <input
+                                        id="post-internal-title"
+                                        type="text"
+                                        value={form.title}
+                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
+                                        placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
+                                        className="h-9 w-full rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark focus:ring-1 focus:ring-brand-dark"
+                                    />
+                                </div>
 
-                            <div>
-                                <label htmlFor="post-brand-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                    {t('Thương hiệu')}
-                                </label>
-                                <select
-                                    id="post-brand-select"
-                                    value={form.brand_id}
-                                    onChange={(e) => applyBrand(e.target.value)}
-                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                >
-                                    {brands.map((b) => (
-                                        <option key={b.id} value={b.id}>
-                                            {b.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                                <div>
+                                    <label htmlFor="post-brand-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                        {t('Thương hiệu')}
+                                    </label>
+                                    <select
+                                        id="post-brand-select"
+                                        value={form.brand_id}
+                                        onChange={(e) => applyBrand(e.target.value)}
+                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                    >
+                                        {brands.map((b) => (
+                                            <option key={b.id} value={b.id}>
+                                                {b.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                            <div>
-                                <label htmlFor="post-pillar-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                    {t('Trụ cột nội dung')}
-                                </label>
-                                <select
-                                    id="post-pillar-select"
-                                    value={form.pillar_id}
-                                    onChange={(e) => setForm({ ...form, pillar_id: e.target.value, angle_id: '' })}
-                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                >
-                                    <option value="">{t('Chưa phân loại')}</option>
-                                    {brandPillars.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
+                                <div>
+                                    <div className="flex items-center justify-between mb-1">
+                                        <label htmlFor="post-campaign-select" className="label-xs font-semibold text-muted-foreground block">
+                                            {t('Chiến dịch')}
+                                        </label>
+                                        {form.campaign_id && brandCampaigns.find((c) => c.id === form.campaign_id)?.utm_campaign && (
+                                            <span className="text-[10px] font-mono text-brand-ink bg-brand/25 border border-brand-dark/30 rounded px-1.5 py-0.2" title={t('Tự động gắn mã UTM tracking')}>
+                                                utm: {brandCampaigns.find((c) => c.id === form.campaign_id).utm_campaign}
+                                            </span>
+                                        )}
+                                    </div>
+                                    <select
+                                        id="post-campaign-select"
+                                        value={form.campaign_id}
+                                        onChange={(e) => handleCampaignChange(e.target.value)}
+                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                    >
+                                        <option value="">{t('Không thuộc chiến dịch')}</option>
+                                        {brandCampaigns.map((c) => (
+                                            <option key={c.id} value={c.id}>
+                                                {c.name} {c.status === 'archived' ? `(${t('Lưu trữ')})` : ''}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
 
-                            <div>
-                                <label htmlFor="post-angle-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                    {t('Góc khai thác')}
-                                </label>
-                                <select
-                                    id="post-angle-select"
-                                    value={form.angle_id}
-                                    onChange={(e) => setForm({ ...form, angle_id: e.target.value })}
-                                    disabled={!form.pillar_id}
-                                    className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer disabled:bg-muted/50 disabled:text-muted-foreground"
-                                >
-                                    <option value="">
-                                        {form.pillar_id ? t('Chọn góc khai thác') : t('Chọn trụ cột trước')}
-                                    </option>
-                                    {brandAngles.map((a) => (
-                                        <option key={a.id} value={a.id}>
-                                            {a.name}
+                                <div>
+                                    <label htmlFor="post-pillar-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                        {t('Trụ cột nội dung')}
+                                    </label>
+                                    <select
+                                        id="post-pillar-select"
+                                        value={form.pillar_id}
+                                        onChange={(e) => setForm({ ...form, pillar_id: e.target.value, angle_id: '' })}
+                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
+                                    >
+                                        <option value="">{t('Chưa phân loại')}</option>
+                                        {brandPillars.map((p) => (
+                                            <option key={p.id} value={p.id}>
+                                                {p.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label htmlFor="post-angle-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
+                                        {t('Góc khai thác')}
+                                    </label>
+                                    <select
+                                        id="post-angle-select"
+                                        value={form.angle_id}
+                                        onChange={(e) => setForm({ ...form, angle_id: e.target.value })}
+                                        disabled={!form.pillar_id}
+                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer disabled:bg-muted/50 disabled:text-muted-foreground"
+                                    >
+                                        <option value="">
+                                            {form.pillar_id ? t('Chọn góc khai thác') : t('Chọn trụ cột trước')}
                                         </option>
-                                    ))}
-                                </select>
+                                        {brandAngles.map((a) => (
+                                            <option key={a.id} value={a.id}>
+                                                {a.name}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
-                        </div>
+                        )}
                     </section>
 
                     {/* Unified Channel Picker & Per-Channel Mode Switcher */}
@@ -1374,6 +1544,57 @@ export default function CreatePost() {
                         )}
                     </div>
 
+                    {/* Prominent Auto First Comment Panel */}
+                    <section className="panel p-4 sm:p-5 space-y-3 bg-card border border-border/80">
+                        <div className="flex flex-wrap items-center justify-between gap-2">
+                            <div className="flex items-center gap-2.5">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/20 text-brand-ink shrink-0">
+                                    <ChatCircleText size={16} weight="fill" />
+                                </span>
+                                <div>
+                                    <label htmlFor="first-comment-input" className="text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer">
+                                        <span>{t('Ghim bình luận đầu tiên (Auto First Comment)')}</span>
+                                        <span className="rounded-full bg-brand/25 border border-brand-dark/30 px-2 py-0.2 text-[10px] font-bold text-brand-ink">
+                                            {t('Chống bóp reach')}
+                                        </span>
+                                    </label>
+                                    <p className="text-[11px] text-muted-foreground">
+                                        {t('Tự động đăng bình luận ngay khi bài vừa xuất bản (chèn link mua hàng, affiliate, số hotline...)')}
+                                    </p>
+                                </div>
+                            </div>
+                            {firstCommentMessage && (
+                                <button
+                                    type="button"
+                                    onClick={() => handleFirstCommentChange('')}
+                                    className="text-[11px] font-medium text-muted-foreground hover:text-dangerFg transition cursor-pointer"
+                                >
+                                    {t('Xóa bình luận đầu')}
+                                </button>
+                            )}
+                        </div>
+
+                        <div className="relative rounded-xl border border-border bg-surface/40 focus-within:border-brand-dark focus-within:bg-card focus-within:ring-2 focus-within:ring-brand/25 transition">
+                            <textarea
+                                id="first-comment-input"
+                                value={firstCommentMessage}
+                                onChange={(e) => handleFirstCommentChange(e.target.value)}
+                                rows={2}
+                                placeholder={t('Ví dụ: Bấm link bên dưới để nhận mã giảm giá 20% hoặc liên hệ Hotline: 090 123 4567...')}
+                                className="block w-full resize-none bg-transparent px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground"
+                            />
+                            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 bg-surface/30 px-3 py-1.5 text-[11px] text-muted-foreground">
+                                <div className="flex items-center gap-1.5">
+                                    <PushPin size={12} weight="fill" className="text-brand-dark" />
+                                    <span>{t('Tự động đăng ngay lập tức (delay 0s)')}</span>
+                                </div>
+                                <span className="font-mono text-[10px]">
+                                    {firstCommentMessage.length} {t('ký tự')}
+                                </span>
+                            </div>
+                        </div>
+                    </section>
+
                     {/* Character Limit Exceeded Alert Banner */}
                     {exceededAccounts.length > 0 && (
                         <div className="flex items-start gap-2 rounded-xl border border-dangerFg/40 bg-dangerBg px-3.5 py-2.5 text-xs text-dangerFg">
@@ -1404,10 +1625,10 @@ export default function CreatePost() {
                                 </span>
                                 <div>
                                     <h2 className="font-heading text-sm font-semibold text-foreground">
-                                        {t('Chuỗi bình luận & bài nối tiếp')}
+                                        {t('Chuỗi bài nối tiếp / Bình luận tiếp theo (#2, #3...)')}
                                     </h2>
                                     <p className="label-xs text-muted-foreground">
-                                        {t('Tự động đăng bình luận đầu tiên (chèn link/hashtag) hoặc chuỗi bài nối tiếp')}
+                                        {t('Tự động đăng các bình luận nối tiếp theo thời gian (delay 5–10 phút) để kích thích tương tác')}
                                     </p>
                                 </div>
                             </div>
@@ -1416,13 +1637,13 @@ export default function CreatePost() {
                                 onClick={() =>
                                     setForm((prev) => ({
                                         ...prev,
-                                        comments: [...(prev.comments || []), { message: '', delay_minutes: 0 }],
+                                        comments: [...(prev.comments || []), { message: '', delay_minutes: (prev.comments || []).length === 0 ? 0 : 5 }],
                                     }))
                                 }
                                 className="flex h-8 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition hover:bg-[#ffe059] cursor-pointer"
                             >
                                 <Plus size={14} weight="bold" />
-                                <span>{t('Thêm bình luận / bài tiếp')}</span>
+                                <span>{t('Thêm bài nối tiếp trong chuỗi')}</span>
                             </button>
                         </div>
 

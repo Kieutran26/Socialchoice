@@ -14,8 +14,11 @@ import { videoUploadRequest, serveMedia } from './media-http.js';
 import { adminLicenseRequest } from './admin-license-http.js';
 import { createTrackingLinks } from './tracking-links.js';
 import { handleMcpAndOAuthRoutes } from './mcp-server.js';
+import { sendActivationReceiptEmail } from './email-receipt.js';
 
 export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSettings, linkedin, threads, threadsSettings = {}, tiktok, tiktokSettings = {}, x, xSettings = {}, publicOrigin, frontendPort, allowedHosts, serveStatic, licenseAdmin, hosted = false, aiKey, aiFetch, aiDiagnosticSink, autopilotOptions = {}, linkScope = 'owner' }) {
+    const runtimeEnv = autopilotOptions?.env || (typeof process !== 'undefined' ? process.env : {});
+    const sentReceipts = new Set();
     const tracking = createTrackingLinks(store, linkScope);
     const ai = createAiWriting(store, aiKey || metaSettings.key, aiFetch);
     const autopilot = createAutopilot({ store, auth, key: aiKey || metaSettings.key, aiFetch, ...autopilotOptions });
@@ -76,8 +79,53 @@ export function createHttpHandler({ postiz, store, auth, meta, publisher, metaSe
             ) {
                 return;
             }
+            if (parsedUrl.pathname === '/api/sepay/webhook' && req.method === 'POST') {
+                const expectedKey = String(runtimeEnv.SEPAY_WEBHOOK_API_KEY || '').trim();
+                if (expectedKey) {
+                    const authHeader = String(req.headers.authorization || req.headers['x-sepay-apikey'] || '');
+                    const providedKey = authHeader.replace(/^(Apikey|Bearer)\s+/i, '').trim();
+                    if (providedKey !== expectedKey) fail('Invalid SePay webhook API key', 401);
+                }
+                const raw = await readRawBody(req, 128 * 1024);
+                let payload;
+                try { payload = JSON.parse(raw || '{}'); } catch { fail('Invalid JSON', 400); }
+                const result = store.sepayPayments ? store.sepayPayments.recordWebhook(payload) : { recorded: false, reason: 'unavailable' };
+                return send(200, { success: true, ...result });
+            }
             if (req.headers.origin && !origins.includes(req.headers.origin)) fail('Origin not allowed', 403);
             if (req.headers['sec-fetch-site'] === 'cross-site') fail('Cross-site request denied', 403);
+            if (parsedUrl.pathname === '/api/sepay/verify' && req.method === 'GET') {
+                const orderCode = parsedUrl.searchParams.get('orderCode') || '';
+                const amount = Number(parsedUrl.searchParams.get('amount') || 0);
+                const result = store.sepayPayments ? store.sepayPayments.verifyOrder({ orderCode, minAmount: amount }) : { paid: false, orderCode, reason: 'unavailable' };
+                return send(200, result);
+            }
+            if (parsedUrl.pathname === '/api/payments/send-receipt' && req.method === 'POST') {
+                if (!req.headers['content-type']?.startsWith('application/json')) fail('JSON required', 415);
+                const raw = await readRawBody(req, 64 * 1024);
+                let payload;
+                try { payload = JSON.parse(raw || '{}'); } catch { fail('Invalid JSON', 400); }
+                const orderCode = String(payload?.orderCode || '').trim().toUpperCase();
+                if (!orderCode) fail('orderCode required', 400);
+                if (sentReceipts.has(orderCode)) {
+                    return send(200, { sent: true, deduplicated: true, orderCode });
+                }
+                const result = await sendActivationReceiptEmail(payload, runtimeEnv);
+                if (store.sepayPayments) {
+                    try { store.sepayPayments.recordReceiptOrder(payload, result); } catch {}
+                }
+                if (result.sent) sentReceipts.add(orderCode);
+                return send(200, { ...result, orderCode });
+            }
+            if (parsedUrl.pathname === '/api/admin/payments/reconcile' && req.method === 'GET') {
+                if (auth.enabled) {
+                    auth.require(req);
+                    if (auth.identity) fail('Site owner access required', 403);
+                }
+                const query = parsedUrl.searchParams.get('q') || '';
+                const data = store.sepayPayments ? store.sepayPayments.listReconciliation({ query }) : { items: [] };
+                return send(200, data);
+            }
             if (!req.url.startsWith('/api/')) {
                 if (serveStatic && serveStatic(req, res)) return;
                 fail('Endpoint not found', 404);

@@ -5,7 +5,7 @@ import DesktopLicenseNotice from './desktop-license-notice';
 export default function DesktopPrototype({ children }) {
     const { t } = useTranslation();
     const { pathname } = useLocation();
-    const supported = ['/', '/settings', '/brands', '/create', '/posts', '/calendar', '/strategy', '/strategy/pillars', '/strategy/angles', '/media', '/templates', '/analytics', '/accounts'].includes(pathname);
+    const supported = ['/', '/settings', '/brands', '/create', '/posts', '/calendar', '/strategy', '/strategy/campaigns', '/campaigns', '/strategy/pillars', '/strategy/angles', '/media', '/templates', '/analytics', '/accounts', '/docs', '/huong-dan'].includes(pathname);
     return <>
         <DesktopLicenseNotice />
         <div role="status" className="panel mb-5 p-4 text-sm">

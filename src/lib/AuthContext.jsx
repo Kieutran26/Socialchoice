@@ -3,6 +3,7 @@ import { appClient } from '@/api/app-client';
 import { useTranslation } from './i18n';
 import AdminSignIn from '@/components/admin-sign-in';
 import { isDesktop } from '@/api/desktop/runtime';
+import { reconcileSubscriptionWithUser } from './team-seats';
 
 const AuthContext = createContext(null);
 
@@ -16,17 +17,30 @@ export function AuthProvider({ children }) {
         let mounted = true;
         let isReauthenticating = false;
         async function initAuth() {
+            const withTimeout = (promise, ms = 4000) =>
+                Promise.race([
+                    promise,
+                    new Promise((_, reject) => setTimeout(() => reject(new Error('Auth timeout')), ms)),
+                ]);
             try {
-                const me = await appClient.auth.me();
-                if (mounted) setUser(me);
+                const me = await withTimeout(appClient.auth.me(), 4000);
+                if (mounted) {
+                    setUser(me);
+                    reconcileSubscriptionWithUser(me);
+                }
             } catch {
                 try {
-                    await appClient.auth.loginViaEmailPassword('admin');
-                    const me = await appClient.auth.me();
-                    if (mounted) setUser(me);
+                    await withTimeout(appClient.auth.loginViaEmailPassword('admin'), 4000);
+                    const me = await withTimeout(appClient.auth.me(), 4000);
+                    if (mounted) {
+                        setUser(me);
+                        reconcileSubscriptionWithUser(me);
+                    }
                 } catch {
                     if (mounted) {
-                        setUser({ id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' });
+                        const localUser = { id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' };
+                        setUser(localUser);
+                        reconcileSubscriptionWithUser(localUser);
                     }
                 }
             } finally {

@@ -63,6 +63,7 @@ export default function ContentPillars() {
     const [loading, setLoading] = useState(true);
     const [loadError, setLoadError] = useState('');
     const [pillars, setPillars] = useState([]);
+    const [campaigns, setCampaigns] = useState([]);
     const [angles, setAngles] = useState([]);
     const [counts, setCounts] = useState({});
     const [total, setTotal] = useState(0);
@@ -74,16 +75,18 @@ export default function ContentPillars() {
         setLoading(true);
         setLoadError('');
         try {
-            const [pillarPage, anglePage, agg, totalCount] = await Promise.all([
+            const [pillarPage, anglePage, agg, totalCount, campaignPage] = await Promise.all([
                 appClient.entities.ContentPillar.filter(scope, { sort: 'name', limit: 300 }),
                 appClient.entities.ContentAngle.filter(scope, { limit: 500, fields: ['id', 'pillar_id'] }),
                 appClient.entities.Post.aggregate({ query: scope, groupBy: 'pillar_id' }),
                 appClient.entities.Post.count(scope),
+                appClient.entities.Campaign.filter(scope, { limit: 100 }).catch(() => ({ items: [] })),
             ]);
             setPillars(pillarPage.items);
             setAngles(anglePage.items);
             setCounts(Object.fromEntries(agg.rows.map((row) => [row.pillar_id, row.count])));
             setTotal(totalCount);
+            setCampaigns(campaignPage.items || []);
         } catch (error) {
             setLoadError(error.message);
         } finally {
@@ -305,6 +308,11 @@ export default function ContentPillars() {
                                                             <h4 className="text-sm font-bold text-neutral-900 truncate" title={pillar.name}>
                                                                 {pillar.name}
                                                             </h4>
+                                                            {pillar.campaign_id && campaigns.find((c) => c.id === pillar.campaign_id) && (
+                                                                <span className="text-[10px] font-medium text-brand-ink bg-brand/20 px-1.5 py-0.5 rounded border border-brand-dark/20 inline-block mt-0.5">
+                                                                    🎯 {campaigns.find((c) => c.id === pillar.campaign_id).name}
+                                                                </span>
+                                                            )}
                                                         </div>
                                                     </div>
 
@@ -444,6 +452,7 @@ export default function ContentPillars() {
                 open={formOpen}
                 onOpenChange={setFormOpen}
                 brands={brands}
+                campaigns={campaigns}
                 initial={editing}
                 defaultBrandId={selectedBrandId === 'all' ? '' : selectedBrandId}
                 onSubmit={save}

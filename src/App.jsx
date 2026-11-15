@@ -14,6 +14,7 @@ import CreatePost from '@/pages/CreatePost';
 import ChatAgent from '@/pages/ChatAgent';
 import AllPosts from '@/pages/AllPosts';
 import ContentStrategy from '@/pages/ContentStrategy';
+import Campaigns from '@/pages/Campaigns';
 import ContentPillars from '@/pages/ContentPillars';
 import ContentAngles from '@/pages/ContentAngles';
 import Analytics from '@/pages/Analytics';
@@ -33,6 +34,7 @@ import LandingPage2 from '@/pages/LandingPage2';
 import ContentStrategy2 from '@/pages/ContentStrategy2';
 import LoginPage from '@/pages/LoginPage';
 import OAuthConsent from '@/pages/OAuthConsent';
+import Docs from '@/pages/Docs';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 
 function AppError({ error }) {
@@ -80,6 +82,8 @@ export default function App() {
                             <Route path="/landing" element={<LandingPage />} />
                             <Route path="/pricing" element={<LandingPage />} />
                             <Route path="/bang-gia" element={<LandingPage />} />
+                            <Route path="/checkout" element={<LandingPage />} />
+                            <Route path="/thanh-toan" element={<LandingPage />} />
                             <Route path="/landing-2" element={<LandingPage2 />} />
                             <Route path="/strategy-2" element={<ContentStrategy2 />} />
                             <Route path="/login" element={<LoginPage />} />
@@ -89,6 +93,8 @@ export default function App() {
                             <Route path="/cookies" element={<CookiePolicy />} />
                             <Route path="/cookie" element={<CookiePolicy />} />
                             <Route path="/data-deletion" element={<DataDeletion />} />
+                            <Route path="/docs" element={<Docs />} />
+                            <Route path="/huong-dan" element={<Docs />} />
 
                             {/* Authenticated Workspace Routes */}
                             <Route element={<WorkspaceShell />}>
@@ -102,6 +108,8 @@ export default function App() {
                                 <Route path="/templates/create" element={<CreateTemplate />} />
                                 <Route path="/posts" element={<AllPosts />} />
                                 <Route path="/strategy" element={<ContentStrategy />} />
+                                <Route path="/strategy/campaigns" element={<Campaigns />} />
+                                <Route path="/campaigns" element={<Campaigns />} />
                                 <Route path="/strategy/pillars" element={<ContentPillars />} />
                                 <Route path="/strategy/angles" element={<ContentAngles />} />
                                 <Route path="/analytics" element={<Analytics />} />
@@ -110,6 +118,7 @@ export default function App() {
                                 <Route path="/shortlinks" element={<Shortlinks />} />
                                 <Route path="/accounts" element={<SocialAccounts />} />
                                 <Route path="/brands" element={<Brands />} />
+                                <Route path="/team" element={<Navigate to="/settings?tab=team" replace />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="/admin/licenses" element={<AdminLicenses />} />
                                 <Route path="*" element={<Navigate to="/" replace />} />

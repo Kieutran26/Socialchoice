@@ -9,9 +9,10 @@ import { createMetricsStorage } from './facebook-metrics-storage.js';
 import { createTrackingLinkStore } from './tracking-link-store.js';
 import { createRecurringPostStore } from './recurring-post-store.js';
 import { createMcpStore } from './mcp-store.js';
+import { createSepayPayments } from './sepay-payments.js';
 
 
-const links = { Brand: 'brand_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
+const links = { Brand: 'brand_id', Campaign: 'campaign_id', ContentPillar: 'pillar_id', ContentAngle: 'angle_id', SocialAccount: 'social_account_id', Post: 'post_id', MediaAsset: 'media_ids' };
 
 export function createStoreCore(db, transactionSync) {
     const verified = Symbol('verified platform metadata');
@@ -196,5 +197,6 @@ export function createStoreCore(db, transactionSync) {
     store.images = createImageStorage(db, store);
     store.metrics = createMetricsStorage(db);
     store.videos = createVideoStorage(db, store);
+    store.sepayPayments = createSepayPayments(db);
     return store;
 }

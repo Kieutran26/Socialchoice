@@ -47,6 +47,7 @@ export default function AllPosts() {
     const [scheduleOpen, setScheduleOpen] = useState(false);
     const [importOpen, setImportOpen] = useState(false);
     const [bulkAction, setBulkAction] = useState(null);
+    const [campaigns, setCampaigns] = useState([]);
     const [pillars, setPillars] = useState([]);
     const [angles, setAngles] = useState([]);
     const [accounts, setAccounts] = useState([]);
@@ -63,6 +64,7 @@ export default function AllPosts() {
     const [filters, setFilters] = useState({
         search: '',
         status: searchParams.get('status') || 'all',
+        campaign_id: searchParams.get('campaign_id') || 'all',
         pillar_id: 'all',
         angle_id: 'all',
         account_id: 'all',
@@ -101,11 +103,13 @@ export default function AllPosts() {
 
     useEffect(() => {
         (async () => {
-            const [pillarPage, anglePage, accountPage] = await Promise.all([
+            const [campaignPage, pillarPage, anglePage, accountPage] = await Promise.all([
+                appClient.entities.Campaign.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 200 }).catch(() => ({ items: [] })),
                 appClient.entities.ContentPillar.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
                 appClient.entities.ContentAngle.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 500 }),
                 appClient.entities.SocialAccount.filter({ is_demo: scope.is_demo }, { sort: 'name', limit: 300 }),
             ]);
+            setCampaigns(campaignPage.items || []);
             setPillars(pillarPage.items);
             setAngles(anglePage.items);
             setAccounts(accountPage.items);
@@ -126,6 +130,7 @@ export default function AllPosts() {
                 query.status = filters.status;
             }
         }
+        if (filters.campaign_id !== 'all') query.campaign_id = filters.campaign_id;
         if (filters.pillar_id !== 'all') query.pillar_id = filters.pillar_id;
         if (filters.angle_id !== 'all') query.angle_id = filters.angle_id;
         if (filters.account_id !== 'all') {
@@ -372,6 +377,7 @@ export default function AllPosts() {
                 onTabChange={handleTabChange}
                 filters={filters}
                 setFilters={setFilters}
+                campaigns={campaigns}
                 pillars={pillars}
                 angles={angles}
                 accounts={accounts}

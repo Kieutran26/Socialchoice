@@ -21,6 +21,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import LicenseCustomerHistory from '@/components/licenses/license-customer-history';
+import PurchaseReconciliationPanel from '@/components/licenses/PurchaseReconciliationPanel';
+import AdminDiscountsPanel from '@/components/licenses/AdminDiscountsPanel';
 import StatCard from '@/components/common/StatCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
@@ -49,7 +51,7 @@ function OwnerLicenseManager() {
     const [email, setEmail] = useState('');
     const [name, setName] = useState('');
     const [edition, setEdition] = useState('starter');
-    const [confirmed, setConfirmed] = useState(false);
+    const [confirmed, setConfirmed] = useState(true);
     const [requestId, setRequestId] = useState(() => crypto.randomUUID());
     const [ready, setReady] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -60,6 +62,7 @@ function OwnerLicenseManager() {
     const [revokeTarget, setRevokeTarget] = useState(null);
     const [refreshing, setRefreshing] = useState(false);
     const [issueOpen, setIssueOpen] = useState(false);
+    const [activeTab, setActiveTab] = useState('orders');
 
     async function refresh() {
         setRefreshing(true);
@@ -95,7 +98,6 @@ function OwnerLicenseManager() {
 
     function change(setter, value) {
         setter(value);
-        setConfirmed(false);
         setResult(null);
         setError('');
         setRequestId(crypto.randomUUID());
@@ -103,7 +105,11 @@ function OwnerLicenseManager() {
 
     async function issue(event) {
         event.preventDefault();
-        if (busy || !confirmed || !ready) return;
+        if (busy || !ready) return;
+        if (!confirmed) {
+            setError(t('I have verified payment for this customer. This action does not collect payment.'));
+            return;
+        }
         setBusy(true);
         setError('');
         try {
@@ -115,7 +121,6 @@ function OwnerLicenseManager() {
                 purchaseConfirmed: confirmed,
             });
             setResult(issued);
-            setConfirmed(false);
             setEmail('');
             setName('');
             setItems((await appClient.licenses.list()).items);
@@ -205,6 +210,49 @@ function OwnerLicenseManager() {
                 </div>
             )}
 
+            <div className="inline-flex items-center gap-1 rounded-xl border border-border/80 bg-muted/40 p-1">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('orders')}
+                    className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                        activeTab === 'orders'
+                            ? 'bg-background text-foreground shadow-xs'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    Lượt mua &amp; Đối soát biên lai
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('licenses')}
+                    className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                        activeTab === 'licenses'
+                            ? 'bg-background text-foreground shadow-xs'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    {t('License management')}
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('discounts')}
+                    className={`rounded-lg px-3.5 py-1.5 text-xs font-semibold transition-colors ${
+                        activeTab === 'discounts'
+                            ? 'bg-background text-foreground shadow-xs'
+                            : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                >
+                    Mã giảm giá (Discounts)
+                </button>
+            </div>
+
+            {activeTab === 'orders' ? (
+                <PurchaseReconciliationPanel />
+            ) : activeTab === 'discounts' ? (
+                <AdminDiscountsPanel />
+            ) : (
+                <>
+
             {/* KPI Stat Cards (Monochrome Minimalist) */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
                 <StatCard
@@ -259,19 +307,24 @@ function OwnerLicenseManager() {
                     />
                 </div>
             )}
+                </>
+            )}
 
             {/* Modal Dialog: Cấp license bản web (Option C style) */}
             <Dialog
                 open={issueOpen}
                 onOpenChange={(open) => {
                     setIssueOpen(open);
+                    if (open) {
+                        setConfirmed(true);
+                    }
                     if (!open) {
                         setResult(null);
                         setError('');
                     }
                 }}
             >
-                <DialogContent className="!w-[calc(100vw_-_2rem)] !max-w-[560px] p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-xl">
+                <DialogContent className="!w-[calc(100vw_-_2rem)] !max-w-[560px] !p-0 overflow-hidden rounded-2xl border border-border bg-card shadow-2xl">
                     <div className="px-6 py-5 border-b border-border bg-muted/20">
                         <DialogHeader className="mb-0 space-y-1">
                             <DialogTitle className="text-base sm:text-lg font-heading font-semibold text-foreground">
@@ -285,7 +338,7 @@ function OwnerLicenseManager() {
                         </DialogHeader>
                     </div>
 
-                    <div className="p-6 space-y-4">
+                    <div className="p-6 space-y-4 max-h-[calc(90vh-90px)] overflow-y-auto">
                         {!ready && (
                             <div className="p-3 rounded-xl bg-amber-50 border border-amber-200/60 text-xs text-brand-ink flex items-center gap-2">
                                 <Info size={15} className="shrink-0" />
@@ -463,8 +516,8 @@ function OwnerLicenseManager() {
                                     </Button>
                                     <button
                                         type="submit"
-                                        disabled={busy || refreshing || !ready || !confirmed}
-                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors disabled:opacity-50"
+                                        disabled={busy || refreshing || !ready}
+                                        className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] transition-colors cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                                     >
                                         <Key size={14} weight="bold" />
                                         <span>{t(busy ? 'Issuing…' : 'Create license')}</span>

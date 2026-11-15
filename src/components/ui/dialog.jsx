@@ -12,14 +12,18 @@ export function DialogHeader({ children, className = '' }) {
 export function DialogContent({ children, className = '', ...props }) {
     const { t } = useTranslation();
     const hasCustomMaxWidth = className.includes('max-w-');
+    const hasCustomPadding = className.includes('p-') || className.includes('!p-');
     return (
         <Primitive.Portal>
             <Primitive.Overlay className="fixed inset-0 z-40 bg-black/40 backdrop-blur-xs" />
             <Primitive.Content
                 aria-describedby={undefined}
-                className={`fixed left-1/2 top-1/2 z-50 w-[calc(100%-2rem)] ${
+                style={{ left: '50%', top: '50%', transform: 'translate(-50%, -50%)' }}
+                className={`fixed z-50 w-[calc(100%-2rem)] ${
                     hasCustomMaxWidth ? '' : 'max-w-lg'
-                } -translate-x-1/2 -translate-y-1/2 rounded-2xl border bg-white p-6 max-h-[90vh] overflow-auto ${className}`}
+                } rounded-2xl border bg-white ${
+                    hasCustomPadding ? '' : 'p-6'
+                } max-h-[90vh] overflow-y-auto ${className}`}
                 {...props}
             >
                 {children}

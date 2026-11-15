@@ -3,12 +3,32 @@ import { isDesktop, invokeNative } from './desktop/runtime';
 import { desktopRequest } from './desktop/request';
     async function request(path, args, options = {}) {
         if (isDesktop()) return desktopRequest(path, args);
-        const response = await fetch(`/api/${path}`, {
-            method: args ? 'POST' : 'GET',
-            headers: { 'Content-Type': 'application/json', 'X-Socialchoice-Client': 'local-ui' },
-            ...(args ? { body: JSON.stringify({ args }) } : {}),
-        });
-        const result = await response.json();
+        const timeoutMs = Number(options.timeoutMs || 15000);
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        let response;
+        try {
+            response = await fetch(`/api/${path}`, {
+                method: args ? 'POST' : 'GET',
+                headers: { 'Content-Type': 'application/json', 'X-Socialchoice-Client': 'local-ui' },
+                ...(args ? { body: JSON.stringify({ args }) } : {}),
+                signal: controller.signal,
+            });
+        } catch (err) {
+            if (err?.name === 'AbortError') {
+                throw new Error('Request timed out');
+            }
+            throw err;
+        } finally {
+            clearTimeout(timer);
+        }
+        const rawText = await response.text();
+        let result = {};
+        try {
+            result = rawText ? JSON.parse(rawText) : {};
+        } catch {
+            result = { message: rawText || 'Invalid server response' };
+        }
         if (!response.ok) {
             const error = Object.assign(new Error(result.message || 'Request failed'), { status: response.status, ...(result.diagnostic ? { diagnostic: result.diagnostic } : {}) });
             if (!options.silent) {
@@ -69,7 +89,15 @@ import { desktopRequest } from './desktop/request';
         }),
         auth: {
             me: () => request('session', undefined, { silent: true }),
-            logout: async () => { await request('auth/logout', []); window.location.assign('/'); },
+            logout: async () => {
+                try {
+                    await request('auth/logout', [], { timeoutMs: 3000, silent: true });
+                } catch {
+                    // fallback to client-side sign-out redirect when local/remote API is unreachable
+                } finally {
+                    window.location.assign('/login');
+                }
+            },
             loginViaEmailPassword: (password, legacyPassword = undefined) => request('auth/login', [legacyPassword ?? password], { silent: true }),
             loginWithProvider: (..._args) => { throw new Error('OAuth sign-in is not configured.'); },
             register: async (..._args) => { throw new Error('Hosted registration is not configured.'); },

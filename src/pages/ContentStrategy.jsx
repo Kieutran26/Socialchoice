@@ -352,8 +352,15 @@ export default function ContentStrategy() {
                 )}
                 actions={
                     <div className="flex items-center gap-2">
-                        <span className="px-3 py-1.5 rounded-xl border border-neutral-200 bg-white text-xs font-medium text-neutral-700">
-                            {t('Thương hiệu')}: <strong className="text-neutral-900">{currentBrand?.name || t('Brand')}</strong> · {assets.length} {t('assets sẵn sàng')}
+                        <Link
+                            to="/strategy/campaigns"
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-card hover:bg-surface text-xs font-semibold text-foreground transition"
+                        >
+                            <Target size={14} weight="bold" className="text-brand-dark" />
+                            <span>{t('Chiến dịch (Campaigns)')}</span>
+                        </Link>
+                        <span className="px-3 py-1.5 rounded-xl border border-border bg-card text-xs font-medium text-muted-foreground">
+                            {t('Thương hiệu')}: <strong className="text-foreground">{currentBrand?.name || t('Brand')}</strong> · {assets.length} {t('assets sẵn sàng')}
                         </span>
                     </div>
                 }

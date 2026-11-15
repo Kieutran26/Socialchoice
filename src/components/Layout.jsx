@@ -7,10 +7,11 @@ import CommandSearchDialog from './layout/CommandSearchDialog';
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, CaretUp, MagnifyingGlass, GearSix, IdentificationCard } from '@phosphor-icons/react';
+import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, CaretUp, MagnifyingGlass, GearSix, IdentificationCard, Crown, BookOpen } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
+import { getActiveSubscription } from '@/lib/team-seats';
 
 const ROUTE_LABELS = {
     '/': 'Overview',
@@ -25,11 +26,15 @@ const ROUTE_LABELS = {
     '/templates/create': 'Create Template',
     '/calendar': 'Content Calendar',
     '/strategy': 'Content Strategy',
+    '/strategy/campaigns': 'Campaigns',
+    '/campaigns': 'Campaigns',
     '/strategy/pillars': 'Content Pillars',
     '/strategy/angles': 'Content Angles',
     '/media': 'Media Library',
     '/interactive-images': 'Interactive Images',
     '/shortlinks': 'Shortlinks',
+    '/docs': 'Tài liệu hướng dẫn',
+    '/huong-dan': 'Tài liệu hướng dẫn',
     '/accounts': 'Social Accounts',
     '/brands': 'Brands',
     '/settings': 'Settings',
@@ -44,9 +49,20 @@ function Shell() {
     const [openBrandDropdown, setOpenBrandDropdown] = useState(false);
     const [openProfileMenu, setOpenProfileMenu] = useState(false);
     const [openCommandSearch, setOpenCommandSearch] = useState(false);
+    const [subscription, setSubscription] = useState(getActiveSubscription);
     const brandDropdownRef = useRef(null);
     const profileMenuRef = useRef(null);
     const location = useLocation();
+
+    useEffect(() => {
+        const syncSub = () => setSubscription(getActiveSubscription());
+        window.addEventListener('storage', syncSub);
+        window.addEventListener('socialchoice:subscription', syncSub);
+        return () => {
+            window.removeEventListener('storage', syncSub);
+            window.removeEventListener('socialchoice:subscription', syncSub);
+        };
+    }, []);
 
     const selectedBrand = brands.find((b) => b.id === selectedBrandId);
     const currentLabel = ROUTE_LABELS[location.pathname] || 'Overview';
@@ -283,6 +299,28 @@ function Shell() {
                                 )}
                             </NavLink>
 
+                            <NavLink
+                                to="/docs"
+                                role="menuitem"
+                                onClick={() => {
+                                    setOpenProfileMenu(false);
+                                    setOpen(false);
+                                }}
+                                className={({ isActive }) =>
+                                    `flex items-center gap-2.5 rounded-xl border px-2.5 py-2 text-xs min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${isActive
+                                        ? 'bg-brand border-brand-dark text-brand-ink font-semibold'
+                                        : 'border-transparent text-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
+                                    }`
+                                }
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        <BookOpen size={16} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                                        <span className="truncate">{t('Tài liệu hướng dẫn')}</span>
+                                    </>
+                                )}
+                            </NavLink>
+
                             {user?.role === 'admin' && user?.mode === 'admin-session' && (
                                 <NavLink
                                     to="/admin/licenses"
@@ -308,23 +346,19 @@ function Shell() {
                                 </NavLink>
                             )}
 
-                            {['admin-session', 'web-customer'].includes(mode) && (
-                                <>
-                                    <div className="my-1 border-t border-border/60" />
-                                    <button
-                                        type="button"
-                                        role="menuitem"
-                                        onClick={() => {
-                                            setOpenProfileMenu(false);
-                                            appClient.auth.logout().catch((e) => window.alert(t(e.message)));
-                                        }}
-                                        className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs min-h-9 font-medium text-dangerFg hover:bg-dangerBg transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
-                                    >
-                                        <SignOut size={16} className="shrink-0" />
-                                        <span className="truncate">{t('Sign out')}</span>
-                                    </button>
-                                </>
-                            )}
+                            <div className="my-1 border-t border-border/60" />
+                            <button
+                                type="button"
+                                role="menuitem"
+                                onClick={() => {
+                                    setOpenProfileMenu(false);
+                                    appClient.auth.logout().catch((e) => window.alert(t(e.message)));
+                                }}
+                                className="flex w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-xs min-h-9 font-medium text-dangerFg hover:bg-dangerBg transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+                            >
+                                <SignOut size={16} className="shrink-0" />
+                                <span className="truncate">{t('Sign out')}</span>
+                            </button>
                         </div>
                     )}
 
@@ -385,6 +419,38 @@ function Shell() {
                     </div>
 
                     <div className="ml-auto flex items-center gap-2 sm:gap-3 shrink-0">
+                        <NavLink
+                            to={subscription?.planKey === 'free' && !isDesktop() ? '/pricing' : '/settings?tab=license'}
+                            title={
+                                subscription?.planKey === 'free' && !isDesktop()
+                                    ? t('Nâng cấp gói hoặc xem hạn mức')
+                                    : t('Xem chi tiết gói & hạn mức')
+                            }
+                            className={`inline-flex h-8 items-center gap-1.5 rounded-xl border px-2.5 text-xs transition-colors ${
+                                isDesktop() || (subscription?.planKey && subscription.planKey !== 'free')
+                                    ? 'border-brand-dark bg-brand text-brand-ink font-bold hover:bg-[#ffe059]'
+                                    : 'border-brand-dark bg-brand/25 text-brand-ink font-semibold hover:bg-brand/40'
+                            }`}
+                        >
+                            <Crown
+                                size={15}
+                                weight="fill"
+                                className="text-brand-ink shrink-0"
+                            />
+                            <span className="truncate max-w-[130px] sm:max-w-[180px]">
+                                {isDesktop()
+                                    ? 'Desktop (SC2)'
+                                    : subscription?.planKey === 'free'
+                                        ? 'Gói Free'
+                                        : subscription?.planName || 'Gói Free'}
+                            </span>
+                            {!isDesktop() && subscription?.planKey === 'free' && (
+                                <span className="hidden sm:inline-flex items-center rounded-md bg-brand-ink px-1.5 py-0.5 text-[10px] font-bold leading-none text-white">
+                                    Nâng cấp
+                                </span>
+                            )}
+                        </NavLink>
+
                         <button
                             type="button"
                             onClick={() => setOpenCommandSearch(true)}

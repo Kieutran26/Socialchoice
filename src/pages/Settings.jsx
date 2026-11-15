@@ -21,6 +21,7 @@ import {
     LinkSimple,
     PenNib,
     MagnifyingGlass,
+    UsersThree,
 } from '@phosphor-icons/react';
 import { useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
@@ -46,6 +47,7 @@ import DesktopLicense from '@/components/desktop-license';
 import CustomerLicense from '@/components/customer-license';
 import ShortlinkSettingsCard from '@/components/settings/ShortlinkSettingsCard';
 import SignaturesSettingsCard from '@/components/settings/SignaturesSettingsCard';
+import TeamSeatsPanel from '@/components/team/TeamSeatsPanel';
 
 export default function Settings() {
     const { t, language, setLanguage } = useTranslation();
@@ -71,6 +73,13 @@ export default function Settings() {
     const [loadError, setLoadError] = useState('');
     const [activeTab, setActiveTab] = useState(() => searchParams.get('tab') || 'ai');
     const [searchQuery, setSearchQuery] = useState('');
+
+    useEffect(() => {
+        const tabParam = searchParams.get('tab');
+        if (tabParam) {
+            setActiveTab(tabParam);
+        }
+    }, [searchParams]);
 
     const load = useCallback(async () => {
         setLoading(true);
@@ -460,6 +469,23 @@ export default function Settings() {
                                         <span>{t('License & Version')}</span>
                                     </span>
                                     <span className="px-1.5 py-0.2 rounded-md bg-muted text-[10px] font-mono">Pro</span>
+                                </button>
+                            )}
+
+                            {!isDesktop() && (
+                                <button
+                                    type="button"
+                                    onClick={() => setActiveTab('team')}
+                                    className={`w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-xs transition-all ${
+                                        activeTab === 'team'
+                                            ? 'bg-brand text-brand-ink font-semibold'
+                                            : 'text-muted-foreground hover:bg-muted/60 hover:text-foreground font-medium'
+                                    }`}
+                                >
+                                    <span className="flex items-center gap-2">
+                                        <UsersThree size={15} weight={activeTab === 'team' ? 'bold' : 'regular'} />
+                                        <span>{t('Team & Seats')}</span>
+                                    </span>
                                 </button>
                             )}
 
@@ -938,6 +964,11 @@ export default function Settings() {
                     {/* Customer License */}
                     {!isDesktop() && (activeTab === 'all' || activeTab === 'license') && (
                         <CustomerLicense />
+                    )}
+
+                    {/* Team & Seats */}
+                    {!isDesktop() && (activeTab === 'all' || activeTab === 'team') && (
+                        <TeamSeatsPanel />
                     )}
                 </div>
             </div>

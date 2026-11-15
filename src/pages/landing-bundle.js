@@ -803,7 +803,7 @@ function mg(){
       ]
     })
   });
-}var f=V(Le(),1),pg=[["gioi-thieu","Gi\u1EDBi thi\u1EC7u"],["diem-manh","\u0110i\u1EC3m m\u1EA1nh"],["tinh-nang","T\xEDnh n\u0103ng"],["bang-gia","B\u1EA3ng gi\xE1"],["faq","FAQ"]],gd=["facebook","instagram","threads","x","tiktok","linkedin"],gr=e=>document.getElementById(e)?.scrollIntoView({behavior:"smooth",block:"start"});function bC(){let e=(0,fe.useRef)(null);return(0,fe.useEffect)(()=>{let a=e.current?.querySelectorAll(".reveal")??[],t=new IntersectionObserver(u=>u.forEach(o=>{o.isIntersecting&&(o.target.classList.add("in"),t.unobserve(o.target))}),{threshold:.15,rootMargin:"0px 0px -40px 0px"});a.forEach(u=>t.observe(u));let l=new MutationObserver(()=>e.current?.querySelectorAll(".reveal:not(.in)").forEach(u=>t.observe(u)));return e.current&&l.observe(e.current,{childList:!0,subtree:!0}),()=>{t.disconnect(),l.disconnect()}},[]),e}var Pe=e=>({transitionDelay:`${e}ms`,animationDelay:`${e}ms`});function zC({to:e,decimals:a=0,suffix:t=""}){let l=(0,fe.useRef)(null),[u,o]=(0,fe.useState)(0);return(0,fe.useEffect)(()=>{let d=l.current;if(!d)return;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return o(e);let s=0,n=new IntersectionObserver(([i])=>{if(!i.isIntersecting)return;n.disconnect();let x=performance.now(),L=c=>{let h=Math.min(1,(c-x)/1400);o(e*(1-Math.pow(1-h,3))),h<1&&(s=requestAnimationFrame(L))};s=requestAnimationFrame(L)});return n.observe(d),()=>{n.disconnect(),cancelAnimationFrame(s)}},[e]),(0,f.jsxs)("span",{ref:l,className:"tabular-nums",children:[u.toLocaleString("vi-VN",{minimumFractionDigits:a,maximumFractionDigits:a}),t]})}var Lr=["B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu \u0111\u1ED3ng h\u1ED3 d\xE2y da m\u1EDBi, gi\u1EA3m 20% cho 100 kh\xE1ch \u0111\u1EA7u ti\xEAn.","M\u1EB9o nh\u1ECF: lau d\xE2y da b\u1EB1ng kh\u0103n m\u1EC1m m\u1ED7i tu\u1EA7n \u0111\u1EC3 gi\u1EEF m\xE0u b\u1EC1n \u0111\u1EB9p. B\u1EA1n \u0111\xE3 th\u1EED ch\u01B0a?","Minigame cu\u1ED1i tu\u1EA7n: \u0111o\xE1n \u0111\xFAng gi\xE1 chi\u1EBFc \u0111\u1ED3ng h\u1ED3 n\xE0y \u0111\u1EC3 nh\u1EADn voucher 200K."];function TC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(0),[u,o]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{let d=Lr[e],s=setTimeout(()=>{!u&&t<d.length?l(t+1):u?t>0?l(Math.max(0,t-3)):(o(!1),a((e+1)%Lr.length)):o(!0)},!u&&t===d.length?2200:u?18:32);return()=>clearTimeout(s)},[e,t,u]),{text:Lr[e].slice(0,t),index:e}}function vr({children:e}){return(0,f.jsxs)("span",{className:"inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium text-zinc-600",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-brand-500"}),e]})}function NC({eyebrow:e,title:a,desc:t}){return(0,f.jsxs)("div",{className:"reveal mx-auto max-w-2xl text-center",children:[(0,f.jsx)(vr,{children:e}),(0,f.jsx)("h2",{className:"mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl",children:a}),(0,f.jsx)("p",{className:"mt-4 text-[15px] leading-relaxed text-zinc-500 text-pretty",children:t})]})}function kC({children:e}){return(0,f.jsxs)("span",{className:"relative whitespace-nowrap",children:[(0,f.jsx)("span",{className:"absolute inset-x-[-4px] bottom-[0.08em] h-[0.38em] origin-left animate-draw-x rounded-sm bg-brand-300/80 [animation-delay:700ms]"}),(0,f.jsx)("span",{className:"relative",children:e})]})}var xg=[{key:"compose",label:"So\u1EA1n b\xE0i",icon:mt},{key:"calendar",label:"L\u1ECBch n\u1ED9i dung",icon:Qt},{key:"analytics",label:"Ph\xE2n t\xEDch",icon:rt}];function AC(){let{text:e,index:a}=TC(),l=[["facebook","instagram","x","tiktok"],["facebook","threads","linkedin"],["instagram","tiktok","facebook","threads","x"]][a],u=[3,7,8][a];return(0,f.jsxs)("div",{className:"grid h-full grid-cols-1 md:grid-cols-[1fr_260px]",children:[(0,f.jsxs)("div",{className:"flex flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"T\u1EA1o b\xE0i vi\u1EBFt"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-emerald-500"})," \u0110\xE3 l\u01B0u"]})]}),(0,f.jsx)("div",{className:"mt-4 flex gap-2.5",children:gd.map((o,d)=>{let s=l.includes(o);return(0,f.jsxs)("div",{className:"relative",children:[(0,f.jsx)("div",{style:Pe(d*70),className:`grid size-10 place-items-center rounded-full text-[11px] font-semibold transition-colors duration-300 ${s?"animate-pop bg-zinc-900 text-white ring-2 ring-brand-400 ring-offset-2":"bg-zinc-100 text-zinc-400"}`,children:["DE","DC","TI","KI","KC","NG"][d]},s?`on-${a}`:"off"),(0,f.jsx)(de,{platform:o,className:`absolute -bottom-0.5 -right-0.5 size-4 rounded-full ring-2 ring-white ${s?"":"grayscale"}`})]},o)})}),(0,f.jsxs)("div",{className:"mt-5 flex-1 rounded-xl border border-zinc-200 p-4",children:[(0,f.jsx)("div",{className:"text-[10px] font-semibold uppercase tracking-wider text-zinc-400",children:"N\u1ED9i dung d\xF9ng chung"}),(0,f.jsxs)("p",{className:"mt-2 min-h-[64px] text-[13px] leading-relaxed text-zinc-800",children:[e,(0,f.jsx)("span",{className:"ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-zinc-900"})]}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-1.5 border-t border-zinc-100 pt-3",children:[["Ch\xE8n media","Tr\u1EE3 l\xFD AI","Ch\u1EEF k\xFD"].map((o,d)=>(0,f.jsx)("span",{className:`rounded-md px-2 py-1 text-[11px] font-medium ${d===1?"bg-brand-50 text-brand-700":"text-zinc-500"}`,children:o},o)),(0,f.jsxs)("span",{className:"ml-auto rounded-md border border-zinc-200 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400",children:[e.length,"/280"]})]})]}),(0,f.jsxs)("div",{className:"mt-4 flex items-center justify-end gap-2",children:[(0,f.jsx)("span",{className:"rounded-lg border border-zinc-200 px-3 py-1.5 text-[11px] font-medium text-zinc-600",children:"Th\xEAm v\xE0o l\u1ECBch"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-lg bg-brand-400 px-3 py-1.5 text-[11px] font-semibold",children:[(0,f.jsx)(Za,{className:"size-3"})," \u0110\u0103ng ngay \xB7 ",l.length," k\xEAnh"]})]})]}),(0,f.jsx)("div",{className:"relative hidden items-center justify-center bg-gradient-to-b from-zinc-50 to-brand-50/60 md:flex",children:(0,f.jsx)(og,{platforms:l,text:e,img:u})})]})}function MC(){let e=["T2 9","T3 10","T4 11","T5 12","T6 13","T7 14","CN 15"],a=[{day:0,top:10,p:"facebook",t:"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da",time:"09:00",c:"#fdd835"},{day:1,top:52,p:"instagram",t:"H\u1EADu tr\u01B0\u1EDDng studio",time:"18:30",c:"#18181b"},{day:2,top:22,p:"tiktok",t:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi",time:"12:00",c:"#fdd835",drag:!0},{day:3,top:62,p:"x",t:"Flash sale 48h",time:"20:00",c:"#f97316"},{day:4,top:14,p:"linkedin",t:"Tuy\u1EC3n Content Exec",time:"08:00",c:"#18181b"},{day:4,top:56,p:"threads",t:"H\u1ECFi \u0111\xE1p c\u1ED9ng \u0111\u1ED3ng",time:"19:00",c:"#10b981"},{day:5,top:36,p:"instagram",t:"Minigame \u0111o\xE1n gi\xE1",time:"19:00",c:"#10b981"},{day:6,top:18,p:"facebook",t:"Review th\xE1ng 11",time:"10:00",c:"#10b981"}];return(0,f.jsxs)("div",{className:"flex h-full flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"L\u1ECBch n\u1ED9i dung"}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:"Tu\u1EA7n 46 \xB7 Th\xE1ng 11, 2026"})]}),(0,f.jsxs)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:[(0,f.jsx)("span",{className:"rounded-md px-2 py-1 text-zinc-500",children:"Th\xE1ng"}),(0,f.jsx)("span",{className:"rounded-md bg-white px-2 py-1 shadow-sm",children:"Tu\u1EA7n"})]})]}),(0,f.jsx)("div",{className:"mt-4 grid flex-1 grid-cols-7 overflow-hidden rounded-xl border border-zinc-200",children:e.map((t,l)=>(0,f.jsxs)("div",{className:`relative border-zinc-100 ${l<6?"border-r":""} ${l===2?"bg-brand-50/50":""}`,children:[(0,f.jsxs)("div",{className:"border-b border-zinc-100 px-2 py-1.5 text-[10px]",children:[(0,f.jsxs)("span",{className:"text-zinc-400",children:[t.split(" ")[0]," "]}),(0,f.jsx)("span",{className:`font-semibold ${l===2?"rounded bg-brand-400 px-1":""}`,children:t.split(" ")[1]})]}),a.filter(u=>u.day===l).map((u,o)=>(0,f.jsxs)("div",{style:{top:`${u.top+12}%`,...Pe(150+(u.day*2+o)*60)},className:`absolute inset-x-1 animate-pop rounded-md border bg-white p-1.5 ${u.drag?"z-10 rotate-[-3deg] border-brand-400 shadow-[0_14px_28px_-12px_rgba(24,24,27,0.4)]":"border-zinc-200 shadow-sm"}`,children:[(0,f.jsxs)("div",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-3 w-0.5 rounded-full",style:{background:u.c}}),(0,f.jsx)(de,{platform:u.p,className:"size-3"}),(0,f.jsx)("span",{className:"font-mono text-[8px] text-zinc-400",children:u.time})]}),(0,f.jsx)("div",{className:"mt-0.5 line-clamp-2 text-[9px] font-medium leading-tight",children:u.t})]},o))]},t))})]})}function Cr(e){return e.map((a,t)=>{if(t===0)return`M${a[0]},${a[1]}`;let l=e[t-2]??e[t-1],u=e[t-1],o=e[t+1]??a,d=[u[0]+(a[0]-l[0])/6,u[1]+(a[1]-l[1])/6],s=[a[0]-(o[0]-u[0])/6,a[1]-(o[1]-u[1])/6];return`C${d[0]},${d[1]} ${s[0]},${s[1]} ${a[0]},${a[1]}`}).join(" ")}function wC({data:e,color:a}){let t=Math.max(...e),l=Math.min(...e),u=e.map((o,d)=>[d/(e.length-1)*60,20-(o-l)/(t-l||1)*18-1]);return(0,f.jsx)("svg",{viewBox:"0 0 60 20",className:"h-5 w-14",children:(0,f.jsx)("path",{d:Cr(u),pathLength:1,fill:"none",stroke:a,strokeWidth:"1.6",strokeLinecap:"round",className:"animate-draw-line"})})}function DC(){let[e,a]=(0,fe.useState)(1),l=[[52,58,55,63,61,70,74],[30,42,38,51,47,60,58,66,61,72,70,84],[22,28,35,33,41,46,52,49,58,63,70,74,79,86]][e],u=l.map((b,m)=>b*.78+Math.sin(m*1.3)*4),o=100,d=b=>b.map((m,r)=>[r/(b.length-1)*100,100-m/o*100]),s=d(l),n=Cr(s),i=Cr(d(u)),x=l.length-3,[L,c]=s[x],h=[["T2","T3","T4","T5","T6","T7","CN"],["1/10","8/10","15/10","22/10","30/10"],["T8","T9","T10"]][e],I=[{l:"Ti\u1EBFp c\u1EADn",v:"482K",dl:"+14%",c:"#e5b800",s:[3,5,4,6,7,6,9]},{l:"T\u01B0\u01A1ng t\xE1c",v:"32,8K",dl:"+6%",c:"#18181b",s:[4,4,6,5,7,7,8]},{l:"Theo d\xF5i m\u1EDBi",v:"2.140",dl:"+9%",c:"#10b981",s:[2,4,3,5,6,8,7]},{l:"T\u1EC9 l\u1EC7 nh\u1EA5p",v:"3,4%",dl:"\u22120,2",c:"#f97316",s:[6,5,6,4,5,4,4],down:!0}],T=[["facebook","Facebook",38],["instagram","Instagram",27],["tiktok","TikTok",21],["linkedin","LinkedIn",14]];return(0,f.jsxs)("div",{className:"flex h-full flex-col gap-3 p-5 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold leading-tight",children:"Ph\xE2n t\xEDch"}),(0,f.jsx)("div",{className:"text-[10px] text-zinc-500",children:"T\u1EA5t c\u1EA3 k\xEAnh \xB7 c\u1EADp nh\u1EADt 2 ph\xFAt tr\u01B0\u1EDBc"})]}),(0,f.jsx)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:["7 ng\xE0y","30 ng\xE0y","90 ng\xE0y"].map((b,m)=>(0,f.jsx)("button",{onClick:()=>a(m),className:`rounded-md px-2 py-1 transition ${e===m?"bg-white text-zinc-900 shadow-sm":"text-zinc-500 hover:text-zinc-800"}`,children:b},b))})]}),(0,f.jsx)("div",{className:"grid grid-cols-2 gap-2.5 md:grid-cols-4",children:I.map((b,m)=>(0,f.jsxs)("div",{style:Pe(m*80),className:"animate-fade-up rounded-xl border border-zinc-200 bg-white px-3 py-2.5",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[10px] text-zinc-500",children:[b.l,(0,f.jsx)("span",{className:`rounded-full px-1.5 text-[9px] font-medium ${b.down?"bg-red-50 text-red-600":"bg-emerald-50 text-emerald-700"}`,children:b.dl})]}),(0,f.jsxs)("div",{className:"mt-1 flex items-end justify-between",children:[(0,f.jsx)("span",{className:"text-[17px] font-semibold leading-none tracking-tight",children:b.v}),(0,f.jsx)(wC,{data:b.s,color:b.c},e)]})]},b.l))}),(0,f.jsxs)("div",{className:"grid min-h-0 flex-1 grid-cols-1 gap-2.5 md:grid-cols-[1.65fr_1fr]",children:[(0,f.jsxs)("div",{className:"flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"L\u01B0\u1EE3t ti\u1EBFp c\u1EADn"}),(0,f.jsxs)("div",{className:"flex items-center gap-3 text-[9px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-0.5 w-3 rounded bg-[#e5b800]"})," K\u1EF3 n\xE0y"]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"w-3 border-t border-dashed border-zinc-400"})," K\u1EF3 tr\u01B0\u1EDBc"]})]})]}),(0,f.jsxs)("div",{className:"mt-2 flex min-h-0 flex-1 gap-2",children:[(0,f.jsx)("div",{className:"flex flex-col justify-between pb-4 text-right font-mono text-[8px] text-zinc-400",children:["100K","75K","50K","25K","0"].map(b=>(0,f.jsx)("span",{children:b},b))}),(0,f.jsxs)("div",{className:"flex min-w-0 flex-1 flex-col",children:[(0,f.jsxs)("div",{className:"relative min-h-0 flex-1",children:[[0,25,50,75,100].map(b=>(0,f.jsx)("span",{className:"absolute inset-x-0 border-t border-dashed border-zinc-100",style:{top:`${b}%`}},b)),(0,f.jsxs)("svg",{viewBox:"0 0 100 100",preserveAspectRatio:"none",className:"absolute inset-0 size-full overflow-visible",children:[(0,f.jsx)("defs",{children:(0,f.jsxs)("linearGradient",{id:"heroArea",x1:"0",x2:"0",y1:"0",y2:"1",children:[(0,f.jsx)("stop",{offset:"0",stopColor:"#fdd835",stopOpacity:".45"}),(0,f.jsx)("stop",{offset:"1",stopColor:"#fdd835",stopOpacity:"0"})]})}),(0,f.jsx)("path",{d:`${n} L100,100 L0,100 Z`,fill:"url(#heroArea)",className:"animate-fade-up [animation-delay:500ms]"}),(0,f.jsx)("path",{d:i,fill:"none",stroke:"#a1a1aa",strokeWidth:"1.2",strokeDasharray:"3 3",vectorEffect:"non-scaling-stroke"}),(0,f.jsx)("path",{d:n,pathLength:1,fill:"none",stroke:"#e5b800",strokeWidth:"2.5",vectorEffect:"non-scaling-stroke",strokeLinecap:"round",className:"animate-draw-line"}),(0,f.jsx)("line",{x1:L,x2:L,y1:c,y2:"100",stroke:"#18181b",strokeWidth:"1",strokeDasharray:"2 2",vectorEffect:"non-scaling-stroke",className:"animate-fade-up [animation-delay:1.2s]"})]}),(0,f.jsx)("span",{className:"absolute size-2.5 -translate-x-1/2 -translate-y-1/2",style:{left:`${L}%`,top:`${c}%`},children:(0,f.jsx)("span",{className:"block size-full animate-pop rounded-full bg-zinc-900 ring-[3px] ring-white [animation-delay:1.3s]"})}),(0,f.jsx)("span",{className:"absolute -translate-x-1/2",style:{left:`${L}%`,top:`calc(${c}% - 40px)`},children:(0,f.jsxs)("span",{className:"block animate-pop whitespace-nowrap rounded-lg bg-zinc-900 px-2 py-1 text-center text-white shadow-lg [animation-delay:1.4s]",children:[(0,f.jsxs)("span",{className:"block font-mono text-[10px] font-semibold",children:[l[x],"K"]}),(0,f.jsxs)("span",{className:"block text-[8px] text-emerald-400",children:["+",Math.round((l[x]/u[x]-1)*100),"% k\u1EF3 tr\u01B0\u1EDBc"]})]})})]},e),(0,f.jsx)("div",{className:"flex justify-between pt-1.5 font-mono text-[8px] text-zinc-400",children:h.map(b=>(0,f.jsx)("span",{children:b},b))})]})]})]}),(0,f.jsxs)("div",{className:"hidden min-h-0 flex-col gap-2.5 md:flex",children:[(0,f.jsxs)("div",{className:"rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"Theo n\u1EC1n t\u1EA3ng"}),(0,f.jsx)("div",{className:"mt-2 flex h-2 overflow-hidden rounded-full",children:T.map(([b,,m],r)=>(0,f.jsx)("span",{style:{width:`${m}%`,background:["#1877F2","#D62976","#18181b","#0A66C2"][r],...Pe(200+r*120)},className:"h-full origin-left animate-draw-x"},b))}),(0,f.jsx)("ul",{className:"mt-2.5 space-y-1.5",children:T.map(([b,m,r])=>(0,f.jsxs)("li",{className:"flex items-center gap-2 text-[10px]",children:[(0,f.jsx)(de,{platform:b,className:"size-3.5"}),(0,f.jsx)("span",{className:"flex-1",children:m}),(0,f.jsxs)("span",{className:"font-mono text-zinc-500",children:[r,"%"]})]},b))})]}),(0,f.jsxs)("div",{className:"min-h-0 flex-1 rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("span",{className:"text-[11px] font-semibold",children:"B\xE0i n\u1ED5i b\u1EADt"}),(0,f.jsx)("span",{className:"text-[9px] text-zinc-400",children:"Ti\u1EBFp c\u1EADn"})]}),(0,f.jsx)("ul",{className:"mt-2 space-y-2",children:[[8,"Minigame \u0111o\xE1n gi\xE1","instagram",31.2],[3,"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da","facebook",18.4],[10,"H\u1EADu tr\u01B0\u1EDDng studio","tiktok",9.2]].map(([b,m,r,g],v)=>(0,f.jsxs)("li",{style:Pe(300+v*120),className:"flex animate-fade-up items-center gap-2",children:[(0,f.jsx)("span",{className:"w-2 font-mono text-[9px] text-zinc-400",children:v+1}),(0,f.jsxs)("div",{className:"relative shrink-0",children:[(0,f.jsx)("img",{src:Re[b].src,alt:"",className:"size-7 rounded-md object-cover"}),(0,f.jsx)(de,{platform:r,className:"absolute -bottom-1 -right-1 size-3 rounded-full ring-1 ring-white"})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1",children:[(0,f.jsx)("div",{className:"truncate text-[10px] font-medium",children:m}),(0,f.jsx)("div",{className:"mt-0.5 h-1 rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:"h-full origin-left animate-draw-x rounded-full bg-brand-400",style:{width:`${g/31.2*100}%`,...Pe(500+v*120)}})})]}),(0,f.jsxs)("span",{className:"font-mono text-[9px] text-zinc-600",children:[g.toLocaleString("vi-VN"),"K"]})]},m))})]})]})]})]})}function BC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{if(t)return;let u=setTimeout(()=>a(o=>(o+1)%xg.length),7e3);return()=>clearTimeout(u)},[e,t]),(0,f.jsxs)("div",{className:"relative mx-auto max-w-5xl",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[(0,f.jsx)("div",{className:"absolute -inset-x-10 -top-10 bottom-0 -z-10 rounded-[40px] bg-gradient-to-b from-brand-100/70 via-brand-50/40 to-transparent blur-2xl"}),(0,f.jsx)("div",{className:"mb-5 flex justify-center",children:(0,f.jsx)("div",{className:"inline-flex gap-1 rounded-2xl border border-zinc-200 bg-white/80 p-1 shadow-sm backdrop-blur",children:xg.map((u,o)=>(0,f.jsxs)("button",{onClick:()=>a(o),className:`relative flex items-center gap-2 overflow-hidden rounded-xl px-3.5 py-2 text-[13px] font-medium transition ${e===o?"bg-brand-400 text-zinc-900 font-semibold":"text-zinc-500 hover:text-zinc-900"}`,children:[(0,f.jsx)(u.icon,{className:"size-4"}),(0,f.jsx)("span",{className:"hidden sm:inline",children:u.label}),e===o&&(0,f.jsx)("span",{className:`absolute inset-x-0 bottom-0 h-0.5 origin-left bg-zinc-900/80 ${t?"scale-x-100 opacity-60":"animate-progress"}`},`${e}-${t}`)]},u.key))})}),(0,f.jsxs)("div",{className:"overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_30px_80px_-30px_rgba(24,24,27,0.25)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-1.5 border-b border-zinc-100 bg-zinc-50/80 px-4 py-2.5",children:[(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsxs)("span",{className:"ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[10px] text-zinc-400 ring-1 ring-zinc-200",children:["socialchoice.site/",["tao-bai-viet","lich-noi-dung","phan-tich"][e]]})]}),(0,f.jsxs)("div",{className:"flex h-[440px]",children:[(0,f.jsxs)("div",{className:"hidden w-14 shrink-0 flex-col items-center gap-2 border-r border-zinc-100 bg-zinc-50/70 py-4 sm:flex",children:[(0,f.jsx)("div",{className:"mb-2 grid size-8 place-items-center rounded-lg bg-brand-400",children:(0,f.jsx)("svg",{viewBox:"0 0 24 24",className:"size-4",fill:"none",children:(0,f.jsx)("path",{d:"M4 5l16 3-7 3-2 8-3-7z",fill:"#18181b"})})}),[Ya,mt,Qt,ql,rt,wl].map((u,o)=>{let d=[1,2,4][e]===o;return(0,f.jsx)("span",{className:`grid size-9 place-items-center rounded-lg transition ${d?"bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200":"text-zinc-400"}`,children:(0,f.jsx)(u,{className:"size-4"})},o)})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 animate-fade-up [animation-duration:0.5s]",children:[e===0&&(0,f.jsx)(AC,{}),e===1&&(0,f.jsx)(MC,{}),e===2&&(0,f.jsx)(DC,{})]},e)]})]})]})}var Hl=[{p:"instagram",name:"deszy_creative",handle:"Instagram",text:"B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu d\xE2y da m\u1EDBi.",img:3,likes:"1.284",time:"20:00"},{p:"facebook",name:"Deszy",handle:"Trang Facebook",text:"Flash sale 48h \u2014 gi\u1EA3m \u0111\u1EBFn 40% to\xE0n b\u1ED9 ph\u1EE5 ki\u1EC7n.",img:1,likes:"842",time:"20:00"},{p:"tiktok",name:"kiu.chun",handle:"TikTok",text:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi c\xF9ng team studio",img:7,likes:"12,4K",time:"20:00"},{p:"linkedin",name:"TalentChoice",handle:"LinkedIn",text:"H\u1EADu tr\u01B0\u1EDDng m\u1ED9t ng\xE0y l\xE0m vi\u1EC7c t\u1EA1i studio.",img:10,likes:"86",time:"20:00"},{p:"threads",name:"_ticrn",handle:"Threads",text:"B\u1EA1n ch\u1ECDn d\xE2y da hay d\xE2y kim lo\u1EA1i?",img:8,likes:"214",time:"20:00"}];function RC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);(0,fe.useEffect)(()=>{if(t)return;let d=setInterval(()=>a(s=>(s+1)%Hl.length),2800);return()=>clearInterval(d)},[t]);let u=d=>(d-e+Hl.length)%Hl.length,o=d=>{let s=["translate-x-0 translate-y-0 rotate-0 scale-100 opacity-100 z-30","translate-x-10 translate-y-4 rotate-[6deg] scale-[0.94] opacity-100 z-20","translate-x-20 translate-y-8 rotate-[12deg] scale-[0.88] opacity-90 z-10","translate-x-24 translate-y-10 rotate-[14deg] scale-[0.84] opacity-0 z-0"];return d===Hl.length-1?"-translate-x-28 -translate-y-6 -rotate-[14deg] scale-95 opacity-0 z-40":s[Math.min(d,3)]};return(0,f.jsxs)("div",{className:"hero-card-stack relative mx-auto h-[440px] sm:h-[480px] lg:h-[500px] w-full max-w-[310px] sm:max-w-[360px] lg:max-w-[420px]",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[Hl.map((d,s)=>{let n=u(s);return(0,f.jsx)("div",{className:`absolute left-2 sm:left-3 lg:left-4 top-2 sm:top-4 w-[240px] sm:w-[270px] lg:w-[300px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${o(n)}`,children:(0,f.jsxs)("div",{className:"overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_30px_60px_-24px_rgba(24,24,27,0.35)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-2.5 p-3.5",children:[(0,f.jsx)("span",{className:"grid size-9 place-items-center rounded-full bg-brand-100 text-[12px] font-semibold text-brand-700",children:d.name[0].toUpperCase()}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 leading-tight",children:[(0,f.jsx)("div",{className:"truncate text-[13px] font-semibold",children:d.name}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:d.handle})]}),(0,f.jsx)(de,{platform:d.p,className:"size-6"})]}),(0,f.jsx)("img",{src:Re[d.img].src,alt:"",className:"aspect-[4/3.6] w-full object-cover"}),(0,f.jsxs)("div",{className:"p-3.5",children:[(0,f.jsx)("p",{className:"text-[13px] leading-snug text-zinc-800",children:d.text}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-3 text-[11px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(La,{className:"size-3.5"})," ",d.likes]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(Be,{className:"size-3.5"})," 24"]}),(0,f.jsxs)("span",{className:"ml-auto flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700",children:[(0,f.jsx)(_e,{className:"size-3",strokeWidth:3})," \u0110\xE3 \u0111\u0103ng ",d.time]})]})]})]})},d.name)}),(0,f.jsxs)("div",{className:"absolute -left-1 sm:left-1 lg:-left-6 bottom-4 sm:bottom-6 z-40 w-[255px] sm:w-64 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-xl backdrop-blur",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[11px]",children:[(0,f.jsx)("span",{className:"font-semibold",children:"\u0110ang \u0111\u0103ng l\xEAn"}),(0,f.jsxs)("span",{className:"font-mono text-zinc-400",children:[e+1,"/",Hl.length]})]}),(0,f.jsx)("div",{className:"mt-2 flex gap-1.5",children:Hl.map((d,s)=>(0,f.jsx)("button",{onClick:()=>a(s),className:`grid size-8 place-items-center rounded-lg transition ${s===e?"bg-zinc-900 ring-2 ring-brand-400":"bg-zinc-100"}`,children:(0,f.jsx)(de,{platform:d.p,className:"size-4"})},d.name))}),(0,f.jsx)("div",{className:"mt-2.5 h-1 overflow-hidden rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:`h-full origin-left bg-brand-400 ${t?"scale-x-100 opacity-50":"animate-progress"}`,style:{animationDuration:"2800ms"}},`${e}-${t}`)})]})]})}var qC=[{name:"Starter",desc:"Cho c\xE1 nh\xE2n b\u1EAFt \u0111\u1EA7u x\xE2y k\xEAnh.",price:0,features:["3 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","30 b\xE0i vi\u1EBFt / th\xE1ng","L\u1ECBch n\u1ED9i dung","Xem tr\u01B0\u1EDBc theo n\u1EC1n t\u1EA3ng","1 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"B\u1EAFt \u0111\u1EA7u mi\u1EC5n ph\xED"},{name:"Pro",desc:"Cho th\u01B0\u01A1ng hi\u1EC7u v\xE0 creator nghi\xEAm t\xFAc.",price:499e3,popular:!0,features:["10 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","300 b\xE0i vi\u1EBFt / th\xE1ng","Tr\u1EE3 l\xFD AI \xB7 1.000 l\u01B0\u1EE3t / th\xE1ng","Chi\u1EBFn l\u01B0\u1EE3c, tr\u1EE5 c\u1ED9t, g\xF3c khai th\xE1c","UTM & li\xEAn k\u1EBFt theo d\xF5i","Ph\xE2n t\xEDch n\xE2ng cao","10 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"D\xF9ng th\u1EED Pro 14 ng\xE0y"},{name:"Agency",desc:"Cho agency qu\u1EA3n l\xFD nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u.",price:129e4,features:["Kh\xF4ng gi\u1EDBi h\u1EA1n k\xEAnh","Kh\xF4ng gi\u1EDBi h\u1EA1n b\xE0i vi\u1EBFt","Nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u & th\xE0nh vi\xEAn","Ph\xE2n quy\u1EC1n, duy\u1EC7t b\xE0i","B\xE1o c\xE1o white-label","H\u1ED7 tr\u1EE3 \u01B0u ti\xEAn 1:1"],cta:"Li\xEAn h\u1EC7 t\u01B0 v\u1EA5n"}],OC=[{q:"SocialChoice h\u1ED7 tr\u1EE3 nh\u1EEFng n\u1EC1n t\u1EA3ng n\xE0o?",a:"Hi\u1EC7n t\u1EA1i SocialChoice h\u1ED7 tr\u1EE3 Facebook (Trang), Instagram (t\xE0i kho\u1EA3n doanh nghi\u1EC7p), Threads, X, TikTok v\xE0 LinkedIn. B\u1EA1n c\xF3 th\u1EC3 \u0111\u0103ng c\xF9ng l\xFAc l\xEAn t\u1EA5t c\u1EA3 ho\u1EB7c ch\u1ECDn t\u1EEBng k\xEAnh."},{q:"T\xF4i c\xF3 th\u1EC3 vi\u1EBFt n\u1ED9i dung kh\xE1c nhau cho t\u1EEBng k\xEAnh kh\xF4ng?",a:"C\xF3. B\u1EA1n vi\u1EBFt m\u1ED9t n\u1ED9i dung chung, sau \u0111\xF3 b\u1EADt \u201CTu\u1EF3 ch\u1EC9nh ri\xEAng\u201D cho k\xEAnh b\u1EA5t k\u1EF3. SocialChoice t\u1EF1 c\u1EA3nh b\xE1o khi n\u1ED9i dung v\u01B0\u1EE3t gi\u1EDBi h\u1EA1n k\xFD t\u1EF1 c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, v\xED d\u1EE5 280 k\xFD t\u1EF1 tr\xEAn X."},{q:"B\xE0i \u0111\xE3 h\u1EB9n gi\u1EDD c\xF3 \u0111\u0103ng khi t\xF4i t\u1EAFt m\xE1y kh\xF4ng?",a:"C\xF3. B\xE0i \u0111\u01B0\u1EE3c l\u01B0u tr\xEAn m\xE1y ch\u1EE7 v\xE0 t\u1EF1 \u0111\u1ED9ng \u0111\u0103ng \u0111\xFAng gi\u1EDD theo m\xFAi gi\u1EDD b\u1EA1n ch\u1ECDn, k\u1EC3 c\u1EA3 khi b\u1EA1n \u0111\xF3ng tr\xECnh duy\u1EC7t."},{q:"Tr\u1EE3 l\xFD AI ho\u1EA1t \u0111\u1ED9ng nh\u01B0 th\u1EBF n\xE0o?",a:"Tr\u1EE3 l\xFD AI gi\xFAp g\u1EE3i \xFD d\xE0n \xFD, vi\u1EBFt l\u1EA1i h\u1EA5p d\u1EABn h\u01A1n, r\xFAt g\u1ECDn cho t\u1EEBng n\u1EC1n t\u1EA3ng v\xE0 \u0111\u1EC1 xu\u1EA5t hashtag. B\u1EA1n lu\xF4n xem l\u1EA1i v\xE0 ch\u1EC9nh s\u1EEDa tr\u01B0\u1EDBc khi \u0111\u0103ng."},{q:"T\xF4i c\xF3 th\u1EC3 \u0111\u1ED5i g\xF3i ho\u1EB7c hu\u1EF7 b\u1EA5t c\u1EE9 l\xFAc n\xE0o kh\xF4ng?",a:"C\xF3. B\u1EA1n c\xF3 th\u1EC3 n\xE2ng c\u1EA5p, h\u1EA1 c\u1EA5p ho\u1EB7c hu\u1EF7 g\xF3i trong ph\u1EA7n Qu\u1EA3n l\xFD license. Khi hu\u1EF7, g\xF3i v\u1EABn d\xF9ng \u0111\u01B0\u1EE3c \u0111\u1EBFn h\u1EBFt chu k\u1EF3 \u0111\xE3 thanh to\xE1n."},{q:"D\u1EEF li\u1EC7u v\xE0 t\xE0i kho\u1EA3n c\u1EE7a t\xF4i c\xF3 an to\xE0n kh\xF4ng?",a:"SocialChoice k\u1EBFt n\u1ED1i qua API ch\xEDnh th\u1EE9c c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, kh\xF4ng l\u01B0u m\u1EADt kh\u1EA9u m\u1EA1ng x\xE3 h\u1ED9i. B\u1EA1n c\xF3 th\u1EC3 thu h\u1ED3i quy\u1EC1n truy c\u1EADp b\u1EA5t c\u1EE9 l\xFAc n\xE0o."}];
+}var f=V(Le(),1),pg=[["gioi-thieu","Gi\u1EDBi thi\u1EC7u"],["diem-manh","\u0110i\u1EC3m m\u1EA1nh"],["tinh-nang","T\xEDnh n\u0103ng"],["bang-gia","B\u1EA3ng gi\xE1"],["docs","T\xE0i li\u1EC7u"],["faq","FAQ"]],gd=["facebook","instagram","threads","x","tiktok","linkedin"],gr=e=>document.getElementById(e)?.scrollIntoView({behavior:"smooth",block:"start"});function bC(){let e=(0,fe.useRef)(null);return(0,fe.useEffect)(()=>{let a=e.current?.querySelectorAll(".reveal")??[],t=new IntersectionObserver(u=>u.forEach(o=>{o.isIntersecting&&(o.target.classList.add("in"),t.unobserve(o.target))}),{threshold:.15,rootMargin:"0px 0px -40px 0px"});a.forEach(u=>t.observe(u));let l=new MutationObserver(()=>e.current?.querySelectorAll(".reveal:not(.in)").forEach(u=>t.observe(u)));return e.current&&l.observe(e.current,{childList:!0,subtree:!0}),()=>{t.disconnect(),l.disconnect()}},[]),e}var Pe=e=>({transitionDelay:`${e}ms`,animationDelay:`${e}ms`});function zC({to:e,decimals:a=0,suffix:t=""}){let l=(0,fe.useRef)(null),[u,o]=(0,fe.useState)(0);return(0,fe.useEffect)(()=>{let d=l.current;if(!d)return;if(window.matchMedia("(prefers-reduced-motion: reduce)").matches)return o(e);let s=0,n=new IntersectionObserver(([i])=>{if(!i.isIntersecting)return;n.disconnect();let x=performance.now(),L=c=>{let h=Math.min(1,(c-x)/1400);o(e*(1-Math.pow(1-h,3))),h<1&&(s=requestAnimationFrame(L))};s=requestAnimationFrame(L)});return n.observe(d),()=>{n.disconnect(),cancelAnimationFrame(s)}},[e]),(0,f.jsxs)("span",{ref:l,className:"tabular-nums",children:[u.toLocaleString("vi-VN",{minimumFractionDigits:a,maximumFractionDigits:a}),t]})}var Lr=["B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu \u0111\u1ED3ng h\u1ED3 d\xE2y da m\u1EDBi, gi\u1EA3m 20% cho 100 kh\xE1ch \u0111\u1EA7u ti\xEAn.","M\u1EB9o nh\u1ECF: lau d\xE2y da b\u1EB1ng kh\u0103n m\u1EC1m m\u1ED7i tu\u1EA7n \u0111\u1EC3 gi\u1EEF m\xE0u b\u1EC1n \u0111\u1EB9p. B\u1EA1n \u0111\xE3 th\u1EED ch\u01B0a?","Minigame cu\u1ED1i tu\u1EA7n: \u0111o\xE1n \u0111\xFAng gi\xE1 chi\u1EBFc \u0111\u1ED3ng h\u1ED3 n\xE0y \u0111\u1EC3 nh\u1EADn voucher 200K."];function TC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(0),[u,o]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{let d=Lr[e],s=setTimeout(()=>{!u&&t<d.length?l(t+1):u?t>0?l(Math.max(0,t-3)):(o(!1),a((e+1)%Lr.length)):o(!0)},!u&&t===d.length?2200:u?18:32);return()=>clearTimeout(s)},[e,t,u]),{text:Lr[e].slice(0,t),index:e}}function vr({children:e}){return(0,f.jsxs)("span",{className:"inline-flex items-center gap-2 rounded-full border border-zinc-200 bg-white px-3 py-1 text-[12px] font-medium text-zinc-600",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-brand-500"}),e]})}function NC({eyebrow:e,title:a,desc:t}){return(0,f.jsxs)("div",{className:"reveal mx-auto max-w-2xl text-center",children:[(0,f.jsx)(vr,{children:e}),(0,f.jsx)("h2",{className:"mt-4 text-3xl font-semibold tracking-tight text-balance sm:text-4xl",children:a}),(0,f.jsx)("p",{className:"mt-4 text-[15px] leading-relaxed text-zinc-500 text-pretty",children:t})]})}function kC({children:e}){return(0,f.jsxs)("span",{className:"relative whitespace-nowrap",children:[(0,f.jsx)("span",{className:"absolute inset-x-[-4px] bottom-[0.08em] h-[0.38em] origin-left animate-draw-x rounded-sm bg-brand-300/80 [animation-delay:700ms]"}),(0,f.jsx)("span",{className:"relative",children:e})]})}var xg=[{key:"compose",label:"So\u1EA1n b\xE0i",icon:mt},{key:"calendar",label:"L\u1ECBch n\u1ED9i dung",icon:Qt},{key:"analytics",label:"Ph\xE2n t\xEDch",icon:rt}];function AC(){let{text:e,index:a}=TC(),l=[["facebook","instagram","x","tiktok"],["facebook","threads","linkedin"],["instagram","tiktok","facebook","threads","x"]][a],u=[3,7,8][a];return(0,f.jsxs)("div",{className:"grid h-full grid-cols-1 md:grid-cols-[1fr_260px]",children:[(0,f.jsxs)("div",{className:"flex flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"T\u1EA1o b\xE0i vi\u1EBFt"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-medium text-emerald-700",children:[(0,f.jsx)("span",{className:"size-1.5 rounded-full bg-emerald-500"})," \u0110\xE3 l\u01B0u"]})]}),(0,f.jsx)("div",{className:"mt-4 flex gap-2.5",children:gd.map((o,d)=>{let s=l.includes(o);return(0,f.jsxs)("div",{className:"relative",children:[(0,f.jsx)("div",{style:Pe(d*70),className:`grid size-10 place-items-center rounded-full text-[11px] font-semibold transition-colors duration-300 ${s?"animate-pop bg-zinc-900 text-white ring-2 ring-brand-400 ring-offset-2":"bg-zinc-100 text-zinc-400"}`,children:["DE","DC","TI","KI","KC","NG"][d]},s?`on-${a}`:"off"),(0,f.jsx)(de,{platform:o,className:`absolute -bottom-0.5 -right-0.5 size-4 rounded-full ring-2 ring-white ${s?"":"grayscale"}`})]},o)})}),(0,f.jsxs)("div",{className:"mt-5 flex-1 rounded-xl border border-zinc-200 p-4",children:[(0,f.jsx)("div",{className:"text-[10px] font-semibold uppercase tracking-wider text-zinc-400",children:"N\u1ED9i dung d\xF9ng chung"}),(0,f.jsxs)("p",{className:"mt-2 min-h-[64px] text-[13px] leading-relaxed text-zinc-800",children:[e,(0,f.jsx)("span",{className:"ml-0.5 inline-block h-4 w-px translate-y-0.5 animate-pulse bg-zinc-900"})]}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-1.5 border-t border-zinc-100 pt-3",children:[["Ch\xE8n media","Tr\u1EE3 l\xFD AI","Ch\u1EEF k\xFD"].map((o,d)=>(0,f.jsx)("span",{className:`rounded-md px-2 py-1 text-[11px] font-medium ${d===1?"bg-brand-50 text-brand-700":"text-zinc-500"}`,children:o},o)),(0,f.jsxs)("span",{className:"ml-auto rounded-md border border-zinc-200 px-1.5 py-0.5 font-mono text-[10px] text-zinc-400",children:[e.length,"/280"]})]})]}),(0,f.jsxs)("div",{className:"mt-4 flex items-center justify-end gap-2",children:[(0,f.jsx)("span",{className:"rounded-lg border border-zinc-200 px-3 py-1.5 text-[11px] font-medium text-zinc-600",children:"Th\xEAm v\xE0o l\u1ECBch"}),(0,f.jsxs)("span",{className:"flex items-center gap-1.5 rounded-lg bg-brand-400 px-3 py-1.5 text-[11px] font-semibold",children:[(0,f.jsx)(Za,{className:"size-3"})," \u0110\u0103ng ngay \xB7 ",l.length," k\xEAnh"]})]})]}),(0,f.jsx)("div",{className:"relative hidden items-center justify-center bg-gradient-to-b from-zinc-50 to-brand-50/60 md:flex",children:(0,f.jsx)(og,{platforms:l,text:e,img:u})})]})}function MC(){let e=["T2 9","T3 10","T4 11","T5 12","T6 13","T7 14","CN 15"],a=[{day:0,top:10,p:"facebook",t:"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da",time:"09:00",c:"#fdd835"},{day:1,top:52,p:"instagram",t:"H\u1EADu tr\u01B0\u1EDDng studio",time:"18:30",c:"#18181b"},{day:2,top:22,p:"tiktok",t:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi",time:"12:00",c:"#fdd835",drag:!0},{day:3,top:62,p:"x",t:"Flash sale 48h",time:"20:00",c:"#f97316"},{day:4,top:14,p:"linkedin",t:"Tuy\u1EC3n Content Exec",time:"08:00",c:"#18181b"},{day:4,top:56,p:"threads",t:"H\u1ECFi \u0111\xE1p c\u1ED9ng \u0111\u1ED3ng",time:"19:00",c:"#10b981"},{day:5,top:36,p:"instagram",t:"Minigame \u0111o\xE1n gi\xE1",time:"19:00",c:"#10b981"},{day:6,top:18,p:"facebook",t:"Review th\xE1ng 11",time:"10:00",c:"#10b981"}];return(0,f.jsxs)("div",{className:"flex h-full flex-col p-6 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold",children:"L\u1ECBch n\u1ED9i dung"}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:"Tu\u1EA7n 46 \xB7 Th\xE1ng 11, 2026"})]}),(0,f.jsxs)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:[(0,f.jsx)("span",{className:"rounded-md px-2 py-1 text-zinc-500",children:"Th\xE1ng"}),(0,f.jsx)("span",{className:"rounded-md bg-white px-2 py-1 shadow-sm",children:"Tu\u1EA7n"})]})]}),(0,f.jsx)("div",{className:"mt-4 grid flex-1 grid-cols-7 overflow-hidden rounded-xl border border-zinc-200",children:e.map((t,l)=>(0,f.jsxs)("div",{className:`relative border-zinc-100 ${l<6?"border-r":""} ${l===2?"bg-brand-50/50":""}`,children:[(0,f.jsxs)("div",{className:"border-b border-zinc-100 px-2 py-1.5 text-[10px]",children:[(0,f.jsxs)("span",{className:"text-zinc-400",children:[t.split(" ")[0]," "]}),(0,f.jsx)("span",{className:`font-semibold ${l===2?"rounded bg-brand-400 px-1":""}`,children:t.split(" ")[1]})]}),a.filter(u=>u.day===l).map((u,o)=>(0,f.jsxs)("div",{style:{top:`${u.top+12}%`,...Pe(150+(u.day*2+o)*60)},className:`absolute inset-x-1 animate-pop rounded-md border bg-white p-1.5 ${u.drag?"z-10 rotate-[-3deg] border-brand-400 shadow-[0_14px_28px_-12px_rgba(24,24,27,0.4)]":"border-zinc-200 shadow-sm"}`,children:[(0,f.jsxs)("div",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-3 w-0.5 rounded-full",style:{background:u.c}}),(0,f.jsx)(de,{platform:u.p,className:"size-3"}),(0,f.jsx)("span",{className:"font-mono text-[8px] text-zinc-400",children:u.time})]}),(0,f.jsx)("div",{className:"mt-0.5 line-clamp-2 text-[9px] font-medium leading-tight",children:u.t})]},o))]},t))})]})}function Cr(e){return e.map((a,t)=>{if(t===0)return`M${a[0]},${a[1]}`;let l=e[t-2]??e[t-1],u=e[t-1],o=e[t+1]??a,d=[u[0]+(a[0]-l[0])/6,u[1]+(a[1]-l[1])/6],s=[a[0]-(o[0]-u[0])/6,a[1]-(o[1]-u[1])/6];return`C${d[0]},${d[1]} ${s[0]},${s[1]} ${a[0]},${a[1]}`}).join(" ")}function wC({data:e,color:a}){let t=Math.max(...e),l=Math.min(...e),u=e.map((o,d)=>[d/(e.length-1)*60,20-(o-l)/(t-l||1)*18-1]);return(0,f.jsx)("svg",{viewBox:"0 0 60 20",className:"h-5 w-14",children:(0,f.jsx)("path",{d:Cr(u),pathLength:1,fill:"none",stroke:a,strokeWidth:"1.6",strokeLinecap:"round",className:"animate-draw-line"})})}function DC(){let[e,a]=(0,fe.useState)(1),l=[[52,58,55,63,61,70,74],[30,42,38,51,47,60,58,66,61,72,70,84],[22,28,35,33,41,46,52,49,58,63,70,74,79,86]][e],u=l.map((b,m)=>b*.78+Math.sin(m*1.3)*4),o=100,d=b=>b.map((m,r)=>[r/(b.length-1)*100,100-m/o*100]),s=d(l),n=Cr(s),i=Cr(d(u)),x=l.length-3,[L,c]=s[x],h=[["T2","T3","T4","T5","T6","T7","CN"],["1/10","8/10","15/10","22/10","30/10"],["T8","T9","T10"]][e],I=[{l:"Ti\u1EBFp c\u1EADn",v:"482K",dl:"+14%",c:"#e5b800",s:[3,5,4,6,7,6,9]},{l:"T\u01B0\u01A1ng t\xE1c",v:"32,8K",dl:"+6%",c:"#18181b",s:[4,4,6,5,7,7,8]},{l:"Theo d\xF5i m\u1EDBi",v:"2.140",dl:"+9%",c:"#10b981",s:[2,4,3,5,6,8,7]},{l:"T\u1EC9 l\u1EC7 nh\u1EA5p",v:"3,4%",dl:"\u22120,2",c:"#f97316",s:[6,5,6,4,5,4,4],down:!0}],T=[["facebook","Facebook",38],["instagram","Instagram",27],["tiktok","TikTok",21],["linkedin","LinkedIn",14]];return(0,f.jsxs)("div",{className:"flex h-full flex-col gap-3 p-5 text-left",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsxs)("div",{children:[(0,f.jsx)("div",{className:"text-[15px] font-semibold leading-tight",children:"Ph\xE2n t\xEDch"}),(0,f.jsx)("div",{className:"text-[10px] text-zinc-500",children:"T\u1EA5t c\u1EA3 k\xEAnh \xB7 c\u1EADp nh\u1EADt 2 ph\xFAt tr\u01B0\u1EDBc"})]}),(0,f.jsx)("div",{className:"flex rounded-lg bg-zinc-100 p-0.5 text-[10px] font-medium",children:["7 ng\xE0y","30 ng\xE0y","90 ng\xE0y"].map((b,m)=>(0,f.jsx)("button",{onClick:()=>a(m),className:`rounded-md px-2 py-1 transition ${e===m?"bg-white text-zinc-900 shadow-sm":"text-zinc-500 hover:text-zinc-800"}`,children:b},b))})]}),(0,f.jsx)("div",{className:"grid grid-cols-2 gap-2.5 md:grid-cols-4",children:I.map((b,m)=>(0,f.jsxs)("div",{style:Pe(m*80),className:"animate-fade-up rounded-xl border border-zinc-200 bg-white px-3 py-2.5",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[10px] text-zinc-500",children:[b.l,(0,f.jsx)("span",{className:`rounded-full px-1.5 text-[9px] font-medium ${b.down?"bg-red-50 text-red-600":"bg-emerald-50 text-emerald-700"}`,children:b.dl})]}),(0,f.jsxs)("div",{className:"mt-1 flex items-end justify-between",children:[(0,f.jsx)("span",{className:"text-[17px] font-semibold leading-none tracking-tight",children:b.v}),(0,f.jsx)(wC,{data:b.s,color:b.c},e)]})]},b.l))}),(0,f.jsxs)("div",{className:"grid min-h-0 flex-1 grid-cols-1 gap-2.5 md:grid-cols-[1.65fr_1fr]",children:[(0,f.jsxs)("div",{className:"flex min-h-0 flex-col rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"L\u01B0\u1EE3t ti\u1EBFp c\u1EADn"}),(0,f.jsxs)("div",{className:"flex items-center gap-3 text-[9px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"h-0.5 w-3 rounded bg-[#e5b800]"})," K\u1EF3 n\xE0y"]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)("span",{className:"w-3 border-t border-dashed border-zinc-400"})," K\u1EF3 tr\u01B0\u1EDBc"]})]})]}),(0,f.jsxs)("div",{className:"mt-2 flex min-h-0 flex-1 gap-2",children:[(0,f.jsx)("div",{className:"flex flex-col justify-between pb-4 text-right font-mono text-[8px] text-zinc-400",children:["100K","75K","50K","25K","0"].map(b=>(0,f.jsx)("span",{children:b},b))}),(0,f.jsxs)("div",{className:"flex min-w-0 flex-1 flex-col",children:[(0,f.jsxs)("div",{className:"relative min-h-0 flex-1",children:[[0,25,50,75,100].map(b=>(0,f.jsx)("span",{className:"absolute inset-x-0 border-t border-dashed border-zinc-100",style:{top:`${b}%`}},b)),(0,f.jsxs)("svg",{viewBox:"0 0 100 100",preserveAspectRatio:"none",className:"absolute inset-0 size-full overflow-visible",children:[(0,f.jsx)("defs",{children:(0,f.jsxs)("linearGradient",{id:"heroArea",x1:"0",x2:"0",y1:"0",y2:"1",children:[(0,f.jsx)("stop",{offset:"0",stopColor:"#fdd835",stopOpacity:".45"}),(0,f.jsx)("stop",{offset:"1",stopColor:"#fdd835",stopOpacity:"0"})]})}),(0,f.jsx)("path",{d:`${n} L100,100 L0,100 Z`,fill:"url(#heroArea)",className:"animate-fade-up [animation-delay:500ms]"}),(0,f.jsx)("path",{d:i,fill:"none",stroke:"#a1a1aa",strokeWidth:"1.2",strokeDasharray:"3 3",vectorEffect:"non-scaling-stroke"}),(0,f.jsx)("path",{d:n,pathLength:1,fill:"none",stroke:"#e5b800",strokeWidth:"2.5",vectorEffect:"non-scaling-stroke",strokeLinecap:"round",className:"animate-draw-line"}),(0,f.jsx)("line",{x1:L,x2:L,y1:c,y2:"100",stroke:"#18181b",strokeWidth:"1",strokeDasharray:"2 2",vectorEffect:"non-scaling-stroke",className:"animate-fade-up [animation-delay:1.2s]"})]}),(0,f.jsx)("span",{className:"absolute size-2.5 -translate-x-1/2 -translate-y-1/2",style:{left:`${L}%`,top:`${c}%`},children:(0,f.jsx)("span",{className:"block size-full animate-pop rounded-full bg-zinc-900 ring-[3px] ring-white [animation-delay:1.3s]"})}),(0,f.jsx)("span",{className:"absolute -translate-x-1/2",style:{left:`${L}%`,top:`calc(${c}% - 40px)`},children:(0,f.jsxs)("span",{className:"block animate-pop whitespace-nowrap rounded-lg bg-zinc-900 px-2 py-1 text-center text-white shadow-lg [animation-delay:1.4s]",children:[(0,f.jsxs)("span",{className:"block font-mono text-[10px] font-semibold",children:[l[x],"K"]}),(0,f.jsxs)("span",{className:"block text-[8px] text-emerald-400",children:["+",Math.round((l[x]/u[x]-1)*100),"% k\u1EF3 tr\u01B0\u1EDBc"]})]})})]},e),(0,f.jsx)("div",{className:"flex justify-between pt-1.5 font-mono text-[8px] text-zinc-400",children:h.map(b=>(0,f.jsx)("span",{children:b},b))})]})]})]}),(0,f.jsxs)("div",{className:"hidden min-h-0 flex-col gap-2.5 md:flex",children:[(0,f.jsxs)("div",{className:"rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsx)("div",{className:"text-[11px] font-semibold",children:"Theo n\u1EC1n t\u1EA3ng"}),(0,f.jsx)("div",{className:"mt-2 flex h-2 overflow-hidden rounded-full",children:T.map(([b,,m],r)=>(0,f.jsx)("span",{style:{width:`${m}%`,background:["#1877F2","#D62976","#18181b","#0A66C2"][r],...Pe(200+r*120)},className:"h-full origin-left animate-draw-x"},b))}),(0,f.jsx)("ul",{className:"mt-2.5 space-y-1.5",children:T.map(([b,m,r])=>(0,f.jsxs)("li",{className:"flex items-center gap-2 text-[10px]",children:[(0,f.jsx)(de,{platform:b,className:"size-3.5"}),(0,f.jsx)("span",{className:"flex-1",children:m}),(0,f.jsxs)("span",{className:"font-mono text-zinc-500",children:[r,"%"]})]},b))})]}),(0,f.jsxs)("div",{className:"min-h-0 flex-1 rounded-xl border border-zinc-200 bg-white p-3",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between",children:[(0,f.jsx)("span",{className:"text-[11px] font-semibold",children:"B\xE0i n\u1ED5i b\u1EADt"}),(0,f.jsx)("span",{className:"text-[9px] text-zinc-400",children:"Ti\u1EBFp c\u1EADn"})]}),(0,f.jsx)("ul",{className:"mt-2 space-y-2",children:[[8,"Minigame \u0111o\xE1n gi\xE1","instagram",31.2],[3,"M\u1EB9o b\u1EA3o qu\u1EA3n d\xE2y da","facebook",18.4],[10,"H\u1EADu tr\u01B0\u1EDDng studio","tiktok",9.2]].map(([b,m,r,g],v)=>(0,f.jsxs)("li",{style:Pe(300+v*120),className:"flex animate-fade-up items-center gap-2",children:[(0,f.jsx)("span",{className:"w-2 font-mono text-[9px] text-zinc-400",children:v+1}),(0,f.jsxs)("div",{className:"relative shrink-0",children:[(0,f.jsx)("img",{src:Re[b].src,alt:"",className:"size-7 rounded-md object-cover"}),(0,f.jsx)(de,{platform:r,className:"absolute -bottom-1 -right-1 size-3 rounded-full ring-1 ring-white"})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1",children:[(0,f.jsx)("div",{className:"truncate text-[10px] font-medium",children:m}),(0,f.jsx)("div",{className:"mt-0.5 h-1 rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:"h-full origin-left animate-draw-x rounded-full bg-brand-400",style:{width:`${g/31.2*100}%`,...Pe(500+v*120)}})})]}),(0,f.jsxs)("span",{className:"font-mono text-[9px] text-zinc-600",children:[g.toLocaleString("vi-VN"),"K"]})]},m))})]})]})]})]})}function BC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);return(0,fe.useEffect)(()=>{if(t)return;let u=setTimeout(()=>a(o=>(o+1)%xg.length),7e3);return()=>clearTimeout(u)},[e,t]),(0,f.jsxs)("div",{className:"relative mx-auto max-w-5xl",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[(0,f.jsx)("div",{className:"absolute -inset-x-10 -top-10 bottom-0 -z-10 rounded-[40px] bg-gradient-to-b from-brand-100/70 via-brand-50/40 to-transparent blur-2xl"}),(0,f.jsx)("div",{className:"mb-5 flex justify-center",children:(0,f.jsx)("div",{className:"inline-flex gap-1 rounded-2xl border border-zinc-200 bg-white/80 p-1 shadow-sm backdrop-blur",children:xg.map((u,o)=>(0,f.jsxs)("button",{onClick:()=>a(o),className:`relative flex items-center gap-2 overflow-hidden rounded-xl px-3.5 py-2 text-[13px] font-medium transition ${e===o?"bg-brand-400 text-zinc-900 font-semibold":"text-zinc-500 hover:text-zinc-900"}`,children:[(0,f.jsx)(u.icon,{className:"size-4"}),(0,f.jsx)("span",{className:"hidden sm:inline",children:u.label}),e===o&&(0,f.jsx)("span",{className:`absolute inset-x-0 bottom-0 h-0.5 origin-left bg-zinc-900/80 ${t?"scale-x-100 opacity-60":"animate-progress"}`},`${e}-${t}`)]},u.key))})}),(0,f.jsxs)("div",{className:"overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-[0_30px_80px_-30px_rgba(24,24,27,0.25)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-1.5 border-b border-zinc-100 bg-zinc-50/80 px-4 py-2.5",children:[(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsx)("span",{className:"size-2.5 rounded-full bg-zinc-200"}),(0,f.jsxs)("span",{className:"ml-3 rounded-md bg-white px-3 py-0.5 font-mono text-[10px] text-zinc-400 ring-1 ring-zinc-200",children:["socialchoice.site/",["tao-bai-viet","lich-noi-dung","phan-tich"][e]]})]}),(0,f.jsxs)("div",{className:"flex h-[440px]",children:[(0,f.jsxs)("div",{className:"hidden w-14 shrink-0 flex-col items-center gap-2 border-r border-zinc-100 bg-zinc-50/70 py-4 sm:flex",children:[(0,f.jsx)("div",{className:"mb-2 grid size-8 place-items-center rounded-lg bg-brand-400",children:(0,f.jsx)("svg",{viewBox:"0 0 24 24",className:"size-4",fill:"none",children:(0,f.jsx)("path",{d:"M4 5l16 3-7 3-2 8-3-7z",fill:"#18181b"})})}),[Ya,mt,Qt,ql,rt,wl].map((u,o)=>{let d=[1,2,4][e]===o;return(0,f.jsx)("span",{className:`grid size-9 place-items-center rounded-lg transition ${d?"bg-white text-zinc-900 shadow-sm ring-1 ring-zinc-200":"text-zinc-400"}`,children:(0,f.jsx)(u,{className:"size-4"})},o)})]}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 animate-fade-up [animation-duration:0.5s]",children:[e===0&&(0,f.jsx)(AC,{}),e===1&&(0,f.jsx)(MC,{}),e===2&&(0,f.jsx)(DC,{})]},e)]})]})]})}var Hl=[{p:"instagram",name:"deszy_creative",handle:"Instagram",text:"B\u1ED9 s\u01B0u t\u1EADp thu \u0111\xF4ng \u0111\xE3 l\xEAn k\u1EC7. 5 m\u1EABu d\xE2y da m\u1EDBi.",img:3,likes:"1.284",time:"20:00"},{p:"facebook",name:"Deszy",handle:"Trang Facebook",text:"Flash sale 48h \u2014 gi\u1EA3m \u0111\u1EBFn 40% to\xE0n b\u1ED9 ph\u1EE5 ki\u1EC7n.",img:1,likes:"842",time:"20:00"},{p:"tiktok",name:"kiu.chun",handle:"TikTok",text:"Unbox \u0111\u1ED3ng h\u1ED3 m\u1EDBi c\xF9ng team studio",img:7,likes:"12,4K",time:"20:00"},{p:"linkedin",name:"TalentChoice",handle:"LinkedIn",text:"H\u1EADu tr\u01B0\u1EDDng m\u1ED9t ng\xE0y l\xE0m vi\u1EC7c t\u1EA1i studio.",img:10,likes:"86",time:"20:00"},{p:"threads",name:"_ticrn",handle:"Threads",text:"B\u1EA1n ch\u1ECDn d\xE2y da hay d\xE2y kim lo\u1EA1i?",img:8,likes:"214",time:"20:00"}];function RC(){let[e,a]=(0,fe.useState)(0),[t,l]=(0,fe.useState)(!1);(0,fe.useEffect)(()=>{if(t)return;let d=setInterval(()=>a(s=>(s+1)%Hl.length),2800);return()=>clearInterval(d)},[t]);let u=d=>(d-e+Hl.length)%Hl.length,o=d=>{let s=["translate-x-0 translate-y-0 rotate-0 scale-100 opacity-100 z-30","translate-x-10 translate-y-4 rotate-[6deg] scale-[0.94] opacity-100 z-20","translate-x-20 translate-y-8 rotate-[12deg] scale-[0.88] opacity-90 z-10","translate-x-24 translate-y-10 rotate-[14deg] scale-[0.84] opacity-0 z-0"];return d===Hl.length-1?"-translate-x-28 -translate-y-6 -rotate-[14deg] scale-95 opacity-0 z-40":s[Math.min(d,3)]};return(0,f.jsxs)("div",{className:"hero-card-stack relative mx-auto h-[440px] sm:h-[480px] lg:h-[500px] w-full max-w-[310px] sm:max-w-[360px] lg:max-w-[420px]",onMouseEnter:()=>l(!0),onMouseLeave:()=>l(!1),children:[Hl.map((d,s)=>{let n=u(s);return(0,f.jsx)("div",{className:`absolute left-2 sm:left-3 lg:left-4 top-2 sm:top-4 w-[240px] sm:w-[270px] lg:w-[300px] transition-all duration-700 ease-[cubic-bezier(0.22,1,0.36,1)] ${o(n)}`,children:(0,f.jsxs)("div",{className:"overflow-hidden rounded-3xl border border-zinc-200 bg-white shadow-[0_30px_60px_-24px_rgba(24,24,27,0.35)]",children:[(0,f.jsxs)("div",{className:"flex items-center gap-2.5 p-3.5",children:[(0,f.jsx)("span",{className:"grid size-9 place-items-center rounded-full bg-brand-100 text-[12px] font-semibold text-brand-700",children:d.name[0].toUpperCase()}),(0,f.jsxs)("div",{className:"min-w-0 flex-1 leading-tight",children:[(0,f.jsx)("div",{className:"truncate text-[13px] font-semibold",children:d.name}),(0,f.jsx)("div",{className:"text-[11px] text-zinc-500",children:d.handle})]}),(0,f.jsx)(de,{platform:d.p,className:"size-6"})]}),(0,f.jsx)("img",{src:Re[d.img].src,alt:"",className:"aspect-[4/3.6] w-full object-cover"}),(0,f.jsxs)("div",{className:"p-3.5",children:[(0,f.jsx)("p",{className:"text-[13px] leading-snug text-zinc-800",children:d.text}),(0,f.jsxs)("div",{className:"mt-3 flex items-center gap-3 text-[11px] text-zinc-500",children:[(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(La,{className:"size-3.5"})," ",d.likes]}),(0,f.jsxs)("span",{className:"flex items-center gap-1",children:[(0,f.jsx)(Be,{className:"size-3.5"})," 24"]}),(0,f.jsxs)("span",{className:"ml-auto flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 font-medium text-emerald-700",children:[(0,f.jsx)(_e,{className:"size-3",strokeWidth:3})," \u0110\xE3 \u0111\u0103ng ",d.time]})]})]})]})},d.name)}),(0,f.jsxs)("div",{className:"absolute -left-1 sm:left-1 lg:-left-6 bottom-4 sm:bottom-6 z-40 w-[255px] sm:w-64 rounded-2xl border border-zinc-200 bg-white/95 p-3 shadow-xl backdrop-blur",children:[(0,f.jsxs)("div",{className:"flex items-center justify-between text-[11px]",children:[(0,f.jsx)("span",{className:"font-semibold",children:"\u0110ang \u0111\u0103ng l\xEAn"}),(0,f.jsxs)("span",{className:"font-mono text-zinc-400",children:[e+1,"/",Hl.length]})]}),(0,f.jsx)("div",{className:"mt-2 flex gap-1.5",children:Hl.map((d,s)=>(0,f.jsx)("button",{onClick:()=>a(s),className:`grid size-8 place-items-center rounded-lg transition ${s===e?"bg-zinc-900 ring-2 ring-brand-400":"bg-zinc-100"}`,children:(0,f.jsx)(de,{platform:d.p,className:"size-4"})},d.name))}),(0,f.jsx)("div",{className:"mt-2.5 h-1 overflow-hidden rounded-full bg-zinc-100",children:(0,f.jsx)("div",{className:`h-full origin-left bg-brand-400 ${t?"scale-x-100 opacity-50":"animate-progress"}`,style:{animationDuration:"2800ms"}},`${e}-${t}`)})]})]})}var qC=[{name:"Starter",desc:"Cho c\xE1 nh\xE2n b\u1EAFt \u0111\u1EA7u x\xE2y k\xEAnh.",price:0,features:["3 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","30 b\xE0i vi\u1EBFt / th\xE1ng","L\u1ECBch n\u1ED9i dung","Xem tr\u01B0\u1EDBc theo n\u1EC1n t\u1EA3ng","1 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"B\u1EAFt \u0111\u1EA7u mi\u1EC5n ph\xED"},{name:"Pro",desc:"Cho th\u01B0\u01A1ng hi\u1EC7u v\xE0 creator nghi\xEAm t\xFAc.",price:499e3,popular:!0,features:["10 k\xEAnh m\u1EA1ng x\xE3 h\u1ED9i","300 b\xE0i vi\u1EBFt / th\xE1ng","Tr\u1EE3 l\xFD AI \xB7 1.000 l\u01B0\u1EE3t / th\xE1ng","Chi\u1EBFn l\u01B0\u1EE3c, tr\u1EE5 c\u1ED9t, g\xF3c khai th\xE1c","UTM & li\xEAn k\u1EBFt theo d\xF5i","Ph\xE2n t\xEDch n\xE2ng cao","10 GB th\u01B0 vi\u1EC7n t\u1EC7p"],cta:"D\xF9ng th\u1EED Pro 14 ng\xE0y"},{name:"Agency",desc:"Cho agency qu\u1EA3n l\xFD nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u.",price:129e4,features:["Kh\xF4ng gi\u1EDBi h\u1EA1n k\xEAnh","Kh\xF4ng gi\u1EDBi h\u1EA1n b\xE0i vi\u1EBFt","Nhi\u1EC1u th\u01B0\u01A1ng hi\u1EC7u & th\xE0nh vi\xEAn","Ph\xE2n quy\u1EC1n, duy\u1EC7t b\xE0i","B\xE1o c\xE1o white-label","H\u1ED7 tr\u1EE3 \u01B0u ti\xEAn 1:1"],cta:"Li\xEAn h\u1EC7 t\u01B0 v\u1EA5n"}],OC=[{q:"SocialChoice h\u1ED7 tr\u1EE3 nh\u1EEFng n\u1EC1n t\u1EA3ng n\xE0o?",a:"Hi\u1EC7n t\u1EA1i SocialChoice h\u1ED7 tr\u1EE3 Facebook (Trang), Instagram (t\xE0i kho\u1EA3n doanh nghi\u1EC7p), Threads, X, TikTok v\xE0 LinkedIn. B\u1EA1n c\xF3 th\u1EC3 \u0111\u0103ng c\xF9ng l\xFAc l\xEAn t\u1EA5t c\u1EA3 ho\u1EB7c ch\u1ECDn t\u1EEBng k\xEAnh."},{q:"T\xF4i c\xF3 th\u1EC3 vi\u1EBFt n\u1ED9i dung kh\xE1c nhau cho t\u1EEBng k\xEAnh kh\xF4ng?",a:"C\xF3. B\u1EA1n vi\u1EBFt m\u1ED9t n\u1ED9i dung chung, sau \u0111\xF3 b\u1EADt \u201CTu\u1EF3 ch\u1EC9nh ri\xEAng\u201D cho k\xEAnh b\u1EA5t k\u1EF3. SocialChoice t\u1EF1 c\u1EA3nh b\xE1o khi n\u1ED9i dung v\u01B0\u1EE3t gi\u1EDBi h\u1EA1n k\xFD t\u1EF1 c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, v\xED d\u1EE5 280 k\xFD t\u1EF1 tr\xEAn X."},{q:"B\xE0i \u0111\xE3 h\u1EB9n gi\u1EDD c\xF3 \u0111\u0103ng khi t\xF4i t\u1EAFt m\xE1y kh\xF4ng?",a:"C\xF3. B\xE0i \u0111\u01B0\u1EE3c l\u01B0u tr\xEAn m\xE1y ch\u1EE7 v\xE0 t\u1EF1 \u0111\u1ED9ng \u0111\u0103ng \u0111\xFAng gi\u1EDD theo m\xFAi gi\u1EDD b\u1EA1n ch\u1ECDn, k\u1EC3 c\u1EA3 khi b\u1EA1n \u0111\xF3ng tr\xECnh duy\u1EC7t."},{q:"Tr\u1EE3 l\xFD AI ho\u1EA1t \u0111\u1ED9ng nh\u01B0 th\u1EBF n\xE0o?",a:"Tr\u1EE3 l\xFD AI gi\xFAp g\u1EE3i \xFD d\xE0n \xFD, vi\u1EBFt l\u1EA1i h\u1EA5p d\u1EABn h\u01A1n, r\xFAt g\u1ECDn cho t\u1EEBng n\u1EC1n t\u1EA3ng v\xE0 \u0111\u1EC1 xu\u1EA5t hashtag. B\u1EA1n lu\xF4n xem l\u1EA1i v\xE0 ch\u1EC9nh s\u1EEDa tr\u01B0\u1EDBc khi \u0111\u0103ng."},{q:"T\xF4i c\xF3 th\u1EC3 \u0111\u1ED5i g\xF3i ho\u1EB7c hu\u1EF7 b\u1EA5t c\u1EE9 l\xFAc n\xE0o kh\xF4ng?",a:"C\xF3. B\u1EA1n c\xF3 th\u1EC3 n\xE2ng c\u1EA5p, h\u1EA1 c\u1EA5p ho\u1EB7c hu\u1EF7 g\xF3i trong ph\u1EA7n Qu\u1EA3n l\xFD license. Khi hu\u1EF7, g\xF3i v\u1EABn d\xF9ng \u0111\u01B0\u1EE3c \u0111\u1EBFn h\u1EBFt chu k\u1EF3 \u0111\xE3 thanh to\xE1n."},{q:"D\u1EEF li\u1EC7u v\xE0 t\xE0i kho\u1EA3n c\u1EE7a t\xF4i c\xF3 an to\xE0n kh\xF4ng?",a:"SocialChoice k\u1EBFt n\u1ED1i qua API ch\xEDnh th\u1EE9c c\u1EE7a t\u1EEBng n\u1EC1n t\u1EA3ng, kh\xF4ng l\u01B0u m\u1EADt kh\u1EA9u m\u1EA1ng x\xE3 h\u1ED9i. B\u1EA1n c\xF3 th\u1EC3 thu h\u1ED3i quy\u1EC1n truy c\u1EADp b\u1EA5t c\u1EE9 l\xFAc n\xE0o."}];
 var WEB_PLANS_DATA = [
   {
     key: "free",
@@ -1722,10 +1722,31 @@ function downloadScLicenseBundle(order) {
   URL.revokeObjectURL(url);
 }
 
-function HybridCheckoutModal({ item, lang, market, onClose }) {
+function HybridCheckoutPage({ item, lang, market: initialMarket = "vn", onBackToPricing }) {
   let isEn = lang === "en";
-  let isDesktopOrder = item?.kind === "desktop";
+  let fallbackItem = {
+    kind: "cloud",
+    planKey: "professional",
+    planName: "Cloud Professional",
+    billingCycle: "monthly",
+    amount: initialMarket === "intl" ? 19 : 199000,
+    quotas: { brands: 5, accounts: 20, seats: 3, storageMb: 150, links: 250 }
+  };
+  let activeItem = item || fallbackItem;
+  let isDesktopOrder = activeItem?.kind === "desktop";
 
+  let [geoState, setGeoState] = (0, fe.useState)(() =>
+    (typeof window !== "undefined" && window.__GEO_MARKET__) || { countryCode: "VN", market: "vn" }
+  );
+  (0, fe.useEffect)(() => {
+    let onGeo = (ev) => {
+      if (ev?.detail?.market) setGeoState(ev.detail);
+    };
+    window.addEventListener("socialchoice:geo", onGeo);
+    return () => window.removeEventListener("socialchoice:geo", onGeo);
+  }, []);
+  let [selectedMarket, setSelectedMarket] = (0, fe.useState)(null);
+  let market = selectedMarket || (geoState.market === "intl" ? "intl" : "vn");
   let [email, setEmail] = (0, fe.useState)(() => {
     try {
       return window.localStorage.getItem("socialchoice.customer_email") || "";
@@ -1743,34 +1764,122 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
   let [step, setStep] = (0, fe.useState)("form");
   let [copiedKey, setCopiedKey] = (0, fe.useState)(null);
   let [orderResult, setOrderResult] = (0, fe.useState)(null);
+  let [paymentNotice, setPaymentNotice] = (0, fe.useState)(null);
+  let [verifyingPayment, setVerifyingPayment] = (0, fe.useState)(false);
+  let [emailReceiptState, setEmailReceiptState] = (0, fe.useState)(null);
   let [orderCode] = (0, fe.useState)(() => {
     let prefix = isDesktopOrder ? "SC2" : "SCC";
     return `${prefix}${Math.floor(100000 + Math.random() * 900000)}`;
   });
 
-  if (!item) return null;
+  let existingSub = null;
+  try {
+    existingSub = JSON.parse(window.localStorage.getItem("socialchoice.subscription") || "null");
+  } catch {}
+  let isUpgradeFromExisting = !isDesktopOrder && existingSub && existingSub.planKey && existingSub.planKey !== "free" && existingSub.planKey !== activeItem.planKey;
 
-  let handleConfirmPayment = (ev) => {
-    ev.preventDefault();
-    let cleanEmail = (email || "").trim().toLowerCase() || "user@socialchoice.site";
-    let cleanName = (customerName || "").trim() || cleanEmail.split("@")[0];
+  let baseAmount = activeItem.amount;
+  if (market === "intl" && activeItem.amount > 1000) {
+    baseAmount = Math.max(5, Math.round(activeItem.amount / 25000));
+  } else if (market === "vn" && activeItem.amount < 1000) {
+    baseAmount = activeItem.amount * 25000;
+  }
+
+  let [discountInput, setDiscountInput] = (0, fe.useState)("");
+  let [appliedDiscount, setAppliedDiscount] = (0, fe.useState)(null);
+  let [discountError, setDiscountError] = (0, fe.useState)("");
+
+  let discountAmount = appliedDiscount ? Math.round((baseAmount * appliedDiscount.percent) / 100) : 0;
+  let displayAmount = Math.max(0, baseAmount - discountAmount);
+
+  (0, fe.useEffect)(() => {
+    if (typeof window === "undefined") return;
+    let params = new URLSearchParams(window.location.search);
+    let urlDiscount = params.get("discount") || params.get("coupon") || params.get("code");
+    if (urlDiscount && window.__DISCOUNT_CODES__?.apply) {
+      let res = window.__DISCOUNT_CODES__.apply(urlDiscount, baseAmount);
+      if (res && res.valid) {
+        setAppliedDiscount(res);
+        setDiscountInput(res.code);
+      }
+    }
+  }, [baseAmount]);
+
+  let handleApplyDiscount = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    setDiscountError("");
+    let codeToTest = (discountInput || "").trim();
+    if (!codeToTest) {
+      setAppliedDiscount(null);
+      return;
+    }
+    let applyFn = window.__DISCOUNT_CODES__?.apply;
+    if (typeof applyFn !== "function") {
+      setDiscountError(isEn ? "Discount system initializing..." : "Hệ thống mã giảm giá đang khởi động...");
+      return;
+    }
+    let res = applyFn(codeToTest, baseAmount);
+    if (res && res.valid) {
+      setAppliedDiscount(res);
+      setDiscountError("");
+    } else {
+      setAppliedDiscount(null);
+      setDiscountError(res?.message || (isEn ? "Invalid discount code" : "Mã giảm giá không hợp lệ"));
+    }
+  };
+
+  let handleRemoveDiscount = () => {
+    setAppliedDiscount(null);
+    setDiscountInput("");
+    setDiscountError("");
+  };
+
+  let intlCfg = (typeof window !== "undefined" && window.__INTL_PAYMENT_CONFIG__) || {
+    provider: "polar",
+    providerLabel: "Polar.sh",
+    hasAnyLiveUrl: false,
+    buildCheckoutUrl: () => ""
+  };
+  let [intlMethod, setIntlMethod] = (0, fe.useState)("card");
+  let [cardNumber, setCardNumber] = (0, fe.useState)("");
+  let [cardExpiry, setCardExpiry] = (0, fe.useState)("");
+  let [cardCvc, setCardCvc] = (0, fe.useState)("");
+  let [billingCountry, setBillingCountry] = (0, fe.useState)(() => geoState.countryCode && geoState.countryCode !== "VN" ? geoState.countryCode : "US");
+  let liveIntlUrl = market === "intl" && typeof intlCfg.buildCheckoutUrl === "function"
+    ? intlCfg.buildCheckoutUrl({
+        planKey: activeItem.planKey,
+        billingCycle: isDesktopOrder ? "lifetime" : (activeItem.billingCycle || "monthly"),
+        email: (email || "").trim().toLowerCase(),
+        customerName: (customerName || "").trim(),
+        orderCode
+      })
+    : "";
+
+  let activateHybridOrder = (cleanEmail, cleanName) => {
     let nowIso = new Date().toISOString();
-
+    let issuedKeys = [];
     try {
       window.localStorage.setItem("socialchoice.customer_email", cleanEmail);
       window.localStorage.setItem("socialchoice.customer_name", cleanName);
     } catch {}
 
+    if (appliedDiscount && appliedDiscount.code && window.__DISCOUNT_CODES__?.recordUse) {
+      try {
+        window.__DISCOUNT_CODES__.recordUse(appliedDiscount.code);
+      } catch {}
+    }
+
     if (isDesktopOrder) {
-      let keys = generateSc2Keys(item.planKey, item.devicesCount || 1);
+      let keys = generateSc2Keys(activeItem.planKey, activeItem.devicesCount || 1);
+      issuedKeys = keys;
       let desktopRecord = {
         kind: "desktop",
         orderCode,
-        planKey: item.planKey,
-        planName: item.planName,
-        devicesCount: item.devicesCount || 1,
-        devicesLabel: item.devicesLabel,
-        amount: item.amount,
+        planKey: activeItem.planKey,
+        planName: activeItem.planName,
+        devicesCount: activeItem.devicesCount || 1,
+        devicesLabel: activeItem.devicesLabel,
+        amount: displayAmount,
         market,
         email: cleanEmail,
         customerName: cleanName,
@@ -1785,267 +1894,1200 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
       setOrderResult(desktopRecord);
       setStep("done");
     } else {
+      let prevQ = existingSub && existingSub.quotas ? existingSub.quotas : {};
+      let nextQ = activeItem.quotas || {};
+      let mergedQuotas = {
+        brands: Math.max(Number(prevQ.brands || 1), Number(nextQ.brands || 1)),
+        accounts: Math.max(Number(prevQ.accounts || 3), Number(nextQ.accounts || 3)),
+        seats: Math.max(Number(prevQ.seats || 1), Number(nextQ.seats || 1)),
+        storageMb: Math.max(Number(prevQ.storageMb || 50), Number(nextQ.storageMb || 50)),
+        links: Math.max(Number(prevQ.links || 10), Number(nextQ.links || 10))
+      };
       let cloudRecord = {
-        kind: item.kind,
+        kind: activeItem.kind,
         orderCode,
-        planKey: item.planKey,
-        planName: item.planName,
-        billingCycle: item.billingCycle || "monthly",
-        amount: item.amount,
+        planKey: activeItem.planKey,
+        planName: activeItem.planName,
+        previousPlanKey: existingSub?.planKey || "free",
+        billingCycle: activeItem.billingCycle || "monthly",
+        amount: displayAmount,
         market,
         email: cleanEmail,
         customerName: cleanName,
-        quotas: item.quotas,
+        quotas: mergedQuotas,
         mcpSynced: true,
-        activatedAt: nowIso
+        revision: Number(existingSub?.revision || 0) + 1,
+        upgradedAt: nowIso,
+        activatedAt: existingSub?.activatedAt || nowIso
       };
       try {
         window.localStorage.setItem("socialchoice.subscription", JSON.stringify(cloudRecord));
+        let accMap = {};
+        try {
+          accMap = JSON.parse(window.localStorage.getItem("socialchoice.subscriptions_by_account") || "{}") || {};
+        } catch {}
+        if (cleanEmail) accMap[cleanEmail.toLowerCase()] = cloudRecord;
+        accMap.default = cloudRecord;
+        window.localStorage.setItem("socialchoice.subscriptions_by_account", JSON.stringify(accMap));
         window.dispatchEvent(new Event("socialchoice:subscription"));
+        window.dispatchEvent(new Event("storage"));
       } catch {}
       setOrderResult(cloudRecord);
       setStep("done");
     }
+    try {
+      setEmailReceiptState({ status: "sending", email: cleanEmail });
+      fetch("/api/payments/send-receipt", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: cleanEmail,
+          customerName: cleanName,
+          orderCode,
+          planName: activeItem.planName,
+          kind: activeItem.kind,
+          amount: displayAmount,
+          market,
+          lang,
+          keys: issuedKeys
+        })
+      })
+        .then(async (r) => {
+          let ct = r.headers.get("content-type") || "";
+          if (!ct.includes("application/json")) return { sent: false, configured: false };
+          return r.json();
+        })
+        .then((res) => {
+          if (res && res.sent) setEmailReceiptState({ status: "sent", email: cleanEmail });
+          else if (res && res.configured === false) setEmailReceiptState({ status: "unconfigured", email: cleanEmail });
+          else setEmailReceiptState({ status: "failed", email: cleanEmail });
+        })
+        .catch(() => setEmailReceiptState({ status: "failed", email: cleanEmail }));
+    } catch {}
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  let qrUrl = `https://img.vietqr.io/image/MB-0388889999-compact2.png?amount=${item.amount}&addInfo=${encodeURIComponent(orderCode)}&accountName=${encodeURIComponent("SOCIALCHOICE")}`;
+  (0, fe.useEffect)(() => {
+    if (typeof window === "undefined") return;
+    let params = new URLSearchParams(window.location.search);
+    let cbStatus = params.get("checkout_status");
+    let checkoutId = params.get("checkout_id") || params.get("checkout_session_id") || params.get("order_id") || "";
+    let pendingRaw = null;
+    try {
+      pendingRaw = JSON.parse(window.localStorage.getItem("socialchoice.pending_checkout") || "null");
+    } catch {}
 
-  return (0, f.jsx)("div", {
-    className: "hybrid-checkout-backdrop",
-    onClick: (ev) => {
-      if (ev.target === ev.currentTarget) onClose();
-    },
+    if (cbStatus === "success" && step === "form") {
+      let hasVerifiedSession = Boolean(checkoutId) || Boolean(pendingRaw && pendingRaw.status === "awaiting_gateway");
+      try {
+        window.history.replaceState({}, "", window.location.pathname);
+      } catch {}
+      if (!hasVerifiedSession) {
+        setPaymentNotice({
+          type: "warning",
+          text: isEn
+            ? "No verified payment session found. Please complete payment through checkout first."
+            : "Không tìm thấy phiên thanh toán hợp lệ. Vui lòng hoàn tất thanh toán qua cổng trước."
+        });
+        return;
+      }
+      try {
+        window.localStorage.removeItem("socialchoice.pending_checkout");
+      } catch {}
+      let cbEmail = (params.get("email") || pendingRaw?.email || email || "user@socialchoice.site").trim().toLowerCase();
+      let cbName = (params.get("name") || pendingRaw?.customerName || customerName || cbEmail.split("@")[0]).trim();
+      activateHybridOrder(cbEmail, cbName);
+      return;
+    }
+
+    if (cbStatus === "cancelled" || cbStatus === "cancel" || cbStatus === "failed") {
+      try {
+        window.localStorage.removeItem("socialchoice.pending_checkout");
+        window.history.replaceState({}, "", window.location.pathname);
+      } catch {}
+      setPaymentNotice({
+        type: "warning",
+        text: isEn
+          ? "Payment was cancelled or not completed. Your plan has NOT been upgraded and you were not charged."
+          : "Thanh toán đã bị hủy hoặc chưa hoàn tất. Gói dịch vụ CHƯA được kích hoạt."
+      });
+      return;
+    }
+
+    if (!cbStatus && pendingRaw && pendingRaw.status === "awaiting_gateway") {
+      setPaymentNotice({
+        type: "warning",
+        text: isEn
+          ? `Order #${pendingRaw.orderCode} is still unpaid — you left Polar.sh before completing payment. Your plan has NOT been upgraded.`
+          : `Đơn #${pendingRaw.orderCode} chưa thanh toán (bạn đã thoát khỏi cổng thanh toán trước khi hoàn tất). Gói CHƯA được kích hoạt.`
+      });
+    }
+  }, []);
+
+  let sepayCfg = (typeof window !== "undefined" && window.__SEPAY_CONFIG__) || {
+    bankCode: "ACB",
+    accountNumber: "9602381",
+    accountName: "NGUYEN NGOC KIEU TRAN",
+    vaPrefix: "",
+    verifyUrl: ""
+  };
+
+  let handleRecheckPendingPayment = async () => {
+    let cleanEmail = (email || "").trim().toLowerCase() || "user@socialchoice.site";
+    let cleanName = (customerName || "").trim() || cleanEmail.split("@")[0];
+    setVerifyingPayment(true);
+    setPaymentNotice(null);
+    try {
+      if (market === "vn" && typeof sepayCfg.checkPaymentStatus === "function") {
+        let res = await sepayCfg.checkPaymentStatus({ orderCode, amount: displayAmount });
+        if (res && res.paid) {
+          try {
+            window.localStorage.removeItem("socialchoice.pending_checkout");
+          } catch {}
+          activateHybridOrder(cleanEmail, cleanName);
+          return;
+        }
+        setPaymentNotice({
+          type: "warning",
+          text: res && !res.configured
+            ? `Chưa cấu hình Webhook/API kiểm tra giao dịch SePay (VITE_SEPAY_VERIFY_URL). Đơn #${orderCode} đang ở trạng thái CHỜ XÁC NHẬN và không tự động duyệt.`
+            : `Chưa ghi nhận giao dịch ${formatMoney(displayAmount, "vn")} với nội dung ${orderCode}. Nếu bạn vừa chuyển khoản, hãy đợi 5–10 giây rồi kiểm tra lại.`
+        });
+      } else {
+        setPaymentNotice({
+          type: "warning",
+          text: isEn
+            ? `Order #${orderCode} is awaiting payment verification. Complete payment on Polar.sh to activate.`
+            : `Đơn #${orderCode} đang chờ xác nhận thanh toán. Hệ thống không tự kích hoạt khi chưa có xác thực giao dịch.`
+        });
+      }
+    } finally {
+      setVerifyingPayment(false);
+    }
+  };
+
+  let handleConfirmPayment = async (ev) => {
+    ev.preventDefault();
+    setPaymentNotice(null);
+    let cleanEmail = (email || "").trim().toLowerCase() || "user@socialchoice.site";
+    let cleanName = (customerName || "").trim() || cleanEmail.split("@")[0];
+
+    try {
+      window.localStorage.setItem("socialchoice.customer_email", cleanEmail);
+      window.localStorage.setItem("socialchoice.customer_name", cleanName);
+    } catch {}
+
+    if (market === "intl" && liveIntlUrl) {
+      try {
+        window.localStorage.setItem("socialchoice.pending_checkout", JSON.stringify({
+          orderCode,
+          planKey: activeItem.planKey,
+          planName: activeItem.planName,
+          billingCycle: isDesktopOrder ? "lifetime" : (activeItem.billingCycle || "monthly"),
+          amount: displayAmount,
+          market: "intl",
+          email: cleanEmail,
+          customerName: cleanName,
+          status: "awaiting_gateway",
+          createdAt: new Date().toISOString()
+        }));
+      } catch {}
+      window.location.assign(liveIntlUrl);
+      return;
+    }
+
+    try {
+      window.localStorage.setItem("socialchoice.pending_checkout", JSON.stringify({
+        orderCode,
+        planKey: activeItem.planKey,
+        planName: activeItem.planName,
+        billingCycle: isDesktopOrder ? "lifetime" : (activeItem.billingCycle || "monthly"),
+        amount: displayAmount,
+        market,
+        email: cleanEmail,
+        customerName: cleanName,
+        status: "pending_verification",
+        createdAt: new Date().toISOString()
+      }));
+    } catch {}
+
+    if (displayAmount === 0) {
+      try {
+        window.localStorage.removeItem("socialchoice.pending_checkout");
+      } catch {}
+      activateHybridOrder(cleanEmail, cleanName);
+      return;
+    }
+
+    if (market === "vn" && typeof sepayCfg.checkPaymentStatus === "function") {
+      setVerifyingPayment(true);
+      try {
+        let res = await sepayCfg.checkPaymentStatus({ orderCode, amount: displayAmount });
+        if (res && res.paid) {
+          try {
+            window.localStorage.removeItem("socialchoice.pending_checkout");
+          } catch {}
+          activateHybridOrder(cleanEmail, cleanName);
+          return;
+        }
+      } finally {
+        setVerifyingPayment(false);
+      }
+    }
+
+    setStep("pending");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  let sepayAcc = sepayCfg.vaPrefix ? `${sepayCfg.vaPrefix}${sepayCfg.accountNumber}` : sepayCfg.accountNumber;
+  let qrUrl = `https://qr.sepay.vn/img?acc=${encodeURIComponent(sepayAcc)}&bank=${encodeURIComponent(sepayCfg.bankCode)}&amount=${Math.max(0, Math.round(Number(displayAmount || 0)))}&des=${encodeURIComponent(orderCode)}&template=compact`;
+
+  return (0, f.jsx)("section", {
+    className: "min-h-[75vh] bg-zinc-50/70 px-6 py-10 sm:py-14",
     children: (0, f.jsxs)("div", {
-      className: "hybrid-checkout-dialog rounded-3xl border border-zinc-200 bg-white p-6 text-zinc-900 shadow-2xl sm:p-7",
+      className: "mx-auto max-w-5xl",
       children: [
-        /* Top Modal Header */
+        /* Top Breadcrumb & Currency Switcher */
         (0, f.jsxs)("div", {
-          className: "flex items-start justify-between gap-4 border-b border-zinc-100 pb-4",
+          className: "mb-8 flex flex-wrap items-center justify-between gap-4",
           children: [
-            (0, f.jsxs)("div", {
-              children: [
-                (0, f.jsxs)("span", {
-                  className: `inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${
-                    isDesktopOrder ? "bg-zinc-900 text-brand-400" : "bg-emerald-50 text-emerald-700"
-                  }`,
-                  children: [
-                    (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 }),
-                    isDesktopOrder
-                      ? (isEn ? "Desktop Hybrid: Instant Key + Email Backup" : "Bản Desktop: Cấp mã SC2 tại chỗ + Gửi Email lưu trữ")
-                      : (isEn ? "Cloud Hybrid: Instant Account Activation + Email Receipt" : "Gói Cloud: Kích hoạt tự động vào tài khoản + Gửi biên lai Email")
-                  ]
-                }),
-                (0, f.jsx)("h3", {
-                  className: "mt-2 text-[19px] font-bold tracking-tight text-zinc-950",
-                  children: step === "done"
-                    ? (isDesktopOrder
-                        ? (isEn ? "Your Desktop License Keys Are Ready!" : "Đã cấp Mã bản quyền Desktop (SC2)!")
-                        : (isEn ? "Account Upgraded Automatically!" : "Đã kích hoạt gói tự động vào tài khoản!"))
-                    : item.planName
-                })
-              ]
-            }),
-            (0, f.jsx)("button", {
+            (0, f.jsxs)("button", {
               type: "button",
               "data-internal-nav": "true",
-              onClick: onClose,
-              className: "grid size-8 shrink-0 place-items-center rounded-full bg-zinc-100 text-zinc-500 transition hover:bg-zinc-200 hover:text-zinc-900",
-              children: (0, f.jsx)(ll, { className: "size-4" })
+              onClick: onBackToPricing,
+              className: "inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3.5 py-2 text-[13px] font-medium text-zinc-700 transition hover:border-zinc-900 hover:text-zinc-950",
+              children: [
+                (0, f.jsx)("span", { children: "←" }),
+                isEn ? "Back to Pricing" : "Quay lại Bảng giá"
+              ]
+            }),
+            step === "form" && (0, f.jsxs)("div", {
+              className: "inline-flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3.5 py-1.5 text-[12px] font-semibold text-zinc-700",
+              children: [
+                (0, f.jsx)("span", { className: "size-2 rounded-full bg-emerald-500" }),
+                market === "vn"
+                  ? "IP Việt Nam (VN) · Chỉ dùng SePay VietQR (VNĐ)"
+                  : `International IP (${geoState.countryCode || "Global"}) · USD Global Checkout`
+              ]
             })
           ]
         }),
 
         step === "form"
-          ? (0, f.jsxs)("form", {
-              onSubmit: handleConfirmPayment,
-              className: "mt-5 space-y-4",
+          ? (0, f.jsxs)("div", {
+              className: "grid grid-cols-1 items-start gap-8 lg:grid-cols-[1.35fr_1fr]",
               children: [
-                /* Summary Box */
-                (0, f.jsxs)("div", {
-                  className: "flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4",
+                /* LEFT COLUMN: Checkout Form & Payment Gateway */
+                (0, f.jsxs)("form", {
+                  onSubmit: handleConfirmPayment,
+                  className: "space-y-6 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8",
                   children: [
                     (0, f.jsxs)("div", {
+                      className: "border-b border-zinc-100 pb-5",
                       children: [
-                        (0, f.jsx)("div", {
-                          className: "text-[12px] font-medium text-zinc-500",
+                        (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between gap-2 mb-2.5",
+                          children: [
+                            (0, f.jsxs)("span", {
+                              className: `inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[11px] font-bold ${
+                                isDesktopOrder ? "bg-zinc-900 text-brand-400" : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              }`,
+                              children: [
+                                (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 }),
+                                isDesktopOrder
+                                  ? (isEn ? "Step 2/2 · Desktop License" : "Bước 2/2 · Bản quyền Desktop")
+                                  : (isEn ? "Step 2/2 · Cloud Hybrid Activation" : "Bước 2/2 · Kích hoạt Cloud tự động")
+                              ]
+                            }),
+                            (0, f.jsx)("span", {
+                              className: "font-mono text-xs font-bold text-zinc-500 bg-zinc-100 px-2.5 py-1 rounded-lg",
+                              children: `#${orderCode}`
+                            })
+                          ]
+                        }),
+                        (0, f.jsx)("h1", {
+                          className: "mt-1.5 text-2xl font-bold tracking-tight text-zinc-950 sm:text-3xl",
+                          children: isEn ? "Payment Information" : "Thông tin thanh toán"
+                        }),
+                        (0, f.jsx)("p", {
+                          className: "mt-1 text-[13px] text-zinc-500",
                           children: isDesktopOrder
-                            ? (isEn ? `Perpetual License · ${item.devicesLabel}` : `Bản quyền vĩnh viễn · ${item.devicesLabel}`)
-                            : (item.billingCycle === "yearly"
-                                ? (isEn ? "Annual Cloud Subscription (−20%)" : "Thuê bao Cloud theo năm (Đã giảm 20%)")
-                                : (isEn ? "Monthly Cloud Subscription" : "Thuê bao Cloud theo tháng"))
-                        }),
-                        !isDesktopOrder && item.quotas && (0, f.jsx)("div", {
-                          className: "mt-1 text-[12px] font-semibold text-zinc-800",
-                          children: `${item.quotas.brands} Brands · ${item.quotas.accounts} ${isEn ? "Channels" : "Kênh MXH"} · ${item.quotas.seats} ${isEn ? "Seats" : "Thành viên"} · ${item.quotas.storageMb}MB · ${item.quotas.links} Links`
-                        }),
-                        isDesktopOrder && (0, f.jsx)("div", {
-                          className: "mt-1 text-[12px] font-semibold text-zinc-800",
-                          children: isEn
-                            ? "Includes 12 months free updates · Optional ~25% Year 2+ Update Pass"
-                            : "Tặng 12 tháng cập nhật đầu · Từ năm 2 dùng mãi mãi hoặc Update Pass ~25%"
+                            ? (isEn ? "Enter your email to receive SC2 license keys and offline activation file." : "Nhập email để nhận mã bản quyền SC2 và file kích hoạt offline dự phòng.")
+                            : (isEn ? "Enter your email to link your subscription and unlock quotas automatically." : "Nhập email để kích hoạt tài khoản và mở khóa toàn bộ hạn mức ngay sau 2–3 giây.")
                         })
                       ]
                     }),
-                    (0, f.jsxs)("div", {
-                      className: "text-right",
-                      children: [
-                        (0, f.jsx)("div", {
-                          className: "font-mono text-2xl font-bold text-zinc-950",
-                          children: formatMoney(item.amount, market)
-                        }),
-                        (0, f.jsx)("div", {
-                          className: "font-mono text-[10.5px] text-zinc-400",
-                          children: `#${orderCode}`
-                        })
-                      ]
-                    })
-                  ]
-                }),
 
-                /* Customer Inputs */
-                (0, f.jsxs)("div", {
-                  className: "grid grid-cols-1 gap-3 sm:grid-cols-2",
-                  children: [
-                    (0, f.jsxs)("div", {
+                    /* Payment Notice (Unpaid / Cancelled / Escaped Gateway) */
+                    paymentNotice && (0, f.jsxs)("div", {
+                      className: "flex items-start justify-between gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-950",
                       children: [
-                        (0, f.jsx)("label", {
-                          className: "block text-[11.5px] font-semibold text-zinc-700",
-                          children: isDesktopOrder
-                            ? (isEn ? "Email to receive SC2 License Key *" : "Email nhận mã License SC2 & lưu trữ *")
-                            : (isEn ? "Account Email for Instant Activation *" : "Email tài khoản kích hoạt tự động *")
-                        }),
-                        (0, f.jsx)("input", {
-                          type: "email",
-                          required: true,
-                          value: email,
-                          onChange: (ev) => setEmail(ev.target.value),
-                          placeholder: "ban@congty.vn",
-                          className: "mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13px] text-zinc-900 outline-none focus:border-zinc-900"
+                        (0, f.jsx)("span", { children: paymentNotice.text }),
+                        (0, f.jsx)("button", {
+                          type: "button",
+                          "data-internal-nav": "true",
+                          onClick: () => {
+                            setPaymentNotice(null);
+                            try {
+                              window.localStorage.removeItem("socialchoice.pending_checkout");
+                            } catch {}
+                          },
+                          className: "shrink-0 rounded-md px-2 py-0.5 text-[11px] font-semibold text-amber-800 hover:bg-amber-100",
+                          children: "✕"
                         })
                       ]
                     }),
-                    (0, f.jsxs)("div", {
-                      children: [
-                        (0, f.jsx)("label", {
-                          className: "block text-[11.5px] font-semibold text-zinc-700",
-                          children: isDesktopOrder
-                            ? (isEn ? "Licensed To (Name / Company) *" : "Tên cá nhân / Công ty sở hữu *")
-                            : (isEn ? "Your Name / Brand Name *" : "Tên của bạn / Thương hiệu *")
-                        }),
-                        (0, f.jsx)("input", {
-                          type: "text",
-                          required: true,
-                          value: customerName,
-                          onChange: (ev) => setCustomerName(ev.target.value),
-                          placeholder: isEn ? "e.g. Acme Studio" : "VD: Nguyễn Văn A / Minh Studio",
-                          className: "mt-1 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13px] text-zinc-900 outline-none focus:border-zinc-900"
-                        })
-                      ]
-                    })
-                  ]
-                }),
 
-                /* Payment Gateway Box (VietQR for VNĐ, Polar/Lemon Squeezy for USD) */
-                market === "vn"
-                  ? (0, f.jsxs)("div", {
-                      className: "grid grid-cols-1 items-center gap-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4 sm:grid-cols-[140px_1fr]",
+                    /* Upgrade Notice if upgrading from existing Cloud plan */
+                    isUpgradeFromExisting && (0, f.jsxs)("div", {
+                      className: "rounded-2xl border border-amber-200 bg-amber-50/70 px-4 py-3 text-[12.5px] text-amber-950",
                       children: [
-                        (0, f.jsx)("div", {
-                          className: "mx-auto overflow-hidden rounded-xl border border-zinc-200 bg-white p-1.5 shadow-sm",
-                          children: (0, f.jsx)("img", {
-                            src: qrUrl,
-                            alt: "VietQR Payment",
-                            className: "size-32 object-contain"
-                          })
+                        (0, f.jsx)("strong", { children: isEn ? "Seamless Plan Upgrade: " : "Nâng cấp gói an toàn: " }),
+                        isEn
+                          ? `Upgrading from ${existingSub.planName} to ${activeItem.planName}. All existing posts, brands, accounts, and team members are preserved.`
+                          : `Đang nâng cấp từ ${existingSub.planName} lên ${activeItem.planName}. Toàn bộ thương hiệu, bài viết và thành viên hiện có được giữ nguyên.`
+                      ]
+                    }),
+
+                    /* Customer Info */
+                    (0, f.jsxs)("div", {
+                      className: "grid grid-cols-1 gap-4 sm:grid-cols-2",
+                      children: [
+                        (0, f.jsxs)("div", {
+                          children: [
+                            (0, f.jsx)("label", {
+                              className: "block text-[12px] font-semibold text-zinc-700",
+                              children: isDesktopOrder
+                                ? (isEn ? "Email to receive SC2 License Key *" : "Email nhận mã License SC2 & lưu trữ *")
+                                : (isEn ? "Account Email for Instant Activation *" : "Email tài khoản kích hoạt tự động *")
+                            }),
+                            (0, f.jsx)("input", {
+                              type: "email",
+                              required: true,
+                              value: email,
+                              onChange: (ev) => setEmail(ev.target.value),
+                              placeholder: "ban@congty.vn",
+                              className: "mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13.5px] text-zinc-900 outline-none transition focus:border-zinc-900"
+                            })
+                          ]
                         }),
                         (0, f.jsxs)("div", {
-                          className: "space-y-1.5 text-[12.5px]",
                           children: [
-                            (0, f.jsxs)("div", {
-                              className: "flex items-center gap-1.5 font-bold text-zinc-900",
-                              children: [
-                                (0, f.jsx)("span", { className: "size-2 rounded-full bg-emerald-500" }),
-                                "Cổng VietQR Tự Động (SePay / PayOS — Phí 0₫)"
-                              ]
-                            }),
-                            (0, f.jsx)("p", {
-                              className: "text-[11.5px] leading-relaxed text-zinc-500",
+                            (0, f.jsx)("label", {
+                              className: "block text-[12px] font-semibold text-zinc-700",
                               children: isDesktopOrder
-                                ? "Mở bất kỳ App Ngân hàng hoặc MoMo/ZaloPay nào quét mã QR. Hệ thống tự động xuất mã License SC2 trên màn hình và gửi về Email ngay sau 2–3 giây."
-                                : "Mở bất kỳ App Ngân hàng hoặc MoMo/ZaloPay nào quét mã QR. Webhook tự động nâng cấp thẳng vào tài khoản của bạn ngay sau 2–3 giây."
+                                ? (isEn ? "Licensed To (Name / Company) *" : "Tên cá nhân / Công ty sở hữu *")
+                                : (isEn ? "Your Name / Brand Name *" : "Tên của bạn / Thương hiệu *")
                             }),
-                            (0, f.jsxs)("div", {
-                              className: "mt-2 flex flex-wrap gap-2 pt-1 font-mono text-[11.5px]",
-                              children: [
-                                (0, f.jsxs)("span", {
-                                  className: "rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-zinc-700",
-                                  children: ["Số tiền: ", (0, f.jsx)("strong", { className: "text-zinc-950", children: formatMoney(item.amount, "vn") })]
-                                }),
-                                (0, f.jsxs)("span", {
-                                  className: "rounded-lg border border-zinc-200 bg-white px-2.5 py-1 text-zinc-700",
-                                  children: ["Nội dung: ", (0, f.jsx)("strong", { className: "text-zinc-950", children: orderCode })]
-                                })
-                              ]
+                            (0, f.jsx)("input", {
+                              type: "text",
+                              required: true,
+                              value: customerName,
+                              onChange: (ev) => setCustomerName(ev.target.value),
+                              placeholder: isEn ? "e.g. Acme Studio" : "VD: Nguyễn Văn A / Minh Studio",
+                              className: "mt-1.5 w-full rounded-xl border border-zinc-200 bg-white px-3.5 py-2.5 text-[13.5px] text-zinc-900 outline-none transition focus:border-zinc-900"
                             })
                           ]
                         })
                       ]
-                    })
-                  : (0, f.jsxs)("div", {
-                      className: "rounded-2xl border border-zinc-200 bg-zinc-50/60 p-4 text-[12.5px]",
+                    }),
+
+                    /* Payment Method Box */
+                    (0, f.jsxs)("div", {
+                      className: "space-y-3",
                       children: [
+                        (0, f.jsx)("div", {
+                          className: "text-[12px] font-semibold uppercase tracking-wider text-zinc-500",
+                          children: isEn ? "Payment Method" : "Phương thức thanh toán"
+                        }),
                         (0, f.jsxs)("div", {
-                          className: "flex items-center justify-between font-bold text-zinc-900",
+                          className: "grid grid-cols-2 gap-2.5",
                           children: [
-                            (0, f.jsx)("span", { children: "Global Checkout (Polar.sh / Lemon Squeezy)" }),
-                            (0, f.jsx)("span", { className: "rounded-md bg-zinc-200/80 px-2 py-0.5 font-mono text-[11px]", children: "Visa · Mastercard · Apple Pay" })
+                            (0, f.jsxs)("button", {
+                              type: "button",
+                              "data-internal-nav": "true",
+                              onClick: () => setSelectedMarket("vn"),
+                              className: `rounded-2xl border p-3 text-left transition ${
+                                market === "vn"
+                                  ? "border-2 border-zinc-950 bg-zinc-50/80 shadow-xs"
+                                  : "border-zinc-200 bg-white hover:border-zinc-300"
+                              }`,
+                              children: [
+                                (0, f.jsxs)("div", {
+                                  className: "flex items-center justify-between",
+                                  children: [
+                                    (0, f.jsx)("span", {
+                                      className: `text-[12.5px] font-bold ${market === "vn" ? "text-zinc-950" : "text-zinc-700"}`,
+                                      children: "VietQR SePay (VNĐ)"
+                                    }),
+                                    (0, f.jsx)("span", {
+                                      className: "rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 font-mono text-[10px] font-bold text-emerald-700",
+                                      children: "0₫ phí"
+                                    })
+                                  ]
+                                }),
+                                (0, f.jsx)("div", {
+                                  className: "mt-1 text-[11px] text-zinc-500",
+                                  children: isEn ? "Instant VietQR Banking" : "Quét mã App Ngân hàng bất kỳ"
+                                })
+                              ]
+                            }),
+                            (0, f.jsxs)("button", {
+                              type: "button",
+                              "data-internal-nav": "true",
+                              onClick: () => setSelectedMarket("intl"),
+                              className: `rounded-2xl border p-3 text-left transition ${
+                                market === "intl"
+                                  ? "border-2 border-zinc-950 bg-zinc-50/80 shadow-xs"
+                                  : "border-zinc-200 bg-white hover:border-zinc-300"
+                              }`,
+                              children: [
+                                (0, f.jsxs)("div", {
+                                  className: "flex items-center justify-between",
+                                  children: [
+                                    (0, f.jsx)("span", {
+                                      className: `text-[12.5px] font-bold ${market === "intl" ? "text-zinc-950" : "text-zinc-700"}`,
+                                      children: isEn ? "International Card" : "Thẻ Quốc Tế / USD"
+                                    }),
+                                    (0, f.jsx)("span", {
+                                      className: "rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-zinc-600",
+                                      children: intlCfg.providerLabel
+                                    })
+                                  ]
+                                }),
+                                (0, f.jsx)("div", {
+                                  className: "mt-1 text-[11px] text-zinc-500",
+                                  children: "Visa, Mastercard, Apple Pay"
+                                })
+                              ]
+                            })
                           ]
                         }),
-                        (0, f.jsx)("p", {
-                          className: "mt-1.5 text-[11.5px] leading-relaxed text-zinc-500",
-                          children: isDesktopOrder
-                            ? "Instant global card processing. Your SC2 license keys and .scweblicense file will appear right on this screen and be sent to your email."
-                            : "Instant global card processing. Your SocialChoice web & MCP account quotas will be upgraded automatically upon completion."
+                        market === "vn"
+                          ? (0, f.jsxs)("div", {
+                              className: "rounded-2xl border border-zinc-200 bg-zinc-50/80 p-4 sm:p-5 flex flex-col sm:flex-row gap-5 items-center",
+                              children: [
+                                (0, f.jsx)("div", {
+                                  className: "shrink-0 overflow-hidden rounded-2xl border border-zinc-200/90 bg-white p-2 shadow-xs",
+                                  children: (0, f.jsx)("img", {
+                                    src: qrUrl,
+                                    alt: "VietQR Payment",
+                                    className: "size-32 sm:size-36 object-contain"
+                                  })
+                                }),
+                                (0, f.jsxs)("div", {
+                                  className: "space-y-2 text-xs w-full",
+                                  children: [
+                                    (0, f.jsxs)("div", {
+                                      className: "flex items-center justify-between pb-1.5 border-b border-zinc-200/70",
+                                      children: [
+                                        (0, f.jsx)("div", {
+                                          className: "font-bold text-zinc-950 text-[13px]",
+                                          children: "Quét mã QR từ App Ngân hàng bất kỳ"
+                                        }),
+                                        (0, f.jsx)("span", {
+                                          className: "rounded-md bg-zinc-200/80 px-2 py-0.5 font-mono text-[11px] font-bold text-zinc-800",
+                                          children: sepayCfg.bankCode
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "flex items-center justify-between py-1 text-zinc-600 font-mono text-[12px]",
+                                      children: [
+                                        (0, f.jsx)("span", { children: "STK:" }),
+                                        (0, f.jsxs)("button", {
+                                          type: "button",
+                                          "data-internal-nav": "true",
+                                          onClick: () => {
+                                            try { navigator.clipboard.writeText(sepayAcc); } catch {}
+                                            setCopiedKey("acc");
+                                            setTimeout(() => setCopiedKey(null), 1500);
+                                          },
+                                          className: "inline-flex items-center gap-1.5 font-bold text-zinc-950 hover:text-amber-600 cursor-pointer rounded px-2 py-0.5 bg-white border border-zinc-200/90 shadow-2xs",
+                                          children: [
+                                            sepayAcc,
+                                            copiedKey === "acc" ? " ✓ Đã chép" : " 📋"
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "flex items-center justify-between py-1 text-zinc-600 text-[12px]",
+                                      children: [
+                                        (0, f.jsx)("span", { children: "Chủ TK:" }),
+                                        (0, f.jsx)("strong", { className: "font-bold text-zinc-950", children: sepayCfg.accountName })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "flex items-center justify-between py-1 text-zinc-600 font-mono text-[12px]",
+                                      children: [
+                                        (0, f.jsx)("span", { children: "Nội dung:" }),
+                                        (0, f.jsxs)("button", {
+                                          type: "button",
+                                          "data-internal-nav": "true",
+                                          onClick: () => {
+                                            try { navigator.clipboard.writeText(orderCode); } catch {}
+                                            setCopiedKey("des");
+                                            setTimeout(() => setCopiedKey(null), 1500);
+                                          },
+                                          className: "inline-flex items-center gap-1.5 font-bold text-amber-800 bg-amber-50 border border-amber-200 rounded px-2 py-0.5 hover:bg-amber-100 cursor-pointer shadow-2xs",
+                                          children: [
+                                            orderCode,
+                                            copiedKey === "des" ? " ✓ Đã chép" : " 📋"
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "flex items-center justify-between pt-1.5 border-t border-zinc-200/70 text-[12px]",
+                                      children: [
+                                        (0, f.jsx)("span", { className: "text-zinc-500", children: "Số tiền:" }),
+                                        (0, f.jsx)("strong", { className: "font-mono font-bold text-zinc-950 text-[14px]", children: formatMoney(displayAmount, "vn") })
+                                      ]
+                                    })
+                                  ]
+                                })
+                              ]
+                            })
+                          : (0, f.jsxs)("div", {
+                              className: "space-y-4 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 text-[13px]",
+                              children: [
+                                (0, f.jsxs)("div", {
+                                  className: "flex flex-wrap items-center justify-between gap-2",
+                                  children: [
+                                    (0, f.jsxs)("div", {
+                                      className: "flex flex-wrap items-center gap-2 font-bold text-zinc-950",
+                                      children: [
+                                        (0, f.jsx)("span", { className: "size-2 rounded-full bg-emerald-500" }),
+                                        `Global Checkout (${intlCfg.providerLabel} · MoR)`,
+                                        (0, f.jsxs)("span", {
+                                          className: "inline-flex items-center gap-1 rounded-md border border-zinc-200 bg-white px-2 py-0.5 text-[10.5px] font-bold text-zinc-900 shadow-[0_1px_1px_rgba(0,0,0,0.03)]",
+                                          children: [
+                                            (0, f.jsx)("svg", {
+                                              className: "size-3.5",
+                                              viewBox: "0 0 24 24",
+                                              fill: "none",
+                                              children: (0, f.jsx)("circle", {
+                                                cx: "12",
+                                                cy: "12",
+                                                r: "9",
+                                                stroke: "#18181B",
+                                                strokeWidth: "2.4"
+                                              })
+                                            }),
+                                            intlCfg.providerLabel
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "flex flex-wrap items-center gap-1.5",
+                                      children: [
+                                        (0, f.jsxs)("span", {
+                                          className: "inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 font-mono text-[10px] font-semibold text-emerald-700",
+                                          children: [
+                                            (0, f.jsx)("svg", {
+                                              className: "size-3",
+                                              viewBox: "0 0 24 24",
+                                              fill: "none",
+                                              children: (0, f.jsx)("path", {
+                                                d: "M7 10V7a5 5 0 0110 0v3m-9 0h8a2 2 0 012 2v6a2 2 0 01-2 2H8a2 2 0 01-2-2v-6a2 2 0 012-2z",
+                                                stroke: "#047857",
+                                                strokeWidth: "2",
+                                                strokeLinecap: "round",
+                                                strokeLinejoin: "round"
+                                              })
+                                            }),
+                                            "PCI-DSS · 256-bit SSL"
+                                          ]
+                                        }),
+                                        (0, f.jsx)("span", {
+                                          className: "rounded-md bg-white border border-zinc-200 px-2.5 py-0.5 font-mono text-[11px] font-semibold text-zinc-700",
+                                          children: liveIntlUrl ? "Live Hosted Checkout" : "Sandbox / Instant Preview"
+                                        })
+                                      ]
+                                    })
+                                  ]
+                                }),
+                                (0, f.jsxs)("div", {
+                                  className: "grid grid-cols-2 gap-2.5",
+                                  children: [
+                                    (0, f.jsxs)("button", {
+                                      type: "button",
+                                      "data-internal-nav": "true",
+                                      onClick: () => setIntlMethod("card"),
+                                      className: `rounded-xl border px-3.5 py-2.5 text-left transition ${
+                                        intlMethod === "card"
+                                          ? "border-zinc-900 bg-white font-semibold text-zinc-950 shadow-sm"
+                                          : "border-zinc-200 bg-white/60 text-zinc-600 hover:bg-white"
+                                      }`,
+                                      children: [
+                                        (0, f.jsx)("div", { className: "text-[12.5px]", children: "Credit / Debit Card" }),
+                                        (0, f.jsxs)("div", {
+                                          className: "mt-1.5 flex flex-wrap items-center gap-1.5",
+                                          children: [
+                                            (0, f.jsx)("span", {
+                                              className: "inline-flex items-center rounded border border-blue-200 bg-blue-50 px-1.5 py-0.5 text-[9.5px] font-black italic tracking-tight text-blue-800",
+                                              children: "VISA"
+                                            }),
+                                            (0, f.jsxs)("span", {
+                                              className: "inline-flex items-center gap-1 rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-700",
+                                              children: [
+                                                (0, f.jsxs)("svg", {
+                                                  className: "h-3 w-4",
+                                                  viewBox: "0 0 24 16",
+                                                  fill: "none",
+                                                  children: [
+                                                    (0, f.jsx)("circle", { cx: "9", cy: "8", r: "6", fill: "#EB001B" }),
+                                                    (0, f.jsx)("circle", { cx: "15", cy: "8", r: "6", fill: "#F79E1B", fillOpacity: "0.88" })
+                                                  ]
+                                                }),
+                                                "Mastercard"
+                                              ]
+                                            }),
+                                            (0, f.jsx)("span", {
+                                              className: "inline-flex items-center rounded border border-sky-200 bg-sky-600 px-1.5 py-0.5 text-[9.5px] font-extrabold tracking-tight text-white",
+                                              children: "AMEX"
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("button", {
+                                      type: "button",
+                                      "data-internal-nav": "true",
+                                      onClick: () => setIntlMethod("wallet"),
+                                      className: `rounded-xl border px-3.5 py-2.5 text-left transition ${
+                                        intlMethod === "wallet"
+                                          ? "border-zinc-900 bg-white font-semibold text-zinc-950 shadow-sm"
+                                          : "border-zinc-200 bg-white/60 text-zinc-600 hover:bg-white"
+                                      }`,
+                                      children: [
+                                        (0, f.jsx)("div", { className: "text-[12.5px]", children: "Apple Pay / Google Pay" }),
+                                        (0, f.jsxs)("div", {
+                                          className: "mt-1.5 flex flex-wrap items-center gap-1.5",
+                                          children: [
+                                            (0, f.jsxs)("span", {
+                                              className: "inline-flex items-center gap-1 rounded border border-zinc-800 bg-zinc-950 px-1.5 py-0.5 text-[9.5px] font-bold text-white",
+                                              children: [
+                                                (0, f.jsx)("svg", {
+                                                  className: "size-2.5",
+                                                  viewBox: "0 0 24 24",
+                                                  fill: "currentColor",
+                                                  children: (0, f.jsx)("path", {
+                                                    d: "M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z"
+                                                  })
+                                                }),
+                                                "Pay"
+                                              ]
+                                            }),
+                                            (0, f.jsxs)("span", {
+                                              className: "inline-flex items-center gap-1 rounded border border-zinc-200 bg-white px-1.5 py-0.5 text-[9.5px] font-bold text-zinc-700",
+                                              children: [
+                                                (0, f.jsx)("span", { className: "font-black text-[#4285F4]", children: "G" }),
+                                                "Pay"
+                                              ]
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    })
+                                  ]
+                                }),
+                                !liveIntlUrl && intlMethod === "card" && (0, f.jsxs)("div", {
+                                  className: "space-y-3 rounded-xl border border-zinc-200 bg-white p-4",
+                                  children: [
+                                    (0, f.jsxs)("div", {
+                                      children: [
+                                        (0, f.jsx)("label", {
+                                          className: "block text-[11.5px] font-semibold text-zinc-700",
+                                          children: isEn ? "Card number" : "Số thẻ quốc tế"
+                                        }),
+                                        (0, f.jsx)("input", {
+                                          type: "text",
+                                          inputMode: "numeric",
+                                          maxLength: 19,
+                                          required: !liveIntlUrl && intlMethod === "card",
+                                          value: cardNumber,
+                                          onChange: (ev) => {
+                                            let digits = ev.target.value.replace(/\D/g, "").slice(0, 16);
+                                            setCardNumber(digits.replace(/(.{4})/g, "$1 ").trim());
+                                          },
+                                          placeholder: "4242 4242 4242 4242",
+                                          className: "mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3.5 py-2.5 font-mono text-[13px] text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white"
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsxs)("div", {
+                                      className: "grid grid-cols-3 gap-2.5",
+                                      children: [
+                                        (0, f.jsxs)("div", {
+                                          children: [
+                                            (0, f.jsx)("label", { className: "block text-[11.5px] font-semibold text-zinc-700", children: "MM / YY" }),
+                                            (0, f.jsx)("input", {
+                                              type: "text",
+                                              inputMode: "numeric",
+                                              maxLength: 5,
+                                              required: !liveIntlUrl && intlMethod === "card",
+                                              value: cardExpiry,
+                                              onChange: (ev) => {
+                                                let d = ev.target.value.replace(/\D/g, "").slice(0, 4);
+                                                setCardExpiry(d.length > 2 ? `${d.slice(0, 2)}/${d.slice(2)}` : d);
+                                              },
+                                              placeholder: "12/28",
+                                              className: "mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-2.5 font-mono text-[13px] text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white"
+                                            })
+                                          ]
+                                        }),
+                                        (0, f.jsxs)("div", {
+                                          children: [
+                                            (0, f.jsx)("label", { className: "block text-[11.5px] font-semibold text-zinc-700", children: "CVC" }),
+                                            (0, f.jsx)("input", {
+                                              type: "text",
+                                              inputMode: "numeric",
+                                              maxLength: 4,
+                                              required: !liveIntlUrl && intlMethod === "card",
+                                              value: cardCvc,
+                                              onChange: (ev) => setCardCvc(ev.target.value.replace(/\D/g, "").slice(0, 4)),
+                                              placeholder: "424",
+                                              className: "mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-3 py-2.5 font-mono text-[13px] text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white"
+                                            })
+                                          ]
+                                        }),
+                                        (0, f.jsxs)("div", {
+                                          children: [
+                                            (0, f.jsx)("label", { className: "block text-[11.5px] font-semibold text-zinc-700", children: isEn ? "Country" : "Quốc gia" }),
+                                            (0, f.jsxs)("select", {
+                                              value: billingCountry,
+                                              onChange: (ev) => setBillingCountry(ev.target.value),
+                                              className: "mt-1 w-full rounded-xl border border-zinc-200 bg-zinc-50/50 px-2.5 py-2.5 text-[12.5px] text-zinc-900 outline-none focus:border-zinc-900 focus:bg-white",
+                                              children: [
+                                                (0, f.jsx)("option", { value: "US", children: "United States" }),
+                                                (0, f.jsx)("option", { value: "SG", children: "Singapore" }),
+                                                (0, f.jsx)("option", { value: "GB", children: "United Kingdom" }),
+                                                (0, f.jsx)("option", { value: "AU", children: "Australia" }),
+                                                (0, f.jsx)("option", { value: "JP", children: "Japan" }),
+                                                (0, f.jsx)("option", { value: "DE", children: "Germany" }),
+                                                (0, f.jsx)("option", { value: "CA", children: "Canada" }),
+                                                (0, f.jsx)("option", { value: "OTHER", children: "Other" })
+                                              ]
+                                            })
+                                          ]
+                                        })
+                                      ]
+                                    })
+                                  ]
+                                }),
+                                !liveIntlUrl && intlMethod === "wallet" && (0, f.jsxs)("div", {
+                                  className: "rounded-xl border border-zinc-200 bg-white p-4 text-center space-y-2.5",
+                                  children: [
+                                    (0, f.jsxs)("div", {
+                                      className: "flex flex-wrap items-center justify-center gap-2.5",
+                                      children: [
+                                        (0, f.jsxs)("button", {
+                                          type: "submit",
+                                          "data-internal-nav": "true",
+                                          className: "inline-flex items-center gap-1.5 rounded-lg bg-zinc-950 px-5 py-2.5 text-[13px] font-semibold text-white shadow-sm transition hover:bg-zinc-800 active:scale-[0.99] cursor-pointer",
+                                          children: [
+                                            (0, f.jsx)("svg", {
+                                              className: "size-3.5",
+                                              viewBox: "0 0 24 24",
+                                              fill: "currentColor",
+                                              children: (0, f.jsx)("path", {
+                                                d: "M16.365 1.43c0 1.14-.493 2.27-1.177 3.08-.744.9-1.99 1.57-2.987 1.57-.12 0-.23-.02-.3-.03-.01-.06-.04-.22-.04-.39 0-1.15.572-2.27 1.206-2.98.804-.94 2.142-1.64 3.248-1.68.03.13.05.28.05.43zm4.565 15.71c-.03.07-.463 1.58-1.518 3.12-.945 1.34-1.94 2.71-3.43 2.71-1.517 0-1.9-.88-3.63-.88-1.698 0-2.302.91-3.67.91-1.377 0-2.332-1.26-3.428-2.8-1.287-1.82-2.323-4.63-2.323-7.28 0-4.28 2.797-6.55 5.552-6.55 1.448 0 2.675.95 3.6.95.865 0 2.222-1.01 3.902-1.01.613 0 2.886.06 4.374 2.19-.13.09-2.383 1.37-2.383 4.19 0 3.26 2.854 4.42 2.955 4.45z"
+                                              })
+                                            }),
+                                            "Pay with Apple Pay"
+                                          ]
+                                        }),
+                                        (0, f.jsxs)("button", {
+                                          type: "submit",
+                                          "data-internal-nav": "true",
+                                          className: "inline-flex items-center gap-1.5 rounded-lg border border-zinc-300 bg-white px-5 py-2.5 text-[13px] font-semibold text-zinc-900 shadow-sm transition hover:bg-zinc-50 active:scale-[0.99] cursor-pointer",
+                                          children: [
+                                            (0, f.jsx)("span", { className: "font-black text-[#4285F4]", children: "G" }),
+                                            "Pay with Google Pay"
+                                          ]
+                                        })
+                                      ]
+                                    }),
+                                    (0, f.jsx)("p", {
+                                      className: "text-[11.5px] text-zinc-500",
+                                      children: isEn
+                                        ? "Click Apple Pay, Google Pay, or the button below to complete payment."
+                                        : "Nhấn Apple Pay, Google Pay hoặc nút xác nhận bên dưới để hoàn tất thanh toán."
+                                    })
+                                  ]
+                                }),
+                                (0, f.jsx)("p", {
+                                  className: "text-[12px] leading-relaxed text-zinc-600",
+                                  children: liveIntlUrl
+                                    ? (isEn
+                                        ? `You will be redirected securely to ${intlCfg.providerLabel} with your email pre-filled. Global VAT/Sales Tax is handled automatically.`
+                                        : `Bạn sẽ được chuyển sang cổng bảo mật ${intlCfg.providerLabel} (đã điền sẵn email & mã đơn). Thuế VAT/Sales Tax toàn cầu được xử lý tự động.`)
+                                    : (isDesktopOrder
+                                        ? (isEn
+                                            ? "Instant global card processing. Your SC2 license keys and .scweblicense file will appear right on this page and be emailed to you."
+                                            : "Xử lý thẻ quốc tế tức thì. Mã bản quyền SC2 và file .scweblicense sẽ hiển thị ngay trên trang này và gửi về Email của bạn.")
+                                        : (isEn
+                                            ? "Instant global card processing. Your SocialChoice web & AI MCP account quotas will be upgraded automatically upon completion."
+                                            : "Xử lý thẻ quốc tế tức thì. Hạn mức Web & cổng AI MCP của bạn sẽ được nâng cấp tự động ngay sau khi hoàn tất."))
+                                })
+                              ]
+                            })
+                      ]
+                    }),
+
+                    /* Primary CTA */
+                    (0, f.jsxs)("button", {
+                      type: "submit",
+                      "data-internal-nav": "true",
+                      className: "inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-brand-400 px-6 text-[14px] font-bold text-zinc-950 shadow-sm transition hover:bg-brand-300",
+                      children: [
+                        displayAmount === 0
+                          ? (isDesktopOrder
+                              ? (isEn ? "Activate SC2 Free (100% OFF)" : "Kích hoạt mã SC2 miễn phí (Ưu đãi 100%)")
+                              : (isEn ? "Activate Account Free (100% OFF)" : "Kích hoạt tài khoản miễn phí (Ưu đãi 100%)"))
+                          : isDesktopOrder
+                            ? (isEn ? "Complete Payment & Get SC2 License Key" : "Xác nhận thanh toán & Nhận mã SC2 ngay")
+                            : (isEn ? "Complete Payment & Auto-Activate Account" : "Xác nhận thanh toán & Kích hoạt ngay"),
+                        (0, f.jsx)(Ta, { className: "size-4" })
+                      ]
+                    })
+                  ]
+                }),
+
+                /* RIGHT COLUMN: Sticky Order Summary */
+                (0, f.jsxs)("aside", {
+                  className: "lg:sticky lg:top-24 rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm space-y-5",
+                  children: [
+                    (0, f.jsxs)("div", {
+                      className: "flex items-start justify-between gap-3 border-b border-zinc-100 pb-4",
+                      children: [
+                        (0, f.jsxs)("div", {
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "text-[11px] font-bold uppercase tracking-wider text-zinc-400",
+                              children: isEn ? "Order Summary" : "Tóm tắt đơn hàng"
+                            }),
+                            (0, f.jsx)("h2", {
+                              className: "mt-1 text-xl font-bold text-zinc-950",
+                              children: activeItem.planName
+                            }),
+                            (0, f.jsx)("div", {
+                              className: "mt-0.5 text-[12.5px] text-zinc-500",
+                              children: isDesktopOrder
+                                ? (isEn ? `Perpetual License · ${activeItem.devicesLabel}` : `Bản quyền vĩnh viễn · ${activeItem.devicesLabel}`)
+                                : (activeItem.billingCycle === "yearly"
+                                    ? (isEn ? "Annual Cloud Subscription (−20%)" : "Thuê bao Cloud theo năm (Đã giảm 20%)")
+                                    : (isEn ? "Monthly Cloud Subscription" : "Thuê bao Cloud theo tháng"))
+                            })
+                          ]
+                        }),
+                        (0, f.jsx)("span", {
+                          className: "rounded-lg bg-zinc-100 px-2.5 py-1 font-mono text-[11px] font-bold text-zinc-700",
+                          children: `#${orderCode}`
                         })
                       ]
                     }),
 
-                /* Submit / Activate Button */
-                (0, f.jsxs)("div", {
-                  className: "flex items-center justify-end gap-2.5 pt-2",
-                  children: [
-                    (0, f.jsx)("button", {
-                      type: "button",
-                      "data-internal-nav": "true",
-                      onClick: onClose,
-                      className: "h-10 rounded-xl border border-zinc-200 px-4 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100",
-                      children: isEn ? "Cancel" : "Đóng"
-                    }),
-                    (0, f.jsxs)("button", {
-                      type: "submit",
-                      "data-internal-nav": "true",
-                      className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 shadow-sm transition hover:bg-brand-300",
+                    /* Quotas / Included List */
+                    !isDesktopOrder && activeItem.quotas
+                      ? (0, f.jsxs)("div", {
+                          className: "space-y-2.5 text-[13px]",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "text-[11.5px] font-semibold uppercase tracking-wider text-zinc-400",
+                              children: isEn ? "Included Quotas" : "Hạn mức được mở khóa"
+                            }),
+                            [
+                              [isEn ? "Brands" : "Thương hiệu", `${activeItem.quotas.brands} Brands`],
+                              [isEn ? "Social Accounts" : "Kênh MXH kết nối", `${activeItem.quotas.accounts} ${isEn ? "channels" : "kênh"}`],
+                              [isEn ? "Team Seats" : "Ghế thành viên Teams", `${activeItem.quotas.seats} ${isEn ? "seats" : "ghế"}`],
+                              [isEn ? "Staging Media" : "Bộ nhớ đệm Media", `${activeItem.quotas.storageMb} MB`],
+                              [isEn ? "Shortlinks" : "Link rút gọn Tracking", `${activeItem.quotas.links} links`],
+                              [isEn ? "AI MCP Sync" : "Đồng bộ AI MCP", isEn ? "100% Synced" : "Đồng bộ 100%"]
+                            ].map(([label, val]) => (
+                              (0, f.jsxs)("div", {
+                                className: "flex items-center justify-between text-zinc-600",
+                                children: [
+                                  (0, f.jsxs)("span", {
+                                    className: "flex items-center gap-2",
+                                    children: [
+                                      (0, f.jsx)(_e, { className: "size-3.5 text-emerald-600", strokeWidth: 3 }),
+                                      label
+                                    ]
+                                  }),
+                                  (0, f.jsx)("span", { className: "font-mono font-semibold text-zinc-900", children: val })
+                                ]
+                              }, label)
+                            ))
+                          ]
+                        })
+                      : (0, f.jsxs)("div", {
+                          className: "space-y-2.5 text-[13px]",
+                          children: [
+                            (0, f.jsx)("div", {
+                              className: "text-[11.5px] font-semibold uppercase tracking-wider text-zinc-400",
+                              children: isEn ? "Desktop License Includes" : "Quyền lợi bản quyền Desktop"
+                            }),
+                            [
+                              isEn ? `Activation for ${activeItem.devicesLabel}` : `Kích hoạt cho ${activeItem.devicesLabel}`,
+                              isEn ? "Unlimited local Database & 4K Media" : "Lưu Database & Kho ảnh/video 4K không giới hạn",
+                              isEn ? "12 months free updates included" : "Miễn phí 12 tháng cập nhật tính năng mới",
+                              isEn ? "Offline .scweblicense file + Email backup" : "Kèm file .scweblicense offline + Email dự phòng"
+                            ].map((txt) => (
+                              (0, f.jsxs)("div", {
+                                className: "flex items-center gap-2 text-zinc-700",
+                                children: [
+                                  (0, f.jsx)(_e, { className: "size-3.5 shrink-0 text-emerald-600", strokeWidth: 3 }),
+                                  (0, f.jsx)("span", { children: txt })
+                                ]
+                              }, txt)
+                            ))
+                          ]
+                        }),
+
+                    /* Discount / Coupon Input Box */
+                    (0, f.jsxs)("div", {
+                      className: "space-y-2 border-t border-zinc-100 pt-4",
                       children: [
-                        isDesktopOrder
-                          ? (isEn ? "Complete & Get SC2 License Key" : "Xác nhận thanh toán & Nhận mã SC2 ngay")
-                          : (isEn ? "Complete & Auto-Activate Account" : "Xác nhận thanh toán & Kích hoạt ngay"),
-                        (0, f.jsx)(Ta, { className: "size-3.5" })
+                        (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between text-[12px] font-semibold text-zinc-700",
+                          children: [
+                            (0, f.jsx)("span", { children: isEn ? "Promo code / Discount" : "Mã ưu đãi / Giảm giá" }),
+                            appliedDiscount && (0, f.jsxs)("span", {
+                              className: "inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-0.5 text-[11px] font-bold text-emerald-700 border border-emerald-200",
+                              children: [
+                                (0, f.jsx)("span", { children: `-${appliedDiscount.percent}%` }),
+                                (0, f.jsx)("button", {
+                                  type: "button",
+                                  onClick: handleRemoveDiscount,
+                                  className: "ml-1 text-zinc-400 hover:text-rose-600 font-bold",
+                                  title: isEn ? "Remove" : "Gỡ mã",
+                                  children: "×"
+                                })
+                              ]
+                            })
+                          ]
+                        }),
+                        !appliedDiscount ? (0, f.jsxs)("div", {
+                          className: "flex items-center gap-2",
+                          children: [
+                            (0, f.jsx)("input", {
+                              type: "text",
+                              value: discountInput,
+                              onChange: (e) => setDiscountInput(e.target.value.toUpperCase()),
+                              onKeyDown: (e) => { if (e.key === "Enter") { e.preventDefault(); handleApplyDiscount(e); } },
+                              placeholder: isEn ? "e.g. VIP50, WELCOME20" : "Nhập mã (VD: VIP50, SC10)",
+                              className: "flex-1 rounded-xl border border-zinc-200 bg-white px-3 py-1.5 text-xs font-mono tracking-wider uppercase text-zinc-900 placeholder:text-zinc-400 placeholder:normal-case focus:border-zinc-900 focus:outline-none"
+                            }),
+                            (0, f.jsx)("button", {
+                              type: "button",
+                              onClick: handleApplyDiscount,
+                              className: "rounded-xl bg-zinc-900 px-3.5 py-1.5 text-xs font-semibold text-white hover:bg-zinc-800 transition-colors shadow-xs",
+                              children: isEn ? "Apply" : "Áp dụng"
+                            })
+                          ]
+                        }) : (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between rounded-xl bg-emerald-50/60 border border-emerald-200/80 px-3 py-2 text-xs text-emerald-900",
+                          children: [
+                            (0, f.jsxs)("div", {
+                              className: "flex items-center gap-2",
+                              children: [
+                                (0, f.jsx)("span", { className: "font-mono font-bold tracking-wider", children: appliedDiscount.code }),
+                                (0, f.jsx)("span", { className: "text-emerald-700 text-[11px]", children: appliedDiscount.note || `Tiết kiệm ${appliedDiscount.percent}%` })
+                              ]
+                            }),
+                            (0, f.jsx)("button", {
+                              type: "button",
+                              onClick: handleRemoveDiscount,
+                              className: "text-[11px] font-medium text-emerald-700 hover:text-rose-600 underline",
+                              children: isEn ? "Change" : "Đổi mã"
+                            })
+                          ]
+                        }),
+                        discountError && (0, f.jsx)("p", {
+                          className: "text-[11px] text-rose-600",
+                          children: discountError
+                        })
                       ]
+                    }),
+
+                    /* Total Box */
+                    (0, f.jsxs)("div", {
+                      className: "space-y-2 border-t border-zinc-100 pt-4",
+                      children: [
+                        appliedDiscount && (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between text-[13px] text-zinc-500",
+                          children: [
+                            (0, f.jsx)("span", { children: isEn ? "Original subtotal" : "Tạm tính gốc" }),
+                            (0, f.jsx)("span", { className: "font-mono text-zinc-400 line-through", children: formatMoney(baseAmount, market) })
+                          ]
+                        }),
+                        appliedDiscount && (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between text-[13px] text-emerald-600 font-medium",
+                          children: [
+                            (0, f.jsx)("span", { children: isEn ? `Discount (${appliedDiscount.code})` : `Giảm giá (${appliedDiscount.code})` }),
+                            (0, f.jsx)("span", { className: "font-mono font-semibold", children: `-${formatMoney(discountAmount, market)}` })
+                          ]
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "flex items-center justify-between text-[13px] text-zinc-500",
+                          children: [
+                            (0, f.jsx)("span", { children: isEn ? "Gateway fee" : "Phí cổng thanh toán" }),
+                            (0, f.jsx)("span", { className: "font-mono font-semibold text-emerald-600", children: market === "vn" ? "0₫" : "$0" })
+                          ]
+                        }),
+                        (0, f.jsxs)("div", {
+                          className: "flex items-baseline justify-between pt-1",
+                          children: [
+                            (0, f.jsx)("span", { className: "text-[14px] font-bold text-zinc-900", children: isEn ? "Total due" : "Tổng thanh toán" }),
+                            (0, f.jsx)("span", { className: "font-mono text-2xl font-bold text-zinc-950", children: formatMoney(displayAmount, market) })
+                          ]
+                        })
+                      ]
+                    }),
+
+                    (0, f.jsx)("div", {
+                      className: "rounded-xl bg-zinc-50 px-3.5 py-2.5 text-[11.5px] leading-relaxed text-zinc-500",
+                      children: isEn
+                        ? "SSL encrypted · Instant activation in 2–3 seconds · Cancel or upgrade anytime in Settings."
+                        : "Bảo mật SSL · Kích hoạt tự động sau 2–3 giây · Nâng cấp hoặc hủy bất cứ lúc nào trong Cài đặt."
                     })
                   ]
                 })
               ]
             })
-          : /* STEP 2: HYBRID ACTIVATION RESULT */
+          : step === "pending"
+            ? (0, f.jsxs)("div", {
+                className: "mx-auto max-w-3xl rounded-3xl border border-amber-200 bg-white p-6 shadow-sm sm:p-8 space-y-5",
+                children: [
+                  (0, f.jsxs)("div", {
+                    className: "border-b border-zinc-100 pb-4",
+                    children: [
+                      (0, f.jsxs)("span", {
+                        className: "inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-800 border border-amber-200",
+                        children: [
+                          (0, f.jsx)("span", { className: "size-2 rounded-full bg-amber-500 animate-pulse" }),
+                          isEn ? "Awaiting Payment Verification" : "Đang chờ xác nhận thanh toán"
+                        ]
+                      }),
+                      (0, f.jsx)("h1", {
+                        className: "mt-2 text-2xl font-bold tracking-tight text-zinc-950",
+                        children: isEn ? "Payment Not Yet Verified" : "Đơn hàng chưa được kích hoạt tự động"
+                      }),
+                      (0, f.jsx)("p", {
+                        className: "mt-1.5 text-[13.5px] text-zinc-500",
+                        children: isEn
+                          ? `Order #${orderCode} for ${activeItem.planName} is currently pending. Your plan will NOT upgrade until payment is verified.`
+                          : `Đơn #${orderCode} (${activeItem.planName}) đang ở trạng thái chờ. Hệ thống chỉ tự động nâng cấp gói sau khi nhận được xác nhận đã chuyển đủ tiền.`
+                      })
+                    ]
+                  }),
+
+                  paymentNotice && (0, f.jsx)("div", {
+                    className: "rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-[12.5px] text-amber-950",
+                    children: paymentNotice.text
+                  }),
+
+                  market === "vn" && (0, f.jsxs)("div", {
+                    className: "grid grid-cols-1 items-center gap-5 rounded-2xl border border-zinc-200 bg-zinc-50/70 p-5 sm:grid-cols-[148px_1fr]",
+                    children: [
+                      (0, f.jsx)("div", {
+                        className: "mx-auto overflow-hidden rounded-2xl border border-zinc-200 bg-white p-2 shadow-sm",
+                        children: (0, f.jsx)("img", { src: qrUrl, alt: "VietQR Payment", className: "size-32 object-contain" })
+                      }),
+                      (0, f.jsxs)("div", {
+                        className: "space-y-1.5 text-[13px]",
+                        children: [
+                          (0, f.jsx)("div", { className: "font-bold text-zinc-950", children: `Quét VietQR để hoàn tất đơn #${orderCode}` }),
+                          (0, f.jsxs)("div", {
+                            className: "font-mono text-[12px] text-zinc-700",
+                            children: [
+                              "Ngân hàng: ", (0, f.jsx)("strong", { children: sepayCfg.bankCode }), " · STK: ", (0, f.jsx)("strong", { children: sepayAcc })
+                            ]
+                          }),
+                          (0, f.jsxs)("div", {
+                            className: "font-mono text-[12px] text-zinc-700",
+                            children: [
+                              "Số tiền: ", (0, f.jsx)("strong", { children: formatMoney(displayAmount, "vn") }), " · Nội dung: ", (0, f.jsx)("strong", { children: orderCode })
+                            ]
+                          })
+                        ]
+                      })
+                    ]
+                  }),
+
+                  (0, f.jsxs)("div", {
+                    className: "flex flex-wrap items-center justify-between gap-3 pt-2",
+                    children: [
+                      (0, f.jsx)("button", {
+                        type: "button",
+                        "data-internal-nav": "true",
+                        onClick: () => {
+                          setPaymentNotice(null);
+                          setStep("form");
+                        },
+                        className: "inline-flex items-center justify-center rounded-xl border border-zinc-200 bg-white px-4 py-2.5 text-[13px] font-semibold text-zinc-700 transition hover:border-zinc-900 hover:text-zinc-950",
+                        children: isEn ? "← Back to Checkout" : "← Quay lại chỉnh sửa / Hủy"
+                      }),
+                      (0, f.jsx)("button", {
+                        type: "button",
+                        "data-internal-nav": "true",
+                        disabled: verifyingPayment,
+                        onClick: handleRecheckPendingPayment,
+                        className: "inline-flex items-center justify-center gap-2 rounded-2xl bg-brand-400 px-6 py-2.5 text-[13.5px] font-bold text-zinc-950 shadow-sm transition hover:bg-brand-300 disabled:opacity-60",
+                        children: verifyingPayment
+                          ? (isEn ? "Checking..." : "Đang kiểm tra giao dịch...")
+                          : (isEn ? "Re-check Payment Status" : "Kiểm tra lại thanh toán")
+                      })
+                    ]
+                  })
+                ]
+              })
+          : /* STEP 2: FULL-PAGE CONFIRMATION RESULT */
             (0, f.jsxs)("div", {
-              className: "mt-5 space-y-4",
+              className: "mx-auto max-w-3xl rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8 space-y-5",
               children: [
+                (0, f.jsxs)("div", {
+                  className: "border-b border-zinc-100 pb-4",
+                  children: [
+                    (0, f.jsxs)("span", {
+                      className: "inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-[11px] font-bold text-emerald-700",
+                      children: [
+                        (0, f.jsx)(_e, { className: "size-3.5", strokeWidth: 3 }),
+                        isEn ? "Payment Confirmed" : "Thanh toán thành công"
+                      ]
+                    }),
+                    (0, f.jsx)("h1", {
+                      className: "mt-2 text-2xl font-bold tracking-tight text-zinc-950",
+                      children: isDesktopOrder
+                        ? (isEn ? "Your Desktop License Keys Are Ready!" : "Đã cấp Mã bản quyền Desktop (SC2)!")
+                        : (isEn ? "Account Upgraded Automatically!" : "Đã kích hoạt gói tự động vào tài khoản!")
+                    }),
+                    emailReceiptState && (0, f.jsx)("div", {
+                      className: `mt-2 inline-flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-[11.5px] font-medium ${
+                        emailReceiptState.status === "sent"
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          : "bg-zinc-100 text-zinc-600 border border-zinc-200"
+                      }`,
+                      children: emailReceiptState.status === "sent"
+                        ? (isEn ? `✓ Activation email sent to ${emailReceiptState.email}` : `✓ Đã gửi email kích hoạt thật tới ${emailReceiptState.email}`)
+                        : emailReceiptState.status === "sending"
+                          ? (isEn ? `Sending activation email to ${emailReceiptState.email}...` : `Đang gửi email kích hoạt tới ${emailReceiptState.email}...`)
+                          : emailReceiptState.status === "unconfigured"
+                            ? (isEn ? "Receipt saved locally (set RESEND_API_KEY on server to send live emails)." : "Đã lưu biên lai trên hệ thống (thêm RESEND_API_KEY trên server để gửi mail tự động).")
+                            : (isEn ? `Could not deliver email to ${emailReceiptState.email} right now — your plan is still active.` : `Chưa gửi được email tới ${emailReceiptState.email} lúc này — gói của bạn vẫn đã kích hoạt.`)
+                    })
+                  ]
+                }),
+
                 isDesktopOrder
-                  ? /* DESKTOP HYBRID RESULT: ON-SCREEN KEYS + FILE DOWNLOAD + EMAIL BACKUP */
-                    (0, f.jsxs)(fe.Fragment, {
+                  ? (0, f.jsxs)(fe.Fragment, {
                       children: [
                         (0, f.jsxs)("div", {
-                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-[12.5px] text-emerald-900",
+                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4 text-[13px] text-emerald-900",
                           children: [
                             (0, f.jsx)("div", {
                               className: "font-bold",
@@ -2054,7 +3096,7 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
                                 : `✓ Đã gửi bản lưu ${orderResult.keys.length} mã License SC2 + File .scweblicense về hộp thư ${orderResult.email}`
                             }),
                             (0, f.jsx)("div", {
-                              className: "mt-1 text-[11.5px] text-emerald-700",
+                              className: "mt-1 text-[12px] text-emerald-700",
                               children: isEn
                                 ? "You can also copy your keys or download the license file directly below for immediate offline activation."
                                 : "Bạn có thể sao chép mã hoặc tải file bản quyền ngay bên dưới để dán vào phần mềm trên máy tính Windows:"
@@ -2109,12 +3151,12 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
                               type: "button",
                               "data-internal-nav": "true",
                               onClick: () => downloadScLicenseBundle(orderResult),
-                              className: "inline-flex h-10 items-center gap-2 rounded-xl border border-zinc-900 bg-zinc-900 px-4 text-[12.5px] font-semibold text-white hover:bg-zinc-800",
+                              className: "inline-flex h-11 items-center gap-2 rounded-xl border border-zinc-900 bg-zinc-900 px-5 text-[13px] font-semibold text-white hover:bg-zinc-800",
                               children: isEn ? "Download .scweblicense File" : "Tải file bản quyền (.scweblicense)"
                             }),
                             (0, f.jsxs)("a", {
                               href: "/settings?tab=license",
-                              className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[12.5px] font-bold text-zinc-950 hover:bg-brand-300",
+                              className: "inline-flex h-11 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 hover:bg-brand-300",
                               children: [
                                 isEn ? "Open License Manager in App" : "Mở Quản lý Bản quyền trong App",
                                 (0, f.jsx)(Ta, { className: "size-3.5" })
@@ -2124,11 +3166,10 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
                         })
                       ]
                     })
-                  : /* CLOUD / CUSTOM HYBRID RESULT: INSTANT ACCOUNT ACTIVATION + EMAIL RECEIPT */
-                    (0, f.jsxs)(fe.Fragment, {
+                  : (0, f.jsxs)(fe.Fragment, {
                       children: [
                         (0, f.jsxs)("div", {
-                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-[13px] text-emerald-950",
+                          className: "rounded-2xl border border-emerald-200 bg-emerald-50/70 p-4 text-[13.5px] text-emerald-950",
                           children: [
                             (0, f.jsx)("div", {
                               className: "font-bold",
@@ -2137,7 +3178,7 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
                                 : `⚡ Đã kích hoạt thẳng gói ${orderResult.planName} vào tài khoản ${orderResult.email}!`
                             }),
                             (0, f.jsx)("div", {
-                              className: "mt-1 text-[12px] text-emerald-800",
+                              className: "mt-1 text-[12.5px] text-emerald-800",
                               children: isEn
                                 ? `✓ Payment receipt (#${orderResult.orderCode}) has been emailed to ${orderResult.email}. No manual license key entry needed.`
                                 : `✓ Hóa đơn xác nhận (#${orderResult.orderCode}) đã được gửi về ${orderResult.email}. Bạn không cần nhập mã thủ công.`
@@ -2173,18 +3214,16 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
                           ]
                         }),
                         (0, f.jsxs)("div", {
-                          className: "flex items-center justify-end gap-2.5 pt-2",
+                          className: "flex flex-wrap items-center justify-between gap-2.5 pt-2",
                           children: [
-                            (0, f.jsx)("button", {
-                              type: "button",
-                              "data-internal-nav": "true",
-                              onClick: onClose,
-                              className: "h-10 rounded-xl border border-zinc-200 px-4 text-[13px] font-medium text-zinc-600 hover:bg-zinc-100",
-                              children: isEn ? "Close" : "Đóng"
+                            (0, f.jsx)("a", {
+                              href: "/settings?tab=license",
+                              className: "inline-flex h-11 items-center rounded-xl border border-zinc-200 px-4 text-[13px] font-medium text-zinc-700 hover:bg-zinc-100",
+                              children: isEn ? "View Plan & Quotas in Settings" : "Xem gói & hạn mức trong Cài đặt"
                             }),
                             (0, f.jsxs)("a", {
                               href: Aa("overview"),
-                              className: "inline-flex h-10 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 shadow-sm hover:bg-brand-300",
+                              className: "inline-flex h-11 items-center gap-2 rounded-xl bg-brand-400 px-5 text-[13px] font-bold text-zinc-950 shadow-sm hover:bg-brand-300",
                               children: [
                                 isEn ? "Enter Workspace Now" : "Vào Bảng điều khiển ngay",
                                 (0, f.jsx)(Ta, { className: "size-3.5" })
@@ -2201,25 +3240,29 @@ function HybridCheckoutModal({ item, lang, market, onClose }) {
   });
 }
 
-function PricingSectionEnhanced({ lang, isDedicatedPage = false, onOpenPricingPage }) {
-  let [market, setMarket] = (0, fe.useState)(() => (lang === "en" ? "intl" : "vn"));
+function PricingSectionEnhanced({ lang, isDedicatedPage = false, onOpenPricingPage, onSelectPlan }) {
+  let [geoState, setGeoState] = (0, fe.useState)(() =>
+    (typeof window !== "undefined" && window.__GEO_MARKET__) || { countryCode: "VN", market: "vn" }
+  );
+  (0, fe.useEffect)(() => {
+    let onGeo = (ev) => {
+      if (ev?.detail?.market) setGeoState(ev.detail);
+    };
+    window.addEventListener("socialchoice:geo", onGeo);
+    return () => window.removeEventListener("socialchoice:geo", onGeo);
+  }, []);
+  let market = geoState.market === "intl" ? "intl" : "vn";
   let [mode, setMode] = (0, fe.useState)("cloud");
   let [yearly, setYearly] = (0, fe.useState)(false);
-  let [checkoutItem, setCheckoutItem] = (0, fe.useState)(null);
+  let setCheckoutItem = (selected) => {
+    if (onSelectPlan) onSelectPlan({ ...selected, market });
+  };
 
   let [cAccounts, setCAccounts] = (0, fe.useState)(10);
   let [cSeats, setCSeats] = (0, fe.useState)(1);
   let [cBrands, setCBrands] = (0, fe.useState)(1);
   let [cStorage, setCStorage] = (0, fe.useState)(50);
   let [cLinks, setCLinks] = (0, fe.useState)(10);
-
-  (0, fe.useEffect)(() => {
-    setMarket(prev => {
-      if (lang === "vi" && prev === "intl") return "vn";
-      if (lang === "en" && prev === "vn") return "intl";
-      return prev;
-    });
-  }, [lang]);
 
   let rates = {
     vn: {
@@ -2369,23 +3412,14 @@ function PricingSectionEnhanced({ lang, isDedicatedPage = false, onOpenPricingPa
             className: "h-3.5 w-px bg-zinc-200"
           }),
 
-          (0, f.jsx)("div", {
-            className: "inline-flex items-center rounded-lg border border-zinc-200 bg-zinc-100/90 p-0.5 text-[11px] font-semibold",
+          (0, f.jsxs)("div", {
+            className: "inline-flex items-center gap-1.5 rounded-lg border border-zinc-200 bg-zinc-100/90 px-2.5 py-1 text-[11px] font-semibold text-zinc-700",
             children: [
-              ["vn", "VNĐ"],
-              ["intl", "USD"]
-            ].map(([mKey, mLabel]) => (
-              (0, f.jsx)("button", {
-                type: "button",
-                onClick: () => setMarket(mKey),
-                className: `rounded-md px-2.5 py-0.5 outline-none focus:outline-none focus-visible:outline-none transition ${
-                  market === mKey
-                    ? "bg-white text-zinc-950 shadow-sm"
-                    : "text-zinc-500 hover:text-zinc-900"
-                }`,
-                children: mLabel
-              }, mKey)
-            ))
+              (0, f.jsx)("span", { className: "size-1.5 rounded-full bg-emerald-500" }),
+              market === "vn"
+                ? "VNĐ · SePay (IP Việt Nam)"
+                : `USD · Global Card (IP ${geoState.countryCode || "Global"})`
+            ]
           })
         ]
       }),
@@ -3181,15 +4215,7 @@ function PricingSectionEnhanced({ lang, isDedicatedPage = false, onOpenPricingPa
                 (0, f.jsx)(Ta, { className: "size-4 transition-transform group-hover:translate-x-0.5" })
               ]
             })
-          }),
-
-      /* Hybrid Checkout Modal (Cloud Auto-Activate vs Desktop License Key + Email) */
-      checkoutItem && (0, f.jsx)(HybridCheckoutModal, {
-        item: checkoutItem,
-        lang,
-        market,
-        onClose: () => setCheckoutItem(null)
-      })
+          })
     ]
   });
 }
@@ -3265,22 +4291,47 @@ var PRICING_FAQ_EN = [
   }
 ];
 
-var pg_EN = [["gioi-thieu", "About"], ["diem-manh", "Highlights"], ["tinh-nang", "Features"], ["bang-gia", "Pricing"], ["faq", "FAQ"]];
+var pg_EN = [["gioi-thieu", "About"], ["diem-manh", "Highlights"], ["tinh-nang", "Features"], ["bang-gia", "Pricing"], ["docs", "Docs"], ["faq", "FAQ"]];
 
 function Sr(){
-  let [lang, setLang] = (0, fe.useState)(() => (typeof window !== "undefined" && window.localStorage.getItem("socialchoice.language") === "en" ? "en" : "vi"));
+  let [lang, setLang] = (0, fe.useState)(() => {
+    if (typeof window !== "undefined") {
+      if (window.localStorage.getItem("socialchoice.language") === "en") return "en";
+      if (window.__GEO_MARKET__?.market === "intl") return "en";
+    }
+    return "vi";
+  });
   let handleSetLang = (l) => {
     setLang(l);
     try {
+      window.sessionStorage.setItem("socialchoice.manual_lang", "1");
       window.localStorage.setItem("socialchoice.language", l);
       window.dispatchEvent(new StorageEvent("storage", { key: "socialchoice.language", newValue: l }));
     } catch(e) {}
     if (typeof document !== "undefined") document.documentElement.lang = l;
   };
+
+  (0, fe.useEffect)(() => {
+    let onGeoLang = (ev) => {
+      if (!ev?.detail?.market) return;
+      try {
+        let qGeo = new URLSearchParams(window.location.search).get("geo");
+        if (!qGeo && window.sessionStorage.getItem("socialchoice.manual_lang") === "1") return;
+      } catch {}
+      let nextLang = ev.detail.market === "intl" ? "en" : "vi";
+      setLang(nextLang);
+      if (typeof document !== "undefined") document.documentElement.lang = nextLang;
+    };
+    window.addEventListener("socialchoice:geo", onGeoLang);
+    return () => window.removeEventListener("socialchoice:geo", onGeoLang);
+  }, []);
   let [currentPage, setCurrentPage] = (0, fe.useState)(() => {
     if (typeof window !== "undefined") {
       let p = window.location.pathname;
       let h = window.location.hash;
+      if (p === "/checkout" || p === "/thanh-toan" || h === "#/checkout" || h === "#/thanh-toan") {
+        return "checkout";
+      }
       if (p === "/pricing" || p === "/bang-gia" || h === "#/pricing" || h === "#/bang-gia") {
         return "pricing";
       }
@@ -3288,11 +4339,22 @@ function Sr(){
     return "home";
   });
 
+  let [checkoutItem, setCheckoutItem] = (0, fe.useState)(() => {
+    try {
+      let raw = window.sessionStorage.getItem("socialchoice.pending_checkout");
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   (0, fe.useEffect)(() => {
     let syncRoute = () => {
       let p = window.location.pathname;
       let h = window.location.hash;
-      if (p === "/pricing" || p === "/bang-gia" || h === "#/pricing" || h === "#/bang-gia") {
+      if (p === "/checkout" || p === "/thanh-toan" || h === "#/checkout" || h === "#/thanh-toan") {
+        setCurrentPage("checkout");
+      } else if (p === "/pricing" || p === "/bang-gia" || h === "#/pricing" || h === "#/bang-gia") {
         setCurrentPage("pricing");
       } else {
         setCurrentPage("home");
@@ -3301,6 +4363,18 @@ function Sr(){
     window.addEventListener("popstate", syncRoute);
     return () => window.removeEventListener("popstate", syncRoute);
   }, []);
+
+  let openCheckoutPage = (selectedItem) => {
+    setCheckoutItem(selectedItem);
+    try {
+      window.sessionStorage.setItem("socialchoice.pending_checkout", JSON.stringify(selectedItem));
+    } catch {}
+    setCurrentPage("checkout");
+    if (typeof window !== "undefined" && window.location.pathname !== "/checkout") {
+      window.history.pushState(null, "", "/checkout");
+    }
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   let openPricingPage = (scrollToTable = false) => {
     setCurrentPage("pricing");
@@ -3317,12 +4391,16 @@ function Sr(){
   };
 
   let handleNavClick = (sectionId) => {
+    if (sectionId === "docs") {
+      window.location.href = "/docs";
+      return;
+    }
     if (sectionId === "bang-gia") {
       openPricingPage(false);
       return;
     }
-    if (currentPage === "pricing") {
-      if (sectionId === "faq") {
+    if (currentPage === "pricing" || currentPage === "checkout") {
+      if (sectionId === "faq" && currentPage === "pricing") {
         gr("faq");
         return;
       }
@@ -3357,11 +4435,11 @@ function Sr(){
     : (lang === "en" ? OC_EN : OC);
 
   let footerCols = lang === "en" ? [
-    ["Product", ["Features", "Pricing", "Changelog", "AI Assistant"]],
+    ["Product", ["Features", "Pricing", "Docs", "Changelog", "AI Assistant"]],
     ["Company", ["About Us", "Blog", "Careers", "Contact"]],
     ["Legal", ["Terms of Service", "Privacy Policy", "Cookie Policy", "Data Deletion"]]
   ] : [
-    ["Sản phẩm", ["Tính năng", "Bảng giá", "Cập nhật", "Trợ lý AI"]],
+    ["Sản phẩm", ["Tính năng", "Bảng giá", "Tài liệu", "Cập nhật", "Trợ lý AI"]],
     ["Công ty", ["Về chúng tôi", "Blog", "Tuyển dụng", "Liên hệ"]],
     ["Pháp lý", ["Điều khoản", "Bảo mật", "Cookie", "Xóa dữ liệu"]]
   ];
@@ -3629,9 +4707,16 @@ function Sr(){
       currentPage === "pricing" && (0, f.jsx)(PricingSectionEnhanced, {
         lang,
         isDedicatedPage: true,
-        onOpenPricingPage: openPricingPage
+        onOpenPricingPage: openPricingPage,
+        onSelectPlan: openCheckoutPage
       }),
-      (0, f.jsx)("section", {
+      currentPage === "checkout" && (0, f.jsx)(HybridCheckoutPage, {
+        item: checkoutItem,
+        lang,
+        market: checkoutItem?.market || (lang === "en" ? "intl" : "vn"),
+        onBackToPricing: () => openPricingPage(false)
+      }),
+      currentPage !== "checkout" && (0, f.jsx)("section", {
         id: "faq",
         className: "scroll-mt-16 border-t border-zinc-100 bg-zinc-50/60 px-6 py-24",
         children: (0, f.jsxs)("div", {
@@ -3693,7 +4778,7 @@ function Sr(){
           ]
         })
       }),
-      (0, f.jsx)(mg, {}),
+      currentPage !== "checkout" && (0, f.jsx)(mg, {}),
       (0, f.jsxs)("footer", {
         className: "border-t border-zinc-100 px-6 py-12",
         children: [
@@ -3714,7 +4799,7 @@ function Sr(){
                     (0, f.jsx)("ul", {
                       className: "mt-3 space-y-2",
                       children: n.map(i => {
-                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : (i === "Xóa dữ liệu" || i === "Data Deletion") ? "/data-deletion" : (i === "Tính năng" || i === "Features") ? "#tinh-nang" : (i === "Bảng giá" || i === "Pricing") ? "/pricing" : (i === "Cập nhật" || i === "Updates") ? "#diem-manh" : (i === "Trợ lý AI" || i === "AI Assistant") ? "/login" : (i === "Về chúng tôi" || i === "About Us") ? "#diem-manh" : (i === "Blog") ? "#diem-manh" : (i === "Tuyển dụng" || i === "Careers") ? "mailto:contact@socialchoice.site" : (i === "Liên hệ" || i === "Contact") ? "mailto:hello@socialchoice.site" : null;
+                        let u = (i === "Điều khoản" || i === "Terms of Service") ? "/terms" : (i === "Bảo mật" || i === "Privacy Policy") ? "/privacy" : (i === "Cookie" || i === "Cookie Policy") ? "/cookies" : (i === "Xóa dữ liệu" || i === "Data Deletion") ? "/data-deletion" : (i === "Tài liệu" || i === "Docs" || i === "Documentation") ? "/docs" : (i === "Tính năng" || i === "Features") ? "#tinh-nang" : (i === "Bảng giá" || i === "Pricing") ? "/pricing" : (i === "Cập nhật" || i === "Updates") ? "#diem-manh" : (i === "Trợ lý AI" || i === "AI Assistant") ? "/login" : (i === "Về chúng tôi" || i === "About Us") ? "#diem-manh" : (i === "Blog") ? "#diem-manh" : (i === "Tuyển dụng" || i === "Careers") ? "mailto:contact@socialchoice.site" : (i === "Liên hệ" || i === "Contact") ? "mailto:hello@socialchoice.site" : null;
                         return (0, f.jsx)("li", {
                           className: "text-[13px] text-zinc-500 transition hover:text-zinc-900",
                           children: u ? (0, f.jsx)("a", { href: u, className: "hover:text-zinc-900 transition", children: i }) : i

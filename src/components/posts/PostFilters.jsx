@@ -16,6 +16,7 @@ export default function PostFilters({
     tabs = [],
     activeTab = 'all',
     onTabChange = null,
+    campaigns = [],
     pillars = [],
     angles = [],
     accounts = [],
@@ -35,6 +36,7 @@ export default function PostFilters({
         (filters.status && filters.status !== 'all') ||
         (filters.platform && filters.platform !== 'all') ||
         (filters.account_id && filters.account_id !== 'all') ||
+        (filters.campaign_id && filters.campaign_id !== 'all') ||
         (filters.pillar_id && filters.pillar_id !== 'all') ||
         (filters.angle_id && filters.angle_id !== 'all');
 
@@ -45,6 +47,7 @@ export default function PostFilters({
             status: 'all',
             platform: 'all',
             account_id: 'all',
+            campaign_id: 'all',
             pillar_id: 'all',
             angle_id: 'all',
         });
@@ -147,6 +150,23 @@ export default function PostFilters({
                             {accounts.map((a) => (
                                 <option key={a.id} value={a.id}>
                                     {a.name}
+                                </option>
+                            ))}
+                        </select>
+                    )}
+
+                    {/* Filter Campaign */}
+                    {'campaign_id' in filters && campaigns.length > 0 && (
+                        <select
+                            aria-label={t('Filter by campaign')}
+                            value={filters.campaign_id}
+                            onChange={(e) => setFilters({ ...filters, campaign_id: e.target.value })}
+                            className="h-9 px-2 text-xs rounded-xl border border-border bg-white text-foreground focus:outline-none focus:ring-2 focus:ring-ring/30 cursor-pointer max-w-[140px] truncate"
+                        >
+                            <option value="all">{t('Tất cả chiến dịch')}</option>
+                            {campaigns.map((c) => (
+                                <option key={c.id} value={c.id}>
+                                    {c.name}
                                 </option>
                             ))}
                         </select>

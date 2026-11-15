@@ -55,6 +55,7 @@ export function validateRecord(entity, record, previous, schema, store, verified
         const references = [
             ...[...(record.media_ids || []), ...Object.values(record.platform_media_ids || {}).filter(Array.isArray).flat()].map(id => ['MediaAsset', id]),
             ...(record.account_ids || []).map(id => ['SocialAccount', id]),
+            ...(record.campaign_id ? [['Campaign', record.campaign_id]] : []),
             ...(record.pillar_id ? [['ContentPillar', record.pillar_id]] : []),
             ...(record.angle_id ? [['ContentAngle', record.angle_id]] : []),
         ];
@@ -75,6 +76,10 @@ export function validateRecord(entity, record, previous, schema, store, verified
         return parent;
     };
     if (record.brand_id) sameScope(store.get('Brand', record.brand_id));
+    if (record.campaign_id) {
+        const campaign = sameScope(store.get('Campaign', record.campaign_id));
+        if (campaign.status === 'archived' && record.campaign_id !== previous?.campaign_id) fail('Choose an active campaign');
+    }
     if (record.pillar_id) {
         const pillar = sameScope(store.get('ContentPillar', record.pillar_id));
         if (pillar.status === 'archived' && record.pillar_id !== previous?.pillar_id) fail('Choose an active pillar');

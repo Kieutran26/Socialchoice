@@ -31,6 +31,9 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "campaign_id": {
+        "type": "string"
       }
     },
     "required": [
@@ -205,6 +208,9 @@
         "items": {
           "type": "object"
         }
+      },
+      "campaign_id": {
+        "type": "string"
       }
     },
     "required": [
@@ -564,6 +570,9 @@
       "is_demo": {
         "type": "boolean",
         "default": false
+      },
+      "campaign_id": {
+        "type": "string"
       }
     },
     "required": [
@@ -621,6 +630,52 @@
     "required": [
       "name",
       "content",
+      "brand_id"
+    ]
+  },
+  "Campaign": {
+    "name": "Campaign",
+    "type": "object",
+    "properties": {
+      "brand_id": {
+        "type": "string"
+      },
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "utm_campaign": {
+        "type": "string"
+      },
+      "start_date": {
+        "type": "string"
+      },
+      "end_date": {
+        "type": "string"
+      },
+      "color": {
+        "type": "string",
+        "default": "#ffd631"
+      },
+      "status": {
+        "type": "string",
+        "enum": [
+          "active",
+          "archived",
+          "completed",
+          "draft"
+        ],
+        "default": "active"
+      },
+      "is_demo": {
+        "type": "boolean",
+        "default": false
+      }
+    },
+    "required": [
+      "name",
       "brand_id"
     ]
   }

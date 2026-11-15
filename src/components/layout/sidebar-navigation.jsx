@@ -8,6 +8,7 @@ import {
     CopySimple,
     CalendarBlank,
     Compass,
+    Target,
     Stack,
     TreeStructure,
     Images,
@@ -39,6 +40,7 @@ const NAV_GROUPS = [
         title: 'STRATEGY',
         items: [
             { to: '/strategy', label: 'Content Strategy', icon: Compass },
+            { to: '/strategy/campaigns', label: 'Campaigns', icon: Target },
             { to: '/strategy/pillars', label: 'Content Pillars', icon: Stack },
             { to: '/strategy/angles', label: 'Content Angles', icon: TreeStructure },
         ],

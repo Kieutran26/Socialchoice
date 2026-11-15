@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Article,
+    BookOpen,
     CalendarBlank,
     ChartLineUp,
     Compass,
@@ -16,6 +17,7 @@ import {
     SquaresFour,
     Stack,
     Tag,
+    Target,
     TreeStructure,
     Users,
     X,
@@ -38,12 +40,14 @@ const QUICK_FEATURES = [
     { to: '/calendar', label: 'Content Calendar', hint: 'Lịch phát sóng nội dung theo tháng', icon: CalendarBlank, keywords: 'lich noi dung calendar schedule' },
     { to: '/templates', label: 'Post templates', hint: 'Thư viện mẫu bài viết dùng lại', icon: CopySimple, keywords: 'mau bai viet templates' },
     { to: '/strategy', label: 'Content Strategy', hint: 'Chiến lược nội dung tổng thể', icon: Compass, keywords: 'chien luoc strategy' },
+    { to: '/strategy/campaigns', label: 'Campaigns', hint: 'Quản lý chiến dịch tiếp thị & UTM tracking', icon: Target, keywords: 'chien dich campaigns utm muc tieu' },
     { to: '/strategy/pillars', label: 'Content Pillars', hint: 'Quản lý các trụ cột nội dung', icon: Stack, keywords: 'tru cot pillars' },
     { to: '/strategy/angles', label: 'Content Angles', hint: 'Quản lý góc khai thác nội dung', icon: TreeStructure, keywords: 'goc khai thac angles' },
     { to: '/brands', label: 'Brands', hint: 'Quản lý thương hiệu', icon: Tag, keywords: 'thuong hieu brands' },
     { to: '/accounts', label: 'Social Accounts', hint: 'Kết nối Facebook, Instagram, Threads, TikTok, LinkedIn', icon: Users, keywords: 'tai khoan mang xa hoi kenh accounts' },
     { to: '/media', label: 'Media Library', hint: 'Kho hình ảnh và video', icon: Images, keywords: 'thu vien anh media library' },
     { to: '/shortlinks', label: 'Shortlinks', hint: 'Liên kết rút gọn & UTM tracking', icon: LinkSimple, keywords: 'lien ket rut gon utm shortlinks' },
+    { to: '/docs', label: 'Docs & Guide', hint: 'Tài liệu hướng dẫn sử dụng toàn bộ tính năng', icon: BookOpen, keywords: 'tai lieu huong dan docs guide help faq' },
     { to: '/settings', label: 'Settings', hint: 'Cài đặt hệ thống và AI', icon: GearSix, keywords: 'cai dat settings' },
     { to: '/admin/licenses', label: 'License management', hint: 'Quản lý license người dùng', icon: IdentificationCard, keywords: 'quan ly license admin', adminOnly: true },
 ];

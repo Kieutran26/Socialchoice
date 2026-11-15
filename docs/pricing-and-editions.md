@@ -23,32 +23,73 @@ Socialchoice vận hành song song 2 dòng sản phẩm bổ trợ lẫn nhau đ
 
 | Gói (Edition Key) | Số thành viên (`Teams`) | 🇻🇳 Khách Việt Nam (VNĐ) | 🌍 Khách Quốc Tế (Trên Web) | 🔥 Khách trên **WHOP** |
 | :--- | :--- | :--- | :--- | :--- |
-| **FREE** (`free`)<br>*(Trải nghiệm đủ 100% tính năng)* | **1 Owner** + 1 Thành viên Nháp *(hoặc 1 Guest Link)* | **0đ** | **\$0** | **Free Trial Pass (\$0)** |
+| **FREE FOREVER** (`free`)<br>*(Tặng **7-Day Pro Kickstart Pass** khi tạo tài khoản)* | **1 Owner** + 1 Thành viên Nháp *(hoặc 1 Guest Link)* | **0đ** *(Vĩnh viễn)* | **\$0** *(Forever)* | **Free Forever Pass (\$0)** |
 | **STARTER** (`starter`)<br>*(Cá nhân / Freelancer)* | **1 Thành viên** + 3 Guest View Links | **99.000đ**/tháng<br>*(790.000đ/năm)* | **\$9**/tháng<br>*(hoặc \$79/năm)* | **\$15**/tháng<br>*(hoặc \$119/năm)* |
 | **PROFESSIONAL** ⭐ (`professional`)<br>*(Gói Chủ Lực - Best Seller)* | **3 Thành viên (Team)**<br>*(Thêm ghế: +39k / \$4 / \$6)* | **199.000đ**/tháng<br>*(1.590.000đ/năm)* | **\$19**/tháng<br>*(hoặc \$149/năm)* | **\$29**/tháng *(hoặc \$199/năm)*<br>⚡ **Lifetime: \$149** *(Giới hạn 50 suất)* |
 | **BUSINESS / AGENCY** (`business`)<br>*(Đội ngũ & Đa thương hiệu)* | **10 Thành viên (Agency Team)**<br>*(Thêm ghế: +29k / \$3 / \$5)* | **399.000đ**/tháng<br>*(3.290.000đ/năm)* | **\$39**/tháng<br>*(hoặc \$299/năm)* | **\$59**/tháng *(hoặc \$399/năm)*<br>⚡ **VIP Lifetime: \$299** *(Giới hạn 30 suất)* |
 
 ---
 
-## 3. Ma Trận 13 Tính Năng & Hạn Mức (Quotas) Của Bản Web (`SCW1`)
+## 3. Ma Trận 15 Tính Năng & Hạn Mức (Quotas) Của Bản Web (`SCW1`)
 
-Gói **FREE** mở khóa **đầy đủ 100% các tính năng** để người dùng trải nghiệm thực tế trọn vẹn (kết nối MXH thật, đăng bài thật, nhập Excel, dùng AI, tạo Shortlink...), nhưng giới hạn số lượng nhỏ và tự xóa ảnh ngay sau khi đăng để không phát sinh chi phí lưu trữ.
+Gói **FREE FOREVER** cam kết mở khóa đầy đủ tính năng cốt lõi trọn đời. Đặc biệt, người dùng mới đăng ký được tự động kích hoạt **7-Day Pro Kickstart Pass** (mở khóa full hạn mức như gói Professional trong 7 ngày đầu không cần thẻ). Hết 7 ngày, tài khoản trở về hạn mức Free chuẩn dưới đây mà **không bao giờ bị khóa hệ thống hay mất dữ liệu**.
 
-| # | Nhóm tính năng | FREE (`free`) | STARTER (`starter`) | PROFESSIONAL (`professional`) ⭐ | BUSINESS (`business`) |
+| # | Nhóm tính năng | FREE FOREVER (`free`) | STARTER (`starter`) | PROFESSIONAL (`professional`) ⭐ | BUSINESS (`business`) |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **1** | **Làm việc nhóm (`Teams`)** *(Lộ trình phát triển)* | **1 Owner + 1 Thành viên Nháp** *(Chỉ soạn nháp, không tự đăng)* | **1 Thành viên** + 3 Link chia sẻ lịch (View-only) | **3 Thành viên** + Phân quyền `Owner/Editor` + Ghi chú nội bộ | **10 Thành viên** + Phân quyền theo từng Brand + **Luồng Duyệt Bài (`Approval Workflow`)** + Nhật ký hoạt động |
 | **2** | **Thương hiệu (`Brands`)** | **1 Brand** | **1 Brand** | **5 Brands** | **25 Brands** |
 | **3** | **Tài khoản MXH thật (`SocialAccounts`)**<br>*(FB, IG, Threads, TikTok, LinkedIn, X)* | **2 tài khoản thật** | **5 tài khoản thật** | **20 tài khoản thật** | **60 tài khoản thật** |
 | **4** | **Chiến lược (`Pillars` & `Angles`)** | **2 Pillars & 4 Angles** | **10 Pillars & 30 Angles** | **Không giới hạn** | **Không giới hạn** |
-| **5** | **Đăng bài & Hẹn giờ tự động 24/7**<br>*(Calendar Tháng/Tuần/List, Kéo thả)* | **5 bài đăng/tháng**<br>*(Tối đa 2 bài hẹn giờ chờ sẵn cùng lúc)* | **100 bài đăng/tháng** | **Không giới hạn** | **Không giới hạn** |
-| **6** | **Bộ nhớ đệm Ảnh/Video (`MediaLibrary` / `image_chunks`)** | **10 MB chờ đăng**<br>*(Tự xóa file gốc ngay sau khi đăng hoặc sau 48h)* | **50 MB chờ đăng**<br>*(Tự giải phóng 24h sau khi đăng)* | **150 MB chờ đăng**<br>*(Tự giải phóng 7 ngày sau khi đăng)* | **200 MB chờ đăng** + Kết nối Google Drive / Cloudflare R2 riêng |
+| **5** | **Đăng bài & Hẹn giờ tự động 24/7**<br>*(Calendar Tháng/Tuần/List, Kéo thả)* | **15 bài đăng/tháng**<br>*(Tối đa 2 bài hẹn giờ chờ sẵn cùng lúc)* | **100 bài đăng/tháng** | **Không giới hạn** | **Không giới hạn** |
+| **6** | **Kho Media & Lưu trữ (`MediaLibrary` / `image_chunks`)** | **1 GB đệm xoay vòng**<br>*(Tối đa 100MB/file, tự giải phóng sau khi đăng hoặc sau 48h)* | **5 GB lưu trữ**<br>*(Tối đa 250MB/file, tự giải phóng 7 ngày sau khi đăng)* | **25 GB thư viện Media**<br>*(Tối đa 500MB/file, lưu trữ 30 ngày hoặc vĩnh viễn trong quota)* | **100 GB thư viện Media**<br>*(Tối đa 1GB/file, lưu trữ vĩnh viễn + kết nối Google Drive riêng)* |
 | **7** | **Nhập hàng loạt Excel / CSV (`Bulk Upload`)** | **5 dòng/lần nhập** | **30 dòng/lần nhập** | **200 dòng/lần nhập (Full)** | **200 dòng/lần nhập (Full)** |
 | **8** | **Bài đăng lặp lại (`Evergreen / Recurring`)** | **1 bài lặp lại đang bật** | **3 bài lặp lại** | **25 bài lặp lại** | **100 bài lặp lại** |
 | **9** | **Rút gọn Link & UTM (`Shortlinks`)** | **3 Tracked Links** | **25 Tracked Links** | **250 Tracked Links** | **1.000 Tracked Links** |
 | **10** | **Mẫu bài viết (`PostTemplates`)** | **2 Mẫu bài viết** | **15 Mẫu bài viết** | **Không giới hạn** | **Không giới hạn** |
 | **11** | **Ảnh tương tác (`InteractiveImages`)**<br>*(Chạy 100% trên trình duyệt, tốn 0đ server)* | **5 vùng bấm/ảnh** | **10 vùng bấm/ảnh** | **20 vùng bấm/ảnh (Full)** | **20 vùng bấm/ảnh (Full)** |
-| **12** | **Trợ lý AI & Autopilot (`ChatAgent` / `Autopilot`)** | **3 lượt AI/tháng (BYOK)** | **ChatAgent không giới hạn (BYOK)** | **Full ChatAgent + AI Autopilot (BYOK)** | **Full AI Autopilot + Đồng bộ Drive/R2** |
+| **12** | **Trợ lý AI & Autopilot (`ChatAgent` / `Autopilot`)** | **ChatAgent BYOK** *(Không giới hạn token)* | **ChatAgent BYOK** *(Không giới hạn token)* | **Full ChatAgent + AI Autopilot (BYOK)** | **Full AI Autopilot + Đồng bộ Drive/R2** |
 | **13** | **Thống kê (`Analytics` & `PublishingLog`)** | **7 ngày gần nhất** | **30 ngày gần nhất** | **Toàn bộ lịch sử** | **Toàn bộ lịch sử + Xuất báo cáo** |
+| **14** | **Tự động đăng bình luận đầu (`Auto First Comment`)** | **1 mẫu bình luận ghim link** | **Không giới hạn** | **Không giới hạn** | **Không giới hạn** |
+| **15** | **Chế độ Đăng nhanh 1 chạm (`Quick Post Mode`)** | **Có (Đầy đủ)** | **Có (Đầy đủ)** | **Có (Đầy đủ)** | **Có (Đầy đủ)** |
+
+---
+
+### 3.1. Chính Sách "Reverse Trial": 7 Ngày Trải Nghiệm Pro & Free Forever Trọn Đời
+
+Để giải quyết bài toán cạnh tranh trực diện với các đối thủ dùng thử 14 ngày (như PostĐaKênh) mà không làm phát sinh chi phí server:
+
+1. **Cơ chế 7-Day Pro Kickstart:**
+   * Mọi tài khoản mới khi đăng ký được cấp ngay thẻ **7-Day Pro Kickstart Pass** (không cần nhập thông tin thẻ thanh toán).
+   * Trong 7 ngày đầu tiên: Tài khoản hưởng trọn vẹn quota của gói **Professional** (kết nối tối đa 20 kênh, lên lịch không giới hạn, dùng thử Auto First Comment, duyệt bài nhóm và Autopilot).
+2. **Chuyển giao mượt mà sau ngày thứ 7 (Chống Churn):**
+   * Sau 7 ngày, tài khoản tự động chuyển về chế độ **Free Forever** chuẩn (15 bài/tháng, 2 kênh hoạt động, 15MB đệm media).
+   * **Bảo toàn 100% dữ liệu:** Toàn bộ lịch sử bài đăng, bài nháp, kênh đã kết nối và cấu hình thương hiệu được giữ nguyên. Hệ thống **không bao giờ khóa tài khoản** hay xóa dữ liệu của khách.
+3. **Bảng so sánh đối đầu truyền thông:**
+   * **PostĐaKênh:** Dùng thử 14 ngày $\rightarrow$ Hết hạn bị **khóa chặt hệ thống**, ép trả tiền theo tháng nếu không muốn mất lịch và công sức cài đặt.
+   * **Socialchoice:** Cam kết **Free Forever trọn đời** $\rightarrow$ Tặng thêm 7 ngày Pro Kickstart tạo cảm giác cấp bách (urgency) để trải nghiệm $\rightarrow$ Hết 7 ngày vẫn dùng tiếp miễn phí 15 bài/tháng, hoặc mua đứt bản Desktop vĩnh viễn chỉ 390.000đ.
+4. **Vòng lặp lan tỏa (Viral Loop Quota Boost):**
+   * Người dùng Free có thể mở rộng hạn mức mà không cần trả tiền:
+     * *Giới thiệu 1 bạn bè đăng ký:* Cả hai cùng nhận thêm `+5 bài/tháng` vĩnh viễn (hoặc tặng thêm `+7 ngày Pro Kickstart`).
+     * *Tải và trải nghiệm bản Desktop:* Nhận thêm `+30 ngày Pro trên Web`.
+
+---
+
+### 3.2. Lộ Trình Mở Rộng & Đánh Giá Tính Khả Thi Tính Năng Mới (Future Roadmap)
+
+Định hướng tích hợp thêm các kênh và tiện ích bám sát nhu cầu thực chiến của dân Marketing, Agency và Bán hàng đa kênh tại Việt Nam:
+
+| Nhóm tính năng | Tính năng cụ thể | Mức độ khả thi | Giải pháp kiến trúc & Lưu ý kỹ thuật |
+| :--- | :--- | :---: | :--- |
+| **Quản trị Chiến dịch (HOT)** | **Tầng Chiến dịch đa cấp (`Brand ➔ Campaign ➔ Pillars ➔ Angles`)** | 🟢 **100% Khả thi** | Bổ sung Entity `Campaign`: Một Brand có nhiều Campaign (Tết, Ra mắt sản phẩm, Khuyến mãi...). Mỗi Campaign chứa Pillars & Angles riêng biệt, tự động gắn `utm_campaign` và có báo cáo hiệu quả chiến dịch độc lập. |
+| **Kênh Địa phương** | **Zalo OA (Official Account)** | 🟢 **100% Khả thi** | Tích hợp qua Zalo Open API chính thức: Xác thực OAuth 2.0, đăng bài lên Nhật ký OA, gửi tin Broadcast và quản lý tương tác follower an toàn 100%. *(Đã loại bỏ Zalo cá nhân để triệt tiêu 100% rủi ro bị khóa tài khoản).* |
+| **Tự động hóa & Lead (HOT)** | **Comment-to-Inbox: Tự động Reply & Nhắn tin DM theo từ khóa (`Keyword Auto-DM`)** | 🟢 **100% Khả thi (Page & Instagram)**<br>🟡 **Threads: Reply cmt** | Cho phép cài đặt từ khóa kích hoạt (ví dụ: *"AI"*, *"SKILL"*, *"BÁO GIÁ"*):<br>• **Facebook Fanpage:** Dùng Meta **Private Replies API** chính thống. Tự động trả lời comment công khai + gửi ngay 1 tin nhắn Messenger riêng chứa link tài liệu/mã ưu đãi.<br>• **Instagram:** Dùng **Instagram Messaging API** chính thống (cơ chế tương tự ManyChat). Tự động reply comment + gửi Instagram DM.<br>• **Threads:** Tự động trả lời cmt công khai dẫn link bio (do Threads API chưa mở DM).<br>*(Lưu ý: Không áp dụng cho Nick cá nhân FB vì Meta cấm bot trên Profile cá nhân).* |
+| **Thương mại điện tử** | **TikTok Shop Integration** | 🟢 **90% Khả thi** | Kết nối TikTok Shop Open Platform: Đồng bộ danh mục sản phẩm, tự động gắn **Product Anchor Link** vào video và dùng AI sinh kịch bản bán hàng theo sản phẩm. |
+| **Thương mại điện tử** | **Shopee Affiliate & Catalog** | 🟡 **75% Khả thi** | Tích hợp Shopee Open API: Tự động chuyển đổi link sản phẩm sang **Shopee Affiliate Link** kèm mã UTM của Socialchoice, tự động chèn vào Caption hoặc First Comment. |
+| **Chăm sóc & Giữ khách** | **Hộp thư tập trung (Social Inbox) & Ẩn SĐT** | 🟢 **Khả thi cao** | Gom toàn bộ comment & tin nhắn từ Fanpage, Instagram, TikTok về 1 màn hình. Tích hợp **bộ lọc tự động ẩn bình luận chứa số điện thoại** để chống đối thủ quét cướp đơn hàng. |
+| **Sáng tạo nội dung AI** | **AI Content Multiplier (1 ra 5)** | 🟢 **100% Khả thi** | Dán 1 bài viết dài / link video $\rightarrow$ AI tự động phân rã thành: 1 status Facebook chuyên sâu, 1 chuỗi 3 post Threads/X, 1 kịch bản video TikTok 60s và 1 bài tóm tắt LinkedIn. |
+| **Bảo vệ thương hiệu** | **Đóng dấu bản quyền ảnh/video (Bulk Watermark)** | 🟢 **100% Khả thi** | Tự động chèn Logo/Khung viền nhận diện thương hiệu cho hàng loạt ảnh/video bằng Canvas chạy ở trình duyệt (Client-side) hoặc FFmpeg Desktop, tốn 0đ server. |
+| **Tối ưu tương tác** | **Gợi ý khung giờ vàng (Smart Golden Hours)** | 🟢 **100% Khả thi** | Dựa trên dữ liệu phân tích Insights của từng kênh để gợi ý chính xác khung giờ follower online đông nhất (ví dụ: TikTok 11h30, Facebook 20h00). |
+| **Agency & Báo cáo** | **Xuất báo cáo PDF thương hiệu riêng (White-label Reports)** | 🟢 **100% Khả thi** | Xuất báo cáo chỉ số tăng trưởng, lượt tương tác, biểu đồ hiệu quả theo tuần/tháng ra file PDF chuyên nghiệp có gắn Logo của Agency để gửi nghiệm thu cho khách hàng. |
 
 ---
 
@@ -64,7 +105,7 @@ Dành cho khách hàng có nhu cầu đặc thù (ví dụ: chỉ làm 1 mình n
 | **1. Tài khoản MXH (`Social Accounts`)** | **+15.000đ** / 1 tài khoản | **+\$1.00** / 1 tài khoản | Mở thêm hạn mức kết nối OAuth thật |
 | **2. Thành viên nhóm (`Team Seats`)** | **+30.000đ** / 1 thành viên | **+\$3.00** / 1 thành viên | Thêm ghế thành viên vào cùng Workspace (Đã bao gồm luồng Duyệt bài nhóm) |
 | **3. Thương hiệu (`Brands`)** | **+20.000đ** / 1 Brand | **+\$1.50** / 1 Brand | Brand đầu tiên miễn phí, tính phí từ Brand thứ 2 |
-| **4. Bộ nhớ đệm Ảnh/Video (`Staging Media`)** | **+20.000đ** / +50 MB | **+\$1.50** / +50 MB | 50MB đầu miễn phí, tăng thêm theo từng nấc 50MB |
+| **4. Dung lượng lưu trữ Media (`Media Storage`)** | **+15.000đ** / +10 GB | **+\$1.00** / +10 GB | Mở rộng kho lưu trữ Cloudflare R2, thêm theo từng nấc 10 GB |
 | **5. Rút gọn link & Đo lượt nhấp (`Shortlinks`)** | **+5.000đ** / 10 link | **+\$0.50** / 10 link | Tăng hạn mức số lượng link rút gọn theo dõi lượt bấm (UTM & Click Analytics) |
 
 ### 4.2. Quy tắc "Neo giá thông minh" (Smart Upsell Banner)
