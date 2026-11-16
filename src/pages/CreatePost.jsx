@@ -39,6 +39,7 @@ import { useToast } from '@/components/ui/use-toast';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import UseTemplateDialog from '@/components/composer/use-template-dialog';
+import AiRepurposeDialog from '@/components/composer/AiRepurposeDialog';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
 import PlatformLogo from '@/components/composer/PlatformLogo';
@@ -149,6 +150,7 @@ export default function CreatePost() {
     const [isComposerExpanded, setIsComposerExpanded] = useState(true);
     const [isMediaDrawerOpen, setIsMediaDrawerOpen] = useState(false);
     const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
+    const [isAiRepurposeOpen, setIsAiRepurposeOpen] = useState(false);
     const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(true);
     const [isUtmOpen, setIsUtmOpen] = useState(false);
@@ -606,6 +608,10 @@ export default function CreatePost() {
 
     // AI Drawer quick chips handler
     const handleAiChip = async (actionType) => {
+        if (actionType === 'repurpose') {
+            setIsAiRepurposeOpen(true);
+            return;
+        }
         setAiBusy(true);
         try {
             if (actionType === 'outline') {
@@ -646,6 +652,42 @@ export default function CreatePost() {
         } finally {
             setAiBusy(false);
         }
+    };
+
+    // Áp dụng biến thể đa kênh từ AI Repurposer
+    const handleApplyRepurposedCaptions = (repurposedVariants) => {
+        setForm((prev) => {
+            const nextPlatformCaptions = {
+                ...(prev.platform_captions || {}),
+                facebook: repurposedVariants.facebook || prev.platform_captions?.facebook || '',
+                threads: repurposedVariants.threads || prev.platform_captions?.threads || '',
+                linkedin: repurposedVariants.linkedin || prev.platform_captions?.linkedin || '',
+                tiktok: repurposedVariants.tiktok || prev.platform_captions?.tiktok || '',
+            };
+
+            const nextDestinationSettings = { ...prev.destination_settings };
+            selectedAccounts.forEach((acc) => {
+                const variantText = repurposedVariants[acc.platform];
+                if (variantText) {
+                    nextDestinationSettings[acc.id] = {
+                        ...(nextDestinationSettings[acc.id] || {}),
+                        caption: variantText,
+                    };
+                }
+            });
+
+            return {
+                ...prev,
+                caption: prev.caption?.trim() ? prev.caption : (repurposedVariants.facebook || ''),
+                platform_captions: nextPlatformCaptions,
+                destination_settings: nextDestinationSettings,
+            };
+        });
+
+        toast({
+            title: t('Đã tái sinh nội dung cho các kênh!'),
+            description: t('Đã đồng bộ phiên bản riêng biệt vào từng tab kênh Facebook, Threads, LinkedIn & TikTok.'),
+        });
     };
 
     // UTM URL generation
@@ -1402,6 +1444,18 @@ export default function CreatePost() {
 
                                     <button
                                         type="button"
+                                        onClick={() => setIsAiRepurposeOpen(true)}
+                                        className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-brand-dark/50 bg-brand/20 px-3 text-xs font-bold text-brand-ink transition hover:bg-brand cursor-pointer shadow-xs"
+                                    >
+                                        <MagicWand size={15} weight="duotone" className="text-brand-dark" />
+                                        <span>{t('AI Tái sinh đa kênh')}</span>
+                                        <span className="rounded-full bg-brand-dark text-white px-1.5 py-0.2 text-[9px] font-extrabold tracking-wide uppercase">
+                                            1-Click
+                                        </span>
+                                    </button>
+
+                                    <button
+                                        type="button"
                                         onClick={() => setIsTemplatePickerOpen(true)}
                                         className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-medium text-foreground hover:border-brand-dark/50 hover:bg-brand/10 transition cursor-pointer"
                                     >
@@ -1574,6 +1628,7 @@ export default function CreatePost() {
                                         </div>
                                         <div className="flex flex-wrap gap-1.5">
                                             {[
+                                                ['repurpose', t('🪄 Tái sinh 4 kênh (1-Click)'), MagicWand],
                                                 ['outline', t('Gợi ý dàn ý'), ListBullets],
                                                 ['hook', t('Viết lại hấp dẫn hơn'), MagicWand],
                                                 ['shorten_x', t('Rút gọn cho X'), Sparkle],
@@ -2228,6 +2283,18 @@ export default function CreatePost() {
                 confirmLabel={t('Xoá bài viết')}
                 destructive
                 onConfirm={remove}
+            />
+
+            {/* AI Multi-Platform Repurposer Dialog */}
+            <AiRepurposeDialog
+                open={isAiRepurposeOpen}
+                onClose={() => setIsAiRepurposeOpen(false)}
+                baseCaption={currentEditorValue || form.caption}
+                baseTitle={form.title}
+                brandId={form.brand_id}
+                selectedAccounts={selectedAccounts}
+                aiConfig={aiConfig}
+                onApply={handleApplyRepurposedCaptions}
             />
         </div>
     );
