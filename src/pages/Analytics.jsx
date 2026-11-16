@@ -14,7 +14,9 @@ import {
     Info,
     Funnel,
     ShareNetwork,
+    DownloadSimple,
 } from '@phosphor-icons/react';
+import ExportReportDialog from '@/components/analytics/ExportReportDialog';
 import {
     BarChart,
     Bar,
@@ -110,6 +112,7 @@ export default function Analytics() {
     const [loadError, setLoadError] = useState('');
     const [activeTab, setActiveTab] = useState('workspace');
     const [chartView, setChartView] = useState('weekly');
+    const [exportOpen, setExportOpen] = useState(false);
     const loadRun = useRef(0);
 
     const load = useCallback(async () => {
@@ -200,7 +203,20 @@ const channelChartData = useMemo(() => {
 
 
 return <>
-    <PageHeader title={t('Analytics')} description={t('What the workspace has produced, how each destination performed, and where content is concentrated.')} />
+    <PageHeader
+        title={t('Analytics')}
+        description={t('What the workspace has produced, how each destination performed, and where content is concentrated.')}
+        actions={
+            <button
+                type="button"
+                onClick={() => setExportOpen(true)}
+                className="btn-skew flex items-center gap-2 cursor-pointer shadow-xs text-xs font-semibold"
+            >
+                <DownloadSimple size={15} weight="bold" />
+                <span>{t('Xuất báo cáo')}</span>
+            </button>
+        }
+    />
     <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-border">
         <div className="flex gap-5" role="tablist" aria-label={t('Analytics')}>
             {[{id:'workspace',label:'Workspace Overview',icon:ChartBar},...(!isDesktop()?[{id:'facebook',label:'Facebook Insights',icon:FacebookLogo}]:[])].map(({id,label,icon:Icon}) =>
@@ -764,5 +780,12 @@ return <>
                             )}
 </>}
 </div>}
+    <ExportReportDialog
+        open={exportOpen}
+        onClose={() => setExportOpen(false)}
+        analyticsData={data}
+        scope={scope}
+        timezone={timezone}
+    />
 </>;
 }

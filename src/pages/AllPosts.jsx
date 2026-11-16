@@ -78,8 +78,11 @@ export default function AllPosts() {
 
     const loadStatusCounts = useCallback(async () => {
         try {
-            const agg = await appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' });
-            const counts = { all: 0, draft: 0, scheduled: 0, published: 0, failed: 0 };
+            const [agg, pendingApproval] = await Promise.all([
+                appClient.entities.Post.aggregate({ query: scope, groupBy: 'status' }),
+                appClient.entities.Post.filter({ ...scope, needs_approval: true }, { limit: 100 }).catch(() => ({ items: [] })),
+            ]);
+            const counts = { all: 0, draft: 0, scheduled: 0, published: 0, failed: 0, needs_approval: pendingApproval.items?.length || 0 };
             let total = 0;
             agg.rows?.forEach((row) => {
                 const count = Number(row.count) || 0;
@@ -124,7 +127,9 @@ export default function AllPosts() {
     const buildQuery = useCallback(() => {
         const query = { ...scope };
         if (filters.status !== 'all') {
-            if (filters.status === 'failed') {
+            if (filters.status === 'needs_approval') {
+                query.needs_approval = true;
+            } else if (filters.status === 'failed') {
                 query.status = { $in: ['failed', 'cancelled'] };
             } else {
                 query.status = filters.status;
@@ -343,6 +348,9 @@ export default function AllPosts() {
 
     const tabs = [
         { key: 'all', label: t('All Posts'), count: statusCounts.all, dot: null },
+        ...(statusCounts.needs_approval > 0 || filters.status === 'needs_approval'
+            ? [{ key: 'needs_approval', label: t('Chờ duyệt'), count: statusCounts.needs_approval || 0, dot: 'bg-amber-500' }]
+            : []),
         { key: 'draft', label: t('Draft'), count: statusCounts.draft, dot: 'bg-zinc-400' },
         { key: 'scheduled', label: t('Scheduled'), count: statusCounts.scheduled, dot: 'bg-amber-500' },
         { key: 'published', label: t('Published'), count: statusCounts.published, dot: 'bg-emerald-500' },

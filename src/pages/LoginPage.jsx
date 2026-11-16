@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
+import { findInvite, acceptInvite, getRoleMeta } from '@/lib/team-seats';
 import {
     ArrowLeft,
     ArrowRight,
@@ -283,8 +284,19 @@ export default function LoginPage() {
     const safeReturnTo =
         rawReturnTo.startsWith('/') && !rawReturnTo.startsWith('//') ? rawReturnTo : '/overview';
 
+    const inviteToken = searchParams.get('invite') || '';
+    const inviteEmail = searchParams.get('email') || '';
+    const inviteData = React.useMemo(() => {
+        return findInvite(inviteToken || inviteEmail);
+    }, [inviteToken, inviteEmail]);
+
+    const roleMeta = inviteData ? getRoleMeta(inviteData.role) : null;
+    const inviteRoleTitle = roleMeta ? (isEn ? roleMeta.nameEn : roleMeta.nameVi) : inviteData?.role;
+
     const initialMode =
-        searchParams.get('mode') === 'admin'
+        inviteData
+            ? 'signup'
+            : searchParams.get('mode') === 'admin'
             ? 'admin'
             : searchParams.get('mode') === 'signup'
             ? 'signup'
@@ -293,8 +305,8 @@ export default function LoginPage() {
             : 'login';
 
     const [mode, setMode] = useState(initialMode); // 'login' | 'admin' | 'signup' | 'reset'
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
+    const [name, setName] = useState(inviteData?.name || '');
+    const [email, setEmail] = useState(inviteEmail || inviteData?.email || '');
     const [password, setPassword] = useState('');
     const [adminPassword, setAdminPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -357,6 +369,28 @@ export default function LoginPage() {
         if (mode === 'reset') {
             setIsResetSent(true);
             return;
+        }
+
+        if (inviteData && mode === 'signup') {
+            setIsLoading(true);
+            try {
+                acceptInvite(inviteData.inviteToken || inviteToken, {
+                    name: name.trim() || inviteData.name,
+                    password: password || '123456',
+                });
+                try {
+                    await appClient.auth.loginViaEmailPassword('admin');
+                } catch {
+                    // dev mode fallback
+                }
+                navigate(safeReturnTo);
+                return;
+            } catch (err) {
+                setAuthError(err.message || 'Không thể hoàn tất đăng ký theo lời mời.');
+                return;
+            } finally {
+                setIsLoading(false);
+            }
         }
 
         setIsLoading(true);
@@ -482,6 +516,36 @@ export default function LoginPage() {
                                 >
                                     {isEn ? 'Sign up' : 'Đăng ký'}
                                 </button>
+                            </div>
+                        )}
+
+                        {inviteData && mode === 'signup' && (
+                            <div className="mb-5 rounded-2xl border border-amber-300 bg-amber-50/80 p-4 text-zinc-900 shadow-xs">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-zinc-950 font-bold shadow-xs text-base">
+                                        ✨
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-800">
+                                                {isEn ? 'Workspace Invitation' : 'Lời mời gia nhập Workspace'}
+                                            </span>
+                                            <span className="rounded-md bg-amber-200/90 px-2 py-0.5 text-[11px] font-bold text-amber-950">
+                                                {inviteRoleTitle}
+                                            </span>
+                                        </div>
+                                        <p className="mt-1 text-[13px] font-medium text-zinc-800">
+                                            {isEn
+                                                ? `You have been invited to join SocialChoice as ${inviteRoleTitle}.`
+                                                : `Bạn được mời tham gia SocialChoice với vai trò ${inviteRoleTitle}.`}
+                                        </p>
+                                        {inviteData.brandScope && inviteData.brandScope !== 'all' && (
+                                            <p className="mt-0.5 text-[11.5px] text-zinc-600">
+                                                {isEn ? `Scope: Brand #${inviteData.brandScope}` : `Phạm vi thương hiệu: #${inviteData.brandScope}`}
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
                         )}
 
@@ -720,6 +784,10 @@ export default function LoginPage() {
                                         ) : mode === 'login' ? (
                                             <>
                                                 {isEn ? 'Log in' : 'Đăng nhập'} <ArrowRight className="size-4" />
+                                            </>
+                                        ) : inviteData ? (
+                                            <>
+                                                {isEn ? `Accept Invite (${inviteRoleTitle})` : `Chấp nhận lời mời & Tham gia (${inviteRoleTitle})`} <ArrowRight className="size-4" />
                                             </>
                                         ) : (
                                             <>

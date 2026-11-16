@@ -2,6 +2,7 @@ export const SUBSCRIPTION_STORAGE_KEY = 'socialchoice.subscription';
 export const SUBSCRIPTIONS_BY_ACCOUNT_KEY = 'socialchoice.subscriptions_by_account';
 export const TEAM_MEMBERS_STORAGE_KEY = 'socialchoice.team_members';
 export const TEAM_SETTINGS_STORAGE_KEY = 'socialchoice.team_settings';
+export const ACTIVE_MEMBER_STORAGE_KEY = 'socialchoice.active_member';
 
 export const CLOUD_PLAN_TIERS = {
     free: {
@@ -183,6 +184,88 @@ export function buildInviteUrl(token, email) {
     const params = new URLSearchParams({ invite: token });
     if (email) params.set('email', email);
     return `${origin}/login?${params.toString()}`;
+}
+
+export function getActiveMember() {
+    try {
+        const raw = window.localStorage.getItem(ACTIVE_MEMBER_STORAGE_KEY);
+        if (!raw) return null;
+        return JSON.parse(raw);
+    } catch {
+        return null;
+    }
+}
+
+export function setActiveMember(member) {
+    try {
+        if (!member) {
+            window.localStorage.removeItem(ACTIVE_MEMBER_STORAGE_KEY);
+        } else {
+            window.localStorage.setItem(ACTIVE_MEMBER_STORAGE_KEY, JSON.stringify(member));
+        }
+        window.dispatchEvent(new Event('socialchoice:team'));
+        window.dispatchEvent(new Event('socialchoice:auth'));
+    } catch {
+        // ignore storage errors
+    }
+}
+
+export function clearActiveMember() {
+    setActiveMember(null);
+}
+
+export function findInvite(tokenOrEmail) {
+    if (!tokenOrEmail) return null;
+    const query = String(tokenOrEmail).trim().toLowerCase();
+    const members = getTeamMembers();
+    return members.find(
+        (m) =>
+            (m.inviteToken && m.inviteToken.toLowerCase() === query) ||
+            (m.email && m.email.toLowerCase() === query)
+    ) || null;
+}
+
+export function acceptInvite(token, { name = '', password = '' } = {}) {
+    const members = getTeamMembers();
+    const cleanToken = String(token || '').trim().toLowerCase();
+    const index = members.findIndex(
+        (m) => m.inviteToken && m.inviteToken.toLowerCase() === cleanToken
+    );
+
+    if (index === -1) {
+        throw new Error('Lời mời không hợp lệ hoặc đã hết hạn.');
+    }
+
+    const member = members[index];
+    const updatedMember = {
+        ...member,
+        name: name.trim() || member.name,
+        status: 'active',
+        acceptedAt: new Date().toISOString(),
+    };
+
+    members[index] = updatedMember;
+    saveTeamMembers(members);
+
+    const sessionPayload = {
+        id: updatedMember.id,
+        name: updatedMember.name,
+        email: updatedMember.email,
+        role: updatedMember.role || 'editor',
+        brandScope: updatedMember.brandScope || 'all',
+        isTeamMember: true,
+        workspaceId: 'main',
+    };
+
+    setActiveMember(sessionPayload);
+    return sessionPayload;
+}
+
+export function hasPermission(role, action) {
+    if (!role || role === 'owner' || role === 'admin') return true;
+    const roleMeta = getRoleMeta(role);
+    if (!roleMeta) return false;
+    return roleMeta.permissions.includes(action);
 }
 
 function normalizeAccountKey(userOrEmail) {

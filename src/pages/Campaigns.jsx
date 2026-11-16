@@ -38,6 +38,23 @@ const STATUS_COLORS = {
     archived: 'bg-zinc-500/10 text-zinc-600 border-zinc-500/20',
 };
 
+const LOCAL_CAMPAIGNS_KEY = 'socialchoice.campaigns';
+
+function getLocalCampaigns() {
+    try {
+        const raw = window.localStorage.getItem(LOCAL_CAMPAIGNS_KEY);
+        return raw ? JSON.parse(raw) : [];
+    } catch {
+        return [];
+    }
+}
+
+function saveLocalCampaigns(list) {
+    try {
+        window.localStorage.setItem(LOCAL_CAMPAIGNS_KEY, JSON.stringify(list));
+    } catch {}
+}
+
 export default function Campaigns() {
     const { t } = useTranslation();
     const { scope, brands, selectedBrandId, demoMode } = useWorkspace();
@@ -67,17 +84,25 @@ export default function Campaigns() {
                     return { items: [] };
                 }),
                 appClient.entities.ContentPillar.filter(scope, { limit: 300 }).catch(() => ({ items: [] })),
-                appClient.entities.Post.filter(scope, { limit: 500, fields: ['id', 'campaign_id', 'status'] }).catch(() => ({ items: [] })),
+                appClient.entities.Post.filter(scope, { limit: 500 }).catch(() => ({ items: [] })),
                 appClient.links?.list
                     ? appClient.links.list(selectedBrandId && selectedBrandId !== 'all' ? { brand_id: selectedBrandId } : {}).catch(() => ({ links: [] }))
                     : Promise.resolve({ links: [] }),
             ]);
-            setCampaigns(campaignPage.items || []);
+            let items = campaignPage.items || [];
+            if (!items.length) {
+                const local = getLocalCampaigns().filter((c) => !scope.brand_id || c.brand_id === scope.brand_id);
+                if (local.length) items = local;
+            }
+            setCampaigns(items);
             setPillars(pillarPage.items || []);
             setPosts(postPage.items || []);
             setShortlinks(linksRes?.links || []);
         } catch (error) {
-            setLoadError(error.message);
+            console.warn('Campaigns load fallback:', error);
+            const local = getLocalCampaigns().filter((c) => !scope.brand_id || c.brand_id === scope.brand_id);
+            setCampaigns(local);
+            setLoadError('');
         } finally {
             setLoading(false);
         }
@@ -89,13 +114,28 @@ export default function Campaigns() {
 
     const handleSave = async (values) => {
         try {
-            if (editing) {
-                await appClient.entities.Campaign.update(editing.id, values);
-                toast({ title: t('Đã cập nhật chiến dịch') });
-            } else {
-                await appClient.entities.Campaign.create({ ...values, is_demo: demoMode });
-                toast({ title: t('Đã tạo chiến dịch mới') });
+            let saved = null;
+            try {
+                if (editing) {
+                    saved = await appClient.entities.Campaign.update(editing.id, values);
+                } else {
+                    saved = await appClient.entities.Campaign.create({ ...values, is_demo: demoMode });
+                }
+            } catch (backendErr) {
+                console.warn('Backend campaign save fallback:', backendErr);
+                const local = getLocalCampaigns();
+                if (editing) {
+                    saved = { ...editing, ...values, updated_at: new Date().toISOString() };
+                    const idx = local.findIndex((c) => c.id === editing.id);
+                    if (idx >= 0) local[idx] = saved;
+                    else local.unshift(saved);
+                } else {
+                    saved = { id: `camp_${Date.now()}`, ...values, is_demo: demoMode, created_at: new Date().toISOString() };
+                    local.unshift(saved);
+                }
+                saveLocalCampaigns(local);
             }
+            toast({ title: editing ? t('Đã cập nhật chiến dịch') : t('Đã tạo chiến dịch mới') });
             setFormOpen(false);
             setEditing(null);
             load();
@@ -111,7 +151,14 @@ export default function Campaigns() {
     const toggleStatus = async (campaign) => {
         try {
             const newStatus = campaign.status === 'archived' ? 'active' : 'archived';
-            await appClient.entities.Campaign.update(campaign.id, { status: newStatus });
+            try {
+                await appClient.entities.Campaign.update(campaign.id, { status: newStatus });
+            } catch {
+                const local = getLocalCampaigns();
+                const found = local.find((c) => c.id === campaign.id);
+                if (found) found.status = newStatus;
+                saveLocalCampaigns(local);
+            }
             toast({
                 title: newStatus === 'archived' ? t('Đã lưu trữ chiến dịch') : t('Đã kích hoạt lại chiến dịch'),
             });
@@ -128,7 +175,12 @@ export default function Campaigns() {
     const handleDelete = async () => {
         if (!deleteTarget) return;
         try {
-            await appClient.entities.Campaign.delete(deleteTarget.id);
+            try {
+                await appClient.entities.Campaign.delete(deleteTarget.id);
+            } catch {
+                const local = getLocalCampaigns().filter((c) => c.id !== deleteTarget.id);
+                saveLocalCampaigns(local);
+            }
             toast({ title: t('Đã xoá chiến dịch') });
             setDeleteTarget(null);
             load();

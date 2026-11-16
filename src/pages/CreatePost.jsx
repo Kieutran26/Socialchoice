@@ -50,6 +50,8 @@ import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
 import { PUBLISHING_PLATFORMS, referencedMediaIds } from '@/lib/publishing-content';
 import { useTranslation } from '@/lib/i18n';
+import { useAuth } from '@/lib/AuthContext';
+import { getTeamSettings, hasPermission } from '@/lib/team-seats';
 
 const URL_REGEX = /https?:\/\/[^\s]+/i;
 
@@ -118,6 +120,11 @@ export default function CreatePost() {
     const editId = params.get('edit');
     const duplicateId = params.get('duplicate');
     const sourceId = editId || duplicateId;
+
+    const { user } = useAuth();
+    const [teamSettings] = useState(getTeamSettings);
+    const isViewer = user?.role === 'viewer';
+    const isEditorNeedingApproval = user?.role === 'editor' && !!teamSettings?.requireApprovalForEditors;
 
     // Core states
     const [loading, setLoading] = useState(true);
@@ -727,12 +734,21 @@ export default function CreatePost() {
     }, [selectedAccounts, form.caption, exceededAccounts, form.media, form.pillar_id, form.angle_id]);
 
     const checklistPassedCount = checklistItems.filter((i) => i.ok).length;
-    const canSubmit = checklistItems[0].ok && checklistItems[1].ok && exceededAccounts.length === 0;
+    const canSubmit = !isViewer && checklistItems[0].ok && checklistItems[1].ok && exceededAccounts.length === 0;
 
     // Save / Schedule / Publish execution
     const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
 
     const submit = async (action) => {
+        if (isViewer) {
+            toast({
+                variant: 'destructive',
+                title: t('Chế độ chỉ xem'),
+                description: t('Tài khoản của bạn có vai trò Người xem (Viewer), không thể lưu hoặc xuất bản.'),
+            });
+            return;
+        }
+
         if (!form.brand_id && brands.length > 0) {
             toast({ variant: 'destructive', title: t('Vui lòng chọn thương hiệu') });
             return;
@@ -752,6 +768,7 @@ export default function CreatePost() {
 
         setSaving(true);
         try {
+            const isApprovalWorkflow = isEditorNeedingApproval && (action === 'publish' || action === 'schedule');
             const payload = {
                 brand_id: form.brand_id,
                 title: form.title.trim() || form.caption.slice(0, 40) || 'Bài viết mới',
@@ -777,13 +794,24 @@ export default function CreatePost() {
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
-                scheduled_at: action === 'publish' ? null : scheduledAt,
-                status: action === 'schedule' ? 'scheduled' : 'draft',
+                scheduled_at: isApprovalWorkflow ? scheduledAt : action === 'publish' ? null : scheduledAt,
+                status: isApprovalWorkflow ? 'draft' : action === 'schedule' ? 'scheduled' : 'draft',
+                needs_approval: isApprovalWorkflow ? true : false,
+                submitted_by: isApprovalWorkflow ? user?.email || user?.full_name || 'editor' : undefined,
                 is_demo: demoMode,
             };
 
             const saved = await appClient.posts.save({ id: existing?.id, data: payload });
             setExisting(saved);
+
+            if (isApprovalWorkflow) {
+                toast({
+                    title: t('Đã gửi bài để phê duyệt!'),
+                    description: t('Bài viết đã được gửi đến Quản trị viên/Người phê duyệt xét duyệt trước khi xuất bản.'),
+                });
+                navigate('/posts');
+                return;
+            }
 
             if (action === 'publish') {
                 const review = await appClient.publishing.prepare(saved.id);
@@ -856,6 +884,32 @@ export default function CreatePost() {
 
     return (
         <div className="w-full pb-20 space-y-6">
+            {isViewer && (
+                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-zinc-900 shadow-xs flex items-center gap-3">
+                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-400 font-bold text-zinc-950 text-sm">
+                        👁️
+                    </span>
+                    <div className="text-xs">
+                        <span className="font-bold text-amber-950">{t('Chế độ xem (Viewer):')}</span>{' '}
+                        <span className="text-amber-900">
+                            {t('Tài khoản của bạn có quyền Người xem. Bạn có thể xem cấu trúc nội dung và xem trước, nhưng các thao tác lưu nháp và xuất bản bị vô hiệu hóa.')}
+                        </span>
+                    </div>
+                </div>
+            )}
+            {isEditorNeedingApproval && (
+                <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-3.5 text-zinc-900 shadow-xs flex items-center gap-3">
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-500 font-bold text-white text-xs">
+                        ✍️
+                    </span>
+                    <div className="text-xs">
+                        <span className="font-bold text-blue-950">{t('Quy trình kiểm duyệt (Approval):')}</span>{' '}
+                        <span className="text-blue-900">
+                            {t('Workspace bật tính năng duyệt bài cho Biên tập viên. Bài viết sau khi soạn sẽ được gửi cho Quản trị viên/Người phê duyệt xét duyệt trước khi xuất bản.')}
+                        </span>
+                    </div>
+                </div>
+            )}
             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
                 {/* LEFT COLUMN: Main studio editor */}
                 <div className="min-w-0 space-y-5">
@@ -2065,20 +2119,21 @@ export default function CreatePost() {
             <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-brand-dark/40 bg-card/95 px-5 py-3.5 backdrop-blur-md">
                 <button
                     type="button"
-                    disabled={saving}
+                    disabled={isViewer || saving}
                     onClick={() => submit('draft')}
+                    title={isViewer ? t('Chế độ xem không thể lưu nháp') : undefined}
                     className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 text-xs font-semibold text-foreground transition hover:border-brand-dark hover:bg-brand/15 hover:text-brand-ink cursor-pointer disabled:opacity-50"
                 >
                     <FloppyDisk size={16} weight="duotone" />
                     <span>{t('Lưu nháp')}</span>
                 </button>
 
-                <SaveTemplateDialog form={form} demoMode={demoMode} disabled={saving || uploading || loading} />
+                <SaveTemplateDialog form={form} demoMode={demoMode} disabled={isViewer || saving || uploading || loading} />
 
                 <UseTemplateDialog
                     brandId={form.brand_id}
                     demoMode={demoMode}
-                    disabled={saving || uploading || loading}
+                    disabled={isViewer || saving || uploading || loading}
                     open={isTemplatePickerOpen}
                     onOpenChange={setIsTemplatePickerOpen}
                 />
@@ -2090,16 +2145,18 @@ export default function CreatePost() {
                         <input
                             type="date"
                             value={form.date}
+                            disabled={isViewer}
                             onChange={(e) => setForm({ ...form, date: e.target.value })}
-                            className="bg-transparent outline-none font-medium text-brand-ink text-xs"
+                            className="bg-transparent outline-none font-medium text-brand-ink text-xs disabled:opacity-60"
                         />
                         <span className="h-4 w-px bg-brand-dark/30" />
                         <Clock size={15} weight="duotone" className="text-brand-ink shrink-0" />
                         <input
                             type="time"
                             value={form.time}
+                            disabled={isViewer}
                             onChange={(e) => setForm({ ...form, time: e.target.value })}
-                            className="bg-transparent outline-none font-medium text-brand-ink text-xs"
+                            className="bg-transparent outline-none font-medium text-brand-ink text-xs disabled:opacity-60"
                         />
                         <span className="hidden font-mono text-[10px] font-semibold text-brand-ink/70 md:inline">
                             GMT+7
@@ -2111,11 +2168,11 @@ export default function CreatePost() {
                         type="button"
                         disabled={!canSubmit || saving}
                         onClick={() => submit('schedule')}
-                        title={t(`Lên lịch ${form.date} ${form.time}`)}
+                        title={isViewer ? t('Chế độ xem không thể lên lịch') : t(`Lên lịch ${form.date} ${form.time}`)}
                         className="flex h-9 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand/20 px-3.5 text-xs font-semibold text-brand-ink transition hover:bg-brand/35 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
                     >
                         <CalendarBlank size={16} weight="bold" />
-                        <span>{t('Thêm vào lịch')}</span>
+                        <span>{isEditorNeedingApproval ? t('Lên lịch & Gửi duyệt') : t('Thêm vào lịch')}</span>
                     </button>
 
                     {/* Đăng ngay Button */}
@@ -2123,11 +2180,14 @@ export default function CreatePost() {
                         type="button"
                         disabled={!canSubmit || saving}
                         onClick={() => submit('publish')}
-                        className="btn-skew disabled:opacity-40 disabled:cursor-not-allowed"
+                        title={isViewer ? t('Chế độ xem không thể đăng bài') : undefined}
+                        className={`btn-skew disabled:opacity-40 disabled:cursor-not-allowed ${
+                            isEditorNeedingApproval ? 'bg-amber-400 text-zinc-950 font-bold' : ''
+                        }`}
                     >
                         <PaperPlaneTilt size={16} weight="bold" />
                         <span>
-                            {t('Đăng ngay')}
+                            {isEditorNeedingApproval ? t('Gửi duyệt bài') : t('Đăng ngay')}
                             {selectedAccounts.length > 0 ? ` · ${selectedAccounts.length} kênh` : ''}
                         </span>
                     </button>

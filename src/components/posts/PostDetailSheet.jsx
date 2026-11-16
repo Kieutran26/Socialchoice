@@ -17,6 +17,8 @@ import { formatDateTime } from '@/lib/format';
 import { PLATFORM_LABEL } from '@/lib/constants';
 import { PLATFORM_CONFIG } from '../common/PlatformBadge';
 import { getAccountAvatarUrl } from '@/lib/account-avatar';
+import { useAuth } from '@/lib/AuthContext';
+import { useToast } from '../ui/use-toast';
 import {
     CalendarCheck,
     PencilSimple,
@@ -42,6 +44,8 @@ import {
 
 export default function PostDetailSheet({ post, onClose, onChanged, accounts: initialAccounts = [] }) {
     const { t } = useTranslation();
+    const { user } = useAuth();
+    const { toast } = useToast();
     const [review, setReview] = useState(null), [delivery, setDelivery] = useState(null);
     const [images, setImages] = useState([]), [platformImages, setPlatformImages] = useState({}), [jobs, setJobs] = useState([]), [variants, setVariants] = useState([]);
     const [accounts, setAccounts] = useState(initialAccounts);
@@ -158,6 +162,33 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
             else setReview(await appClient.publishing.prepareSchedule(post.id, time, value.timezone));
         } catch (e) { setError(e.message); } finally { setBusy(false); }
     }
+
+    const handleApprove = async () => {
+        setBusy(true);
+        setError('');
+        try {
+            const { id, created_date, updated_date, ...rest } = post;
+            void created_date;
+            void updated_date;
+            await appClient.posts.save({
+                id: post.id,
+                data: {
+                    ...rest,
+                    needs_approval: false,
+                    approved_by: user?.email || user?.full_name || 'Approver',
+                    approved_at: new Date().toISOString(),
+                    status: post.scheduled_at ? 'scheduled' : 'draft',
+                },
+            });
+            toast({ title: t('Đã phê duyệt bài viết thành công!') });
+            await onChanged?.();
+            onClose();
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+        }
+    };
 
     return (
         <Dialog open onOpenChange={open => !open && !busy && onClose()}>
@@ -331,6 +362,11 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                 <StatusBadge tone={POST_STATUS_TONE[status]}>
                                     {POST_STATUS_LABEL[status] || status}
                                 </StatusBadge>
+                                {post.needs_approval && (
+                                    <StatusBadge tone="warn">
+                                        {t('Chờ phê duyệt')}
+                                    </StatusBadge>
+                                )}
                                 <span className="text-xs font-mono text-muted-foreground">
                                     #{post.id ? post.id.slice(-6).toUpperCase() : ''}
                                 </span>
@@ -543,6 +579,17 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                     </span>
 
                     <div className="flex items-center gap-2">
+                        {post.needs_approval && (!user?.isTeamMember || user?.role === 'admin' || user?.role === 'approver') && (
+                            <Button
+                                size="sm"
+                                disabled={busy}
+                                onClick={handleApprove}
+                                className="btn-skew bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer"
+                            >
+                                <CheckCircle size={14} weight="bold" />
+                                <span>{t('Phê duyệt bài viết')}</span>
+                            </Button>
+                        )}
                         <Link
                             to={'/create?duplicate=' + post.id}
                             className="inline-flex items-center gap-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-xl px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer"

@@ -1,0 +1,50 @@
+{
+    "name": "Campaign",
+    "type": "object",
+    "properties": {
+        "brand_id": {
+            "type": "string"
+        },
+        "name": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "utm_campaign": {
+            "type": "string"
+        },
+        "start_date": {
+            "type": "string"
+        },
+        "end_date": {
+            "type": "string"
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "active",
+                "completed",
+                "draft",
+                "archived"
+            ],
+            "default": "active"
+        },
+        "target_reach": {
+            "type": "number",
+            "default": 0
+        },
+        "target_conversions": {
+            "type": "number",
+            "default": 0
+        },
+        "is_demo": {
+            "type": "boolean",
+            "default": false
+        }
+    },
+    "required": [
+        "name",
+        "brand_id"
+    ]
+}

@@ -14,6 +14,7 @@ import {
     CaretDown,
     LockKey,
     SlidersHorizontal,
+    UserSwitch,
 } from '@phosphor-icons/react';
 import { useAuth } from '@/lib/AuthContext';
 import { useWorkspace } from '@/lib/workspace-context';
@@ -41,6 +42,9 @@ import {
     saveTeamSettings,
     createInviteToken,
     buildInviteUrl,
+    getActiveMember,
+    setActiveMember,
+    clearActiveMember,
 } from '@/lib/team-seats';
 
 export default function TeamSeatsPanel() {
@@ -63,22 +67,52 @@ export default function TeamSeatsPanel() {
 
     const [copiedId, setCopiedId] = useState('');
     const [removeTarget, setRemoveTarget] = useState(null);
+    const [activeMember, setActiveLocalMember] = useState(getActiveMember);
 
     useEffect(() => {
         const sync = () => {
             setSubscription(getActiveSubscription());
             setMembers(getTeamMembers());
             setTeamSettings(getTeamSettings());
+            setActiveLocalMember(getActiveMember());
         };
         window.addEventListener('storage', sync);
         window.addEventListener('socialchoice:subscription', sync);
         window.addEventListener('socialchoice:team', sync);
+        window.addEventListener('socialchoice:auth', sync);
         return () => {
             window.removeEventListener('storage', sync);
             window.removeEventListener('socialchoice:subscription', sync);
             window.removeEventListener('socialchoice:team', sync);
+            window.removeEventListener('socialchoice:auth', sync);
         };
     }, []);
+
+    const handleSwitchToMember = (member) => {
+        const payload = {
+            id: member.id,
+            name: member.name,
+            email: member.email,
+            role: member.role || 'editor',
+            brandScope: member.brandScope || 'all',
+            isTeamMember: true,
+            workspaceId: 'main',
+        };
+        setActiveMember(payload);
+        setActiveLocalMember(payload);
+        toast({
+            title: isEn ? `Switched role to ${member.name} (${member.role})` : `Đang xem dưới quyền ${member.name} (${member.role})`,
+            description: isEn ? 'Workspace UI and permissions are now filtered to this member role.' : 'Quyền thao tác và giao diện đã được chuyển sang vai trò này.',
+        });
+    };
+
+    const handleRevertToOwner = () => {
+        clearActiveMember();
+        setActiveLocalMember(null);
+        toast({
+            title: isEn ? 'Reverted to Workspace Owner' : 'Đã quay lại quyền Chủ sở hữu (Owner)',
+        });
+    };
 
     const maxSeats = Math.max(1, Number(subscription?.quotas?.seats || 1));
     const usedSeats = 1 + members.length; // 1 = Workspace Owner
@@ -239,6 +273,39 @@ export default function TeamSeatsPanel() {
 
     return (
         <div className="space-y-5">
+            {/* Active Test Mode Banner */}
+            {activeMember && (
+                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-3.5 flex flex-wrap items-center justify-between gap-3 text-amber-950 shadow-xs">
+                    <div className="flex items-center gap-2.5">
+                        <span className="flex size-7 items-center justify-center rounded-lg bg-amber-400 font-bold text-zinc-950 text-xs shadow-xs">
+                            ⚡
+                        </span>
+                        <div className="text-xs">
+                            <span className="font-bold">
+                                {isEn ? 'Previewing workspace as:' : 'Đang thử nghiệm workspace dưới quyền:'}
+                            </span>{' '}
+                            <span className="font-bold underline">
+                                {activeMember.name} ({activeMember.role})
+                            </span>
+                            {activeMember.brandScope && activeMember.brandScope !== 'all' && (
+                                <span className="ml-1 text-amber-800">
+                                    ({isEn ? `Scope: Brand #${activeMember.brandScope}` : `Phạm vi: Brand #${activeMember.brandScope}`})
+                                </span>
+                            )}
+                        </div>
+                    </div>
+                    <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-7 text-xs bg-white text-zinc-900 border-amber-300 hover:bg-amber-100 cursor-pointer"
+                        onClick={handleRevertToOwner}
+                    >
+                        <UserSwitch size={13} className="mr-1" />
+                        {isEn ? 'Revert to Owner' : 'Quay lại quyền Owner'}
+                    </Button>
+                </div>
+            )}
+
             {/* 1. Seat Capacity & Plan Status Banner */}
             <section className="panel p-5 space-y-4">
                 <div className="flex flex-wrap items-start justify-between gap-4">
@@ -479,6 +546,35 @@ export default function TeamSeatsPanel() {
                                     </td>
                                     <td className="p-3 pr-5">
                                         <div className="flex items-center justify-end gap-1">
+                                            <Button
+                                                variant={activeMember?.id === member.id ? 'default' : 'ghost'}
+                                                size="sm"
+                                                className={`h-8 px-2 text-xs gap-1 cursor-pointer ${
+                                                    activeMember?.id === member.id
+                                                        ? 'bg-amber-400 hover:bg-amber-500 text-zinc-950 font-semibold'
+                                                        : 'text-zinc-700 hover:bg-muted'
+                                                }`}
+                                                onClick={() => {
+                                                    if (activeMember?.id === member.id) {
+                                                        handleRevertToOwner();
+                                                    } else {
+                                                        handleSwitchToMember(member);
+                                                    }
+                                                }}
+                                                title={
+                                                    activeMember?.id === member.id
+                                                        ? isEn ? 'Stop previewing' : 'Dừng xem thử vai trò'
+                                                        : isEn ? 'Preview role permissions' : 'Xem thử quyền vai trò này'
+                                                }
+                                            >
+                                                <UserSwitch size={13} weight="bold" />
+                                                <span>
+                                                    {activeMember?.id === member.id
+                                                        ? isEn ? 'Testing' : 'Đang test'
+                                                        : isEn ? 'Test role' : 'Test vai trò'}
+                                                </span>
+                                            </Button>
+
                                             <Button
                                                 variant="ghost"
                                                 size="sm"

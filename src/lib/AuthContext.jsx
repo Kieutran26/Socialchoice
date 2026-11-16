@@ -3,19 +3,43 @@ import { appClient } from '@/api/app-client';
 import { useTranslation } from './i18n';
 import AdminSignIn from '@/components/admin-sign-in';
 import { isDesktop } from '@/api/desktop/runtime';
-import { reconcileSubscriptionWithUser } from './team-seats';
+import { reconcileSubscriptionWithUser, getActiveMember, clearActiveMember } from './team-seats';
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
     const { t } = useTranslation();
+    const [rawUser, setRawUser] = useState(null);
     const [user, setUser] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
 
+    const applyMemberOverlay = (baseUser) => {
+        if (!baseUser) return null;
+        const activeMember = getActiveMember();
+        if (!activeMember) return baseUser;
+        return {
+            ...baseUser,
+            ...activeMember,
+            full_name: activeMember.name || baseUser.full_name,
+            role: activeMember.role || 'editor',
+            brandScope: activeMember.brandScope || 'all',
+            isTeamMember: true,
+        };
+    };
+
     useEffect(() => {
         let mounted = true;
         let isReauthenticating = false;
+
+        const syncEffectiveUser = (base) => {
+            const effective = applyMemberOverlay(base);
+            if (mounted) {
+                setUser(effective);
+                if (effective) reconcileSubscriptionWithUser(effective);
+            }
+        };
+
         async function initAuth() {
             const withTimeout = (promise, ms = 4000) =>
                 Promise.race([
@@ -25,22 +49,22 @@ export function AuthProvider({ children }) {
             try {
                 const me = await withTimeout(appClient.auth.me(), 4000);
                 if (mounted) {
-                    setUser(me);
-                    reconcileSubscriptionWithUser(me);
+                    setRawUser(me);
+                    syncEffectiveUser(me);
                 }
             } catch {
                 try {
                     await withTimeout(appClient.auth.loginViaEmailPassword('admin'), 4000);
                     const me = await withTimeout(appClient.auth.me(), 4000);
                     if (mounted) {
-                        setUser(me);
-                        reconcileSubscriptionWithUser(me);
+                        setRawUser(me);
+                        syncEffectiveUser(me);
                     }
                 } catch {
                     if (mounted) {
                         const localUser = { id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' };
-                        setUser(localUser);
-                        reconcileSubscriptionWithUser(localUser);
+                        setRawUser(localUser);
+                        syncEffectiveUser(localUser);
                     }
                 }
             } finally {
@@ -49,15 +73,28 @@ export function AuthProvider({ children }) {
         }
         initAuth();
 
+        const handleAuthOrTeamChange = () => {
+            if (rawUser) syncEffectiveUser(rawUser);
+        };
+        window.addEventListener('socialchoice:team', handleAuthOrTeamChange);
+        window.addEventListener('socialchoice:auth', handleAuthOrTeamChange);
+
         const expired = async (event) => {
             if (event.detail === 'Sign in required' && !isReauthenticating) {
                 isReauthenticating = true;
                 try {
                     await appClient.auth.loginViaEmailPassword('admin');
                     const me = await appClient.auth.me();
-                    if (mounted) setUser(me);
+                    if (mounted) {
+                        setRawUser(me);
+                        syncEffectiveUser(me);
+                    }
                 } catch {
-                    if (mounted) setUser({ id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' });
+                    if (mounted) {
+                        const localUser = { id: 'local-owner', full_name: 'Admin', role: 'admin', mode: 'local-only' };
+                        setRawUser(localUser);
+                        syncEffectiveUser(localUser);
+                    }
                 } finally {
                     isReauthenticating = false;
                 }
@@ -68,8 +105,10 @@ export function AuthProvider({ children }) {
         return () => {
             mounted = false;
             window.removeEventListener('socialchoice:error', expired);
+            window.removeEventListener('socialchoice:team', handleAuthOrTeamChange);
+            window.removeEventListener('socialchoice:auth', handleAuthOrTeamChange);
         };
-    }, []);
+    }, [rawUser]);
 
     if (loading) return <p className="p-8">{t('Opening workspace…')}</p>;
     if (error) {

@@ -7,11 +7,11 @@ import CommandSearchDialog from './layout/CommandSearchDialog';
 import { useTranslation } from '@/lib/i18n';
 import { useEffect, useRef, useState } from 'react';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, CaretUp, MagnifyingGlass, GearSix, IdentificationCard, Crown, BookOpen } from '@phosphor-icons/react';
+import { List, X, SquaresFour, CaretUpDown, Check, SignOut, CaretRight, CaretUp, MagnifyingGlass, GearSix, IdentificationCard, Crown, BookOpen, ArrowUUpLeft, UserSwitch } from '@phosphor-icons/react';
 import { WorkspaceProvider, useWorkspace } from '@/lib/workspace-context';
 import { useAuth } from '@/lib/AuthContext';
 import { appClient } from '@/api/app-client';
-import { getActiveSubscription } from '@/lib/team-seats';
+import { getActiveSubscription, clearActiveMember, getRoleMeta } from '@/lib/team-seats';
 
 const ROUTE_LABELS = {
     '/': 'Overview',
@@ -346,6 +346,21 @@ function Shell() {
                                 </NavLink>
                             )}
 
+                            {user?.isTeamMember && (
+                                <button
+                                    type="button"
+                                    role="menuitem"
+                                    onClick={() => {
+                                        setOpenProfileMenu(false);
+                                        clearActiveMember();
+                                    }}
+                                    className="flex w-full items-center gap-2.5 rounded-xl border border-amber-300 bg-amber-50 px-2.5 py-2 text-xs min-h-9 font-semibold text-amber-900 hover:bg-amber-100 transition-colors cursor-pointer"
+                                >
+                                    <UserSwitch size={16} weight="bold" className="shrink-0 text-amber-700" />
+                                    <span className="truncate">{t('Quay lại quyền Owner')}</span>
+                                </button>
+                            )}
+
                             <div className="my-1 border-t border-border/60" />
                             <button
                                 type="button"
@@ -375,8 +390,13 @@ function Shell() {
                                 {user?.full_name ? user.full_name.slice(0, 2).toUpperCase() : 'MC'}
                             </div>
                             <div className="min-w-0">
-                                <div className="font-heading font-semibold text-xs text-foreground truncate">
-                                    {user?.full_name || 'Mây Creative'}
+                                <div className="font-heading font-semibold text-xs text-foreground truncate flex items-center gap-1.5">
+                                    <span className="truncate">{user?.full_name || 'Mây Creative'}</span>
+                                    {user?.isTeamMember && (
+                                        <span className="rounded bg-amber-100 px-1 py-0.2 text-[9px] font-bold uppercase text-amber-900 shrink-0">
+                                            {user.role}
+                                        </span>
+                                    )}
                                 </div>
                                 <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground truncate">
                                     <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 shrink-0" />
