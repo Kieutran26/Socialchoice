@@ -158,7 +158,26 @@ export default function PostTable({
                                                     onClick={() => onOpen(post)}
                                                     className="font-heading font-semibold text-[13px] text-foreground hover:text-brand-dark transition-colors line-clamp-1 text-left block cursor-pointer"
                                                 >
-                                                    {post.title || t('Untitled')}
+                                                    <span>{post.title || t('Untitled')}</span>
+                                                    {post.recurring_group_id && (
+                                                        <span className="inline-flex items-center gap-1 rounded bg-brand/30 border border-brand-dark/40 px-1.5 py-0.2 text-[9px] font-extrabold text-brand-ink ml-1.5 align-middle">
+                                                            <span>🔁</span>
+                                                            <span>{post.recurrence_index ? `${post.recurrence_index}/${post.recurrence_total || '∞'}` : t('Định kỳ')}</span>
+                                                        </span>
+                                                    )}
+                                                    {post.auto_dm?.enabled && (
+                                                        <span
+                                                            title={t('Tự động gửi tin nhắn khi comment')}
+                                                            className="inline-flex items-center gap-0.5 rounded bg-blue-100 border border-blue-300 text-blue-900 px-1.5 py-0.2 text-[9px] font-extrabold ml-1.5 align-middle"
+                                                        >
+                                                            <span>⚡ Auto-DM</span>
+                                                            {!post.auto_dm.matchAll && post.auto_dm.keywords?.length > 0 && (
+                                                                <span className="font-mono text-[8px] opacity-80">
+                                                                    ({post.auto_dm.keywords[0]})
+                                                                </span>
+                                                            )}
+                                                        </span>
+                                                    )}
                                                 </button>
                                                 <p className="text-[11px] text-muted-foreground line-clamp-1 mt-0.5">
                                                     {post.caption || t('No caption')}

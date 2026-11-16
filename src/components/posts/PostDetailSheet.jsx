@@ -190,6 +190,39 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
         }
     };
 
+    const cancelRecurringSeries = async () => {
+        if (!post.recurring_group_id) return;
+        if (!window.confirm(t('Bạn có chắc chắn muốn hủy tất cả các bài viết chưa xuất bản trong chuỗi định kỳ này?'))) return;
+        setBusy(true);
+        setError('');
+        try {
+            const seriesPosts = await appClient.entities.Post.filter({
+                recurring_group_id: post.recurring_group_id,
+            }, { limit: 100 });
+
+            const cancelable = (seriesPosts.items || []).filter(p => ['draft', 'scheduled'].includes(p.status));
+            for (const item of cancelable) {
+                await appClient.posts.save({
+                    id: item.id,
+                    data: {
+                        status: 'cancelled',
+                        notes: `${item.notes || ''}\n[Đã hủy cả chuỗi định kỳ]`.trim(),
+                    },
+                });
+            }
+            toast({
+                title: t('Đã hủy chuỗi bài viết định kỳ!'),
+                description: t(`Đã hủy ${cancelable.length} bài viết còn lại trong chuỗi.`),
+            });
+            await refresh();
+            onClose();
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+        }
+    };
+
     return (
         <Dialog open onOpenChange={open => !open && !busy && onClose()}>
             <DialogContent className="max-w-6xl xl:max-w-7xl w-[calc(100%-2rem)] max-h-[92vh] p-0 overflow-hidden flex flex-col rounded-3xl bg-card border border-border shadow-2xl">
@@ -476,6 +509,62 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                 </p>
                             )}
                         </div>
+
+                        {/* Recurring Series Info Banner */}
+                        {post.recurring_group_id && (
+                            <div className="rounded-xl border border-brand-dark/40 bg-brand/15 p-3 flex items-center justify-between gap-3 text-xs">
+                                <div className="flex items-center gap-2.5">
+                                    <span className="text-xl">🔁</span>
+                                    <div>
+                                        <div className="flex items-center gap-1.5 font-bold text-brand-ink">
+                                            <span>{t('Bài viết thuộc chuỗi định kỳ')}</span>
+                                            {post.recurrence_index && (
+                                                <span className="rounded bg-brand border border-brand-dark px-1.5 py-0.2 text-[10px] font-extrabold">
+                                                    {t('Kỳ {index}/{total}', { index: post.recurrence_index, total: post.recurrence_total || '∞' })}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                                            {t('Tần suất:')} {post.recurrence_rule?.frequency === 'weekly' ? t('Hàng tuần') : post.recurrence_rule?.frequency === 'biweekly' ? t('Mỗi 2 tuần') : t('Hàng tháng')} · {post.recurrence_rule?.auto_recycle ? t('Auto-Recycle bật') : t('Cố định')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={cancelRecurringSeries}
+                                    className="text-[11px] font-bold text-dangerFg hover:underline cursor-pointer shrink-0"
+                                >
+                                    {t('Hủy cả chuỗi')}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Auto-DM Info Banner */}
+                        {post.auto_dm?.enabled && (
+                            <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 space-y-2 text-xs">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 font-bold text-blue-900">
+                                        <span className="text-base">💬</span>
+                                        <span>{t('Đang bật Comment-to-Inbox (Auto-DM)')}</span>
+                                    </div>
+                                    <span className="rounded bg-blue-200/80 text-blue-900 text-[10px] font-bold px-2 py-0.5">
+                                        {post.auto_dm.matchAll ? t('Mọi comment') : t('Khớp từ khóa')}
+                                    </span>
+                                </div>
+                                <div className="text-[11px] text-blue-800 space-y-1">
+                                    <div>
+                                        <strong>{t('Từ khóa kích hoạt:')}</strong>{' '}
+                                        <span className="font-mono bg-white/80 px-1.5 py-0.2 rounded border border-blue-200">
+                                            {post.auto_dm.matchAll ? t('Tất cả') : (post.auto_dm.keywords || []).join(', ')}
+                                        </span>
+                                    </div>
+                                    <div className="truncate">
+                                        <strong>{t('Nội dung gửi vào Inbox:')}</strong> {post.auto_dm.privateMessage?.slice(0, 80)}...
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Accordion 1: Form Đổi ngày & Giờ đăng */}
                         {!locked && ['draft', 'scheduled', 'cancelled'].includes(status) && !jobs.some(job => job.attempts > 0) && (

@@ -151,6 +151,23 @@ export default function CalendarPostChip({
                 </div>
 
                 <div className="flex items-center gap-1 shrink-0">
+                    {(post.recurring_group_id || post.recurrence_index) && (
+                        <span
+                            className="px-1 py-0.2 rounded bg-brand/30 border border-brand-dark/40 text-brand-ink text-[9px] font-extrabold flex items-center gap-0.5"
+                            title={t('Bài đăng định kỳ')}
+                        >
+                            <span>🔁</span>
+                            <span>{post.recurrence_index ? `${post.recurrence_index}/${post.recurrence_total || '∞'}` : ''}</span>
+                        </span>
+                    )}
+                    {post.auto_dm?.enabled && (
+                        <span
+                            className="px-1 py-0.2 rounded bg-blue-100 border border-blue-300 text-blue-900 text-[9px] font-extrabold flex items-center gap-0.5"
+                            title={t('Tự động gửi tin nhắn DM khi bình luận')}
+                        >
+                            <span>⚡DM</span>
+                        </span>
+                    )}
                     <span
                         className={`px-1.5 py-0.2 rounded text-[9px] font-bold border shrink-0 ${statusCfg.badgeBg}`}
                     >

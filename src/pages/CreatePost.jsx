@@ -40,6 +40,9 @@ import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import UseTemplateDialog from '@/components/composer/use-template-dialog';
 import AiRepurposeDialog from '@/components/composer/AiRepurposeDialog';
+import RecurringSchedulePanel from '@/components/composer/RecurringSchedulePanel';
+import AutoDmSettingsPanel from '@/components/composer/AutoDmSettingsPanel';
+import { generateRecurringTimeline } from '@/lib/recurring-dates';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
 import PlatformLogo from '@/components/composer/PlatformLogo';
@@ -151,6 +154,33 @@ export default function CreatePost() {
     const [isMediaDrawerOpen, setIsMediaDrawerOpen] = useState(false);
     const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
     const [isAiRepurposeOpen, setIsAiRepurposeOpen] = useState(false);
+    const [recurringConfig, setRecurringConfig] = useState({
+        enabled: false,
+        frequency: 'weekly',
+        count: 4,
+        autoRecycle: true,
+    });
+    const [autoDmConfig, setAutoDmConfig] = useState(() => {
+        const isFromTool = params.get('auto_dm_enabled') === '1';
+        const keywordsParam = params.get('auto_dm_keywords');
+        const msgParam = params.get('auto_dm_msg');
+        const ctaTitleParam = params.get('auto_dm_cta_title');
+        const ctaUrlParam = params.get('auto_dm_cta_url');
+        return {
+            enabled: isFromTool,
+            matchAll: false,
+            keywords: keywordsParam ? keywordsParam.split(',') : ['inbox', 'giá', 'tư vấn'],
+            autoLike: true,
+            publicReplies: [
+                'Dạ {name} kiểm tra tin nhắn riêng của page giúp mình nhé! ❤️',
+                'Mình đã gửi thông tin chi tiết qua inbox cho {name} rồi nha!',
+            ],
+            privateMessage: msgParam || 'Chào {name}, cảm ơn bạn đã quan tâm đến bài viết của chúng mình!\n\nDưới đây là thông tin chi tiết & tài liệu bạn yêu cầu:\n👉 https://socialchoice.site\n\nNếu cần hỗ trợ thêm, bạn chỉ cần nhắn lại cho page nhé!',
+            ctaTitle: ctaTitleParam || 'Xem chi tiết ngay',
+            ctaUrl: ctaUrlParam || '',
+            delaySeconds: 15,
+        };
+    });
     const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(true);
     const [isUtmOpen, setIsUtmOpen] = useState(false);
@@ -369,6 +399,9 @@ export default function CreatePost() {
                     status: duplicateId ? 'draft' : ['draft', 'scheduled'].includes(post.status) ? post.status : 'draft',
                     media: (post.media_ids || []).map((id) => media.items.find((image) => image.id === id)).filter(Boolean),
                 });
+                if (post.auto_dm) {
+                    setAutoDmConfig(post.auto_dm);
+                }
             } catch (error) {
                 if (active) setLoadError(error.message);
             } finally {
@@ -841,6 +874,7 @@ export default function CreatePost() {
                 needs_approval: isApprovalWorkflow ? true : false,
                 submitted_by: isApprovalWorkflow ? user?.email || user?.full_name || 'editor' : undefined,
                 is_demo: demoMode,
+                auto_dm: autoDmConfig?.enabled ? autoDmConfig : undefined,
             };
 
             const saved = await appClient.posts.save({ id: existing?.id, data: payload });
@@ -858,6 +892,76 @@ export default function CreatePost() {
             if (action === 'publish') {
                 const review = await appClient.publishing.prepare(saved.id);
                 setPublishReview(review);
+                return;
+            }
+
+            if (action === 'schedule' && recurringConfig.enabled) {
+                const totalCount = Math.max(2, Number(recurringConfig.count) || 4);
+                const timeline = generateRecurringTimeline(
+                    form.date,
+                    form.time,
+                    form.timezone,
+                    recurringConfig.frequency,
+                    totalCount
+                );
+                const recurringGroupId = `rec_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
+
+                // Update Post 1 with recurring info
+                await appClient.posts.save({
+                    id: saved.id,
+                    data: {
+                        recurring_group_id: recurringGroupId,
+                        recurrence_index: 1,
+                        recurrence_total: totalCount,
+                        recurrence_rule: {
+                            frequency: recurringConfig.frequency,
+                            count: totalCount,
+                            auto_recycle: recurringConfig.autoRecycle,
+                        },
+                        notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ 1/${totalCount} (${recurringConfig.frequency})`.trim(),
+                    },
+                });
+
+                // Generate remaining future posts (Kỳ 2..N)
+                const futurePosts = timeline.slice(1).map(async (item, idx) => {
+                    const cycleNum = idx + 2;
+                    let cycleCaption = form.caption;
+                    if (recurringConfig.autoRecycle) {
+                        cycleCaption = `${form.caption.trim()}\n\n—\n[#Kỳ ${cycleNum}/${totalCount}]`;
+                    }
+                    return appClient.posts.save({
+                        data: {
+                            ...payload,
+                            caption: cycleCaption,
+                            scheduled_at: item.iso,
+                            recurring_group_id: recurringGroupId,
+                            recurrence_index: cycleNum,
+                            recurrence_total: totalCount,
+                            recurrence_rule: {
+                                frequency: recurringConfig.frequency,
+                                count: totalCount,
+                                auto_recycle: recurringConfig.autoRecycle,
+                            },
+                            notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ ${cycleNum}/${totalCount} (${recurringConfig.frequency})`.trim(),
+                        },
+                    });
+                });
+
+                await Promise.all(futurePosts);
+
+                toast({
+                    title: t('Đã lên lịch thành công chuỗi bài định kỳ!'),
+                    description: t(
+                        `Đã lên lịch tự động chuỗi ${totalCount} bài viết (${
+                            recurringConfig.frequency === 'weekly'
+                                ? 'Hàng tuần'
+                                : recurringConfig.frequency === 'biweekly'
+                                ? 'Mỗi 2 tuần'
+                                : 'Hàng tháng'
+                        }). Kiểm tra trên Lịch đăng bài.`
+                    ),
+                });
+                navigate('/calendar');
                 return;
             }
 
@@ -2035,6 +2139,23 @@ export default function CreatePost() {
                             </div>
                         )}
                     </section>
+
+                    {/* Smart Recurring & Auto-Recycle Panel */}
+                    <RecurringSchedulePanel
+                        config={recurringConfig}
+                        onChange={setRecurringConfig}
+                        startDate={form.date}
+                        startTime={form.time}
+                        timezone={form.timezone}
+                        disabled={isViewer}
+                    />
+
+                    {/* Comment-to-Inbox: Keyword Auto-DM Panel */}
+                    <AutoDmSettingsPanel
+                        config={autoDmConfig}
+                        onChange={setAutoDmConfig}
+                        disabled={isViewer}
+                    />
                 </div>
 
                 {/* RIGHT COLUMN: Sticky preview & checklist */}
@@ -2224,10 +2345,24 @@ export default function CreatePost() {
                         disabled={!canSubmit || saving}
                         onClick={() => submit('schedule')}
                         title={isViewer ? t('Chế độ xem không thể lên lịch') : t(`Lên lịch ${form.date} ${form.time}`)}
-                        className="flex h-9 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand/20 px-3.5 text-xs font-semibold text-brand-ink transition hover:bg-brand/35 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+                        className={`flex h-9 items-center gap-1.5 rounded-xl border border-brand-dark px-3.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer ${
+                            recurringConfig.enabled
+                                ? 'bg-brand text-brand-ink font-bold shadow-xs'
+                                : 'bg-brand/20 text-brand-ink hover:bg-brand/35'
+                        }`}
                     >
-                        <CalendarBlank size={16} weight="bold" />
-                        <span>{isEditorNeedingApproval ? t('Lên lịch & Gửi duyệt') : t('Thêm vào lịch')}</span>
+                        {recurringConfig.enabled ? (
+                            <ArrowsClockwise size={16} weight="bold" />
+                        ) : (
+                            <CalendarBlank size={16} weight="bold" />
+                        )}
+                        <span>
+                            {isEditorNeedingApproval
+                                ? t('Lên lịch & Gửi duyệt')
+                                : recurringConfig.enabled
+                                ? t('🔁 Lên lịch {count} kỳ định kỳ', { count: recurringConfig.count })
+                                : t('Thêm vào lịch')}
+                        </span>
                     </button>
 
                     {/* Đăng ngay Button */}

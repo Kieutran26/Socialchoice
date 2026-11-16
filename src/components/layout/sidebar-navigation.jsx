@@ -15,6 +15,7 @@ import {
     Users,
     LinkSimple,
     Tag,
+    Wrench,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -52,6 +53,7 @@ const NAV_GROUPS = [
             { to: '/accounts', label: 'Social Accounts', icon: Users },
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
+            { to: '/tools', label: 'Tiện ích & Công cụ', icon: Wrench },
         ],
     },
 ];

@@ -33,6 +33,7 @@ const ROUTE_LABELS = {
     '/media': 'Media Library',
     '/interactive-images': 'Interactive Images',
     '/shortlinks': 'Shortlinks',
+    '/tools': 'Tiện ích & Công cụ',
     '/docs': 'Tài liệu hướng dẫn',
     '/huong-dan': 'Tài liệu hướng dẫn',
     '/accounts': 'Social Accounts',

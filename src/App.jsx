@@ -22,6 +22,7 @@ import MediaLibrary from '@/pages/MediaLibrary';
 import SocialAccounts from '@/pages/SocialAccounts';
 import Brands from '@/pages/Brands';
 import Settings from '@/pages/Settings';
+import Tools from '@/pages/Tools';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
 import Shortlinks from '@/pages/Shortlinks';
@@ -116,6 +117,7 @@ export default function App() {
                                 <Route path="/media" element={<MediaLibrary />} />
                                 <Route path="/interactive-images" element={<InteractiveImages />} />
                                 <Route path="/shortlinks" element={<Shortlinks />} />
+                                <Route path="/tools" element={<Tools />} />
                                 <Route path="/accounts" element={<SocialAccounts />} />
                                 <Route path="/brands" element={<Brands />} />
                                 <Route path="/team" element={<Navigate to="/settings?tab=team" replace />} />

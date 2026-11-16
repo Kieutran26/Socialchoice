@@ -54,7 +54,7 @@ export default function RecurringPostSettings({ post, onChanged }) {
         <p className="label-xs">{t('Automatically republish the approved copy to the same accounts. Each occurrence has separate publishing history. Changes and uncertain deliveries pause the series.')}</p>
         {!loaded && !error && <p className="label-xs">{t('Loading…')}</p>}
         {series.filter(item => item.status !== 'prepared').slice(0, 5).map(item => <div key={item.id} className="rounded-lg border p-3 space-y-2 text-xs">
-            <p className="font-medium">{t(labels[item.status] || item.status)} · {t(item.policy.frequency === 'monthly' ? 'Every month' : 'Every 2 weeks')}</p>
+            <p className="font-medium">{t(labels[item.status] || item.status)} · {t(item.policy.frequency === 'weekly' ? 'Hàng tuần' : item.policy.frequency === 'monthly' ? 'Every month' : 'Every 2 weeks')}</p>
             <p>{t('Successful recurrences')}: {formatNumber(item.completed)} · {t('Skipped recurrences')}: {formatNumber(item.skipped)} · {item.policy.timezone}</p>
             <p>{t('Publication limit')}: {item.policy.limit || t('No limit')} · {t('End date')}: {item.policy.end_date || t('No end date')}</p>
             {item.next_at && <p>{t('Next publication')}: {formatDateTime(item.next_at, item.policy.timezone)}</p>}
@@ -67,7 +67,7 @@ export default function RecurringPostSettings({ post, onChanged }) {
         </div>)}
         {!active && ['draft', 'published'].includes(post.status) && <>
             <fieldset disabled={busy || !loaded} className="grid gap-3 sm:grid-cols-2">
-                <label className="label-xs space-y-1">{t('Repeat interval')}<select aria-label={t('Repeat interval')} className="w-full rounded-lg border bg-background p-2 text-sm" value={policy.frequency} onChange={e => patch({ frequency: e.target.value })}><option value="biweekly">{t('Every 2 weeks')}</option><option value="monthly">{t('Every month')}</option></select></label>
+                <label className="label-xs space-y-1">{t('Repeat interval')}<select aria-label={t('Repeat interval')} className="w-full rounded-lg border bg-background p-2 text-sm" value={policy.frequency} onChange={e => patch({ frequency: e.target.value })}><option value="weekly">{t('Hàng tuần (Every week)')}</option><option value="biweekly">{t('Every 2 weeks')}</option><option value="monthly">{t('Every month')}</option></select></label>
                 <label className="label-xs space-y-1">{t('First recurrence date')}<Input aria-label={t('First recurrence date')} type="date" value={policy.date} onChange={e => patch({ date: e.target.value })} /></label>
                 <label className="label-xs space-y-1">{t('Recurrence time')}<Input aria-label={t('Recurrence time')} type="time" value={policy.time} onChange={e => patch({ time: e.target.value })} /></label>
                 <label className="label-xs space-y-1">{t('Timezone')}<select aria-label={t('Recurrence timezone')} className="w-full rounded-lg border bg-background p-2 text-sm" value={policy.timezone} onChange={e => patch({ timezone: e.target.value })}>{TIMEZONES.map(zone => <option key={zone}>{zone}</option>)}</select></label>
