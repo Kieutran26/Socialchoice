@@ -24,18 +24,44 @@ import { desktopRequest } from './desktop/request';
         }
         const rawText = await response.text();
         let result = {};
+        let parseFailed = false;
         try {
             result = rawText ? JSON.parse(rawText) : {};
         } catch {
-            result = { message: rawText || 'Invalid server response' };
+            parseFailed = true;
         }
+
         if (!response.ok) {
-            const error = Object.assign(new Error(result.message || 'Request failed'), { status: response.status, ...(result.diagnostic ? { diagnostic: result.diagnostic } : {}) });
+            // Khi backend trả HTML, text thô hoặc nội dung không phải JSON hợp lệ:
+            // Tuyệt đối không hiển thị raw response / HTML cho người dùng.
+            let errorMessage = result?.message;
+            if (parseFailed || typeof errorMessage !== 'string' || !errorMessage.trim()) {
+                errorMessage = 'Máy chủ đang tạm thời không khả dụng. Vui lòng thử lại sau.';
+            }
+
+            const error = Object.assign(new Error(errorMessage), {
+                status: response.status,
+                isNonJson: parseFailed,
+                ...(result?.diagnostic ? { diagnostic: result.diagnostic } : {}),
+            });
+
             if (!options.silent) {
                 window.dispatchEvent(new CustomEvent('socialchoice:error', { detail: error.message }));
             }
             throw error;
         }
+
+        if (parseFailed) {
+            const error = Object.assign(new Error('Máy chủ đang tạm thời không khả dụng. Vui lòng thử lại sau.'), {
+                status: response.status,
+                isNonJson: true,
+            });
+            if (!options.silent) {
+                window.dispatchEvent(new CustomEvent('socialchoice:error', { detail: error.message }));
+            }
+            throw error;
+        }
+
         return result;
     }
 

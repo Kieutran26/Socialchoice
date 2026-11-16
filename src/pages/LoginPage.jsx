@@ -3,6 +3,7 @@ import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { appClient } from '@/api/app-client';
 import { useTranslation } from '@/lib/i18n';
 import { findInvite, acceptInvite, getRoleMeta } from '@/lib/team-seats';
+import { isDesktop } from '@/api/desktop/runtime';
 import {
     ArrowLeft,
     ArrowRight,
@@ -344,13 +345,18 @@ export default function LoginPage() {
             await appClient.auth.loginViaEmailPassword(adminPassword);
             navigate(safeReturnTo);
         } catch (err) {
-            // In dev mode, fallback allows 'admin' or accepts password
-            try {
-                await appClient.auth.loginViaEmailPassword('admin');
-                navigate(safeReturnTo);
-            } catch {
-                setAuthError(err.message || 'Mật khẩu quản trị không đúng. Vui lòng thử lại.');
+            if (isDesktop()) {
+                try {
+                    await appClient.auth.loginViaEmailPassword('admin');
+                    navigate(safeReturnTo);
+                    return;
+                } catch {}
             }
+            const rawMsg = err?.message || '';
+            const displayMsg = rawMsg.includes('<!DOCTYPE') || rawMsg.includes('<html') || rawMsg.includes('Worker threw exception')
+                ? 'Máy chủ đang tạm thời không khả dụng. Vui lòng thử lại sau.'
+                : rawMsg || 'Mật khẩu quản trị không đúng. Vui lòng thử lại.';
+            setAuthError(displayMsg);
         } finally {
             setIsLoading(false);
         }

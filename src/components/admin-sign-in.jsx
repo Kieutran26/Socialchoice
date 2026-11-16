@@ -4,6 +4,7 @@ import { useTranslation } from '@/lib/i18n';
 import { Input } from '@/components/ui/input';
 import CustomerSignIn from '@/components/customer-sign-in';
 import { Button } from '@/components/ui/button';
+import { isDesktop } from '@/api/desktop/runtime';
 
 export default function AdminSignIn({ onSignedIn }) {
     const { t, language, setLanguage } = useTranslation();
@@ -17,18 +18,20 @@ export default function AdminSignIn({ onSignedIn }) {
         setBusy(true);
         setError('');
         try {
-            await appClient.auth.loginViaEmailPassword(password || 'admin');
+            await appClient.auth.loginViaEmailPassword(password || (isDesktop() ? 'admin' : ''));
             setPassword('');
             const me = await appClient.auth.me();
             onSignedIn(me);
         } catch (e) {
-            try {
-                await appClient.auth.loginViaEmailPassword('admin');
-                const me = await appClient.auth.me();
-                onSignedIn(me);
-            } catch {
-                setError(e.message);
+            if (isDesktop()) {
+                try {
+                    await appClient.auth.loginViaEmailPassword('admin');
+                    const me = await appClient.auth.me();
+                    onSignedIn(me);
+                    return;
+                } catch {}
             }
+            setError(e.message);
         } finally {
             setBusy(false);
         }
