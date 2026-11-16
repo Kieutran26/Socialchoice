@@ -66,6 +66,19 @@ export default function LandingPage() {
                         return;
                     }
 
+                    // Điều hướng trang Blog (/blog)
+                    if (
+                        href === '/blog' ||
+                        href.startsWith('/blog') ||
+                        text === 'blog' ||
+                        text === 'bài viết' ||
+                        text === 'tin tức'
+                    ) {
+                        e.preventDefault();
+                        navigate('/blog');
+                        return;
+                    }
+
                     // 1. Điều hướng đăng nhập
                     if (
                         href === '/login' ||

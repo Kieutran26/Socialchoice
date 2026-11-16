@@ -47,6 +47,8 @@ const QUICK_FEATURES = [
     { to: '/accounts', label: 'Social Accounts', hint: 'Kết nối Facebook, Instagram, Threads, TikTok, LinkedIn', icon: Users, keywords: 'tai khoan mang xa hoi kenh accounts' },
     { to: '/media', label: 'Media Library', hint: 'Kho hình ảnh và video', icon: Images, keywords: 'thu vien anh media library' },
     { to: '/shortlinks', label: 'Shortlinks', hint: 'Liên kết rút gọn & UTM tracking', icon: LinkSimple, keywords: 'lien ket rut gon utm shortlinks' },
+    { to: '/tools', label: 'Tiện ích & Công cụ', hint: 'Đóng dấu watermark, giờ vàng, auto-dm', icon: GearSix, keywords: 'tien ich cong cu tools watermark gio vang golden auto dm' },
+    { to: '/blog', label: 'Blog & Bài viết', hint: 'Chia sẻ kinh nghiệm marketing & thuật toán 2026', icon: Article, keywords: 'blog bai viet chia se news kien thuc' },
     { to: '/docs', label: 'Docs & Guide', hint: 'Tài liệu hướng dẫn sử dụng toàn bộ tính năng', icon: BookOpen, keywords: 'tai lieu huong dan docs guide help faq' },
     { to: '/settings', label: 'Settings', hint: 'Cài đặt hệ thống và AI', icon: GearSix, keywords: 'cai dat settings' },
     { to: '/admin/licenses', label: 'License management', hint: 'Quản lý license người dùng', icon: IdentificationCard, keywords: 'quan ly license admin', adminOnly: true },

@@ -36,6 +36,8 @@ import ContentStrategy2 from '@/pages/ContentStrategy2';
 import LoginPage from '@/pages/LoginPage';
 import OAuthConsent from '@/pages/OAuthConsent';
 import Docs from '@/pages/Docs';
+import Blog from '@/pages/Blog';
+import BlogPostDetail from '@/pages/BlogPostDetail';
 import { LanguageProvider, useTranslation } from '@/lib/i18n';
 
 function AppError({ error }) {
@@ -96,6 +98,8 @@ export default function App() {
                             <Route path="/data-deletion" element={<DataDeletion />} />
                             <Route path="/docs" element={<Docs />} />
                             <Route path="/huong-dan" element={<Docs />} />
+                            <Route path="/blog" element={<Blog />} />
+                            <Route path="/blog/:slug" element={<BlogPostDetail />} />
 
                             {/* Authenticated Workspace Routes */}
                             <Route element={<WorkspaceShell />}>
