@@ -15,6 +15,7 @@ import LinkedinConnectionCard from './LinkedinConnectionCard';
 import TiktokConnectionCard from './TiktokConnectionCard';
 import XConnectionCard from './XConnectionCard';
 import ZaloConnectionCard from './ZaloConnectionCard';
+import TiktokShopConnectionCard from './TiktokShopConnectionCard';
 import ZaloIcon from '@/components/common/ZaloIcon';
 import DesktopConnectionCard from './desktop-connection-card';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -25,6 +26,7 @@ const channels = [
     { id: 'instagram', label: 'Instagram Business', icon: InstagramLogo, color: '#d62976', service: 'meta', formats: ['Photo', 'Reels'], primary: true },
     { id: 'threads', label: 'Threads', icon: ThreadsLogo, color: '#000000', service: 'threads', formats: ['Text', 'Photo', 'Video'], primary: true },
     { id: 'tiktok', label: 'TikTok', icon: TiktokLogo, color: '#000000', service: 'tiktok', formats: ['Private video'], primary: true },
+    { id: 'tiktok-shop', label: 'TikTok Shop Seller', icon: Storefront, color: '#FE2C55', service: 'tiktok-shop', formats: ['Giỏ hàng vàng', 'Sản phẩm', 'Doanh thu'], primary: true },
     { id: 'linkedin', label: 'LinkedIn Profile', icon: LinkedinLogo, color: '#0a66c2', service: 'linkedin', formats: ['Text', 'Photos', 'Video'], primary: true },
     { id: 'linkedin-page', label: 'LinkedIn Page', icon: Buildings, color: '#0a66c2', service: 'linkedin', formats: ['Text', 'Photos', 'Video'], primary: true },
     { id: 'x', label: 'X (Twitter)', icon: XLogo, color: '#000000', service: 'x', formats: ['Text', 'Photos', 'Video'], primary: true },
@@ -343,6 +345,8 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                             <LinkedinConnectionCard {...props} mode="page" />
                         ) : selected === 'tiktok' ? (
                             <TiktokConnectionCard {...props} />
+                        ) : selected === 'tiktok-shop' ? (
+                            <TiktokShopConnectionCard {...props} />
                         ) : selected === 'x' ? (
                             <XConnectionCard {...props} />
                         ) : selected === 'zalo' ? (

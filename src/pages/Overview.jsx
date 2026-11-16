@@ -138,29 +138,28 @@ export default function Overview() {
     }, [load]);
 
     useEffect(() => {
-        const POLL_INTERVAL_MS = 12000;
+        // Optimized: Only refresh traffic periodically every 5 minutes (300,000ms) to conserve Cloudflare requests
+        const POLL_INTERVAL_MS = 300000;
+        let lastRefreshTime = Date.now();
+
         const intervalId = window.setInterval(() => {
             if (document.visibilityState === 'visible') {
                 refreshTraffic({ silent: true });
+                lastRefreshTime = Date.now();
             }
         }, POLL_INTERVAL_MS);
 
-        const handleFocus = () => {
-            if (document.visibilityState === 'visible') {
-                refreshTraffic({ silent: true });
-            }
-        };
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible') {
+            // Only refresh on tab switch if at least 5 minutes have elapsed since last check
+            if (document.visibilityState === 'visible' && Date.now() - lastRefreshTime > POLL_INTERVAL_MS) {
                 refreshTraffic({ silent: true });
+                lastRefreshTime = Date.now();
             }
         };
 
-        window.addEventListener('focus', handleFocus);
         document.addEventListener('visibilitychange', handleVisibilityChange);
         return () => {
             window.clearInterval(intervalId);
-            window.removeEventListener('focus', handleFocus);
             document.removeEventListener('visibilitychange', handleVisibilityChange);
         };
     }, [refreshTraffic]);

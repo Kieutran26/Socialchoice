@@ -44,12 +44,27 @@ export default function PublishingNotifications() {
             }
         }
         refresh();
-        const timer = setInterval(refresh, 30000);
-        document.addEventListener('visibilitychange', refresh);
+        // Optimized: Refresh notifications every 5 minutes (300,000ms) instead of aggressive 30s polling
+        const POLL_INTERVAL = 300000;
+        let lastRefreshTime = Date.now();
+        const timer = setInterval(() => {
+            if (!document.hidden) {
+                refresh();
+                lastRefreshTime = Date.now();
+            }
+        }, POLL_INTERVAL);
+
+        const onVisChange = () => {
+            if (!document.hidden && Date.now() - lastRefreshTime > POLL_INTERVAL) {
+                refresh();
+                lastRefreshTime = Date.now();
+            }
+        };
+        document.addEventListener('visibilitychange', onVisChange);
         return () => {
             active = false;
             clearInterval(timer);
-            document.removeEventListener('visibilitychange', refresh);
+            document.removeEventListener('visibilitychange', onVisChange);
         };
     }, []);
 

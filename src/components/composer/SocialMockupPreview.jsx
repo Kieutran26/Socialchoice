@@ -15,6 +15,7 @@ import {
     SealCheck,
     ChatDots,
     UserPlus,
+    ShoppingBag,
 } from '@phosphor-icons/react';
 import PlatformLogo from './PlatformLogo';
 import { useTranslation } from '@/lib/i18n';
@@ -25,6 +26,7 @@ export default function SocialMockupPreview({
     text = '',
     media = [],
     when = 'Vừa xong',
+    tiktokProduct = null,
 }) {
     const { t } = useTranslation();
 
@@ -131,8 +133,33 @@ export default function SocialMockupPreview({
                     </div>
                 </div>
 
-                {/* Bottom Caption & Audio */}
+                {/* Bottom Caption, TikTok Shop Yellow Cart & Audio */}
                 <div className="absolute inset-x-0 bottom-0 p-3.5 pr-14 text-white z-10">
+                    {/* TikTok Shop Product Anchor (Giỏ hàng vàng) */}
+                    {tiktokProduct && (
+                        <div className="mb-2 flex items-center gap-2 rounded-xl bg-amber-400 text-zinc-950 px-2.5 py-1.5 shadow-md border border-amber-300">
+                            <div className="flex size-5 items-center justify-center rounded-md bg-amber-500 text-zinc-950 shrink-0">
+                                <ShoppingBag size={13} weight="fill" />
+                            </div>
+                            <div className="min-w-0 flex-1">
+                                <div className="truncate text-[11px] font-bold leading-tight flex items-center gap-1">
+                                    <span className="truncate">{tiktokProduct.name}</span>
+                                </div>
+                                <div className="text-[10px] font-semibold text-zinc-800 flex items-center gap-1">
+                                    <span>₫{Number(tiktokProduct.sale_price || tiktokProduct.original_price).toLocaleString('vi-VN')}</span>
+                                    {tiktokProduct.is_flash_sale && (
+                                        <span className="text-[8.5px] bg-red-600 text-white px-1 py-0.2 rounded font-bold">
+                                            Flash Sale
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                            <span className="shrink-0 rounded-full bg-zinc-950 px-2 py-0.5 text-[9px] font-bold text-amber-300">
+                                Mua ngay
+                            </span>
+                        </div>
+                    )}
+
                     <div className="text-[13px] font-bold">@{handle}</div>
                     <p className="mt-1 line-clamp-3 whitespace-pre-wrap text-[12px] leading-snug text-white/90">
                         {text || t('Chú thích video sẽ hiển thị tại đây.')}

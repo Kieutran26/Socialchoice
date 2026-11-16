@@ -34,6 +34,7 @@ const ROUTE_LABELS = {
     '/interactive-images': 'Interactive Images',
     '/shortlinks': 'Shortlinks',
     '/tools': 'Tiện ích & Công cụ',
+    '/tiktok-shop': 'TikTok Shop (Seller Center)',
     '/blog': 'Blog & Bài viết',
     '/docs': 'Tài liệu hướng dẫn',
     '/huong-dan': 'Tài liệu hướng dẫn',

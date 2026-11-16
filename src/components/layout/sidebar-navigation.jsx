@@ -16,6 +16,7 @@ import {
     LinkSimple,
     Tag,
     Wrench,
+    Storefront,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -53,12 +54,13 @@ const NAV_GROUPS = [
             { to: '/accounts', label: 'Social Accounts', icon: Users },
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
+            { to: '/tiktok-shop', label: 'TikTok Shop', icon: Storefront, badge: 'HOT' },
             { to: '/tools', label: 'Tiện ích & Công cụ', icon: Wrench },
         ],
     },
 ];
 
-function NavItem({ to, label, icon: Icon, onNavigate }) {
+function NavItem({ to, label, icon: Icon, badge, onNavigate }) {
     const { t } = useTranslation();
     return (
         <NavLink
@@ -66,7 +68,7 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
             end
             onClick={onNavigate}
             className={({ isActive }) =>
-                `group relative flex items-center gap-3 rounded-xl border px-3 py-2.5 sm:py-2 text-[13px] min-h-[38px] sm:min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${isActive
+                `group relative flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 sm:py-2 text-[13px] min-h-[38px] sm:min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${isActive
                     ? 'bg-brand border-brand-dark text-brand-ink font-semibold'
                     : 'border-transparent text-muted-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
                 }`
@@ -74,8 +76,15 @@ function NavItem({ to, label, icon: Icon, onNavigate }) {
         >
             {({ isActive }) => (
                 <>
-                    <Icon size={18} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
-                    <span className="truncate">{t(label)}</span>
+                    <div className="flex items-center gap-3 min-w-0">
+                        <Icon size={18} weight={isActive ? 'fill' : 'regular'} className="shrink-0" />
+                        <span className="truncate">{t(label)}</span>
+                    </div>
+                    {badge && (
+                        <span className="shrink-0 rounded bg-red-600 text-white font-black text-[9px] px-1.5 py-0.2 tracking-wider">
+                            {badge}
+                        </span>
+                    )}
                 </>
             )}
         </NavLink>
@@ -100,6 +109,7 @@ export default function SidebarNavigation({ onNavigate }) {
                                 to={item.to}
                                 label={item.label}
                                 icon={item.icon}
+                                badge={item.badge}
                                 onNavigate={onNavigate}
                             />
                         ))}

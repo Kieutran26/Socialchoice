@@ -42,6 +42,8 @@ import UseTemplateDialog from '@/components/composer/use-template-dialog';
 import AiRepurposeDialog from '@/components/composer/AiRepurposeDialog';
 import RecurringSchedulePanel from '@/components/composer/RecurringSchedulePanel';
 import AutoDmSettingsPanel from '@/components/composer/AutoDmSettingsPanel';
+import TiktokShopProductPicker from '@/components/composer/TiktokShopProductPicker';
+import { tiktokShopService } from '@/lib/tiktok-shop-service';
 import { generateRecurringTimeline } from '@/lib/recurring-dates';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
@@ -180,6 +182,13 @@ export default function CreatePost() {
             ctaUrl: ctaUrlParam || '',
             delaySeconds: 15,
         };
+    });
+    const [tiktokProduct, setTiktokProduct] = useState(() => {
+        const prodId = params.get('tiktok_product_id');
+        if (prodId) {
+            return tiktokShopService.getProductById(prodId);
+        }
+        return null;
     });
     const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
     const [isSettingsOpen, setIsSettingsOpen] = useState(true);
@@ -2157,6 +2166,23 @@ export default function CreatePost() {
                         onChange={setAutoDmConfig}
                         disabled={isViewer}
                     />
+
+                    {/* TikTok Shop: Product Anchor (Giỏ hàng vàng) Panel */}
+                    <TiktokShopProductPicker
+                        brandId={form.brand_id || selectedBrandId}
+                        selectedProduct={tiktokProduct}
+                        onSelectProduct={setTiktokProduct}
+                        onInsertScript={(script) => {
+                            setForm((prev) => ({
+                                ...prev,
+                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
+                            }));
+                            toast({
+                                title: t('Đã chèn kịch bản bán hàng TikTok Shop!'),
+                                description: t('Kịch bản video ngắn và lời kêu gọi bấm giỏ hàng vàng đã được điền vào khung soạn thảo.'),
+                            });
+                        }}
+                    />
                 </div>
 
                 {/* RIGHT COLUMN: Sticky preview & checklist */}
@@ -2235,6 +2261,7 @@ export default function CreatePost() {
                                     text={getResolvedAccountText(currentPreviewAccount) || t('🚀 Nội dung bài viết đang được soạn thảo sẽ hiển thị trực quan tại đây theo thời gian thực...')}
                                     media={form.media}
                                     when={t('Vừa xong')}
+                                    tiktokProduct={tiktokProduct}
                                 />
                             ) : (
                                 <div className="grid h-full min-h-[328px] place-items-center text-center">
