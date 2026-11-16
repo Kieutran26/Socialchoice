@@ -696,6 +696,7 @@ export default function CreatePost() {
                 threads: repurposedVariants.threads || prev.platform_captions?.threads || '',
                 linkedin: repurposedVariants.linkedin || prev.platform_captions?.linkedin || '',
                 tiktok: repurposedVariants.tiktok || prev.platform_captions?.tiktok || '',
+                zalo: repurposedVariants.zalo || prev.platform_captions?.zalo || '',
             };
 
             const nextDestinationSettings = { ...prev.destination_settings };

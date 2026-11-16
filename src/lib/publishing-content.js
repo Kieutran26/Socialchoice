@@ -1,6 +1,6 @@
 // Match the owned adapters' supported subset, not all formats a platform may offer.
-export const PUBLISHING_PLATFORMS = ['facebook', 'instagram', 'threads', 'tiktok', 'linkedin', 'x'];
-export const CAPTION_LIMITS = { facebook: 63206, instagram: 2200, threads: 500, tiktok: 2200, linkedin: 3000, x: 280 };
+export const PUBLISHING_PLATFORMS = ['facebook', 'instagram', 'threads', 'tiktok', 'linkedin', 'x', 'zalo'];
+export const CAPTION_LIMITS = { facebook: 63206, instagram: 2200, threads: 500, tiktok: 2200, linkedin: 3000, x: 280, zalo: 2000 };
 export const COMMENT_MEDIA_PLATFORMS = ['facebook', 'threads'];
 
 export function resolveCaption(post, account) {
@@ -127,7 +127,7 @@ export function commentIssues(platform, comments = []) {
 
 export function contentIssues(platform, caption, media) {
     const issues = [];
-    if (!PUBLISHING_PLATFORMS.includes(platform)) return ['Publishing supports connected Facebook, Instagram, Threads, TikTok, LinkedIn and X accounts.'];
+    if (!PUBLISHING_PLATFORMS.includes(platform)) return ['Publishing supports connected Facebook, Instagram, Threads, TikTok, LinkedIn, X and Zalo OA accounts.'];
     if (!caption.trim() || captionLength(caption, platform) > CAPTION_LIMITS[platform]) {
         issues.push({
             facebook: 'Facebook caption must contain between 1 and 63206 characters',
@@ -135,7 +135,8 @@ export function contentIssues(platform, caption, media) {
             threads: 'Threads caption must contain between 1 and 500 characters',
             tiktok: 'TikTok caption must contain between 1 and 2200 characters',
             linkedin: 'LinkedIn caption must contain between 1 and 3000 characters',
-            x: 'X tweet must contain between 1 and 280 characters'
+            x: 'X tweet must contain between 1 and 280 characters',
+            zalo: 'Zalo OA broadcast/article must contain between 1 and 2000 characters'
         }[platform]);
     }
     if (media.length > 10) issues.push('Choose up to 10 different images');

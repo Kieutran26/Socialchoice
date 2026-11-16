@@ -41,6 +41,7 @@ import EmptyState from '@/components/common/EmptyState';
 import StatusBadge from '@/components/common/StatusBadge';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import AddAccountDialog from '@/components/accounts/AddAccountDialog';
+import ZaloIcon from '@/components/common/ZaloIcon';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -122,6 +123,14 @@ const PLATFORM_CONFIG = {
         border: 'border-[#ff4500]/25',
         bg: 'bg-[#ff4500]/10',
         text: 'text-[#ff4500]',
+    },
+    zalo: {
+        label: 'Zalo OA',
+        icon: ZaloIcon,
+        weight: 'fill',
+        border: 'border-[#0068FF]/25',
+        bg: 'bg-[#0068FF]/10',
+        text: 'text-[#0068FF]',
     },
 };
 

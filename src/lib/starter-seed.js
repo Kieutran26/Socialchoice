@@ -131,6 +131,19 @@ const ACCOUNTS = [
         connection_provider: 'native',
         is_demo: false,
     },
+    {
+        key: 'acc_coffee_zalo',
+        brandKey: 'b_coffee',
+        platform: 'zalo',
+        account_type: 'zalo_oa',
+        name: 'An Nhiên Coffee Roastery (OA)',
+        username: 'annhiencoffee_oa',
+        external_id: '2948104810293',
+        followers: 12800,
+        connection_status: 'connected',
+        connection_provider: 'native',
+        is_demo: false,
+    },
 ];
 
 const PILLARS = [

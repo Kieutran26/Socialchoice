@@ -86,11 +86,30 @@ export function generateHeuristicVariants({ text = '', title = '', tone = 'engag
         '#TikTokTips #LearnOnTikTok #KienThuc #Xuhuong #Socialchoice'
     ].join('\n');
 
+    // 5. Zalo OA: Bản tin Broadcast / Nhật ký OA thân thiện, cô đọng, định hướng tương tác chat
+    const zaloBullets = subPoints.length > 0
+        ? subPoints.map((p) => `🔹 ${p}`).join('\n')
+        : '🔹 Tối ưu quy trình & trải nghiệm khách hàng\n🔹 Cập nhật thông tin nhanh chóng, chính xác\n🔹 Luôn sẵn sàng hỗ trợ trực tiếp qua Zalo OA';
+
+    const zalo = [
+        `[THÔNG BÁO TỪ OA] 📢`,
+        `Kính gửi Quý khách hàng & Đối tác,`,
+        '',
+        `${mainIdea}`,
+        '',
+        zaloBullets,
+        '',
+        '💬 Quý khách có bất kỳ thắc mắc hoặc cần tư vấn chi tiết, vui lòng nhấn "Nhắn tin" ngay cho OA để được đội ngũ chuyên viên hỗ trợ 24/7.',
+        '',
+        'Trân trọng,\nĐội ngũ CSKH Socialchoice'
+    ].join('\n');
+
     return {
         facebook,
         threads,
         linkedin,
         tiktok: tiktokScript,
+        zalo,
     };
 }
 
@@ -127,7 +146,7 @@ export async function repurposeAllPlatforms({
     }
 
     // Nếu server có API key (OpenAI/Gemini/OpenRouter), gọi tuần tự/song song với graceful fallback
-    const platforms = ['facebook', 'threads', 'linkedin', 'tiktok'];
+    const platforms = ['facebook', 'threads', 'linkedin', 'tiktok', 'zalo'];
     const results = { ...fallbackVariants };
     let successCount = 0;
 

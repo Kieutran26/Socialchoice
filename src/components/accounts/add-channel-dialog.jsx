@@ -14,6 +14,8 @@ import MetaConnectionCard from './MetaConnectionCard';
 import LinkedinConnectionCard from './LinkedinConnectionCard';
 import TiktokConnectionCard from './TiktokConnectionCard';
 import XConnectionCard from './XConnectionCard';
+import ZaloConnectionCard from './ZaloConnectionCard';
+import ZaloIcon from '@/components/common/ZaloIcon';
 import DesktopConnectionCard from './desktop-connection-card';
 import { isDesktop } from '@/api/desktop/runtime';
 
@@ -26,6 +28,7 @@ const channels = [
     { id: 'linkedin', label: 'LinkedIn Profile', icon: LinkedinLogo, color: '#0a66c2', service: 'linkedin', formats: ['Text', 'Photos', 'Video'], primary: true },
     { id: 'linkedin-page', label: 'LinkedIn Page', icon: Buildings, color: '#0a66c2', service: 'linkedin', formats: ['Text', 'Photos', 'Video'], primary: true },
     { id: 'x', label: 'X (Twitter)', icon: XLogo, color: '#000000', service: 'x', formats: ['Text', 'Photos', 'Video'], primary: true },
+    { id: 'zalo', label: 'Zalo Official Account', icon: ZaloIcon, color: '#0068FF', service: 'zalo', formats: ['Bài viết OA', 'Broadcast'], primary: true },
 
     // Secondary / Coming soon
     { id: 'reddit', label: 'Reddit', icon: RedditLogo, color: '#ff4500', formats: ['Text', 'Link'] },
@@ -342,6 +345,8 @@ export default function AddChannelDialog({ open, onOpenChange, brands = [], defa
                             <TiktokConnectionCard {...props} />
                         ) : selected === 'x' ? (
                             <XConnectionCard {...props} />
+                        ) : selected === 'zalo' ? (
+                            <ZaloConnectionCard {...props} />
                         ) : (
                             <MetaConnectionCard {...props} initialPlatform={selected} onPlatformResolved={setSelected} lockPlatform />
                         )}

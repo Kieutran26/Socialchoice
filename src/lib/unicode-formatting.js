@@ -23,5 +23,6 @@ export const PLATFORM_CHAR_LIMITS = {
     tiktok: 2200,
     linkedin: 3000,
     facebook: 63206,
+    zalo: 2000,
 };
 

@@ -65,6 +65,17 @@ export default function PlatformLogo({ platform, size = 32, className = '' }) {
                     </svg>
                 </div>
             );
+        case 'zalo':
+            return (
+                <div
+                    className={`flex shrink-0 items-center justify-center rounded-full bg-[#0068FF] text-white shadow-2xs font-extrabold font-sans select-none ${className}`}
+                    style={{ width: size, height: size }}
+                >
+                    <span style={{ fontSize: `${Math.max(8, Math.round(size * 0.38))}px`, letterSpacing: '-0.3px' }}>
+                        Zalo
+                    </span>
+                </div>
+            );
         default:
             return null;
     }

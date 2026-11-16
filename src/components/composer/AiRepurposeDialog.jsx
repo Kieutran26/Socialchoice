@@ -28,6 +28,7 @@ import {
     ArrowBendDoubleUpRight,
 } from '@phosphor-icons/react';
 import { repurposeAllPlatforms, generateHeuristicVariants } from '@/lib/ai-repurposer';
+import ZaloIcon from '@/components/common/ZaloIcon';
 
 const TONES = [
     { id: 'engaging', label: '🔥 Hấp dẫn & Tương tác cao', desc: 'Tập trung vào hook gây chú ý, giữ chân và kích thích bình luận' },
@@ -61,6 +62,7 @@ export default function AiRepurposeDialog({
         threads: '',
         linkedin: '',
         tiktok: '',
+        zalo: '',
     });
 
     const [hasGenerated, setHasGenerated] = useState(false);
@@ -149,7 +151,7 @@ export default function AiRepurposeDialog({
 
     // Thống kê tài khoản theo nền tảng
     const accountsByPlatform = useMemo(() => {
-        const map = { facebook: 0, threads: 0, linkedin: 0, tiktok: 0, instagram: 0 };
+        const map = { facebook: 0, threads: 0, linkedin: 0, tiktok: 0, instagram: 0, zalo: 0 };
         selectedAccounts.forEach((acc) => {
             if (map[acc.platform] !== undefined) {
                 map[acc.platform]++;
@@ -238,7 +240,7 @@ export default function AiRepurposeDialog({
                                 className="btn-skew flex items-center gap-2 !py-1.5 !px-4 text-xs font-bold disabled:opacity-50 cursor-pointer shadow-xs"
                             >
                                 <MagicWand size={16} weight="duotone" className={busy ? 'animate-spin' : ''} />
-                                <span>{busy ? progressStatus || t('Đang tái sinh...') : t('✨ Phân tích & Tái sinh 4 kênh')}</span>
+                                <span>{busy ? progressStatus || t('Đang tái sinh...') : t('✨ Phân tích & Tái sinh 5 kênh')}</span>
                             </button>
                         </div>
                     </div>
@@ -254,7 +256,7 @@ export default function AiRepurposeDialog({
                             </span>
                         </div>
                         <span className="font-mono text-[10px]">
-                            {selectedAccounts.length} {t('tài khoản đã chọn')} (FB: {accountsByPlatform.facebook}, Threads: {accountsByPlatform.threads}, IN: {accountsByPlatform.linkedin}, TikTok: {accountsByPlatform.tiktok})
+                            {selectedAccounts.length} {t('tài khoản đã chọn')} (FB: {accountsByPlatform.facebook}, Threads: {accountsByPlatform.threads}, IN: {accountsByPlatform.linkedin}, TikTok: {accountsByPlatform.tiktok}, Zalo: {accountsByPlatform.zalo})
                         </span>
                     </div>
 
@@ -398,6 +400,41 @@ export default function AiRepurposeDialog({
                                 <div className="mt-2 pt-2 border-t border-border/60 text-[10px] text-muted-foreground flex items-center justify-between">
                                     <span>🎬 Kịch bản 3s Hook + Thân bài + CTA</span>
                                     <span className="text-brand-dark font-medium">TikTok & Short-form</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 5. Zalo OA */}
+                        <div className="rounded-2xl border border-border bg-card overflow-hidden flex flex-col focus-within:border-[#0068FF]/60 focus-within:ring-2 focus-within:ring-[#0068FF]/10 transition md:col-span-2">
+                            <div className="flex items-center justify-between border-b border-border/70 bg-[#0068FF]/5 px-4 py-2.5">
+                                <div className="flex items-center gap-2">
+                                    <div className="size-6 rounded-md bg-[#0068FF] text-white grid place-items-center">
+                                        <ZaloIcon size={16} />
+                                    </div>
+                                    <span className="text-xs font-bold text-foreground">Zalo Official Account (Broadcast & Bài viết)</span>
+                                    <span className="rounded-md bg-card border border-border px-1.5 py-0.2 text-[10px] text-muted-foreground font-mono">
+                                        {(variants.zalo || '').length} / 2000 {t('ký tự')}
+                                    </span>
+                                </div>
+                                <button
+                                    type="button"
+                                    onClick={() => handleCopy('zalo', variants.zalo)}
+                                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground hover:text-foreground cursor-pointer"
+                                >
+                                    {copiedKey === 'zalo' ? <Check size={13} className="text-successFg" /> : <Copy size={13} />}
+                                    <span>{copiedKey === 'zalo' ? t('Đã chép') : t('Sao chép')}</span>
+                                </button>
+                            </div>
+                            <div className="p-3.5 flex-1 flex flex-col">
+                                <textarea
+                                    value={variants.zalo || ''}
+                                    onChange={(e) => setVariants((p) => ({ ...p, zalo: e.target.value }))}
+                                    rows={5}
+                                    className="w-full flex-1 resize-none bg-transparent text-xs leading-relaxed text-foreground outline-none font-sans"
+                                />
+                                <div className="mt-2 pt-2 border-t border-border/60 text-[10px] text-muted-foreground flex items-center justify-between">
+                                    <span>📢 Thông báo chuẩn Broadcast & Điều hướng Chat với OA</span>
+                                    <span className="text-[#0068FF] font-medium">Zalo OA Chatbot & Feed</span>
                                 </div>
                             </div>
                         </div>

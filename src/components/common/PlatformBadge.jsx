@@ -9,6 +9,7 @@ import {
     YoutubeLogo,
     Globe,
 } from '@phosphor-icons/react';
+import ZaloIcon from './ZaloIcon';
 
 export const PLATFORM_CONFIG = {
     facebook: {
@@ -66,6 +67,13 @@ export const PLATFORM_CONFIG = {
         bg: 'bg-[#FF4500]/10',
         border: 'border-[#FF4500]/20',
         label: 'Reddit',
+    },
+    zalo: {
+        icon: ZaloIcon,
+        color: 'text-[#0068FF]',
+        bg: 'bg-[#0068FF]/10',
+        border: 'border-[#0068FF]/20',
+        label: 'Zalo OA',
     },
 };
 

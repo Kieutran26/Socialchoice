@@ -10,11 +10,13 @@
             "enum": [
                 "facebook",
                 "instagram",
+                "threads",
                 "linkedin",
                 "tiktok",
                 "youtube",
                 "x",
-                "reddit"
+                "reddit",
+                "zalo"
             ],
             "default": "facebook"
         },
@@ -22,7 +24,8 @@
             "type": "string",
             "enum": [
                 "page",
-                "profile"
+                "profile",
+                "zalo_oa"
             ],
             "default": "page"
         },

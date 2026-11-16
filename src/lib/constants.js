@@ -24,6 +24,7 @@ export const PLATFORMS = [
     { value: 'youtube', label: 'YouTube', short: 'YouTube', live: false },
     { value: 'x', label: 'X', short: 'X', live: false },
     { value: 'reddit', label: 'Reddit', short: 'Reddit', live: false },
+    { value: 'zalo', get label() { return translate('Zalo OA'); }, short: 'Zalo OA', live: true },
 ];
 
 export const PLATFORM_LABEL = translatedLabels(Object.fromEntries(PLATFORMS.map((platform) => [platform.value, platform.value === 'facebook' ? 'Facebook Pages' : platform.short])));

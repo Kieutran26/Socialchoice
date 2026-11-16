@@ -12,6 +12,9 @@ import {
     Globe,
     DotsThree,
     ImageSquare,
+    SealCheck,
+    ChatDots,
+    UserPlus,
 } from '@phosphor-icons/react';
 import PlatformLogo from './PlatformLogo';
 import { useTranslation } from '@/lib/i18n';
@@ -245,6 +248,105 @@ export default function SocialMockupPreview({
                     ) : (
                         renderText()
                     )}
+                </div>
+            </div>
+        );
+    }
+
+    // Zalo Official Account (Zalo OA) Mockup
+    if (platform === 'zalo') {
+        const avatarUrl = getAccountAvatarUrl(account);
+        return (
+            <div className="overflow-hidden rounded-2xl border border-[#0068FF]/30 bg-card shadow-sm">
+                {/* Zalo Top App Header */}
+                <div className="bg-[#0068FF] px-3.5 py-2 text-white flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 font-heading text-xs font-bold tracking-tight">
+                        <span className="bg-white text-[#0068FF] font-black px-1.5 py-0.5 rounded text-[10px]">OA</span>
+                        <span>ZALO OFFICIAL ACCOUNT</span>
+                    </div>
+                    <span className="text-[10px] text-white/80 font-medium">Nhật ký & Broadcast</span>
+                </div>
+
+                {/* Header */}
+                <div className="flex items-center justify-between p-3.5 bg-muted/10 border-b border-border/40">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="relative">
+                            <div className="size-10 rounded-full overflow-hidden border-2 border-[#0068FF]/30 bg-muted">
+                                {avatarUrl ? (
+                                    <img
+                                        src={avatarUrl}
+                                        alt={handle}
+                                        className="size-full object-cover"
+                                        onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                                    />
+                                ) : (
+                                    <div className="grid size-full place-items-center font-heading text-xs font-bold text-foreground bg-[#0068FF]/10 text-[#0068FF]">
+                                        {handle[0]?.toUpperCase() || 'Z'}
+                                    </div>
+                                )}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1">
+                                <PlatformLogo platform="zalo" size={16} />
+                            </div>
+                        </div>
+                        <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-1">
+                                <span className="truncate text-xs font-bold text-foreground">{handle}</span>
+                                <SealCheck size={14} weight="fill" className="text-[#0068FF] shrink-0" title="Tài khoản Doanh nghiệp Xác thực" />
+                            </div>
+                            <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
+                                <span className="text-[10px] font-semibold text-[#0068FF] bg-[#0068FF]/10 px-1 rounded">Doanh nghiệp</span>
+                                <span>·</span>
+                                <span>{when}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        type="button"
+                        className="inline-flex items-center gap-1 rounded-full bg-[#0068FF] px-2.5 py-1 text-[11px] font-semibold text-white hover:bg-[#0058db] transition-colors shadow-2xs"
+                    >
+                        <UserPlus size={12} weight="bold" />
+                        <span>Quan tâm</span>
+                    </button>
+                </div>
+
+                {/* Caption */}
+                <div className="px-3.5 py-3">{renderText('line-clamp-6')}</div>
+
+                {/* Media */}
+                {mediaCount > 0 && renderMedia('aspect-[16/10]')}
+
+                {/* Direct CTA Chat with OA */}
+                <div className="mx-3.5 my-2.5 p-2 rounded-xl bg-[#0068FF]/5 border border-[#0068FF]/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <div className="grid size-7 place-items-center rounded-lg bg-[#0068FF] text-white">
+                            <ChatDots size={16} weight="fill" />
+                        </div>
+                        <div>
+                            <p className="text-[11px] font-semibold text-foreground">Gửi tin nhắn tư vấn cho OA</p>
+                            <p className="text-[10px] text-muted-foreground">Phản hồi tự động qua Zalo 24/7</p>
+                        </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#0068FF] hover:underline cursor-pointer">
+                        Nhắn tin →
+                    </span>
+                </div>
+
+                {/* Actions Bar */}
+                <div className="grid grid-cols-3 border-t border-border/60 text-[11.5px] text-muted-foreground">
+                    <div className="flex items-center justify-center gap-1.5 py-2 hover:bg-muted/40 cursor-pointer transition-colors font-medium select-none">
+                        <ThumbsUp size={15} />
+                        <span>Thích</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1.5 py-2 hover:bg-muted/40 cursor-pointer transition-colors font-medium select-none">
+                        <ChatCircle size={15} />
+                        <span>Bình luận</span>
+                    </div>
+                    <div className="flex items-center justify-center gap-1.5 py-2 hover:bg-muted/40 cursor-pointer transition-colors font-medium select-none">
+                        <ShareFat size={15} />
+                        <span>Chia sẻ</span>
+                    </div>
                 </div>
             </div>
         );

@@ -13,6 +13,7 @@ import {
     Globe,
     DotsSixVertical,
 } from '@phosphor-icons/react';
+import ZaloIcon from '@/components/common/ZaloIcon';
 
 const PLATFORM_ICONS = {
     facebook: { icon: FacebookLogo, bg: 'bg-[#1877F2]' },
@@ -23,6 +24,7 @@ const PLATFORM_ICONS = {
     youtube: { icon: YoutubeLogo, bg: 'bg-[#FF0000]' },
     x: { icon: XLogo, bg: 'bg-zinc-900' },
     reddit: { icon: RedditLogo, bg: 'bg-[#FF4500]' },
+    zalo: { icon: ZaloIcon, bg: 'bg-[#0068FF]' },
 };
 
 const STATUS_CONFIG = {
