@@ -44,6 +44,8 @@ import RecurringSchedulePanel from '@/components/composer/RecurringSchedulePanel
 import AutoDmSettingsPanel from '@/components/composer/AutoDmSettingsPanel';
 import TiktokShopProductPicker from '@/components/composer/TiktokShopProductPicker';
 import { tiktokShopService } from '@/lib/tiktok-shop-service';
+import ShopeeProductPicker from '@/components/composer/ShopeeProductPicker';
+import { shopeeAffiliateService } from '@/lib/shopee-affiliate-service';
 import { generateRecurringTimeline } from '@/lib/recurring-dates';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
@@ -187,6 +189,13 @@ export default function CreatePost() {
         const prodId = params.get('tiktok_product_id');
         if (prodId) {
             return tiktokShopService.getProductById(prodId);
+        }
+        return null;
+    });
+    const [shopeeProduct, setShopeeProduct] = useState(() => {
+        const prodId = params.get('shopee_product_id');
+        if (prodId) {
+            return shopeeAffiliateService.getProductById(prodId);
         }
         return null;
     });
@@ -472,6 +481,26 @@ export default function CreatePost() {
             }));
             if (found?.utm_campaign) {
                 setUtmForm((prev) => ({ ...prev, campaign: found.utm_campaign }));
+            }
+        }
+
+        const shopeeProdId = params.get('shopee_product_id');
+        const autoScriptPlatform = params.get('auto_script');
+        if (shopeeProdId && !sourceId) {
+            const prod = shopeeAffiliateService.getProductById(shopeeProdId);
+            if (prod) {
+                setShopeeProduct(prod);
+                if (autoScriptPlatform) {
+                    const script = shopeeAffiliateService.generateSalesCopy(prod, autoScriptPlatform);
+                    if (autoScriptPlatform === 'first_comment') {
+                        handleFirstCommentChange(script);
+                    } else {
+                        setForm((prev) => ({
+                            ...prev,
+                            caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
+                        }));
+                    }
+                }
             }
         }
     }, [params, sourceId, campaigns]);
@@ -2180,6 +2209,30 @@ export default function CreatePost() {
                             toast({
                                 title: t('Đã chèn kịch bản bán hàng TikTok Shop!'),
                                 description: t('Kịch bản video ngắn và lời kêu gọi bấm giỏ hàng vàng đã được điền vào khung soạn thảo.'),
+                            });
+                        }}
+                    />
+
+                    {/* Shopee Affiliate: Product Catalog & Commission Picker */}
+                    <ShopeeProductPicker
+                        brandId={form.brand_id || selectedBrandId}
+                        selectedProduct={shopeeProduct}
+                        onSelectProduct={setShopeeProduct}
+                        onInsertLink={(script) => {
+                            setForm((prev) => ({
+                                ...prev,
+                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
+                            }));
+                            toast({
+                                title: t('Đã chèn kịch bản Shopee Affiliate!'),
+                                description: t('Nội dung ưu đãi và link tiếp thị đã được thêm vào bài viết.'),
+                            });
+                        }}
+                        onInsertFirstComment={(commentText) => {
+                            handleFirstCommentChange(commentText);
+                            toast({
+                                title: t('Đã chèn vào Bình luận đầu tiên!'),
+                                description: t('Link mua hàng Shopee sẽ tự động xuất bản dưới dạng comment để chống bóp tương tác.'),
                             });
                         }}
                     />

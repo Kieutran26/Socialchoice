@@ -6,6 +6,7 @@ Mục đích: AI hoặc developer thêm tính năng mà vẫn giữ đúng giao 
 
 ## 1. Read first / quy tắc cho mọi AI
 
+0. **UI/UX Standard Skill**: Toàn bộ quy chuẩn thiết kế, trải nghiệm người dùng, component specs, responsive, form controls, trạng thái và màu sắc tuân thủ skill chuẩn tại `C:\Users\MECHREVO\.agents\skills\ui-ux` (tham chiếu `C:\Users\MECHREVO\.agents\skills\ui-ux\SKILL.md` và thư mục `references/`).
 1. MUST đọc tài liệu này, [README](../README.md), component sắp sửa và một màn tương tự trước khi code UI.
 2. MUST tái sử dụng token, component và layout hiện có; không dựng một design system song song.
 3. MUST giữ font, palette, kiểu nút, mật độ và cấu trúc điều hướng khi yêu cầu chỉ là thêm tính năng/sửa lỗi.

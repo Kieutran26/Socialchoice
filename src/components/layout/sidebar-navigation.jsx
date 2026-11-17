@@ -17,6 +17,8 @@ import {
     Tag,
     Wrench,
     Storefront,
+    ShoppingBagOpen,
+    ChatTeardropDots,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -31,6 +33,7 @@ const NAV_GROUPS = [
     {
         title: 'CONTENT',
         items: [
+            { to: '/inbox', label: 'Hộp thư tập trung', icon: ChatTeardropDots, badge: 'HOT' },
             { to: '/agent', label: 'AI Agent Chat', icon: Sparkle },
             { to: '/create', label: 'Create Post', icon: PencilSimple },
             { to: '/posts', label: 'All Posts', icon: Article },
@@ -55,6 +58,7 @@ const NAV_GROUPS = [
             { to: '/media', label: 'Media Library', icon: Images },
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
             { to: '/tiktok-shop', label: 'TikTok Shop', icon: Storefront, badge: 'HOT' },
+            { to: '/shopee-affiliate', label: 'Shopee Affiliate', icon: ShoppingBagOpen, badge: 'HOT' },
             { to: '/tools', label: 'Tiện ích & Công cụ', icon: Wrench },
         ],
     },

@@ -24,6 +24,8 @@ import Brands from '@/pages/Brands';
 import Settings from '@/pages/Settings';
 import Tools from '@/pages/Tools';
 import TiktokShop from '@/pages/TiktokShop';
+import ShopeeAffiliate from '@/pages/ShopeeAffiliate';
+import SocialInbox from '@/pages/SocialInbox';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
 import Shortlinks from '@/pages/Shortlinks';
@@ -108,6 +110,8 @@ export default function App() {
                                 <Route path="/app" element={<Overview />} />
                                 <Route path="/dashboard" element={<Overview />} />
                                 <Route path="/calendar" element={<ContentCalendar />} />
+                                <Route path="/inbox" element={<SocialInbox />} />
+                                <Route path="/social-inbox" element={<Navigate to="/inbox" replace />} />
                                 <Route path="/agent" element={<ChatAgent />} />
                                 <Route path="/create" element={<CreatePost />} />
                                 <Route path="/templates" element={<PostTemplates />} />
@@ -124,6 +128,8 @@ export default function App() {
                                 <Route path="/shortlinks" element={<Shortlinks />} />
                                 <Route path="/tools" element={<Tools />} />
                                 <Route path="/tiktok-shop" element={<TiktokShop />} />
+                                <Route path="/shopee-affiliate" element={<ShopeeAffiliate />} />
+                                <Route path="/shopee" element={<Navigate to="/shopee-affiliate" replace />} />
                                 <Route path="/accounts" element={<SocialAccounts />} />
                                 <Route path="/brands" element={<Brands />} />
                                 <Route path="/team" element={<Navigate to="/settings?tab=team" replace />} />
