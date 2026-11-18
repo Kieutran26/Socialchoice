@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { track } from '@amplitude/unified';
 import './landing-bundle.js';
 
 export default function LandingPage() {
@@ -88,6 +89,7 @@ export default function LandingPage() {
                         text.includes('sign in')
                     ) {
                         e.preventDefault();
+                        track('Sign In Clicked');
                         navigate('/login');
                         return;
                     }
