@@ -5,18 +5,14 @@ import {
     CalendarBlank,
     CalendarCheck,
     CaretDown,
-    ChatCircle,
     CheckCircle,
     CopySimple,
     FloppyDisk,
     Globe,
-    Heart,
-    PaperPlaneTilt,
     PencilSimple,
     Repeat,
     Sparkle,
     WarningCircle,
-    BookmarkSimple,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
@@ -31,6 +27,7 @@ import { useToast } from '../ui/use-toast';
 import { Sheet, SheetContent } from '../ui/sheet';
 import StatusBadge from '../common/StatusBadge';
 import { PLATFORM_CONFIG } from '../common/PlatformBadge';
+import SocialMockupPreview from '../composer/SocialMockupPreview';
 import PublishConfirmation from './PublishConfirmation';
 
 function toLocalDatetimeValue(iso, tz = DEFAULT_TIMEZONE) {
@@ -97,7 +94,6 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                 active = false;
             };
         }
-        if (post.is_demo) return () => { active = false; };
         appClient.entities.SocialAccount.list({ limit: 50 })
             .then((page) => {
                 if (active) setAccounts(page.items || []);
@@ -195,17 +191,24 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
         (['draft', 'scheduled'].includes(status) || (isDesktop() && status === 'cancelled'));
 
     const targetAccounts = useMemo(() => {
-        const ids = post.target_account_ids || [];
+        const ids = post.target_account_ids?.length ? post.target_account_ids : post.account_ids || [];
         return ids.map((id) => accounts.find((a) => a.id === id)).filter(Boolean);
-    }, [accounts, post.target_account_ids]);
+    }, [accounts, post.target_account_ids, post.account_ids]);
 
     const availablePlatforms = useMemo(() => {
         const fromAccounts = targetAccounts.map((a) => a.platform).filter(Boolean);
         const fromVariants = Object.keys(variantMap);
         const fromDelivery = items.map((i) => i.platform).filter(Boolean);
-        const merged = Array.from(new Set([...fromAccounts, ...fromVariants, ...fromDelivery]));
+        const fromPost = Array.isArray(post.platforms)
+            ? post.platforms
+            : post.platform
+              ? [post.platform]
+              : [];
+        const merged = Array.from(
+            new Set([...fromAccounts, ...fromVariants, ...fromDelivery, ...fromPost])
+        ).filter(Boolean);
         return merged.length > 0 ? merged : ['facebook'];
-    }, [targetAccounts, variantMap, items]);
+    }, [targetAccounts, variantMap, items, post.platforms, post.platform]);
 
     useEffect(() => {
         if (!selectedPreviewPlatform || !availablePlatforms.includes(selectedPreviewPlatform)) {
@@ -453,104 +456,24 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                             </div>
                         )}
 
-                        {/* The Social Post Card */}
-                        <div className="panel space-y-4 bg-card p-5 shadow-xs">
-                            {/* Account Header */}
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="flex min-w-0 items-center gap-3">
-                                    {previewAvatarUrl ? (
-                                        <img
-                                            src={previewAvatarUrl}
-                                            alt=""
-                                            className="h-10 w-10 shrink-0 rounded-full border border-border object-cover"
-                                        />
-                                    ) : (
-                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand text-sm font-bold text-brand-ink">
-                                            {previewAccount?.name?.[0]?.toUpperCase() || 'S'}
-                                        </div>
-                                    )}
-                                    <div className="min-w-0">
-                                        <div className="truncate text-sm font-semibold text-foreground">
-                                            {previewAccount?.name || previewAccount?.username}
-                                        </div>
-                                        <div className="text-xs text-muted-foreground">
-                                            {post.scheduled_at
-                                                ? formatDateTime(post.scheduled_at, post.timezone)
-                                                : t('Vừa xong')}
-                                        </div>
-                                    </div>
-                                </div>
+                        {/* Post Title (internal label) */}
+                        {post.title && (
+                            <h3 className="font-heading text-base font-semibold leading-snug text-foreground">
+                                {post.title}
+                            </h3>
+                        )}
 
-                                <span
-                                    className={`inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border ${activePlatformCfg.bg || 'bg-zinc-100'} ${activePlatformCfg.border || 'border-border'} ${activePlatformCfg.color || 'text-zinc-900'}`}
-                                    title={activePlatform}
-                                >
-                                    <ActivePlatformIcon size={15} weight="fill" />
-                                </span>
-                            </div>
-
-                            {/* Post Title */}
-                            {post.title && (
-                                <h3 className="font-heading text-base font-semibold leading-snug text-foreground">
-                                    {post.title}
-                                </h3>
-                            )}
-
-                            {/* Post Caption */}
-                            <div className="whitespace-pre-wrap break-words text-sm leading-relaxed text-zinc-800">
-                                {activeCaption || (
-                                    <span className="italic text-muted-foreground">
-                                        {t('Chưa có nội dung caption.')}
-                                    </span>
-                                )}
-                            </div>
-
-                            {/* Post Media */}
-                            {activePlatformMedia.length > 0 && (
-                                <div
-                                    className={`grid gap-2 overflow-hidden rounded-xl ${
-                                        activePlatformMedia.length > 1 ? 'grid-cols-2' : 'grid-cols-1'
-                                    }`}
-                                >
-                                    {activePlatformMedia.map((media, idx) => (
-                                        <div
-                                            key={media.id || idx}
-                                            className="overflow-hidden rounded-xl border border-border bg-zinc-100"
-                                        >
-                                            {media.file_type === 'video' ? (
-                                                <video
-                                                    src={media.file_url}
-                                                    controls
-                                                    preload="metadata"
-                                                    className="max-h-72 w-full object-cover"
-                                                />
-                                            ) : (
-                                                <img
-                                                    src={media.file_url}
-                                                    alt=""
-                                                    className="max-h-72 w-full object-cover"
-                                                />
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-
-                            {/* Subtle Social Interaction Footer */}
-                            <div className="flex items-center justify-between border-t border-border pt-3 text-muted-foreground">
-                                <div className="flex items-center gap-5">
-                                    <Heart size={17} />
-                                    <ChatCircle size={17} />
-                                    <PaperPlaneTilt size={17} />
-                                </div>
-                                <div className="flex items-center gap-2.5 text-xs">
-                                    <span className="tabular-nums text-muted-foreground">
-                                        {activeCaption?.length || 0} {t('ký tự')}
-                                    </span>
-                                    <BookmarkSimple size={17} />
-                                </div>
-                            </div>
-                        </div>
+                        {/* Native Platform UI Mockup */}
+                        <SocialMockupPreview
+                            account={previewAccount}
+                            text={activeCaption}
+                            media={activePlatformMedia}
+                            when={
+                                post.scheduled_at
+                                    ? formatDateTime(post.scheduled_at, post.timezone)
+                                    : t('Vừa xong')
+                            }
+                        />
 
                         {/* Compact Channel Chips + Error Alert (only if relevant) */}
                         {targetAccounts.length > 0 && (

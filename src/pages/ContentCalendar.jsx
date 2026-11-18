@@ -770,7 +770,13 @@ export default function ContentCalendar() {
             </div>
 
             {openPost && (
-                <PostDetailSheet key={openPost.id} post={openPost} onClose={() => setOpenPost(null)} onChanged={load} />
+                <PostDetailSheet
+                    key={openPost.id}
+                    post={openPost}
+                    accounts={accounts}
+                    onClose={() => setOpenPost(null)}
+                    onChanged={load}
+                />
             )}
         </div>
     );
