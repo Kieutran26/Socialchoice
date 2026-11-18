@@ -122,6 +122,7 @@ export default function App() {
                                 <Route path="/create" element={<CreatePost />} />
                                 <Route path="/create-clean" element={<Navigate to="/create" replace />} />
                                 <Route path="/templates" element={<PostTemplates />} />
+                                <Route path="/templates-clean" element={<Navigate to="/templates" replace />} />
                                 <Route path="/templates/create" element={<CreateTemplate />} />
                                 <Route path="/posts" element={<AllPosts />} />
                                 <Route path="/posts-clean" element={<Navigate to="/posts" replace />} />
