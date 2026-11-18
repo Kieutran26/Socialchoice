@@ -369,3 +369,25 @@
         transform: scaleX(1);
     }
 }
+@keyframes sheetSlideInRight {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0);
+    }
+}
+@keyframes sheetSlideOutRight {
+    from {
+        transform: translateX(0);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+.sheet-right[data-state='open'] {
+    animation: sheetSlideInRight 0.28s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.sheet-right[data-state='closed'] {
+    animation: sheetSlideOutRight 0.2s cubic-bezier(0.4, 0, 1, 1) forwards;
+}

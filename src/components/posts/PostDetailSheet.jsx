@@ -28,7 +28,7 @@ import { referencedMediaIds } from '@/lib/publishing-content';
 import { getAccountAvatarUrl } from '@/lib/account-avatar';
 import { toUtcIso, toZonedParts } from '@/lib/tz';
 import { useToast } from '../ui/use-toast';
-import { Dialog, DialogContent } from '../ui/dialog';
+import { Sheet, SheetContent } from '../ui/sheet';
 import StatusBadge from '../common/StatusBadge';
 import { PLATFORM_CONFIG } from '../common/PlatformBadge';
 import PublishConfirmation from './PublishConfirmation';
@@ -369,8 +369,8 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
     };
 
     return (
-        <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
-            <DialogContent className="flex max-h-[92vh] w-[calc(100%-1.5rem)] max-w-2xl flex-col overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-2xl">
+        <Sheet open onOpenChange={(open) => !open && !busy && onClose()}>
+            <SheetContent className="max-w-lg sm:max-w-xl">
                 {/* 1. COMPACT HEADER */}
                 <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-zinc-50/80 px-5 py-3.5 pr-12">
                     <div className="flex min-w-0 items-center gap-2.5">
@@ -861,7 +861,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                         </>
                     )}
                 </div>
-            </DialogContent>
-        </Dialog>
+            </SheetContent>
+        </Sheet>
     );
 }
