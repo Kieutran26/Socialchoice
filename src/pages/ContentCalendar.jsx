@@ -126,35 +126,35 @@ function CleanDayPostCard({ post, accounts = [], mediaMap = {}, timezone = '', o
                 e.dataTransfer.effectAllowed = 'move';
             }}
             onDragEnd={() => setDragging(false)}
-            title={`${post.title || post.caption || t('Bài viết')} · ${t(style.label)}`}
-            className={`group/card w-full overflow-hidden rounded-xl border text-left transition-colors hover:border-zinc-500 ${platformMeta.border} ${style.wrapExtra} ${
-                canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-            } ${dragging ? 'opacity-45' : ''}`}
+            title={`${timeDisplay ? timeDisplay + ' · ' : ''}${post.title || post.caption || t('Bài viết')} (${t(style.label)})`}
+            className={`group/card relative flex h-11 w-11 shrink-0 flex-col items-center justify-between overflow-hidden rounded-lg border p-1 transition-opacity hover:opacity-90 ${
+                thumbUrl && media?.file_type !== 'video'
+                    ? 'border-border bg-zinc-900 text-white'
+                    : `${platformMeta.border} ${platformMeta.header}`
+            } ${status === 'draft' ? 'border-dashed opacity-85' : ''} ${
+                status === 'scheduled' ? 'ring-2 ring-brand ring-offset-1' : ''
+            } ${canDrag ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'} ${
+                dragging ? 'opacity-45' : ''
+            }`}
         >
-            {/* Dải header màu tương ứng với từng nền tảng MXH */}
-            <div className={`flex items-center justify-between gap-1.5 px-2 py-1 ${platformMeta.header}`}>
-                <div className="flex items-center gap-1.5">
-                    <span className={`h-2 w-2 shrink-0 rounded-full ring-1 ring-white/40 ${style.dot}`} />
-                    <span className="text-[11px] font-bold tabular-nums leading-none">
-                        {timeDisplay || '--:--'}
-                    </span>
-                </div>
-                <PlatformIcon size={13} weight="fill" className="shrink-0" />
+            {thumbUrl && media?.file_type !== 'video' && (
+                <img
+                    src={thumbUrl}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover opacity-80"
+                />
+            )}
+
+            {/* Hàng trên: Chấm trạng thái + Icon nền tảng */}
+            <div className="relative z-10 flex w-full items-center justify-between">
+                <span className={`h-1.5 w-1.5 rounded-full ring-1 ring-white/60 ${style.dot}`} />
+                <PlatformIcon size={12} weight="fill" />
             </div>
 
-            {/* Thân thẻ trắng sạch: Ảnh (nếu có) + 2 dòng tiêu đề */}
-            <div className="flex items-start gap-1.5 p-2">
-                {thumbUrl && media?.file_type !== 'video' && (
-                    <img
-                        src={thumbUrl}
-                        alt=""
-                        className="h-7 w-7 shrink-0 rounded-md border border-border object-cover"
-                    />
-                )}
-                <p className="line-clamp-2 min-w-0 flex-1 break-words text-xs font-medium leading-snug text-foreground">
-                    {post.title || post.caption || t('Bài viết chưa đặt tiêu đề')}
-                </p>
-            </div>
+            {/* Giờ đăng ở đáy ô vuông */}
+            <span className="relative z-10 w-full truncate rounded bg-black/25 px-0.5 text-center text-[10px] font-bold tabular-nums leading-tight text-white">
+                {timeDisplay || '--:--'}
+            </span>
         </div>
     );
 }
@@ -176,13 +176,13 @@ function CleanMonthView({ days, postsByDay, onSelect, onMove, timezone, accounts
 
     return (
         <div className="panel overflow-hidden rounded-2xl border border-border bg-card">
-            <div className="overflow-x-auto">
-                <div className="min-w-[840px]">
+            <div className="overflow-x-auto lg:overflow-x-visible">
+                <div className="min-w-[620px] lg:min-w-0">
                     <div className="grid grid-cols-7 border-b border-border bg-zinc-50/80 text-xs font-semibold text-foreground">
                         {weekDayHeaders.map((item) => (
                             <div
                                 key={item.key}
-                                className={`border-r border-border/60 p-3 text-center last:border-r-0 ${
+                                className={`border-r border-border/60 py-2 px-1 text-center last:border-r-0 ${
                                     item.isSunday ? 'text-rose-700' : ''
                                 }`}
                             >
@@ -230,7 +230,7 @@ function CleanMonthView({ days, postsByDay, onSelect, onMove, timezone, accounts
                                             event.dataTransfer.getData('text/plain');
                                         if (postId && onMove) onMove(postId, date);
                                     }}
-                                    className={`group/cell flex min-h-[148px] flex-col gap-1.5 p-2 transition-colors ${
+                                    className={`group/cell flex min-h-[78px] flex-col gap-1.5 p-1.5 transition-colors ${
                                         isDragOver
                                             ? 'bg-brand-100/70 ring-2 ring-inset ring-brand-dark'
                                             : isToday
@@ -242,7 +242,7 @@ function CleanMonthView({ days, postsByDay, onSelect, onMove, timezone, accounts
                                 >
                                     <div className="flex items-center justify-between px-0.5">
                                         <span
-                                            className={`inline-flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-xs font-semibold tabular-nums ${
+                                            className={`inline-flex h-5 min-w-[20px] items-center justify-center rounded-full px-1 text-xs font-semibold tabular-nums ${
                                                 isToday
                                                     ? 'bg-brand text-brand-ink'
                                                     : inMonth
@@ -256,13 +256,13 @@ function CleanMonthView({ days, postsByDay, onSelect, onMove, timezone, accounts
                                         <Link
                                             to={`/create?date=${date}`}
                                             title={t('Tạo bài cho ngày {date}', { date })}
-                                            className="inline-flex h-6 w-6 items-center justify-center rounded-lg text-muted-foreground opacity-0 transition-opacity hover:bg-zinc-100 hover:text-foreground group-hover/cell:opacity-100"
+                                            className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:bg-zinc-100 hover:text-foreground group-hover/cell:opacity-100"
                                         >
-                                            <Plus size={13} weight="bold" />
+                                            <Plus size={12} weight="bold" />
                                         </Link>
                                     </div>
 
-                                    <div className="flex flex-1 flex-col gap-1.5">
+                                    <div className="flex flex-wrap items-start gap-1">
                                         {dayPosts.map((post) => (
                                             <CleanDayPostCard
                                                 key={post.id}
