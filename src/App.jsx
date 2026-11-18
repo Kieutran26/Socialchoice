@@ -124,6 +124,7 @@ export default function App() {
                                 <Route path="/templates" element={<PostTemplates />} />
                                 <Route path="/templates/create" element={<CreateTemplate />} />
                                 <Route path="/posts" element={<AllPosts />} />
+                                <Route path="/posts-clean" element={<Navigate to="/posts" replace />} />
                                 <Route path="/strategy" element={<ContentStrategy />} />
                                 <Route path="/strategy/campaigns" element={<Campaigns />} />
                                 <Route path="/campaigns" element={<Campaigns />} />
