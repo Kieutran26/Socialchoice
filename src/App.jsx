@@ -118,6 +118,7 @@ export default function App() {
                                 <Route path="/inbox" element={<SocialInbox />} />
                                 <Route path="/social-inbox" element={<Navigate to="/inbox" replace />} />
                                 <Route path="/agent" element={<ChatAgent />} />
+                                <Route path="/agent-clean" element={<Navigate to="/agent" replace />} />
                                 <Route path="/create" element={<CreatePost />} />
                                 <Route path="/create-clean" element={<Navigate to="/create" replace />} />
                                 <Route path="/templates" element={<PostTemplates />} />
