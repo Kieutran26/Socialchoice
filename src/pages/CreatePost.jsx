@@ -1,41 +1,40 @@
-﻿import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import {
-    FloppyDisk,
-    PaperPlaneTilt,
-    Trash,
-    Copy,
+    ArrowsClockwise,
+    Article,
+    BookmarkSimple,
     CalendarBlank,
-    Sparkle,
-    LinkSimple,
-    Check,
-    CheckCircle,
-    WarningCircle,
     CaretDown,
     CaretUp,
-    X,
-    UploadSimple,
+    Check,
+    CheckCircle,
+    Copy,
+    FloppyDisk,
+    Globe,
     ImageSquare,
+    Lightning,
+    LinkSimple,
+    MagicWand,
+    PaperPlaneTilt,
+    Plus,
+    Quotes,
+    ShareNetwork,
+    Sparkle,
+    Target,
     TextB,
     TextUnderline,
-    Clock,
-    ArrowsClockwise,
-    Globe,
-    Plus,
-    Tag,
-    ListBullets,
-    MagicWand,
-    BookmarkSimple,
-    Quotes,
-    Lightning,
-    Target,
-    ChatCircleText,
-    PushPin,
+    Trash,
+    WarningCircle,
+    X,
 } from '@phosphor-icons/react';
 import { appClient } from '@/api/app-client';
 import { isDesktop } from '@/api/desktop/runtime';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
+import { useTranslation } from '@/lib/i18n';
+import { useAuth } from '@/lib/AuthContext';
+import { getTeamSettings } from '@/lib/team-seats';
 import ConfirmDialog from '@/components/common/ConfirmDialog';
 import SaveTemplateDialog from '@/components/composer/save-template-dialog';
 import UseTemplateDialog from '@/components/composer/use-template-dialog';
@@ -43,10 +42,7 @@ import AiRepurposeDialog from '@/components/composer/AiRepurposeDialog';
 import RecurringSchedulePanel from '@/components/composer/RecurringSchedulePanel';
 import AutoDmSettingsPanel from '@/components/composer/AutoDmSettingsPanel';
 import TiktokShopProductPicker from '@/components/composer/TiktokShopProductPicker';
-import { tiktokShopService } from '@/lib/tiktok-shop-service';
 import ShopeeProductPicker from '@/components/composer/ShopeeProductPicker';
-import { shopeeAffiliateService } from '@/lib/shopee-affiliate-service';
-import { generateRecurringTimeline } from '@/lib/recurring-dates';
 import PublishConfirmation from '@/components/posts/PublishConfirmation';
 import SocialMockupPreview from '@/components/composer/SocialMockupPreview';
 import PlatformLogo from '@/components/composer/PlatformLogo';
@@ -57,9 +53,16 @@ import { aiRequest } from '@/api/ai';
 import { toUtcIso, toZonedParts, localInputDefault } from '@/lib/tz';
 import { DEFAULT_TIMEZONE, PLATFORM_LABEL } from '@/lib/constants';
 import { PUBLISHING_PLATFORMS, referencedMediaIds } from '@/lib/publishing-content';
-import { useTranslation } from '@/lib/i18n';
-import { useAuth } from '@/lib/AuthContext';
-import { getTeamSettings, hasPermission } from '@/lib/team-seats';
+import { generateRecurringTimeline } from '@/lib/recurring-dates';
+import { tiktokShopService } from '@/lib/tiktok-shop-service';
+import { shopeeAffiliateService } from '@/lib/shopee-affiliate-service';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 
 const URL_REGEX = /https?:\/\/[^\s]+/i;
 
@@ -150,14 +153,18 @@ export default function CreatePost() {
     const [loadError, setLoadError] = useState('');
     const [sourceLoading, setSourceLoading] = useState(!!sourceId);
 
-    // Studio UI interactive states matching mau-tao-bai-viet.html
+    // Studio UI interactive states
     const [activeTab, setActiveTab] = useState('default'); // 'default' | accountId
     const [previewAccountId, setPreviewAccountId] = useState('');
     const [signatureKey, setSignatureKey] = useState('none');
-    const [isComposerExpanded, setIsComposerExpanded] = useState(true);
     const [isMediaDrawerOpen, setIsMediaDrawerOpen] = useState(false);
     const [isAiDrawerOpen, setIsAiDrawerOpen] = useState(false);
     const [isAiRepurposeOpen, setIsAiRepurposeOpen] = useState(false);
+    const [publishMode, setPublishMode] = useState('schedule'); // 'schedule' | 'now'
+
+    // Expandable tool drawers
+    const [expandedTool, setExpandedTool] = useState(null); // 'strategy' | 'utm' | 'recurring' | 'autodm' | 'affiliate' | null
+
     const [recurringConfig, setRecurringConfig] = useState({
         enabled: false,
         frequency: 'weekly',
@@ -179,12 +186,15 @@ export default function CreatePost() {
                 'Dạ {name} kiểm tra tin nhắn riêng của page giúp mình nhé! ❤️',
                 'Mình đã gửi thông tin chi tiết qua inbox cho {name} rồi nha!',
             ],
-            privateMessage: msgParam || 'Chào {name}, cảm ơn bạn đã quan tâm đến bài viết của chúng mình!\n\nDưới đây là thông tin chi tiết & tài liệu bạn yêu cầu:\n👉 https://socialchoice.site\n\nNếu cần hỗ trợ thêm, bạn chỉ cần nhắn lại cho page nhé!',
+            privateMessage:
+                msgParam ||
+                'Chào {name}, cảm ơn bạn đã quan tâm đến bài viết của chúng mình!\n\nDưới đây là thông tin chi tiết & tài liệu bạn yêu cầu:\n👉 https://socialchoice.site\n\nNếu cần hỗ trợ thêm, bạn chỉ cần nhắn lại cho page nhé!',
             ctaTitle: ctaTitleParam || 'Xem chi tiết ngay',
             ctaUrl: ctaUrlParam || '',
             delaySeconds: 15,
         };
     });
+
     const [tiktokProduct, setTiktokProduct] = useState(() => {
         const prodId = params.get('tiktok_product_id');
         if (prodId) {
@@ -192,6 +202,7 @@ export default function CreatePost() {
         }
         return null;
     });
+
     const [shopeeProduct, setShopeeProduct] = useState(() => {
         const prodId = params.get('shopee_product_id');
         if (prodId) {
@@ -199,13 +210,11 @@ export default function CreatePost() {
         }
         return null;
     });
+
     const [isTemplatePickerOpen, setIsTemplatePickerOpen] = useState(false);
-    const [isSettingsOpen, setIsSettingsOpen] = useState(true);
-    const [isUtmOpen, setIsUtmOpen] = useState(false);
-    const [aiConfig, setAiConfig] = useState(null);
     const [aiBusy, setAiBusy] = useState(false);
 
-    // Quick Post Mode & Auto First Comment states & helpers
+    // Quick Post Mode toggle
     const [isQuickPostMode, setIsQuickPostMode] = useState(() => {
         try {
             return localStorage.getItem('socialchoice:quick_post_mode') === 'true';
@@ -221,8 +230,8 @@ export default function CreatePost() {
         } catch {}
     };
 
+    // First Comment logic (anti-suppression pinning)
     const firstCommentMessage = form.comments?.[0]?.message || '';
-
     const handleFirstCommentChange = (message) => {
         setForm((prev) => {
             const existingComments = prev.comments ? [...prev.comments] : [];
@@ -250,28 +259,46 @@ export default function CreatePost() {
     const [useShortlink, setUseShortlink] = useState(true);
     const [overrideExistingUtm, setOverrideExistingUtm] = useState(false);
     const [trackedLinks, setTrackedLinks] = useState([]);
-    const [linksUpdatedAt, setLinksUpdatedAt] = useState(() => new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }));
+    const [linksUpdatedAt, setLinksUpdatedAt] = useState(() =>
+        new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+    );
 
     const textareaRef = useRef(null);
     const fileInputRef = useRef(null);
 
-    // Initial load of accounts, pillars, angles, media
+    // Initial load of accounts, campaigns, pillars, angles, media
     useEffect(() => {
         let active = true;
         (async () => {
             try {
-                const [accountPage, campaignPage, pillarPage, anglePage, mediaPage] = await Promise.all([
-                    appClient.entities.SocialAccount.filter({ is_demo: demoMode }, { sort: 'name', limit: 300 }),
-                    appClient.entities.Campaign.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }).catch(() => ({ items: [] })),
-                    appClient.entities.ContentPillar.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 300 }),
-                    appClient.entities.ContentAngle.filter({ is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) }, { sort: 'name', limit: 500 }),
-                    appClient.entities.MediaAsset.filter({ is_demo: demoMode }, { sort: '-created_at', limit: 100 }).catch(() => ({ items: [] })),
-                ]);
+                const [accountPage, campaignPage, pillarPage, anglePage, mediaPage] =
+                    await Promise.all([
+                        appClient.entities.SocialAccount.filter(
+                            { is_demo: demoMode },
+                            { sort: 'name', limit: 300 }
+                        ),
+                        appClient.entities.Campaign.filter(
+                            { is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) },
+                            { sort: 'name', limit: 300 }
+                        ).catch(() => ({ items: [] })),
+                        appClient.entities.ContentPillar.filter(
+                            { is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) },
+                            { sort: 'name', limit: 300 }
+                        ),
+                        appClient.entities.ContentAngle.filter(
+                            { is_demo: demoMode, ...(desktop ? {} : { status: 'active' }) },
+                            { sort: 'name', limit: 500 }
+                        ),
+                        appClient.entities.MediaAsset.filter(
+                            { is_demo: demoMode },
+                            { sort: '-created_at', limit: 100 }
+                        ).catch(() => ({ items: [] })),
+                    ]);
                 if (!active) return;
-                setAccounts(accountPage.items);
+                setAccounts(accountPage.items || []);
                 setCampaigns(campaignPage.items || []);
-                setPillars(pillarPage.items);
-                setAngles(anglePage.items);
+                setPillars(pillarPage.items || []);
+                setAngles(anglePage.items || []);
                 setMediaLibrary(mediaPage.items || []);
                 setLoading(false);
             } catch (error) {
@@ -286,19 +313,6 @@ export default function CreatePost() {
         };
     }, [demoMode, desktop]);
 
-    // Check AI status
-    useEffect(() => {
-        let active = true;
-        aiRequest('status')
-            .then((cfg) => {
-                if (active && cfg?.configured) setAiConfig(cfg);
-            })
-            .catch(() => { });
-        return () => {
-            active = false;
-        };
-    }, []);
-
     // Load tracked links for brand
     const refreshTrackedLinks = useCallback(async () => {
         if (!form.brand_id) {
@@ -306,11 +320,16 @@ export default function CreatePost() {
             return;
         }
         try {
-            const res = await appClient.links.list({ brand_id: form.brand_id });
+            const res = await appClient.links.list(
+                { brand_id: form.brand_id },
+                { silent: true }
+            );
             setTrackedLinks(res?.links || []);
-            setLinksUpdatedAt(new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }));
-        } catch (err) {
-            console.warn('Could not load tracked links:', err);
+            setLinksUpdatedAt(
+                new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+            );
+        } catch {
+            // Giữ nguyên danh sách hiện tại nếu tải ngầm gặp lỗi
         }
     }, [form.brand_id]);
 
@@ -321,7 +340,8 @@ export default function CreatePost() {
     // Apply Brand
     const applyBrand = useCallback(
         (brandId) => {
-            const preset = localInputDefault(brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE);
+            const currentBrand = brands.find((b) => b.id === brandId);
+            const preset = localInputDefault(currentBrand?.timezone || DEFAULT_TIMEZONE);
             setForm((prev) => ({
                 ...prev,
                 brand_id: brandId,
@@ -332,7 +352,7 @@ export default function CreatePost() {
                 platform_media: {},
                 destination_settings: {},
                 platform_captions: {},
-                timezone: brands.find((brand) => brand.id === brandId)?.timezone || DEFAULT_TIMEZONE,
+                timezone: currentBrand?.timezone || DEFAULT_TIMEZONE,
                 date: prev.date || preset.date,
                 time: prev.time || preset.time,
             }));
@@ -361,7 +381,10 @@ export default function CreatePost() {
                 const post = await appClient.entities.Post.get(sourceId);
                 const [media, jobs] = await Promise.all([
                     referencedMediaIds(post).length
-                        ? appClient.entities.MediaAsset.filter({ id: { $in: referencedMediaIds(post) } }, { limit: 60 })
+                        ? appClient.entities.MediaAsset.filter(
+                              { id: { $in: referencedMediaIds(post) } },
+                              { limit: 60 }
+                          )
                         : Promise.resolve({ items: [] }),
                     appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }),
                 ]);
@@ -381,41 +404,63 @@ export default function CreatePost() {
                     ),
                     destination_settings: Object.fromEntries(
                         Object.entries(post.destination_settings || {}).map(([id, setting]) => {
-                            const settingParts = toZonedParts(setting.scheduled_at, post.timezone || DEFAULT_TIMEZONE);
+                            const settingParts = toZonedParts(
+                                setting.scheduled_at,
+                                post.timezone || DEFAULT_TIMEZONE
+                            );
                             return [
                                 id,
                                 {
                                     tiktok: setting.tiktok,
                                     caption: setting.caption || '',
-                                    localTime: setting.scheduled_at ? settingParts.date + 'T' + settingParts.time : '',
+                                    localTime: setting.scheduled_at
+                                        ? settingParts.date + 'T' + settingParts.time
+                                        : '',
                                     ...(Object.hasOwn(setting, 'media_ids')
                                         ? {
-                                            media: (setting.media_ids || [])
-                                                .map((mediaId) => media.items.find((asset) => asset.id === mediaId))
-                                                .filter(Boolean),
-                                        }
+                                              media: (setting.media_ids || [])
+                                                  .map((mId) => media.items.find((a) => a.id === mId))
+                                                  .filter(Boolean),
+                                          }
                                         : {}),
                                     ...(Object.hasOwn(setting, 'comments')
                                         ? {
-                                            comments: (setting.comments || []).map((c) =>
-                                                hydrateCommentFromApi(c, media.items)
-                                            ),
-                                        }
+                                              comments: (setting.comments || []).map((c) =>
+                                                  hydrateCommentFromApi(c, media.items)
+                                              ),
+                                          }
                                         : {}),
                                 },
                             ];
                         })
                     ),
                     comments: (post.comments || []).map((c) => hydrateCommentFromApi(c, media.items)),
-                    account_ids: post.account_ids?.length ? post.account_ids : jobs.items.map((job) => job.social_account_id),
+                    account_ids: post.account_ids?.length
+                        ? post.account_ids
+                        : jobs.items.map((job) => job.social_account_id),
                     campaign_id: post.campaign_id || '',
-                    pillar_id: duplicateId && !pillars.some((item) => item.id === post.pillar_id && item.status === 'active') ? '' : post.pillar_id || '',
-                    angle_id: duplicateId && (!pillars.some((item) => item.id === post.pillar_id && item.status === 'active') || !angles.some((item) => item.id === post.angle_id && item.status === 'active')) ? '' : post.angle_id || '',
+                    pillar_id:
+                        duplicateId &&
+                        !pillars.some((item) => item.id === post.pillar_id && item.status === 'active')
+                            ? ''
+                            : post.pillar_id || '',
+                    angle_id:
+                        duplicateId &&
+                        (!pillars.some((item) => item.id === post.pillar_id && item.status === 'active') ||
+                            !angles.some((item) => item.id === post.angle_id && item.status === 'active'))
+                            ? ''
+                            : post.angle_id || '',
                     date: parts.date,
                     time: parts.time,
                     timezone: post.timezone || DEFAULT_TIMEZONE,
-                    status: duplicateId ? 'draft' : ['draft', 'scheduled'].includes(post.status) ? post.status : 'draft',
-                    media: (post.media_ids || []).map((id) => media.items.find((image) => image.id === id)).filter(Boolean),
+                    status: duplicateId
+                        ? 'draft'
+                        : ['draft', 'scheduled'].includes(post.status)
+                        ? post.status
+                        : 'draft',
+                    media: (post.media_ids || [])
+                        .map((id) => media.items.find((image) => image.id === id))
+                        .filter(Boolean),
                 });
                 if (post.auto_dm) {
                     setAutoDmConfig(post.auto_dm);
@@ -432,17 +477,30 @@ export default function CreatePost() {
     }, [sourceId, loading, editId, duplicateId, pillars, angles]);
 
     // Filtered lists
-    const brandAccounts = useMemo(() => accounts.filter((a) => !form.brand_id || a.brand_id === form.brand_id), [accounts, form.brand_id]);
+    const brandAccounts = useMemo(
+        () => accounts.filter((a) => !form.brand_id || a.brand_id === form.brand_id),
+        [accounts, form.brand_id]
+    );
+
     const connectedAccounts = useMemo(() => {
         return brandAccounts.filter((a) => {
             if (!PUBLISHING_PLATFORMS.includes(a.platform)) return false;
-            if (desktop || demoMode) return a.connection_status !== 'disconnected' && a.connection_status !== 'archived';
+            if (desktop || demoMode)
+                return a.connection_status !== 'disconnected' && a.connection_status !== 'archived';
             return a.connection_status === 'connected' || a.connection_status === 'demo';
         });
     }, [brandAccounts, desktop, demoMode]);
 
-    const selectedAccounts = useMemo(() => accounts.filter((a) => form.account_ids.includes(a.id)), [accounts, form.account_ids]);
-    const brandCampaigns = useMemo(() => campaigns.filter((c) => !form.brand_id || c.brand_id === form.brand_id), [campaigns, form.brand_id]);
+    const selectedAccounts = useMemo(
+        () => accounts.filter((a) => form.account_ids.includes(a.id)),
+        [accounts, form.account_ids]
+    );
+
+    const brandCampaigns = useMemo(
+        () => campaigns.filter((c) => !form.brand_id || c.brand_id === form.brand_id),
+        [campaigns, form.brand_id]
+    );
+
     const brandPillars = useMemo(() => {
         const list = pillars.filter((p) => !form.brand_id || p.brand_id === form.brand_id);
         if (form.campaign_id) {
@@ -451,151 +509,115 @@ export default function CreatePost() {
         }
         return list;
     }, [pillars, form.brand_id, form.campaign_id]);
+
     const brandAngles = useMemo(() => {
-        if (!form.pillar_id) return [];
-        return angles.filter((a) => a.pillar_id === form.pillar_id);
-    }, [angles, form.pillar_id]);
+        const list = angles.filter((a) => !form.brand_id || a.brand_id === form.brand_id);
+        if (form.pillar_id) {
+            return list.filter((a) => a.pillar_id === form.pillar_id);
+        }
+        return list;
+    }, [angles, form.brand_id, form.pillar_id]);
 
     const handleCampaignChange = (campaignId) => {
-        const found = campaigns.find((c) => c.id === campaignId);
+        const camp = brandCampaigns.find((c) => c.id === campaignId);
         setForm((prev) => ({
             ...prev,
             campaign_id: campaignId,
             pillar_id: '',
             angle_id: '',
         }));
-        if (found?.utm_campaign) {
-            setUtmForm((prev) => ({ ...prev, campaign: found.utm_campaign }));
+        if (camp?.utm_campaign) {
+            setUtmForm((prev) => ({ ...prev, campaign: camp.utm_campaign }));
         }
     };
 
-    useEffect(() => {
-        const cid = params.get('campaign_id');
-        const bid = params.get('brand_id');
-        if (cid && !sourceId) {
-            const found = campaigns.find((c) => c.id === cid);
-            setForm((prev) => ({
-                ...prev,
-                campaign_id: cid,
-                ...(bid ? { brand_id: bid } : {}),
-            }));
-            if (found?.utm_campaign) {
-                setUtmForm((prev) => ({ ...prev, campaign: found.utm_campaign }));
-            }
-        }
+    // Text & Customization resolution
+    const currentTabAccount = useMemo(
+        () => (activeTab === 'default' ? null : accounts.find((a) => a.id === activeTab)),
+        [activeTab, accounts]
+    );
 
-        const shopeeProdId = params.get('shopee_product_id');
-        const autoScriptPlatform = params.get('auto_script');
-        if (shopeeProdId && !sourceId) {
-            const prod = shopeeAffiliateService.getProductById(shopeeProdId);
-            if (prod) {
-                setShopeeProduct(prod);
-                if (autoScriptPlatform) {
-                    const script = shopeeAffiliateService.generateSalesCopy(prod, autoScriptPlatform);
-                    if (autoScriptPlatform === 'first_comment') {
-                        handleFirstCommentChange(script);
-                    } else {
-                        setForm((prev) => ({
-                            ...prev,
-                            caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
-                        }));
-                    }
-                }
-            }
-        }
-    }, [params, sourceId, campaigns]);
-
-    // Maintain preview account & auto-select first account if none selected
-    useEffect(() => {
-        if (!sourceId && form.account_ids.length === 0 && connectedAccounts.length > 0) {
-            setForm((prev) => ({
-                ...prev,
-                account_ids: [connectedAccounts[0].id],
-            }));
-            setPreviewAccountId(connectedAccounts[0].id);
-        } else if (selectedAccounts.length > 0) {
-            if (!selectedAccounts.some((a) => a.id === previewAccountId)) {
-                setPreviewAccountId(selectedAccounts[0].id);
-            }
-        } else if (connectedAccounts.length > 0 && !previewAccountId) {
-            setPreviewAccountId(connectedAccounts[0].id);
-        }
-    }, [connectedAccounts, selectedAccounts, previewAccountId, sourceId, form.account_ids.length]);
-
-    // Active channel tab logic
-    const currentTabAccount = useMemo(() => selectedAccounts.find((a) => a.id === activeTab), [selectedAccounts, activeTab]);
-    const hasCustomCaption = currentTabAccount ? form.destination_settings[currentTabAccount.id]?.caption !== undefined : false;
-
-    // Resolve text for a specific account
-    const getResolvedAccountText = useCallback((acc) => {
-        if (!acc) return form.caption;
-        const custom = form.destination_settings[acc.id]?.caption;
-        const base = custom !== undefined ? custom : form.caption;
-        const sig = PRESET_SIGNATURES[signatureKey] || '';
-        return (base + sig).replace(/\{platform\}/gi, PLATFORM_LABEL[acc.platform] || acc.platform);
-    }, [form.caption, form.destination_settings, signatureKey]);
-
-    // Check character limits across selected accounts
-    const exceededAccounts = useMemo(() => {
-        return selectedAccounts.filter((acc) => {
-            const limit = PLATFORM_CHAR_LIMITS[acc.platform] || 63206;
-            const text = getResolvedAccountText(acc);
-            return text.length > limit;
-        });
-    }, [selectedAccounts, getResolvedAccountText]);
-
-    // Text for current editor textarea
     const currentEditorValue = useMemo(() => {
-        if (currentTabAccount && hasCustomCaption) {
-            return form.destination_settings[currentTabAccount.id]?.caption || '';
+        if (!currentTabAccount) return form.caption || '';
+        const customized = form.destination_settings[currentTabAccount.id]?.caption;
+        if (customized !== undefined) return customized;
+        if (form.platform_captions[currentTabAccount.platform] !== undefined) {
+            return form.platform_captions[currentTabAccount.platform];
         }
-        return form.caption;
-    }, [currentTabAccount, hasCustomCaption, form.destination_settings, form.caption]);
+        return form.caption || '';
+    }, [currentTabAccount, form.destination_settings, form.platform_captions, form.caption]);
 
-    const handleTextChange = (val) => {
-        if (currentTabAccount) {
-            setForm((prev) => ({
-                ...prev,
-                destination_settings: {
-                    ...prev.destination_settings,
-                    [currentTabAccount.id]: {
-                        ...(prev.destination_settings[currentTabAccount.id] || {}),
-                        caption: val,
-                    },
-                },
-            }));
-        } else {
-            setForm((prev) => ({ ...prev, caption: val }));
-        }
-    };
+    const hasCustomCaption = useMemo(() => {
+        if (!currentTabAccount) return false;
+        return form.destination_settings[currentTabAccount.id]?.caption !== undefined;
+    }, [currentTabAccount, form.destination_settings]);
 
-    const toggleCustomTab = (enable) => {
+    const toggleCustomTab = (isCustom) => {
         if (!currentTabAccount) return;
         setForm((prev) => {
             const nextSettings = { ...prev.destination_settings };
-            if (enable) {
+            if (isCustom) {
                 nextSettings[currentTabAccount.id] = {
                     ...(nextSettings[currentTabAccount.id] || {}),
-                    caption: prev.caption,
+                    caption: prev.caption || '',
                 };
             } else {
                 if (nextSettings[currentTabAccount.id]) {
-                    delete nextSettings[currentTabAccount.id].caption;
+                    const copy = { ...nextSettings[currentTabAccount.id] };
+                    delete copy.caption;
+                    if (Object.keys(copy).length === 0) {
+                        delete nextSettings[currentTabAccount.id];
+                    } else {
+                        nextSettings[currentTabAccount.id] = copy;
+                    }
                 }
             }
             return { ...prev, destination_settings: nextSettings };
         });
     };
 
-    // Text formatting helpers
+    const handleTextChange = (value) => {
+        if (!currentTabAccount) {
+            setForm((prev) => ({ ...prev, caption: value }));
+        } else {
+            setForm((prev) => ({
+                ...prev,
+                destination_settings: {
+                    ...prev.destination_settings,
+                    [currentTabAccount.id]: {
+                        ...(prev.destination_settings[currentTabAccount.id] || {}),
+                        caption: value,
+                    },
+                },
+            }));
+        }
+    };
+
+    const getResolvedAccountText = useCallback(
+        (acc) => {
+            if (!acc) return '';
+            const specific = form.destination_settings[acc.id]?.caption;
+            if (specific !== undefined) return specific;
+            if (form.platform_captions[acc.platform] !== undefined) {
+                return form.platform_captions[acc.platform];
+            }
+            return form.caption || '';
+        },
+        [form.destination_settings, form.platform_captions, form.caption]
+    );
+
+    // Text Transforms
     const applyTextTransform = (transformFn) => {
         const textarea = textareaRef.current;
         if (!textarea) return;
         const start = textarea.selectionStart;
         const end = textarea.selectionEnd;
-        if (start === end) return;
-        const selected = currentEditorValue.slice(start, end);
-        const transformed = transformFn(selected);
+        if (start === end) {
+            toast({ title: t('Vui lòng bôi đen đoạn văn bản cần định dạng') });
+            return;
+        }
+        const selectedText = currentEditorValue.slice(start, end);
+        const transformed = transformFn(selectedText);
         const nextVal = currentEditorValue.slice(0, start) + transformed + currentEditorValue.slice(end);
         handleTextChange(nextVal);
         setTimeout(() => {
@@ -607,7 +629,8 @@ export default function CreatePost() {
     const insertTextAtCursor = (textToInsert) => {
         const textarea = textareaRef.current;
         const pos = textarea ? textarea.selectionStart : currentEditorValue.length;
-        const nextVal = currentEditorValue.slice(0, pos) + textToInsert + currentEditorValue.slice(pos);
+        const nextVal =
+            currentEditorValue.slice(0, pos) + textToInsert + currentEditorValue.slice(pos);
         handleTextChange(nextVal);
         setTimeout(() => {
             if (textarea) {
@@ -715,8 +738,6 @@ export default function CreatePost() {
                 const tagString = `\n\n#${brand.replace(/\s+/g, '')} #SocialMedia #Marketing #Viral`;
                 insertTextAtCursor(tagString);
                 toast({ title: t('Đã chèn hashtag!') });
-            } else if (actionType === 'create_image') {
-                navigate('/ai-artist');
             }
         } catch (err) {
             toast({ variant: 'destructive', title: t('AI xử lý thất bại'), description: err.message });
@@ -750,7 +771,7 @@ export default function CreatePost() {
 
             return {
                 ...prev,
-                caption: prev.caption?.trim() ? prev.caption : (repurposedVariants.facebook || ''),
+                caption: prev.caption?.trim() ? prev.caption : repurposedVariants.facebook || '',
                 platform_captions: nextPlatformCaptions,
                 destination_settings: nextDestinationSettings,
             };
@@ -758,7 +779,9 @@ export default function CreatePost() {
 
         toast({
             title: t('Đã tái sinh nội dung cho các kênh!'),
-            description: t('Đã đồng bộ phiên bản riêng biệt vào từng tab kênh Facebook, Threads, LinkedIn & TikTok.'),
+            description: t(
+                'Đã đồng bộ phiên bản riêng biệt vào từng tab kênh Facebook, Threads, LinkedIn & TikTok.'
+            ),
         });
     };
 
@@ -802,8 +825,10 @@ export default function CreatePost() {
         return full;
     }, [activeUtmUrl, utmForm, overrideExistingUtm, useShortlink]);
 
-    const displayUtmShortUrl = useShortlink && generatedUtmUrl ? generatedUtmUrl.split('#')[0] : generatedUtmUrl;
-    const displayUtmTargetUrl = useShortlink && generatedUtmUrl ? generatedUtmUrl.split('#')[1] : generatedUtmUrl;
+    const displayUtmShortUrl =
+        useShortlink && generatedUtmUrl ? generatedUtmUrl.split('#')[0] : generatedUtmUrl;
+    const displayUtmTargetUrl =
+        useShortlink && generatedUtmUrl ? generatedUtmUrl.split('#')[1] : generatedUtmUrl;
 
     const applyUtmToDraft = () => {
         if (!displayUtmShortUrl) return;
@@ -813,52 +838,72 @@ export default function CreatePost() {
             }
             return {
                 ...prev,
-                caption: prev.caption ? `${prev.caption}\n\n${displayUtmShortUrl}` : displayUtmShortUrl,
+                caption: prev.caption
+                    ? `${prev.caption}\n\n${displayUtmShortUrl}`
+                    : displayUtmShortUrl,
             };
         });
         toast({ title: t('Đã gắn link UTM vào nội dung!') });
     };
 
-    // Checklist "Trước khi đăng" (5 conditions)
+    // Checklist & Exceeded Account Validation
+    const exceededAccounts = useMemo(() => {
+        return selectedAccounts.filter((acc) => {
+            const text = getResolvedAccountText(acc);
+            const limit = PLATFORM_CHAR_LIMITS[acc.platform] || 63206;
+            return text.length > limit;
+        });
+    }, [selectedAccounts, getResolvedAccountText]);
+
     const checklistItems = useMemo(() => {
         return [
             {
-                label: 'Chọn ít nhất một tài khoản',
+                label: t('Chọn ít nhất một tài khoản đích'),
                 ok: selectedAccounts.length > 0,
             },
             {
-                label: 'Viết nội dung chính',
+                label: t('Nhập nội dung bài viết'),
                 ok: form.caption.trim().length > 0,
             },
             {
-                label: exceededAccounts.length > 0
-                    ? `Rút gọn cho ${exceededAccounts.map((a) => a.name).join(', ')}`
-                    : 'Trong giới hạn ký tự',
+                label:
+                    exceededAccounts.length > 0
+                        ? t('Rút gọn cho {names}', {
+                              names: exceededAccounts.map((a) => a.name).join(', '),
+                          })
+                        : t('Nằm trong giới hạn ký tự các kênh'),
                 ok: form.caption.trim().length > 0 && exceededAccounts.length === 0,
             },
             {
-                label: 'Thêm media cho Instagram / TikTok',
-                ok: !selectedAccounts.some((a) => a.platform === 'instagram' || a.platform === 'tiktok') || form.media.length > 0,
+                label: t('Đính kèm ảnh/video cho Instagram / TikTok'),
+                ok:
+                    !selectedAccounts.some(
+                        (a) => a.platform === 'instagram' || a.platform === 'tiktok'
+                    ) || form.media.length > 0,
             },
             {
-                label: 'Chọn trụ cột và góc khai thác',
-                ok: !!form.pillar_id && !!form.angle_id,
+                label: t('Chọn trụ cột và góc khai thác nội dung'),
+                ok: isQuickPostMode || (Boolean(form.pillar_id) && Boolean(form.angle_id)),
             },
         ];
-    }, [selectedAccounts, form.caption, exceededAccounts, form.media, form.pillar_id, form.angle_id]);
+    }, [selectedAccounts, form.caption, exceededAccounts, form.media, form.pillar_id, form.angle_id, isQuickPostMode, t]);
 
     const checklistPassedCount = checklistItems.filter((i) => i.ok).length;
-    const canSubmit = !isViewer && checklistItems[0].ok && checklistItems[1].ok && exceededAccounts.length === 0;
+    const canSubmit =
+        !isViewer && checklistItems[0].ok && checklistItems[1].ok && exceededAccounts.length === 0;
 
     // Save / Schedule / Publish execution
-    const scheduledAt = form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
+    const scheduledAt =
+        form.date && form.time ? toUtcIso(form.date, form.time, form.timezone) : null;
 
     const submit = async (action) => {
         if (isViewer) {
             toast({
                 variant: 'destructive',
                 title: t('Chế độ chỉ xem'),
-                description: t('Tài khoản của bạn có vai trò Người xem (Viewer), không thể lưu hoặc xuất bản.'),
+                description: t(
+                    'Tài khoản của bạn có vai trò Người xem (Viewer), không thể lưu hoặc xuất bản.'
+                ),
             });
             return;
         }
@@ -876,13 +921,17 @@ export default function CreatePost() {
             return;
         }
         if (exceededAccounts.length > 0) {
-            toast({ variant: 'destructive', title: t(`Nội dung vượt quá giới hạn trên ${exceededAccounts.map((a) => a.name).join(', ')}`) });
+            toast({
+                variant: 'destructive',
+                title: t(`Nội dung vượt quá giới hạn trên ${exceededAccounts.map((a) => a.name).join(', ')}`),
+            });
             return;
         }
 
         setSaving(true);
         try {
-            const isApprovalWorkflow = isEditorNeedingApproval && (action === 'publish' || action === 'schedule');
+            const isApprovalWorkflow =
+                isEditorNeedingApproval && (action === 'publish' || action === 'schedule');
             const payload = {
                 brand_id: form.brand_id,
                 title: form.title.trim() || form.caption.slice(0, 40) || 'Bài viết mới',
@@ -908,10 +957,16 @@ export default function CreatePost() {
                 pillar_id: form.pillar_id || '',
                 angle_id: form.angle_id || '',
                 timezone: form.timezone,
-                scheduled_at: isApprovalWorkflow ? scheduledAt : action === 'publish' ? null : scheduledAt,
+                scheduled_at: isApprovalWorkflow
+                    ? scheduledAt
+                    : action === 'publish'
+                    ? null
+                    : scheduledAt,
                 status: isApprovalWorkflow ? 'draft' : action === 'schedule' ? 'scheduled' : 'draft',
                 needs_approval: isApprovalWorkflow ? true : false,
-                submitted_by: isApprovalWorkflow ? user?.email || user?.full_name || 'editor' : undefined,
+                submitted_by: isApprovalWorkflow
+                    ? user?.email || user?.full_name || 'editor'
+                    : undefined,
                 is_demo: demoMode,
                 auto_dm: autoDmConfig?.enabled ? autoDmConfig : undefined,
             };
@@ -922,7 +977,9 @@ export default function CreatePost() {
             if (isApprovalWorkflow) {
                 toast({
                     title: t('Đã gửi bài để phê duyệt!'),
-                    description: t('Bài viết đã được gửi đến Quản trị viên/Người phê duyệt xét duyệt trước khi xuất bản.'),
+                    description: t(
+                        'Bài viết đã được gửi đến Quản trị viên/Người phê duyệt xét duyệt trước khi xuất bản.'
+                    ),
                 });
                 navigate('/posts');
                 return;
@@ -945,7 +1002,6 @@ export default function CreatePost() {
                 );
                 const recurringGroupId = `rec_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
 
-                // Update Post 1 with recurring info
                 await appClient.posts.save({
                     id: saved.id,
                     data: {
@@ -957,11 +1013,12 @@ export default function CreatePost() {
                             count: totalCount,
                             auto_recycle: recurringConfig.autoRecycle,
                         },
-                        notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ 1/${totalCount} (${recurringConfig.frequency})`.trim(),
+                        notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ 1/${totalCount} (${
+                            recurringConfig.frequency
+                        })`.trim(),
                     },
                 });
 
-                // Generate remaining future posts (Kỳ 2..N)
                 const futurePosts = timeline.slice(1).map(async (item, idx) => {
                     const cycleNum = idx + 2;
                     let cycleCaption = form.caption;
@@ -981,7 +1038,9 @@ export default function CreatePost() {
                                 count: totalCount,
                                 auto_recycle: recurringConfig.autoRecycle,
                             },
-                            notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ ${cycleNum}/${totalCount} (${recurringConfig.frequency})`.trim(),
+                            notes: `${form.notes || ''}\n🔁 Đăng định kỳ: Kỳ ${cycleNum}/${totalCount} (${
+                                recurringConfig.frequency
+                            })`.trim(),
                         },
                     });
                 });
@@ -997,7 +1056,7 @@ export default function CreatePost() {
                                 : recurringConfig.frequency === 'biweekly'
                                 ? 'Mỗi 2 tuần'
                                 : 'Hàng tháng'
-                        }). Kiểm tra trên Lịch đăng bài.`
+                        }).`
                     ),
                 });
                 navigate('/calendar');
@@ -1006,7 +1065,10 @@ export default function CreatePost() {
 
             toast({
                 title: action === 'schedule' ? t('Đã lên lịch thành công!') : t('Đã lưu bản nháp!'),
-                description: action === 'schedule' ? t(`Bài đăng đã được xếp lịch lúc ${form.date} ${form.time}`) : undefined,
+                description:
+                    action === 'schedule'
+                        ? t(`Bài đăng đã được xếp lịch lúc ${form.date} ${form.time}`)
+                        : undefined,
             });
 
             if (action === 'schedule') {
@@ -1056,408 +1118,284 @@ export default function CreatePost() {
 
     // Current preview account object
     const currentPreviewAccount = useMemo(() => {
-        return selectedAccounts.find((a) => a.id === previewAccountId) || selectedAccounts[0] || connectedAccounts[0] || null;
+        return (
+            selectedAccounts.find((a) => a.id === previewAccountId) ||
+            selectedAccounts[0] ||
+            connectedAccounts[0] ||
+            null
+        );
     }, [selectedAccounts, previewAccountId, connectedAccounts]);
 
     // Character counter for current active tab
     const currentTabLimit = currentTabAccount
         ? PLATFORM_CHAR_LIMITS[currentTabAccount.platform] || 63206
         : selectedAccounts.length > 0
-            ? Math.min(...selectedAccounts.map((a) => PLATFORM_CHAR_LIMITS[a.platform] || 63206))
-            : 63206;
-    const currentTabCharCount = currentEditorValue.length + (PRESET_SIGNATURES[signatureKey]?.length || 0);
+        ? Math.min(...selectedAccounts.map((a) => PLATFORM_CHAR_LIMITS[a.platform] || 63206))
+        : 63206;
+
+    const currentTabCharCount =
+        currentEditorValue.length + (PRESET_SIGNATURES[signatureKey]?.length || 0);
 
     return (
-        <div className="w-full pb-20 space-y-6">
+        <div className="w-full space-y-5 pb-32">
+            {/* Vai trò Viewer / Approval Notice */}
             {isViewer && (
-                <div className="rounded-2xl border border-amber-300 bg-amber-50 p-4 text-zinc-900 shadow-xs flex items-center gap-3">
-                    <span className="flex size-8 shrink-0 items-center justify-center rounded-xl bg-amber-400 font-bold text-zinc-950 text-sm">
+                <div className="panel flex items-center gap-3 border-amber-300 bg-amber-50 p-4 text-zinc-900">
+                    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-400 text-sm font-bold text-zinc-950">
                         👁️
                     </span>
                     <div className="text-xs">
                         <span className="font-bold text-amber-950">{t('Chế độ xem (Viewer):')}</span>{' '}
                         <span className="text-amber-900">
-                            {t('Tài khoản của bạn có quyền Người xem. Bạn có thể xem cấu trúc nội dung và xem trước, nhưng các thao tác lưu nháp và xuất bản bị vô hiệu hóa.')}
+                            {t(
+                                'Tài khoản của bạn có quyền Người xem. Các thao tác lưu nháp và xuất bản bị vô hiệu hóa.'
+                            )}
                         </span>
                     </div>
                 </div>
             )}
+
             {isEditorNeedingApproval && (
-                <div className="rounded-2xl border border-blue-200 bg-blue-50/80 p-3.5 text-zinc-900 shadow-xs flex items-center gap-3">
-                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-blue-500 font-bold text-white text-xs">
+                <div className="panel flex items-center gap-3 border-blue-200 bg-blue-50/80 p-3.5 text-zinc-900">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-blue-500 text-xs font-bold text-white">
                         ✍️
                     </span>
                     <div className="text-xs">
                         <span className="font-bold text-blue-950">{t('Quy trình kiểm duyệt (Approval):')}</span>{' '}
                         <span className="text-blue-900">
-                            {t('Workspace bật tính năng duyệt bài cho Biên tập viên. Bài viết sau khi soạn sẽ được gửi cho Quản trị viên/Người phê duyệt xét duyệt trước khi xuất bản.')}
+                            {t(
+                                'Bài viết sau khi soạn sẽ được gửi cho Quản trị viên xét duyệt trước khi xuất bản.'
+                            )}
                         </span>
                     </div>
                 </div>
             )}
-            <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_420px] gap-6 items-start">
-                {/* LEFT COLUMN: Main studio editor */}
-                <div className="min-w-0 space-y-5">
-                    {/* Studio Header & Quick Metadata Strip */}
-                    <section className="panel p-4 sm:p-5 space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3 pb-3.5 border-b border-border/80">
-                            <div className="flex items-center gap-3 min-w-0">
-                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-dark bg-brand text-brand-ink">
-                                    <PaperPlaneTilt size={20} weight="duotone" />
-                                </div>
-                                <div className="min-w-0">
-                                    <h1 className="font-heading text-xl sm:text-2xl font-semibold tracking-tight text-foreground truncate">
-                                        {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
-                                    </h1>
-                                    <p className="label-xs text-muted-foreground truncate">
-                                        {t('Soạn thảo đa kênh, tuỳ chỉnh nội dung riêng và kiểm tra hiển thị trực tiếp')}
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                {/* Quick Post vs Strategic Planner Mode Toggle */}
-                                <div className="flex items-center rounded-xl border border-border bg-surface p-0.5 shadow-2xs">
-                                    <button
-                                        type="button"
-                                        onClick={() => handleToggleQuickPostMode(true)}
-                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
-                                            isQuickPostMode
-                                                ? 'bg-brand text-brand-ink font-semibold border border-brand-dark/40 shadow-xs'
-                                                : 'text-muted-foreground hover:text-foreground font-medium'
-                                        }`}
-                                    >
-                                        <Lightning size={14} weight="fill" className={isQuickPostMode ? 'text-brand-ink' : 'text-amber-500'} />
-                                        <span>{t('Đăng nhanh')}</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => handleToggleQuickPostMode(false)}
-                                        className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs transition cursor-pointer ${
-                                            !isQuickPostMode
-                                                ? 'bg-brand text-brand-ink font-semibold border border-brand-dark/40 shadow-xs'
-                                                : 'text-muted-foreground hover:text-foreground font-medium'
-                                        }`}
-                                    >
-                                        <Target size={14} weight="bold" className={!isQuickPostMode ? 'text-brand-ink' : 'text-muted-foreground'} />
-                                        <span>{t('Chiến lược (Pro)')}</span>
-                                    </button>
-                                </div>
 
-                                <button
-                                    type="button"
-                                    onClick={() => setIsTemplatePickerOpen(true)}
-                                    className="flex h-8 items-center gap-1.5 rounded-xl border border-brand-dark/50 bg-brand/15 px-3 text-xs font-semibold text-brand-ink hover:bg-brand/30 transition cursor-pointer"
-                                >
-                                    <Quotes size={14} weight="bold" className="text-brand-dark" />
-                                    <span>{t('Dùng mẫu bài viết')}</span>
-                                </button>
-                                <span className="flex h-8 items-center gap-1.5 rounded-xl border border-border bg-surface px-2.5 text-[11px] font-medium text-muted-foreground">
-                                    <span className="size-1.5 rounded-full bg-emerald-500" />
-                                    {t('Đã lưu tự động')}
-                                </span>
-                                {existing && (
-                                    <>
-                                        <button
-                                            type="button"
-                                            onClick={() => navigate(`/create?duplicate=${existing.id}`)}
-                                            className="grid size-8 place-items-center rounded-xl border border-border bg-card text-muted-foreground hover:border-brand-dark hover:bg-brand/10 hover:text-brand-ink transition cursor-pointer"
-                                            title={t('Nhân bản')}
-                                        >
-                                            <Copy size={15} />
-                                        </button>
-                                        <button
-                                            type="button"
-                                            onClick={() => setDeleteOpen(true)}
-                                            className="grid size-8 place-items-center rounded-xl border border-border bg-card text-muted-foreground hover:border-dangerFg hover:bg-dangerBg hover:text-dangerFg transition cursor-pointer"
-                                            title={t('Xoá')}
-                                        >
-                                            <Trash size={15} />
-                                        </button>
-                                    </>
-                                )}
-                            </div>
+            {/* Đầu trang: Tiêu đề + Chuyển chế độ Đăng nhanh / Chiến lược + Nút tiện ích */}
+            <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div className="flex min-w-0 items-center gap-3">
+                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-brand-dark bg-brand text-brand-ink">
+                        <PaperPlaneTilt size={20} weight="duotone" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                        <div className="flex items-center gap-2.5">
+                            <h1 className="truncate font-heading text-xl font-semibold tracking-tight text-foreground sm:text-2xl">
+                                {existing ? t('Chỉnh sửa bài viết') : t('Tạo bài viết')}
+                            </h1>
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-inset ring-emerald-600/25">
+                                <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                                <span>{t('Đã lưu tự động')}</span>
+                            </span>
                         </div>
+                        <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                            {t('Soạn thảo đa kênh, tinh chỉnh nội dung riêng và kiểm tra hiển thị trực quan.')}
+                        </p>
+                    </div>
+                </div>
 
-                        {/* Metadata Strip: Quick Post (Streamlined) or Strategic (Full 4-Col) */}
-                        {isQuickPostMode ? (
-                            <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-brand/10 border border-brand-dark/30 text-xs">
-                                <div className="flex items-center gap-2.5 min-w-0">
-                                    <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-brand text-brand-ink font-bold border border-brand-dark/40">
-                                        <Lightning size={15} weight="fill" />
-                                    </span>
-                                    <div className="min-w-0">
-                                        <span className="font-semibold text-brand-ink block truncate">
-                                            {t('Chế độ Đăng Nhanh (30 Giây)')}
-                                        </span>
-                                        <span className="text-muted-foreground text-[11px] block truncate">
-                                            {t('Đã ẩn Pillar/Angle rườm rà. Chọn kênh, viết bài, ghim cmt và bắn ngay.')}
-                                        </span>
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2 shrink-0">
-                                    <label htmlFor="quick-brand-select" className="font-semibold text-muted-foreground text-[11px]">
-                                        {t('Thương hiệu:')}
-                                    </label>
-                                    <select
-                                        id="quick-brand-select"
-                                        value={form.brand_id}
-                                        onChange={(e) => applyBrand(e.target.value)}
-                                        className="h-8 rounded-lg border border-border bg-card px-2.5 text-xs font-semibold text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                    >
-                                        {brands.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        ) : (
-                            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-5">
-                                <div className="sm:col-span-2 lg:col-span-1">
-                                    <label htmlFor="post-internal-title" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                        {t('Tiêu đề nội bộ')} <span className="text-dangerFg">*</span>
-                                    </label>
-                                    <input
-                                        id="post-internal-title"
-                                        type="text"
-                                        value={form.title}
-                                        onChange={(e) => setForm({ ...form, title: e.target.value })}
-                                        placeholder={t('VD: Bài đăng ra mắt sản phẩm')}
-                                        className="h-9 w-full rounded-lg border border-border bg-card px-3 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark focus:ring-1 focus:ring-brand-dark"
-                                    />
-                                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {/* Toggle Đăng nhanh vs Chiến lược */}
+                    <div
+                        role="group"
+                        aria-label={t('Chế độ soạn thảo')}
+                        className="inline-flex items-center rounded-xl border border-border bg-card p-1"
+                    >
+                        <button
+                            type="button"
+                            aria-pressed={isQuickPostMode}
+                            onClick={() => handleToggleQuickPostMode(true)}
+                            className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-xs transition-colors ${
+                                isQuickPostMode
+                                    ? 'bg-brand font-semibold text-brand-ink ring-1 ring-brand-dark/50'
+                                    : 'font-medium text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <Lightning size={14} weight="fill" />
+                            <span>{t('Đăng nhanh')}</span>
+                        </button>
+                        <button
+                            type="button"
+                            aria-pressed={!isQuickPostMode}
+                            onClick={() => handleToggleQuickPostMode(false)}
+                            className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-xs transition-colors ${
+                                !isQuickPostMode
+                                    ? 'bg-brand font-semibold text-brand-ink ring-1 ring-brand-dark/50'
+                                    : 'font-medium text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            <Target size={14} weight="bold" />
+                            <span>{t('Chiến lược Pro')}</span>
+                        </button>
+                    </div>
 
-                                <div>
-                                    <label htmlFor="post-brand-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                        {t('Thương hiệu')}
-                                    </label>
-                                    <select
-                                        id="post-brand-select"
-                                        value={form.brand_id}
-                                        onChange={(e) => applyBrand(e.target.value)}
-                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                    >
-                                        {brands.map((b) => (
-                                            <option key={b.id} value={b.id}>
-                                                {b.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsTemplatePickerOpen(true)}
+                        className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-zinc-100"
+                    >
+                        <Quotes size={14} weight="bold" className="text-brand-ink" />
+                        <span>{t('Dùng mẫu')}</span>
+                    </button>
 
-                                <div>
-                                    <div className="flex items-center justify-between mb-1">
-                                        <label htmlFor="post-campaign-select" className="label-xs font-semibold text-muted-foreground block">
-                                            {t('Chiến dịch')}
-                                        </label>
-                                        {form.campaign_id && brandCampaigns.find((c) => c.id === form.campaign_id)?.utm_campaign && (
-                                            <span className="text-[10px] font-mono text-brand-ink bg-brand/25 border border-brand-dark/30 rounded px-1.5 py-0.2" title={t('Tự động gắn mã UTM tracking')}>
-                                                utm: {brandCampaigns.find((c) => c.id === form.campaign_id).utm_campaign}
-                                            </span>
-                                        )}
-                                    </div>
-                                    <select
-                                        id="post-campaign-select"
-                                        value={form.campaign_id}
-                                        onChange={(e) => handleCampaignChange(e.target.value)}
-                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                    >
-                                        <option value="">{t('Không thuộc chiến dịch')}</option>
-                                        {brandCampaigns.map((c) => (
-                                            <option key={c.id} value={c.id}>
-                                                {c.name} {c.status === 'archived' ? `(${t('Lưu trữ')})` : ''}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
+                    {existing && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={() => navigate(`/create?duplicate=${existing.id}`)}
+                                title={t('Nhân bản bài viết')}
+                                className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:bg-zinc-100 hover:text-foreground"
+                            >
+                                <Copy size={16} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setDeleteOpen(true)}
+                                title={t('Xoá bài viết')}
+                                className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-xl border border-border bg-card text-muted-foreground transition-colors hover:border-red-200 hover:bg-red-50 hover:text-red-700"
+                            >
+                                <Trash size={16} />
+                            </button>
+                        </>
+                    )}
+                </div>
+            </header>
 
-                                <div>
-                                    <label htmlFor="post-pillar-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                        {t('Trụ cột nội dung')}
-                                    </label>
-                                    <select
-                                        id="post-pillar-select"
-                                        value={form.pillar_id}
-                                        onChange={(e) => setForm({ ...form, pillar_id: e.target.value, angle_id: '' })}
-                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer"
-                                    >
-                                        <option value="">{t('Chưa phân loại')}</option>
-                                        {brandPillars.map((p) => (
-                                            <option key={p.id} value={p.id}>
-                                                {p.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div>
-                                    <label htmlFor="post-angle-select" className="label-xs font-semibold text-muted-foreground mb-1 block">
-                                        {t('Góc khai thác')}
-                                    </label>
-                                    <select
-                                        id="post-angle-select"
-                                        value={form.angle_id}
-                                        onChange={(e) => setForm({ ...form, angle_id: e.target.value })}
-                                        disabled={!form.pillar_id}
-                                        className="h-9 w-full rounded-lg border border-border bg-card px-2.5 text-xs font-medium text-foreground outline-none transition focus:border-brand-dark cursor-pointer disabled:bg-muted/50 disabled:text-muted-foreground"
-                                    >
-                                        <option value="">
-                                            {form.pillar_id ? t('Chọn góc khai thác') : t('Chọn trụ cột trước')}
-                                        </option>
-                                        {brandAngles.map((a) => (
-                                            <option key={a.id} value={a.id}>
-                                                {a.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Unified Channel Picker & Per-Channel Mode Switcher */}
-                    <section className="panel p-4 sm:p-5 space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
+            {/* Bố cục 2 Cột: Cột trái Studio soạn thảo (1fr) + Cột phải Live Mockup (420px) */}
+            <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
+                {/* CỘT TRÁI: Studio soạn thảo */}
+                <div className="min-w-0 space-y-4">
+                    {/* KHỐI 1: Chọn Kênh phân phối & Thương hiệu */}
+                    <section className="panel space-y-3.5 p-4 sm:p-5">
+                        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                             <div className="flex items-center gap-2">
-                                <span className="flex h-6 w-6 items-center justify-center rounded-lg bg-brand/25 text-brand-ink border border-brand-dark/40">
-                                    <Globe size={14} weight="bold" />
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand-100 text-brand-ink">
+                                    <Globe size={15} weight="bold" />
                                 </span>
-                                <span className="text-xs font-semibold uppercase tracking-wider text-foreground">
-                                    {t('1. Chọn kênh phân phối')}
-                                </span>
-                                <span className="rounded-full bg-brand/20 border border-brand-dark/30 px-2 py-0.5 text-[11px] font-semibold text-brand-ink">
+                                <h2 className="text-sm font-heading font-semibold text-foreground">
+                                    {t('Kênh phân phối nội dung')}
+                                </h2>
+                                <span className="rounded-full border border-brand-dark/30 bg-brand-100 px-2 py-0.5 text-xs font-semibold tabular-nums text-brand-ink">
                                     {selectedAccounts.length}/{connectedAccounts.length} {t('đã chọn')}
                                 </span>
                             </div>
-                            <Link
-                                to="/accounts"
-                                className="inline-flex items-center gap-1 rounded-lg border border-dashed border-border px-2.5 py-1 text-xs font-medium text-muted-foreground transition hover:border-brand-dark hover:bg-brand/10 hover:text-brand-ink"
-                            >
-                                <Plus size={13} weight="bold" />
-                                <span>{t('Kết nối kênh mới')}</span>
-                            </Link>
-                        </div>
 
-                        <div className="flex flex-wrap items-center gap-2.5">
-                            {connectedAccounts.map((account) => {
-                                const isSelected = form.account_ids.includes(account.id);
-                                const cfg = PLATFORM_CONFIG[account.platform] || { icon: Globe, color: 'text-zinc-600' };
-                                const PlatformIcon = cfg.icon;
-                                const avatarUrl = getAccountAvatarUrl(account);
-                                const initials = (account.name || account.platform).slice(0, 2).toUpperCase();
-
-                                return (
-                                    <button
-                                        key={account.id}
-                                        type="button"
-                                        onClick={() => toggleAccountSelection(account.id)}
-                                        title={`${account.name} · @${account.platform}`}
-                                        className={`group relative flex items-center gap-2.5 rounded-xl border px-3 py-2 text-left transition cursor-pointer focus:outline-hidden ${
-                                            isSelected
-                                                ? 'border-brand-dark bg-brand/20 text-brand-ink'
-                                                : 'border-border bg-surface/60 text-muted-foreground hover:border-brand-dark/50 hover:bg-brand/5 hover:text-foreground'
-                                        }`}
-                                    >
-                                        <div className="relative shrink-0">
-                                            <div className="size-8 rounded-full overflow-hidden flex items-center justify-center font-bold text-[11px] bg-card border border-border text-foreground">
-                                                {avatarUrl ? (
-                                                    <img
-                                                        src={avatarUrl}
-                                                        alt={account.name}
-                                                        className="size-full object-cover"
-                                                        onError={(e) => {
-                                                            e.currentTarget.style.display = 'none';
-                                                            if (e.currentTarget.nextSibling) {
-                                                                e.currentTarget.nextSibling.style.display = 'inline';
-                                                            }
-                                                        }}
-                                                    />
-                                                ) : null}
-                                                <span style={{ display: avatarUrl ? 'none' : 'inline' }}>
-                                                    {initials}
-                                                </span>
-                                            </div>
-                                            <span
-                                                className="absolute -bottom-1 -right-1 size-4 rounded-full bg-white ring-1 ring-border flex items-center justify-center"
-                                                title={cfg.label || account.platform}
-                                            >
-                                                <PlatformIcon size={10} weight="fill" className={cfg.color} />
-                                            </span>
-                                        </div>
-
-                                        <div className="min-w-0 pr-1">
-                                            <p className="text-xs font-semibold truncate max-w-[130px] text-foreground">
-                                                {account.name}
-                                            </p>
-                                            <p className="text-[10px] text-muted-foreground truncate">
-                                                {cfg.label || account.platform}
-                                            </p>
-                                        </div>
-
-                                        <span
-                                            className={`ml-1 grid size-4 shrink-0 place-items-center rounded-full border text-[10px] transition ${
-                                                isSelected
-                                                    ? 'border-brand-dark bg-brand text-brand-ink font-bold'
-                                                    : 'border-border bg-card text-transparent group-hover:border-brand-dark/50'
-                                            }`}
+                            <div className="flex items-center gap-2">
+                                {brands.length > 1 && (
+                                    <div className="w-44">
+                                        <Select
+                                            value={form.brand_id}
+                                            onValueChange={(val) => applyBrand(val)}
                                         >
-                                            <Check size={10} weight="bold" />
-                                        </span>
-                                    </button>
-                                );
-                            })}
+                                            <SelectTrigger
+                                                aria-label={t('Chọn thương hiệu')}
+                                                className="min-h-9 rounded-xl border-border bg-card text-xs font-medium"
+                                            >
+                                                <SelectValue placeholder={t('Chọn thương hiệu')} />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {brands.map((b) => (
+                                                    <SelectItem key={b.id} value={b.id}>
+                                                        {b.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                )}
+
+                                <Link
+                                    to="/accounts"
+                                    className="inline-flex min-h-9 items-center gap-1 rounded-xl border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:bg-zinc-100"
+                                >
+                                    <Plus size={14} weight="bold" />
+                                    <span>{t('Kết nối kênh')}</span>
+                                </Link>
+                            </div>
                         </div>
 
-                        {/* Step 2: Editor Tab Bar for Global vs Per-Account Content */}
-                        {selectedAccounts.length > 0 && (
-                            <div className="pt-3 border-t border-border/70 flex flex-wrap items-center gap-2">
-                                <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mr-1">
-                                    {t('2. Soạn theo kênh')}:
-                                </span>
-
-                                <button
-                                    type="button"
-                                    onClick={() => setActiveTab('default')}
-                                    className={`flex h-8 items-center gap-1.5 rounded-xl border px-3 text-xs font-medium transition cursor-pointer ${
-                                        activeTab === 'default'
-                                            ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
-                                            : 'border-border bg-card text-muted-foreground hover:border-brand-dark/50 hover:text-foreground'
-                                    }`}
+                        {/* Danh sách thẻ kênh mạng xã hội */}
+                        {connectedAccounts.length === 0 ? (
+                            <div className="rounded-xl border border-border bg-zinc-50 p-6 text-center">
+                                <p className="text-sm text-muted-foreground">
+                                    {t('Chưa có tài khoản mạng xã hội nào sẵn sàng trong không gian này.')}
+                                </p>
+                                <Link
+                                    to="/accounts"
+                                    className="mt-2 inline-flex items-center text-xs font-semibold text-brand-ink underline underline-offset-4"
                                 >
-                                    <Globe size={14} weight={activeTab === 'default' ? 'fill' : 'regular'} />
-                                    <span>{t('Nội dung chung')}</span>
-                                </button>
-
-                                {selectedAccounts.map((tab) => {
-                                    const isSelectedTab = activeTab === tab.id;
-                                    const isExceeded = !isSelectedTab && getResolvedAccountText(tab).length > (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
-                                    const isCustomized = form.destination_settings[tab.id]?.caption !== undefined;
-                                    const cfg = PLATFORM_CONFIG[tab.platform] || { icon: Globe, color: 'text-zinc-600' };
-                                    const TabIcon = cfg.icon;
+                                    {t('Kết nối tài khoản ngay')}
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
+                                {connectedAccounts.map((account) => {
+                                    const isSelected = form.account_ids.includes(account.id);
+                                    const cfg =
+                                        PLATFORM_CONFIG[account.platform] || {
+                                            icon: Globe,
+                                            color: 'text-zinc-600',
+                                        };
+                                    const PlatformIcon = cfg.icon;
+                                    const avatarUrl = getAccountAvatarUrl(account);
+                                    const initials = (account.name || account.platform)
+                                        .slice(0, 2)
+                                        .toUpperCase();
 
                                     return (
                                         <button
-                                            key={tab.id}
+                                            key={account.id}
                                             type="button"
-                                            onClick={() => {
-                                                setActiveTab(tab.id);
-                                                setPreviewAccountId(tab.id);
-                                            }}
-                                            title={t(`Tuỳ chỉnh cho ${tab.name}`)}
-                                            className={`relative flex h-8 items-center gap-1.5 rounded-xl border px-2.5 text-xs transition cursor-pointer ${
-                                                isSelectedTab
-                                                    ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
-                                                    : 'border-border bg-card text-muted-foreground hover:border-brand-dark/50 hover:text-foreground font-medium'
+                                            onClick={() => toggleAccountSelection(account.id)}
+                                            className={`flex cursor-pointer items-center justify-between gap-2.5 rounded-xl border p-2.5 text-left transition-colors ${
+                                                isSelected
+                                                    ? 'border-brand-dark bg-brand-50 text-brand-ink ring-1 ring-brand-dark/40'
+                                                    : 'border-border bg-card text-muted-foreground hover:bg-zinc-50 hover:text-foreground'
                                             }`}
                                         >
-                                            <TabIcon size={13} weight="fill" className={isSelectedTab ? 'text-brand-ink' : cfg.color} />
-                                            <span className="truncate max-w-[110px]">{tab.name}</span>
-                                            {isExceeded ? (
-                                                <span className="size-2 rounded-full bg-dangerFg" title={t('Vượt giới hạn ký tự')} />
-                                            ) : isCustomized ? (
-                                                <span className="size-2 rounded-full bg-brand-dark" title={t('Đã tuỳ chỉnh riêng')} />
-                                            ) : null}
+                                            <div className="flex min-w-0 items-center gap-2.5">
+                                                <div className="relative shrink-0">
+                                                    <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-full border border-border bg-zinc-100 text-xs font-bold text-foreground">
+                                                        {avatarUrl ? (
+                                                            <img
+                                                                src={avatarUrl}
+                                                                alt=""
+                                                                className="h-full w-full object-cover"
+                                                                onError={(e) => {
+                                                                    e.currentTarget.style.display = 'none';
+                                                                }}
+                                                            />
+                                                        ) : (
+                                                            <span>{initials}</span>
+                                                        )}
+                                                    </div>
+                                                    <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-card ring-1 ring-border">
+                                                        <PlatformIcon
+                                                            size={10}
+                                                            weight="fill"
+                                                            className={cfg.color}
+                                                        />
+                                                    </span>
+                                                </div>
+
+                                                <div className="min-w-0">
+                                                    <p className="truncate text-xs font-semibold text-foreground">
+                                                        {account.name}
+                                                    </p>
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {account.handle || cfg.label || account.platform}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            <span
+                                                className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border transition-colors ${
+                                                    isSelected
+                                                        ? 'border-brand-dark bg-brand text-brand-ink'
+                                                        : 'border-border bg-card text-transparent'
+                                                }`}
+                                            >
+                                                <Check size={11} weight="bold" />
+                                            </span>
                                         </button>
                                     );
                                 })}
@@ -1465,811 +1403,827 @@ export default function CreatePost() {
                         )}
                     </section>
 
-                    {/* Main Composer Studio Box */}
-                    <div className="panel overflow-hidden transition focus-within:border-brand-dark focus-within:ring-2 focus-within:ring-brand/25">
-                        {/* Card Header */}
-                        <div className="flex items-center justify-between gap-3 border-b border-border/70 bg-surface/60 px-4 py-3">
-                            <div className="flex items-center gap-2 min-w-0">
-                                <span className="h-2 w-2 rounded-full bg-brand border border-brand-dark shrink-0" />
-                                <span className="text-xs font-semibold uppercase tracking-wider text-foreground truncate">
-                                    {currentTabAccount
-                                        ? `${t('Nội dung riêng')} · ${currentTabAccount.name}`
-                                        : t('Nội dung dùng chung (tất cả kênh)')}
-                                </span>
-                            </div>
-                            <div className="flex items-center gap-3 shrink-0">
-                                {currentTabAccount && (
-                                    <label className="flex items-center gap-2 rounded-lg border border-brand-dark/40 bg-brand/15 px-2.5 py-1 text-xs font-semibold text-brand-ink cursor-pointer">
-                                        <span>{t('Tuỳ chỉnh riêng')}</span>
-                                        <input
-                                            type="checkbox"
-                                            checked={hasCustomCaption}
-                                            onChange={(e) => toggleCustomTab(e.target.checked)}
-                                            className="h-4 w-4 rounded border-brand-dark text-brand-dark focus:ring-brand-dark cursor-pointer"
-                                        />
-                                    </label>
-                                )}
-                                <button
-                                    type="button"
-                                    onClick={() => setIsComposerExpanded((p) => !p)}
-                                    className="grid size-7 place-items-center rounded-lg border border-border bg-card text-muted-foreground hover:border-brand-dark hover:text-brand-ink cursor-pointer"
-                                >
-                                    {isComposerExpanded ? <CaretUp size={14} /> : <CaretDown size={14} />}
-                                </button>
-                            </div>
-                        </div>
+                    {/* KHỐI 2: Khung Soạn Thảo Đa Kênh (Main Composer Studio) */}
+                    <div className="panel overflow-hidden transition focus-within:border-brand-dark focus-within:ring-2 focus-within:ring-brand/20">
+                        {/* Thanh Tab chọn kênh để tùy chỉnh nội dung */}
+                        <div className="flex items-center gap-1.5 overflow-x-auto border-b border-border bg-zinc-50/70 p-2">
+                            <button
+                                type="button"
+                                onClick={() => setActiveTab('default')}
+                                className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1 text-xs transition-colors ${
+                                    activeTab === 'default'
+                                        ? 'bg-brand font-semibold text-brand-ink ring-1 ring-brand-dark/50'
+                                        : 'font-medium text-muted-foreground hover:bg-zinc-200/60 hover:text-foreground'
+                                }`}
+                            >
+                                <Globe size={14} weight={activeTab === 'default' ? 'fill' : 'regular'} />
+                                <span>{t('Nội dung chung')}</span>
+                            </button>
 
-                        {/* Card Body */}
-                        {isComposerExpanded && (
-                            <>
-                                <textarea
-                                    ref={textareaRef}
-                                    value={currentEditorValue}
-                                    readOnly={currentTabAccount && !hasCustomCaption}
-                                    onChange={(e) => handleTextChange(e.target.value)}
-                                    rows={8}
-                                    placeholder={
-                                        currentTabAccount && !hasCustomCaption
-                                            ? ''
-                                            : t('Viết điều gì đó… (hỗ trợ tag {platform} tự động thay tên kênh)')
-                                    }
-                                    className={`block w-full resize-none bg-card px-4 py-3.5 text-[14px] leading-relaxed text-foreground outline-none placeholder:text-muted-foreground ${currentTabAccount && !hasCustomCaption ? 'cursor-default text-muted-foreground bg-surface/40' : ''
-                                        }`}
-                                />
+                            {selectedAccounts.map((tab) => {
+                                const isSelectedTab = activeTab === tab.id;
+                                const isExceeded =
+                                    !isSelectedTab &&
+                                    getResolvedAccountText(tab).length >
+                                        (PLATFORM_CHAR_LIMITS[tab.platform] || 63206);
+                                const isCustomized =
+                                    form.destination_settings[tab.id]?.caption !== undefined;
+                                const cfg =
+                                    PLATFORM_CONFIG[tab.platform] || {
+                                        icon: Globe,
+                                        color: 'text-zinc-600',
+                                    };
+                                const TabIcon = cfg.icon;
 
-                                {currentTabAccount && !hasCustomCaption && (
-                                    <div className="mx-4 mb-3 rounded-xl border border-brand-dark/40 bg-brand/15 px-3 py-2 text-xs text-brand-ink">
-                                        {t('Kênh này đang dùng nội dung chung. Bật “Tuỳ chỉnh riêng” để viết phiên bản khác.')}
-                                    </div>
-                                )}
-
-                                {signatureKey !== 'none' && PRESET_SIGNATURES[signatureKey] && (
-                                    <div className="mx-4 mb-3 rounded-xl border border-dashed border-border bg-surface/60 px-3 py-2 whitespace-pre-wrap text-xs italic text-muted-foreground">
-                                        {PRESET_SIGNATURES[signatureKey].trim()}
-                                    </div>
-                                )}
-
-                                {/* Attached Media Thumbnails Strip */}
-                                {form.media.length > 0 && (
-                                    <div className="flex flex-wrap gap-2.5 border-t border-border/60 bg-surface/40 px-4 py-3">
-                                        {form.media.map((asset, idx) => (
-                                            <div
-                                                key={asset.id || idx}
-                                                className="group relative size-16 overflow-hidden rounded-xl border border-border bg-muted"
-                                            >
-                                                <img
-                                                    src={asset.file_url || asset.url || asset.src}
-                                                    alt={asset.name || 'Attachment'}
-                                                    className="size-full object-cover"
-                                                />
-                                                {idx === 0 && (
-                                                    <span className="absolute inset-x-0 bottom-0 bg-brand/95 text-center text-[9px] font-bold text-brand-ink">
-                                                        {t('Bìa')}
-                                                    </span>
-                                                )}
-                                                <button
-                                                    type="button"
-                                                    onClick={() => handleRemoveMedia(idx)}
-                                                    className="absolute right-1 top-1 grid size-4 place-items-center rounded-full bg-black/65 text-white opacity-0 transition group-hover:opacity-100 cursor-pointer"
-                                                >
-                                                    <X size={10} />
-                                                </button>
-                                            </div>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* Action Toolbar */}
-                                <div className="flex items-center gap-1.5 overflow-x-auto border-t border-border/80 bg-surface/70 px-3 py-2.5">
+                                return (
                                     <button
-                                        type="button"
-                                        onClick={() => setIsMediaDrawerOpen((p) => !p)}
-                                        className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition cursor-pointer ${isMediaDrawerOpen
-                                                ? 'border-brand-dark bg-brand text-brand-ink'
-                                                : 'border-border bg-card text-foreground hover:border-brand-dark/50 hover:bg-brand/10'
-                                            }`}
-                                    >
-                                        <ImageSquare size={15} weight="duotone" />
-                                        <span>{t('Chèn media')}</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAiDrawerOpen((p) => !p)}
-                                        className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-3 text-xs font-semibold transition cursor-pointer ${isAiDrawerOpen
-                                                ? 'border-brand-dark bg-brand text-brand-ink'
-                                                : 'border-border bg-card text-foreground hover:border-brand-dark/50 hover:bg-brand/10'
-                                            }`}
-                                    >
-                                        <Sparkle size={15} weight="fill" className={isAiDrawerOpen ? 'text-brand-ink' : 'text-brand-dark'} />
-                                        <span>{t('Trợ lý AI')}</span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsAiRepurposeOpen(true)}
-                                        className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-brand-dark/50 bg-brand/20 px-3 text-xs font-bold text-brand-ink transition hover:bg-brand cursor-pointer shadow-xs"
-                                    >
-                                        <MagicWand size={15} weight="duotone" className="text-brand-dark" />
-                                        <span>{t('AI Tái sinh đa kênh')}</span>
-                                        <span className="rounded-full bg-brand-dark text-white px-1.5 py-0.2 text-[9px] font-extrabold tracking-wide uppercase">
-                                            1-Click
-                                        </span>
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => setIsTemplatePickerOpen(true)}
-                                        className="flex h-8 shrink-0 items-center gap-1.5 rounded-xl border border-border bg-card px-3 text-xs font-medium text-foreground hover:border-brand-dark/50 hover:bg-brand/10 transition cursor-pointer"
-                                    >
-                                        <Quotes size={15} weight="duotone" className="text-brand-dark" />
-                                        <span>{t('Dùng mẫu')}</span>
-                                    </button>
-
-                                    {/* Signature Dropdown */}
-                                    <div className="relative shrink-0">
-                                        <select
-                                            value={signatureKey}
-                                            onChange={(e) => setSignatureKey(e.target.value)}
-                                            className="h-8 appearance-none rounded-xl border border-border bg-card pl-7 pr-7 text-xs font-medium text-foreground outline-none hover:border-brand-dark/50 cursor-pointer"
-                                        >
-                                            <option value="none">{t('Chữ ký: Không')}</option>
-                                            <option value="brand">{t('Chữ ký thương hiệu')}</option>
-                                            <option value="contact">{t('Lời kêu gọi liên hệ')}</option>
-                                        </select>
-                                        <BookmarkSimple size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-brand-dark" />
-                                        <CaretDown size={12} className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                                    </div>
-
-                                    <span className="mx-1 h-4 w-px shrink-0 bg-border" />
-
-                                    {/* Formatting Buttons */}
-                                    <button
-                                        type="button"
-                                        onClick={() => applyTextTransform(toUnicodeUnderline)}
-                                        title={t('Gạch chân (Unicode)')}
-                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
-                                    >
-                                        <TextUnderline size={15} />
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => applyTextTransform(toUnicodeBold)}
-                                        title={t('In đậm (Unicode)')}
-                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
-                                    >
-                                        <TextB size={15} />
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        onClick={() => insertTextAtCursor('✨')}
-                                        title={t('Chèn biểu tượng ✨')}
-                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
-                                    >
-                                        <span>✨</span>
-                                    </button>
-
-                                    <button
+                                        key={tab.id}
                                         type="button"
                                         onClick={() => {
-                                            setIsSettingsOpen(true);
-                                            setIsUtmOpen(true);
+                                            setActiveTab(tab.id);
+                                            setPreviewAccountId(tab.id);
                                         }}
-                                        title={t('Mở UTM Link Builder')}
-                                        className="grid size-8 shrink-0 place-items-center rounded-lg text-muted-foreground hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
+                                        className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-xs transition-colors ${
+                                            isSelectedTab
+                                                ? 'bg-brand font-semibold text-brand-ink ring-1 ring-brand-dark/50'
+                                                : 'font-medium text-muted-foreground hover:bg-zinc-200/60 hover:text-foreground'
+                                        }`}
                                     >
-                                        <LinkSimple size={15} />
+                                        <TabIcon
+                                            size={13}
+                                            weight="fill"
+                                            className={isSelectedTab ? 'text-brand-ink' : cfg.color}
+                                        />
+                                        <span className="max-w-[100px] truncate">{tab.name}</span>
+                                        {isExceeded ? (
+                                            <span
+                                                className="h-1.5 w-1.5 rounded-full bg-red-600"
+                                                title={t('Vượt giới hạn')}
+                                            />
+                                        ) : isCustomized ? (
+                                            <span
+                                                className="h-1.5 w-1.5 rounded-full bg-brand-dark"
+                                                title={t('Đã tùy chỉnh')}
+                                            />
+                                        ) : null}
                                     </button>
+                                );
+                            })}
+                        </div>
 
-                                    {/* Character Counter */}
-                                    <span
-                                        className={`ml-auto flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 font-mono text-[11px] ${currentTabCharCount > currentTabLimit
-                                                ? 'border-dangerFg bg-dangerBg text-dangerFg font-semibold'
-                                                : 'border-brand-dark/30 bg-brand/10 text-brand-ink font-medium'
-                                            }`}
-                                        title={
-                                            currentTabAccount
-                                                ? `Giới hạn ${currentTabAccount.name}`
-                                                : 'Giới hạn thấp nhất trong các kênh đã chọn'
-                                        }
-                                    >
-                                        {currentTabCharCount > currentTabLimit && (
-                                            <WarningCircle size={14} className="text-dangerFg" />
-                                        )}
-                                        {currentTabCharCount.toLocaleString('vi-VN')} / {currentTabLimit.toLocaleString('vi-VN')}
-                                    </span>
-                                </div>
-
-                                {/* Inline Media Drawer */}
-                                {isMediaDrawerOpen && (
-                                    <div className="border-t border-brand-dark/30 bg-brand/10 p-3.5">
-                                        <div className="mb-2.5 flex items-center justify-between text-xs">
-                                            <span className="font-semibold text-brand-ink">
-                                                {t('Thư viện tệp')}{' '}
-                                                <span className="font-normal text-muted-foreground">· {t('tối đa 10 ảnh')}</span>
-                                            </span>
-                                            <div className="flex items-center gap-3">
-                                                <input
-                                                    type="file"
-                                                    ref={fileInputRef}
-                                                    onChange={handleFileUpload}
-                                                    multiple
-                                                    accept="image/*,video/*"
-                                                    className="hidden"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    disabled={uploading}
-                                                    onClick={() => fileInputRef.current?.click()}
-                                                    className="flex items-center gap-1 rounded-lg border border-brand-dark bg-brand px-2.5 py-1 text-xs font-semibold text-brand-ink hover:bg-[#ffe059] cursor-pointer"
-                                                >
-                                                    <UploadSimple size={14} weight="bold" />
-                                                    {uploading ? t('Đang tải...') : t('Tải lên')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setIsMediaDrawerOpen(false)}
-                                                    className="text-xs font-semibold text-brand-ink hover:underline cursor-pointer"
-                                                >
-                                                    {t('Xong')}
-                                                </button>
-                                            </div>
-                                        </div>
-
-                                        {mediaLibrary.length === 0 ? (
-                                            <div className="rounded-xl border border-dashed border-brand-dark/40 bg-card/80 py-6 text-center text-xs text-muted-foreground">
-                                                {t('Chưa có ảnh trong thư viện. Bấm "Tải lên" để thêm.')}
-                                            </div>
-                                        ) : (
-                                            <div className="grid grid-cols-6 gap-2 sm:grid-cols-8">
-                                                {mediaLibrary.map((item) => {
-                                                    const isSelected = form.media.some((m) => m.id === item.id);
-                                                    return (
-                                                        <button
-                                                            key={item.id}
-                                                            type="button"
-                                                            onClick={() => handleToggleMedia(item)}
-                                                            className={`relative aspect-square overflow-hidden rounded-lg ring-offset-1 transition cursor-pointer ${isSelected
-                                                                    ? 'ring-2 ring-brand-dark'
-                                                                    : 'opacity-80 hover:opacity-100'
-                                                                }`}
-                                                        >
-                                                            <img
-                                                                src={item.file_url || item.url}
-                                                                alt={item.name}
-                                                                className="size-full object-cover"
-                                                            />
-                                                            {isSelected && (
-                                                                <span className="absolute right-1 top-1 grid size-4 place-items-center rounded bg-brand text-brand-ink">
-                                                                    <Check size={10} weight="bold" />
-                                                                </span>
-                                                            )}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
-                                        )}
-                                    </div>
-                                )}
-
-                                {/* Inline AI Assistant Drawer */}
-                                {isAiDrawerOpen && (
-                                    <div className="border-t border-brand-dark/30 bg-brand/10 p-3.5">
-                                        <div className="mb-2.5 flex items-center gap-2 text-[11px] text-brand-ink">
-                                            <span className="size-2 rounded-full bg-brand border border-brand-dark" />
-                                            <span className="font-semibold">{aiConfig?.provider || 'AI Assistant'}</span>
-                                            <code className="rounded bg-card px-1.5 py-0.5 font-mono text-[10px] border border-brand-dark/30">
-                                                {aiConfig?.model || 'gpt-4o-mini'}
-                                            </code>
-                                            {aiBusy && (
-                                                <span className="ml-auto text-brand-ink font-semibold">
-                                                    {t('Đang xử lý…')}
-                                                </span>
-                                            )}
-                                        </div>
-                                        <div className="flex flex-wrap gap-1.5">
-                                            {[
-                                                ['repurpose', t('🪄 Tái sinh 4 kênh (1-Click)'), MagicWand],
-                                                ['outline', t('Gợi ý dàn ý'), ListBullets],
-                                                ['hook', t('Viết lại hấp dẫn hơn'), MagicWand],
-                                                ['shorten_x', t('Rút gọn cho X'), Sparkle],
-                                                ['hashtags', t('Thêm hashtag'), Tag],
-                                                ['create_image', t('Tạo ảnh AI'), ImageSquare],
-                                            ].map(([actionId, actionLabel, IconComp]) => (
-                                                <button
-                                                    key={actionId}
-                                                    type="button"
-                                                    disabled={aiBusy}
-                                                    onClick={() => handleAiChip(actionId)}
-                                                    className="flex items-center gap-1.5 rounded-full border border-brand-dark/40 bg-card px-3 py-1 text-xs font-medium text-brand-ink transition hover:bg-brand hover:border-brand-dark cursor-pointer disabled:opacity-50"
-                                                >
-                                                    <IconComp size={14} weight="duotone" className="text-brand-dark" />
-                                                    <span>{actionLabel}</span>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                )}
-                            </>
-                        )}
-                    </div>
-
-                    {/* Prominent Auto First Comment Panel */}
-                    <section className="panel p-4 sm:p-5 space-y-3 bg-card border border-border/80">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
-                            <div className="flex items-center gap-2.5">
-                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/20 text-brand-ink shrink-0">
-                                    <ChatCircleText size={16} weight="fill" />
+                        {/* Banner thông báo khi xem tab kênh chưa tùy chỉnh */}
+                        {currentTabAccount && !hasCustomCaption && (
+                            <div className="flex items-center justify-between gap-3 border-b border-border/80 bg-brand-50/70 px-4 py-2 text-xs text-brand-ink">
+                                <span>
+                                    {t(
+                                        'Kênh này đang thừa hưởng nội dung chung. Bật "Tùy chỉnh riêng" nếu muốn đổi câu chữ cho kênh này.'
+                                    )}
                                 </span>
-                                <div>
-                                    <label htmlFor="first-comment-input" className="text-xs font-semibold text-foreground flex items-center gap-1.5 cursor-pointer">
-                                        <span>{t('Ghim bình luận đầu tiên (Auto First Comment)')}</span>
-                                        <span className="rounded-full bg-brand/25 border border-brand-dark/30 px-2 py-0.2 text-[10px] font-bold text-brand-ink">
-                                            {t('Chống bóp reach')}
-                                        </span>
-                                    </label>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        {t('Tự động đăng bình luận ngay khi bài vừa xuất bản (chèn link mua hàng, affiliate, số hotline...)')}
-                                    </p>
-                                </div>
-                            </div>
-                            {firstCommentMessage && (
                                 <button
                                     type="button"
-                                    onClick={() => handleFirstCommentChange('')}
-                                    className="text-[11px] font-medium text-muted-foreground hover:text-dangerFg transition cursor-pointer"
+                                    onClick={() => toggleCustomTab(true)}
+                                    className="cursor-pointer whitespace-nowrap font-semibold underline underline-offset-4"
                                 >
-                                    {t('Xóa bình luận đầu')}
+                                    {t('Tùy chỉnh riêng')}
                                 </button>
+                            </div>
+                        )}
+
+                        {currentTabAccount && hasCustomCaption && (
+                            <div className="flex items-center justify-between gap-3 border-b border-border/80 bg-zinc-50 px-4 py-2 text-xs text-foreground">
+                                <span className="font-medium">
+                                    {t('Đang soạn bản nội dung độc lập cho')} <strong>{currentTabAccount.name}</strong>
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => toggleCustomTab(false)}
+                                    className="cursor-pointer whitespace-nowrap text-muted-foreground hover:text-foreground"
+                                >
+                                    {t('Khôi phục dùng chung')}
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Textarea soạn thảo chính */}
+                        <div className="p-4">
+                            <textarea
+                                ref={textareaRef}
+                                value={currentEditorValue}
+                                readOnly={Boolean(currentTabAccount && !hasCustomCaption)}
+                                onChange={(e) => handleTextChange(e.target.value)}
+                                rows={8}
+                                placeholder={
+                                    currentTabAccount && !hasCustomCaption
+                                        ? ''
+                                        : t('Viết nội dung bài đăng tại đây… Hỗ trợ gắn tag {platform} tự động thay thế tên kênh khi xuất bản.')
+                                }
+                                className={`block w-full resize-y bg-transparent text-sm leading-relaxed text-foreground outline-none placeholder:text-muted-foreground ${
+                                    currentTabAccount && !hasCustomCaption
+                                        ? 'cursor-default text-muted-foreground'
+                                        : ''
+                                }`}
+                            />
+
+                            {/* Khối chữ ký tự động (nếu có) */}
+                            {signatureKey !== 'none' && PRESET_SIGNATURES[signatureKey] && (
+                                <div className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-zinc-50 p-3 text-xs italic text-muted-foreground">
+                                    {PRESET_SIGNATURES[signatureKey].trim()}
+                                </div>
+                            )}
+
+                            {/* Dải ảnh / video đính kèm */}
+                            {form.media.length > 0 && (
+                                <div className="mt-4 flex flex-wrap gap-2.5 border-t border-border pt-3">
+                                    {form.media.map((asset, idx) => (
+                                        <div
+                                            key={asset.id || idx}
+                                            className="group relative h-16 w-16 overflow-hidden rounded-xl border border-border bg-zinc-100"
+                                        >
+                                            <img
+                                                src={asset.file_url || asset.url || asset.src}
+                                                alt={asset.name || 'Attachment'}
+                                                className="h-full w-full object-cover"
+                                            />
+                                            {idx === 0 && (
+                                                <span className="absolute inset-x-0 bottom-0 bg-brand/95 py-0.5 text-center text-xs font-bold text-brand-ink">
+                                                    {t('Bìa')}
+                                                </span>
+                                            )}
+                                            <button
+                                                type="button"
+                                                onClick={() => handleRemoveMedia(idx)}
+                                                className="absolute right-1 top-1 flex h-4 w-4 cursor-pointer items-center justify-center rounded-full bg-black/70 text-white opacity-0 transition group-hover:opacity-100"
+                                            >
+                                                <X size={10} />
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
                             )}
                         </div>
 
-                        <div className="relative rounded-xl border border-border bg-surface/40 focus-within:border-brand-dark focus-within:bg-card focus-within:ring-2 focus-within:ring-brand/25 transition">
-                            <textarea
-                                id="first-comment-input"
-                                value={firstCommentMessage}
-                                onChange={(e) => handleFirstCommentChange(e.target.value)}
-                                rows={2}
-                                placeholder={t('Ví dụ: Bấm link bên dưới để nhận mã giảm giá 20% hoặc liên hệ Hotline: 090 123 4567...')}
-                                className="block w-full resize-none bg-transparent px-3 py-2 text-xs text-foreground outline-none placeholder:text-muted-foreground"
-                            />
-                            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 bg-surface/30 px-3 py-1.5 text-[11px] text-muted-foreground">
-                                <div className="flex items-center gap-1.5">
-                                    <PushPin size={12} weight="fill" className="text-brand-dark" />
-                                    <span>{t('Tự động đăng ngay lập tức (delay 0s)')}</span>
-                                </div>
-                                <span className="font-mono text-[10px]">
-                                    {firstCommentMessage.length} {t('ký tự')}
+                        {/* Thanh công cụ Studio Toolbar */}
+                        <div className="flex flex-wrap items-center gap-2 border-t border-border bg-zinc-50/70 p-2.5">
+                            <button
+                                type="button"
+                                onClick={() => setIsMediaDrawerOpen((p) => !p)}
+                                className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors ${
+                                    isMediaDrawerOpen
+                                        ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
+                                        : 'border-border bg-card text-foreground hover:bg-zinc-100'
+                                }`}
+                            >
+                                <ImageSquare size={15} weight="duotone" />
+                                <span>{t('Media')}</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setIsAiDrawerOpen((p) => !p)}
+                                className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg border px-3 text-xs font-medium transition-colors ${
+                                    isAiDrawerOpen
+                                        ? 'border-brand-dark bg-brand text-brand-ink font-semibold'
+                                        : 'border-border bg-card text-foreground hover:bg-zinc-100'
+                                }`}
+                            >
+                                <Sparkle
+                                    size={15}
+                                    weight="fill"
+                                    className={isAiDrawerOpen ? 'text-brand-ink' : 'text-brand-ink'}
+                                />
+                                <span>{t('Trợ lý AI')}</span>
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={() => setIsAiRepurposeOpen(true)}
+                                className="inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-brand-dark/50 bg-brand-50 px-3 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-200"
+                            >
+                                <MagicWand size={15} weight="duotone" />
+                                <span>{t('Tái sinh đa kênh')}</span>
+                            </button>
+
+                            <div className="h-4 w-px bg-border/80" />
+
+                            {/* Formatting actions */}
+                            <button
+                                type="button"
+                                onClick={() => applyTextTransform(toUnicodeBold)}
+                                title={t('In đậm')}
+                                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground hover:bg-zinc-100 hover:text-foreground"
+                            >
+                                <TextB size={15} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => applyTextTransform(toUnicodeUnderline)}
+                                title={t('Gạch chân')}
+                                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground hover:bg-zinc-100 hover:text-foreground"
+                            >
+                                <TextUnderline size={15} />
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => insertTextAtCursor('✨')}
+                                title={t('Chèn emoji')}
+                                className="inline-flex h-8 w-8 cursor-pointer items-center justify-center rounded-lg text-muted-foreground hover:bg-zinc-100 hover:text-foreground"
+                            >
+                                <span>✨</span>
+                            </button>
+
+                            <div className="h-4 w-px bg-border/80" />
+
+                            {/* Preset signatures */}
+                            <div className="w-36">
+                                <Select value={signatureKey} onValueChange={setSignatureKey}>
+                                    <SelectTrigger className="min-h-8 rounded-lg border-border bg-card text-xs">
+                                        <SelectValue placeholder={t('Chữ ký')} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">{t('Không chữ ký')}</SelectItem>
+                                        <SelectItem value="brand">{t('Thương hiệu')}</SelectItem>
+                                        <SelectItem value="contact">{t('Kêu gọi liên hệ')}</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+
+                            {/* Bộ đếm ký tự chuẩn hairline */}
+                            <div className="ml-auto flex shrink-0 items-center gap-1.5 whitespace-nowrap tabular-nums text-xs font-medium text-muted-foreground">
+                                {currentTabCharCount > currentTabLimit && (
+                                    <WarningCircle size={15} className="text-red-600" />
+                                )}
+                                <span
+                                    className={
+                                        currentTabCharCount > currentTabLimit
+                                            ? 'font-semibold text-red-600'
+                                            : ''
+                                    }
+                                >
+                                    {currentTabCharCount.toLocaleString('vi-VN')} /{' '}
+                                    {currentTabLimit.toLocaleString('vi-VN')}
                                 </span>
                             </div>
                         </div>
-                    </section>
 
-                    {/* Character Limit Exceeded Alert Banner */}
-                    {exceededAccounts.length > 0 && (
-                        <div className="flex items-start gap-2 rounded-xl border border-dangerFg/40 bg-dangerBg px-3.5 py-2.5 text-xs text-dangerFg">
-                            <WarningCircle size={15} className="mt-0.5 shrink-0" />
-                            <div>
-                                <span>{t('Vượt giới hạn ký tự trên: ')}</span>
-                                {exceededAccounts.map((acc, idx) => (
+                        {/* Drawer đính kèm media inline */}
+                        {isMediaDrawerOpen && (
+                            <div className="border-t border-border bg-zinc-50 p-4">
+                                <div className="mb-3 flex items-center justify-between text-xs">
+                                    <span className="font-semibold text-foreground">
+                                        {t('Tải lên hoặc chọn từ thư viện')} ({form.media.length}/10 {t('tệp')})
+                                    </span>
                                     <button
-                                        key={acc.id}
                                         type="button"
-                                        onClick={() => setActiveTab(acc.id)}
-                                        className="font-semibold underline underline-offset-2 cursor-pointer ml-1"
+                                        onClick={() => fileInputRef.current?.click()}
+                                        disabled={uploading}
+                                        className="inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-brand-dark bg-brand px-3 py-1 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-200 disabled:opacity-50"
                                     >
-                                        {acc.name} ({PLATFORM_CHAR_LIMITS[acc.platform]})
-                                        {idx < exceededAccounts.length - 1 ? ',' : '.'}
+                                        {uploading ? t('Đang tải…') : t('Tải tệp từ máy tính')}
                                     </button>
-                                ))}
-                            </div>
-                        </div>
-                    )}
+                                    <input
+                                        ref={fileInputRef}
+                                        type="file"
+                                        multiple
+                                        accept="image/*,video/*"
+                                        onChange={handleFileUpload}
+                                        className="hidden"
+                                    />
+                                </div>
 
-                    {/* Comment Chain & UTM Link Builder Row */}
-                    <section className="panel p-4 sm:p-5 space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="grid grid-cols-4 gap-2 sm:grid-cols-6 lg:grid-cols-8">
+                                    {mediaLibrary.slice(0, 16).map((asset) => {
+                                        const isSelected = form.media.some((m) => m.id === asset.id);
+                                        return (
+                                            <button
+                                                key={asset.id}
+                                                type="button"
+                                                onClick={() => handleToggleMedia(asset)}
+                                                className={`group relative aspect-square overflow-hidden rounded-xl border transition-colors ${
+                                                    isSelected
+                                                        ? 'border-brand-dark ring-2 ring-brand'
+                                                        : 'border-border bg-card hover:border-brand-dark/50'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={asset.file_url || asset.url}
+                                                    alt=""
+                                                    className="h-full w-full object-cover"
+                                                />
+                                                {isSelected && (
+                                                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-brand text-brand-ink font-bold">
+                                                        <Check size={10} weight="bold" />
+                                                    </span>
+                                                )}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Drawer Trợ lý AI inline */}
+                        {isAiDrawerOpen && (
+                            <div className="border-t border-border bg-brand-50/50 p-4">
+                                <div className="mb-2 flex items-center justify-between text-xs">
+                                    <span className="font-semibold text-brand-ink">
+                                        {t('Gợi ý xử lý nhanh với Trợ lý AI')}
+                                    </span>
+                                    {aiBusy && (
+                                        <span className="inline-flex items-center gap-1 font-medium text-brand-ink">
+                                            <ArrowsClockwise size={13} className="animate-spin" />
+                                            <span>{t('Đang suy nghĩ…')}</span>
+                                        </span>
+                                    )}
+                                </div>
+
+                                <div className="flex flex-wrap items-center gap-2">
+                                    {[
+                                        { id: 'outline', label: t('Gợi ý dàn ý theo chủ đề') },
+                                        { id: 'hook', label: t('Viết lại câu mở đầu hấp dẫn') },
+                                        { id: 'hashtags', label: t('Chèn 5 hashtag thịnh hành') },
+                                        { id: 'shorten_x', label: t('Rút gọn vừa 280 ký tự') },
+                                        { id: 'repurpose', label: t('Mở hộp thoại tái sinh đa kênh') },
+                                    ].map((chip) => (
+                                        <button
+                                            key={chip.id}
+                                            type="button"
+                                            disabled={aiBusy}
+                                            onClick={() => handleAiChip(chip.id)}
+                                            className="inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg border border-brand-dark/40 bg-card px-3 py-1 text-xs font-medium text-brand-ink transition-colors hover:bg-brand-100 disabled:opacity-50"
+                                        >
+                                            <Sparkle size={13} weight="fill" />
+                                            <span>{chip.label}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* KHỐI 3: Bình luận ghim đầu tiên (First Comment / Pin link) */}
+                    <section className="panel space-y-3 p-4 sm:p-5">
+                        <div className="flex items-center justify-between gap-3">
                             <div className="flex items-center gap-2">
-                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/20 text-brand-ink font-heading text-xs font-bold">
-                                    {(form.comments || []).length}
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                    <Quotes size={15} weight="duotone" />
                                 </span>
                                 <div>
-                                    <h2 className="font-heading text-sm font-semibold text-foreground">
-                                        {t('Chuỗi bài nối tiếp / Bình luận tiếp theo (#2, #3...)')}
-                                    </h2>
-                                    <p className="label-xs text-muted-foreground">
-                                        {t('Tự động đăng các bình luận nối tiếp theo thời gian (delay 5–10 phút) để kích thích tương tác')}
+                                    <h3 className="text-sm font-heading font-semibold text-foreground">
+                                        {t('Bình luận đầu tiên (Ghim link)')}
+                                    </h3>
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('Tự động bình luận ngay sau khi đăng bài để chống bóp tương tác.')}
                                     </p>
                                 </div>
                             </div>
+                        </div>
+
+                        <input
+                            type="text"
+                            value={firstCommentMessage}
+                            onChange={(e) => handleFirstCommentChange(e.target.value)}
+                            placeholder={t('Ví dụ: Xem chi tiết sản phẩm và nhận ưu đãi tại: https://...')}
+                            className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground outline-none transition focus:border-brand-dark focus:ring-1 focus:ring-brand-dark"
+                        />
+                    </section>
+
+                    {/* KHỐI 4: Tiện ích mở rộng theo dạng Thẻ xếp lớp (Collapsible Cards) */}
+                    <div className="space-y-3">
+                        {/* Tab Tiện ích 1: Chiến lược nội dung (Pillar, Angle, Campaign) */}
+                        {!isQuickPostMode && (
+                            <section className="panel overflow-hidden">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setExpandedTool((prev) => (prev === 'strategy' ? null : 'strategy'))
+                                    }
+                                    className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-zinc-50"
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                            <Target size={15} weight="duotone" />
+                                        </span>
+                                        <div>
+                                            <h3 className="text-sm font-heading font-semibold text-foreground">
+                                                {t('Chiến lược nội dung & Chiến dịch')}
+                                            </h3>
+                                            <p className="text-xs text-muted-foreground">
+                                                {form.pillar_id
+                                                    ? `${brandPillars.find((p) => p.id === form.pillar_id)?.name || ''}`
+                                                    : t('Gắn bài viết vào trụ cột và góc tiếp cận để phân tích hiệu suất')}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <CaretDown
+                                        size={16}
+                                        className={`text-muted-foreground transition-transform ${
+                                            expandedTool === 'strategy' ? 'rotate-180' : ''
+                                        }`}
+                                    />
+                                </button>
+
+                                {expandedTool === 'strategy' && (
+                                    <div className="grid grid-cols-1 gap-3.5 border-t border-border p-4 sm:grid-cols-3">
+                                        <div>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Chiến dịch')}
+                                            </label>
+                                            <Select
+                                                value={form.campaign_id || '__none__'}
+                                                onValueChange={(val) =>
+                                                    handleCampaignChange(val === '__none__' ? '' : val)
+                                                }
+                                            >
+                                                <SelectTrigger className="min-h-9 rounded-xl border-border bg-card text-xs">
+                                                    <SelectValue placeholder={t('Chọn chiến dịch')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="__none__">
+                                                        {t('Không thuộc chiến dịch')}
+                                                    </SelectItem>
+                                                    {brandCampaigns.map((c) => (
+                                                        <SelectItem key={c.id} value={c.id}>
+                                                            {c.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Trụ cột nội dung')}
+                                            </label>
+                                            <Select
+                                                value={form.pillar_id || '__none__'}
+                                                onValueChange={(val) =>
+                                                    setForm((p) => ({
+                                                        ...p,
+                                                        pillar_id: val === '__none__' ? '' : val,
+                                                        angle_id: '',
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger className="min-h-9 rounded-xl border-border bg-card text-xs">
+                                                    <SelectValue placeholder={t('Chọn trụ cột')} />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="__none__">
+                                                        {t('Chưa phân loại')}
+                                                    </SelectItem>
+                                                    {brandPillars.map((p) => (
+                                                        <SelectItem key={p.id} value={p.id}>
+                                                            {p.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+
+                                        <div>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Góc tiếp cận')}
+                                            </label>
+                                            <Select
+                                                value={form.angle_id || '__none__'}
+                                                disabled={!form.pillar_id}
+                                                onValueChange={(val) =>
+                                                    setForm((p) => ({
+                                                        ...p,
+                                                        angle_id: val === '__none__' ? '' : val,
+                                                    }))
+                                                }
+                                            >
+                                                <SelectTrigger className="min-h-9 rounded-xl border-border bg-card text-xs">
+                                                    <SelectValue
+                                                        placeholder={
+                                                            form.pillar_id
+                                                                ? t('Chọn góc khai thác')
+                                                                : t('Chọn trụ cột trước')
+                                                        }
+                                                    />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="__none__">
+                                                        {t('Chưa phân loại')}
+                                                    </SelectItem>
+                                                    {brandAngles.map((a) => (
+                                                        <SelectItem key={a.id} value={a.id}>
+                                                            {a.name}
+                                                        </SelectItem>
+                                                    ))}
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                    </div>
+                                )}
+                            </section>
+                        )}
+
+                        {/* Tab Tiện ích 2: Bộ tạo UTM & Link rút gọn */}
+                        <section className="panel overflow-hidden">
                             <button
                                 type="button"
                                 onClick={() =>
-                                    setForm((prev) => ({
-                                        ...prev,
-                                        comments: [...(prev.comments || []), { message: '', delay_minutes: (prev.comments || []).length === 0 ? 0 : 5 }],
-                                    }))
+                                    setExpandedTool((prev) => (prev === 'utm' ? null : 'utm'))
                                 }
-                                className="flex h-8 items-center gap-1.5 rounded-xl border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition hover:bg-[#ffe059] cursor-pointer"
+                                className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-zinc-50"
                             >
-                                <Plus size={14} weight="bold" />
-                                <span>{t('Thêm bài nối tiếp trong chuỗi')}</span>
-                            </button>
-                        </div>
-
-                        {(form.comments || []).length > 0 && (
-                            <div className="space-y-3 pt-1">
-                                {(form.comments || []).map((comment, index) => (
-                                    <div key={index} className="relative pl-6">
-                                        <span className="absolute left-2.5 top-0 h-full w-px bg-brand-dark/40" />
-                                        <span className="absolute left-1 top-3.5 size-3 rounded-full border border-brand-dark bg-brand" />
-                                        <div className="rounded-xl border border-border bg-surface/40 focus-within:border-brand-dark focus-within:bg-card focus-within:ring-2 focus-within:ring-brand/25">
-                                            <div className="flex items-center justify-between px-3 pt-2.5">
-                                                <span className="text-[11px] font-semibold uppercase tracking-wider text-brand-ink">
-                                                    {t('Bình luận')} #{index + 1}
-                                                </span>
-                                                <button
-                                                    type="button"
-                                                    onClick={() =>
-                                                        setForm((prev) => ({
-                                                            ...prev,
-                                                            comments: prev.comments.filter((_, i) => i !== index),
-                                                        }))
-                                                    }
-                                                    className="grid size-6 place-items-center rounded-md text-muted-foreground hover:bg-dangerBg hover:text-dangerFg cursor-pointer"
-                                                >
-                                                    <Trash size={14} />
-                                                </button>
-                                            </div>
-                                            <textarea
-                                                value={comment.message || ''}
-                                                onChange={(e) =>
-                                                    setForm((prev) => ({
-                                                        ...prev,
-                                                        comments: prev.comments.map((c, i) =>
-                                                            i === index ? { ...c, message: e.target.value } : c
-                                                        ),
-                                                    }))
-                                                }
-                                                rows={2}
-                                                placeholder={t('Bình luận đầu tiên hoặc bài tiếp theo trong chuỗi…')}
-                                                className="block w-full resize-none bg-transparent px-3 pb-3 pt-1 text-[13px] outline-none placeholder:text-muted-foreground"
-                                            />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </section>
-
-                    {/* Collapsible UTM & Shortlink Tracking Panel */}
-                    <section className="panel overflow-hidden">
-                        <button
-                            type="button"
-                            onClick={() => {
-                                setIsSettingsOpen((p) => !p);
-                                setIsUtmOpen(true);
-                            }}
-                            className={`flex w-full items-center gap-2.5 px-4 py-3.5 text-left text-[13px] font-semibold transition cursor-pointer ${isSettingsOpen
-                                    ? 'bg-brand/15 border-b border-brand-dark/30 text-brand-ink'
-                                    : 'bg-card hover:bg-brand/10 text-foreground'
-                                }`}
-                        >
-                            <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/25 text-brand-ink shrink-0">
-                                <LinkSimple size={15} weight="bold" />
-                            </span>
-                            <div>
-                                <span className="block">{t('Tạo UTM & Theo dõi liên kết rút gọn')}</span>
-                                <span className="block text-[11px] font-normal text-muted-foreground">
-                                    {t('Gắn mã chiến dịch và đếm lượt nhấp theo từng kênh')}
-                                </span>
-                            </div>
-                            <span className="ml-auto mr-2 rounded-full border border-brand-dark/30 bg-brand/20 px-2 py-0.5 text-[10px] font-semibold text-brand-ink">
-                                {trackedLinks.length} {t('link')}
-                            </span>
-                            <CaretDown size={16} className={`text-muted-foreground transition ${isSettingsOpen ? 'rotate-180 text-brand-ink' : ''}`} />
-                        </button>
-
-                        {isSettingsOpen && (
-                            <div className="divide-y divide-border/70 bg-card p-4 space-y-4">
-                                <div className="space-y-4">
-                                    <p className="text-xs leading-relaxed text-muted-foreground">
-                                        {t('Gắn UTM cho liên kết trong nội dung trước khi áp dụng. Để trống nguồn để dùng nền tảng của từng tài khoản.')}
-                                    </p>
-
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                        <LinkSimple size={15} weight="bold" />
+                                    </span>
                                     <div>
-                                        <div className="flex items-center justify-between mb-1">
-                                            <label className="text-xs font-medium text-foreground">
-                                                {t('URL đích')}
-                                            </label>
-                                            {!utmForm.url && detectedUrlInCaption && (
-                                                <span className="text-[11px] text-successFg font-medium">
-                                                    {t('Đang dùng liên kết trong nội dung')}
-                                                </span>
-                                            )}
-                                        </div>
+                                        <h3 className="text-sm font-heading font-semibold text-foreground">
+                                            {t('Bộ tạo UTM & Đo lường nhấp chuột (Shortlink)')}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('Tự động gắn mã UTM và theo dõi chuyển đổi về website')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <CaretDown
+                                    size={16}
+                                    className={`text-muted-foreground transition-transform ${
+                                        expandedTool === 'utm' ? 'rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
+
+                            {expandedTool === 'utm' && (
+                                <div className="space-y-3.5 border-t border-border p-4">
+                                    <div>
+                                        <label className="mb-1 block text-xs font-medium text-foreground">
+                                            {t('URL trang đích')}
+                                        </label>
                                         <input
                                             type="text"
                                             value={utmForm.url}
                                             onChange={(e) => setUtmForm({ ...utmForm, url: e.target.value })}
-                                            placeholder={detectedUrlInCaption || 'https://deszy.vn/san-pham'}
-                                            className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                            placeholder={detectedUrlInCaption || 'https://yourwebsite.com/landing-page'}
+                                            className="h-9 w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none transition focus:border-brand-dark"
                                         />
                                     </div>
 
                                     <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                                         <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">
-                                                {t('Nguồn')} <span className="text-[11px] text-muted-foreground font-normal">({t('Trống = nền tảng')})</span>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Nguồn (Source)')}
                                             </label>
                                             <input
                                                 type="text"
                                                 value={utmForm.source}
-                                                onChange={(e) => setUtmForm({ ...utmForm, source: e.target.value })}
+                                                onChange={(e) =>
+                                                    setUtmForm({ ...utmForm, source: e.target.value })
+                                                }
                                                 placeholder="{platform}"
-                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                                className="h-9 w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none transition focus:border-brand-dark"
                                             />
                                         </div>
-
                                         <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">
-                                                {t('Phương tiện')} <span className="text-dangerFg">*</span>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Phương tiện (Medium)')}
                                             </label>
                                             <input
                                                 type="text"
                                                 value={utmForm.medium}
-                                                onChange={(e) => setUtmForm({ ...utmForm, medium: e.target.value })}
+                                                onChange={(e) =>
+                                                    setUtmForm({ ...utmForm, medium: e.target.value })
+                                                }
                                                 placeholder="social"
-                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                                className="h-9 w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none transition focus:border-brand-dark"
                                             />
                                         </div>
-
                                         <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">
-                                                {t('Chiến dịch')} <span className="text-dangerFg">*</span>
+                                            <label className="mb-1 block text-xs font-medium text-muted-foreground">
+                                                {t('Chiến dịch (Campaign)')}
                                             </label>
                                             <input
                                                 type="text"
                                                 value={utmForm.campaign}
-                                                onChange={(e) => setUtmForm({ ...utmForm, campaign: e.target.value })}
+                                                onChange={(e) =>
+                                                    setUtmForm({ ...utmForm, campaign: e.target.value })
+                                                }
                                                 placeholder="flash_sale_t11"
-                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">
-                                                {t('Nội dung')}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={utmForm.content}
-                                                onChange={(e) => setUtmForm({ ...utmForm, content: e.target.value })}
-                                                placeholder="banner_a"
-                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-xs font-medium text-foreground mb-1">
-                                                {t('Từ khoá')}
-                                            </label>
-                                            <input
-                                                type="text"
-                                                value={utmForm.term}
-                                                onChange={(e) => setUtmForm({ ...utmForm, term: e.target.value })}
-                                                placeholder="socialchoice"
-                                                className="h-9 w-full rounded-lg border border-border px-3 text-[13px] outline-none transition focus:border-brand-dark"
+                                                className="h-9 w-full rounded-xl border border-border bg-card px-3 text-xs text-foreground outline-none transition focus:border-brand-dark"
                                             />
                                         </div>
                                     </div>
 
-                                    <div className="divide-y divide-border/70 rounded-xl border border-border">
-                                        <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
-                                            <span>
-                                                <span className="block text-[13px] font-medium text-foreground">
-                                                    {t('Liên kết chuyển hướng có thống kê')}
-                                                </span>
-                                                <span className="block text-xs text-muted-foreground">
-                                                    {t('Đếm lượt nhấp qua đường dẫn rút gọn.')}
-                                                </span>
-                                            </span>
-                                            <input
-                                                type="checkbox"
-                                                checked={useShortlink}
-                                                onChange={(e) => setUseShortlink(e.target.checked)}
-                                                className="h-4 w-4 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
-                                            />
-                                        </label>
-
-                                        <label className="flex items-center justify-between gap-4 px-4 py-3 cursor-pointer">
-                                            <span>
-                                                <span className="block text-[13px] font-medium text-foreground">
-                                                    {t('Thay các giá trị UTM đã có')}
-                                                </span>
-                                                <span className="block text-xs text-muted-foreground">
-                                                    {t('Ghi đè tham số utm_ sẵn có trong URL.')}
-                                                </span>
-                                            </span>
-                                            <input
-                                                type="checkbox"
-                                                checked={overrideExistingUtm}
-                                                onChange={(e) => setOverrideExistingUtm(e.target.checked)}
-                                                className="h-4 w-4 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
-                                            />
-                                        </label>
-                                    </div>
-
-                                    {/* Link Preview Card */}
-                                    <div className="rounded-xl border border-brand-dark/30 bg-brand/10 p-4">
-                                        <div className="mb-2 text-xs font-semibold text-brand-ink">
-                                            {t('Xem trước liên kết')}
-                                        </div>
-                                        {generatedUtmUrl ? (
-                                            <>
-                                                <code className="block break-all font-mono text-xs text-foreground bg-card p-2 rounded-lg border border-brand-dark/30">
+                                    {generatedUtmUrl && (
+                                        <div className="flex flex-col gap-2 rounded-xl border border-brand-dark/40 bg-brand-50 p-3 sm:flex-row sm:items-center sm:justify-between">
+                                            <div className="min-w-0">
+                                                <p className="truncate font-mono text-xs font-medium text-brand-ink">
                                                     {displayUtmShortUrl}
-                                                </code>
-                                                {useShortlink && (
-                                                    <code className="mt-1.5 block break-all font-mono text-[11px] text-muted-foreground">
-                                                        → {displayUtmTargetUrl}
-                                                    </code>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <p className="text-xs text-muted-foreground">
-                                                {t('Cần nhập URL, phương tiện và chiến dịch.')}
-                                            </p>
-                                        )}
-                                        <div className="mt-3 flex justify-end">
+                                                </p>
+                                                <p className="truncate font-mono text-xs text-muted-foreground">
+                                                    → {displayUtmTargetUrl}
+                                                </p>
+                                            </div>
                                             <button
                                                 type="button"
-                                                disabled={!generatedUtmUrl}
                                                 onClick={applyUtmToDraft}
-                                                className="h-8 rounded-lg border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition hover:bg-[#ffe059] disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground cursor-pointer"
+                                                className="inline-flex min-h-8 shrink-0 cursor-pointer items-center justify-center rounded-lg border border-brand-dark bg-brand px-3 text-xs font-semibold text-brand-ink transition-colors hover:bg-brand-200"
                                             >
-                                                {t('Áp dụng liên kết vào bản nháp')}
+                                                {t('Gắn vào bài viết')}
                                             </button>
                                         </div>
-                                    </div>
+                                    )}
+                                </div>
+                            )}
+                        </section>
 
-                                    {/* Tracked Links Table */}
+                        {/* Tab Tiện ích 3: Hẹn giờ lặp lại thông minh */}
+                        <section className="panel overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setExpandedTool((prev) => (prev === 'recurring' ? null : 'recurring'))
+                                }
+                                className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-zinc-50"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                        <CalendarBlank size={15} weight="duotone" />
+                                    </span>
                                     <div>
-                                        <div className="mb-2 flex items-center justify-between">
-                                            <span className="text-[13px] font-semibold text-foreground">
-                                                {t('Liên kết được theo dõi')} · {brands.find((b) => b.id === form.brand_id)?.name || 'Brand'}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                onClick={refreshTrackedLinks}
-                                                className="flex items-center gap-1.5 rounded-lg px-2 py-1 text-xs text-muted-foreground transition hover:bg-brand/15 hover:text-brand-ink cursor-pointer"
-                                            >
-                                                <ArrowsClockwise size={14} />
-                                                {t('Cập nhật lúc')} {linksUpdatedAt}
-                                            </button>
-                                        </div>
-
-                                        <ul className="divide-y divide-border/70 rounded-xl border border-border overflow-hidden bg-card">
-                                            {trackedLinks.length === 0 ? (
-                                                <li className="p-4 text-center text-xs text-muted-foreground">
-                                                    {t('Chưa có liên kết theo dõi nào cho thương hiệu này.')}
-                                                </li>
-                                            ) : (
-                                                trackedLinks.map((item) => (
-                                                    <li key={item.id || item.url} className="flex items-center gap-3 px-4 py-2.5 text-xs">
-                                                        <LinkSimple size={14} className="text-brand-dark shrink-0" />
-                                                        <span className="flex-1 truncate font-mono text-foreground">
-                                                            {item.short_url || item.url}
-                                                        </span>
-                                                        <span className="hidden text-muted-foreground sm:inline truncate max-w-[120px]">
-                                                            {item.campaign || 'campaign'}
-                                                        </span>
-                                                        <span className="w-20 text-right font-mono font-semibold text-brand-ink">
-                                                            {(item.clicks || 0).toLocaleString('vi-VN')} {t('lượt')}
-                                                        </span>
-                                                    </li>
-                                                ))
-                                            )}
-                                        </ul>
+                                        <h3 className="text-sm font-heading font-semibold text-foreground">
+                                            {t('Đăng định kỳ & Tự động tái chế')}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            {recurringConfig.enabled
+                                                ? t('Đang bật chuỗi {n} bài ({freq})', {
+                                                      n: recurringConfig.count,
+                                                      freq: recurringConfig.frequency,
+                                                  })
+                                                : t('Thiết lập bài viết phát sóng lặp lại theo tuần hoặc tháng')}
+                                        </p>
                                     </div>
                                 </div>
-                            </div>
-                        )}
-                    </section>
+                                <CaretDown
+                                    size={16}
+                                    className={`text-muted-foreground transition-transform ${
+                                        expandedTool === 'recurring' ? 'rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
 
-                    {/* Smart Recurring & Auto-Recycle Panel */}
-                    <RecurringSchedulePanel
-                        config={recurringConfig}
-                        onChange={setRecurringConfig}
-                        startDate={form.date}
-                        startTime={form.time}
-                        timezone={form.timezone}
-                        disabled={isViewer}
-                    />
+                            {expandedTool === 'recurring' && (
+                                <div className="border-t border-border p-4">
+                                    <RecurringSchedulePanel
+                                        config={recurringConfig}
+                                        onChange={setRecurringConfig}
+                                        startDate={form.date}
+                                        startTime={form.time}
+                                        timezone={form.timezone}
+                                        disabled={isViewer}
+                                    />
+                                </div>
+                            )}
+                        </section>
 
-                    {/* Comment-to-Inbox: Keyword Auto-DM Panel */}
-                    <AutoDmSettingsPanel
-                        config={autoDmConfig}
-                        onChange={setAutoDmConfig}
-                        disabled={isViewer}
-                    />
+                        {/* Tab Tiện ích 4: Auto-DM khi bình luận */}
+                        <section className="panel overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setExpandedTool((prev) => (prev === 'autodm' ? null : 'autodm'))
+                                }
+                                className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-zinc-50"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                        <PaperPlaneTilt size={15} weight="bold" />
+                                    </span>
+                                    <div>
+                                        <h3 className="text-sm font-heading font-semibold text-foreground">
+                                            {t('Tự động gửi tin nhắn riêng (Auto-DM)')}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            {autoDmConfig?.enabled
+                                                ? t('Đang bật theo dõi từ khóa: {kw}', {
+                                                      kw: autoDmConfig.keywords.join(', '),
+                                                  })
+                                                : t('Tự động inbox khi khách để lại từ khóa hoặc bình luận')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <CaretDown
+                                    size={16}
+                                    className={`text-muted-foreground transition-transform ${
+                                        expandedTool === 'autodm' ? 'rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
 
-                    {/* TikTok Shop: Product Anchor (Giỏ hàng vàng) Panel */}
-                    <TiktokShopProductPicker
-                        brandId={form.brand_id || selectedBrandId}
-                        selectedProduct={tiktokProduct}
-                        onSelectProduct={setTiktokProduct}
-                        onInsertScript={(script) => {
-                            setForm((prev) => ({
-                                ...prev,
-                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
-                            }));
-                            toast({
-                                title: t('Đã chèn kịch bản bán hàng TikTok Shop!'),
-                                description: t('Kịch bản video ngắn và lời kêu gọi bấm giỏ hàng vàng đã được điền vào khung soạn thảo.'),
-                            });
-                        }}
-                    />
+                            {expandedTool === 'autodm' && (
+                                <div className="border-t border-border p-4">
+                                    <AutoDmSettingsPanel
+                                        config={autoDmConfig}
+                                        onChange={setAutoDmConfig}
+                                        disabled={isViewer}
+                                    />
+                                </div>
+                            )}
+                        </section>
 
-                    {/* Shopee Affiliate: Product Catalog & Commission Picker */}
-                    <ShopeeProductPicker
-                        brandId={form.brand_id || selectedBrandId}
-                        selectedProduct={shopeeProduct}
-                        onSelectProduct={setShopeeProduct}
-                        onInsertLink={(script) => {
-                            setForm((prev) => ({
-                                ...prev,
-                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
-                            }));
-                            toast({
-                                title: t('Đã chèn kịch bản Shopee Affiliate!'),
-                                description: t('Nội dung ưu đãi và link tiếp thị đã được thêm vào bài viết.'),
-                            });
-                        }}
-                        onInsertFirstComment={(commentText) => {
-                            handleFirstCommentChange(commentText);
-                            toast({
-                                title: t('Đã chèn vào Bình luận đầu tiên!'),
-                                description: t('Link mua hàng Shopee sẽ tự động xuất bản dưới dạng comment để chống bóp tương tác.'),
-                            });
-                        }}
-                    />
+                        {/* Tab Tiện ích 5: Tiếp thị liên kết (TikTok Shop & Shopee) */}
+                        <section className="panel overflow-hidden">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setExpandedTool((prev) => (prev === 'affiliate' ? null : 'affiliate'))
+                                }
+                                className="flex w-full cursor-pointer items-center justify-between p-4 text-left transition-colors hover:bg-zinc-50"
+                            >
+                                <div className="flex items-center gap-2.5">
+                                    <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-border bg-zinc-100 text-foreground">
+                                        <Sparkle size={15} weight="fill" />
+                                    </span>
+                                    <div>
+                                        <h3 className="text-sm font-heading font-semibold text-foreground">
+                                            {t('Sản phẩm TikTok Shop & Shopee Affiliate')}
+                                        </h3>
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('Gắn link sản phẩm hoa hồng và kịch bản bán hàng')}
+                                        </p>
+                                    </div>
+                                </div>
+                                <CaretDown
+                                    size={16}
+                                    className={`text-muted-foreground transition-transform ${
+                                        expandedTool === 'affiliate' ? 'rotate-180' : ''
+                                    }`}
+                                />
+                            </button>
+
+                            {expandedTool === 'affiliate' && (
+                                <div className="space-y-4 border-t border-border p-4">
+                                    <TiktokShopProductPicker
+                                        brandId={form.brand_id || selectedBrandId}
+                                        selectedProduct={tiktokProduct}
+                                        onSelectProduct={setTiktokProduct}
+                                        onInsertScript={(script) => {
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
+                                            }));
+                                            toast({
+                                                title: t('Đã chèn kịch bản bán hàng TikTok Shop!'),
+                                            });
+                                        }}
+                                    />
+
+                                    <ShopeeProductPicker
+                                        brandId={form.brand_id || selectedBrandId}
+                                        selectedProduct={shopeeProduct}
+                                        onSelectProduct={setShopeeProduct}
+                                        onInsertLink={(script) => {
+                                            setForm((prev) => ({
+                                                ...prev,
+                                                caption: prev.caption ? `${prev.caption}\n\n${script}` : script,
+                                            }));
+                                            toast({ title: t('Đã chèn kịch bản Shopee Affiliate!') });
+                                        }}
+                                        onInsertFirstComment={(commentText) => {
+                                            handleFirstCommentChange(commentText);
+                                            toast({
+                                                title: t('Đã chèn vào Bình luận đầu tiên!'),
+                                            });
+                                        }}
+                                    />
+                                </div>
+                            )}
+                        </section>
+                    </div>
                 </div>
 
-                {/* RIGHT COLUMN: Sticky preview & checklist */}
-                <aside className="flex flex-col">
-                    <div className="sticky top-4 panel p-5 space-y-4">
-                        {/* Preview Header */}
-                        <div className="flex items-center justify-between pb-3 border-b border-border/80">
+                {/* CỘT PHẢI: Khung xem trước trực tiếp (Live Mockup) & Checklist */}
+                <aside className="sticky top-4 space-y-4">
+                    {/* Thẻ xem trước trực tiếp */}
+                    <section className="panel space-y-3.5 p-4 sm:p-5">
+                        <div className="flex items-center justify-between border-b border-border pb-3">
                             <div className="flex items-center gap-2">
-                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand/25 text-brand-ink">
+                                <span className="flex h-7 w-7 items-center justify-center rounded-lg border border-brand-dark/40 bg-brand-100 text-brand-ink">
                                     <ImageSquare size={15} weight="duotone" />
                                 </span>
                                 <div>
-                                    <h2 className="font-heading text-[15px] font-semibold text-foreground">
-                                        {t('Xem trước trực tiếp')}
+                                    <h2 className="text-sm font-heading font-semibold text-foreground">
+                                        {t('Xem trước trực quan')}
                                     </h2>
-                                    <p className="text-[11px] text-muted-foreground">
-                                        {t('Mô phỏng hiển thị theo thời gian thực')}
+                                    <p className="text-xs text-muted-foreground">
+                                        {t('Mô phỏng hiển thị thật trên từng mạng xã hội')}
                                     </p>
                                 </div>
                             </div>
-                            <Link
-                                to="/posts"
-                                title={t('Đóng')}
-                                className="grid size-8 place-items-center rounded-lg border border-border text-muted-foreground transition hover:border-brand-dark hover:bg-brand/15 hover:text-brand-ink"
-                            >
-                                <X size={15} />
-                            </Link>
                         </div>
 
-                        {/* Account Switcher Pills */}
+                        {/* Switcher các kênh đã chọn để xem trước */}
                         {selectedAccounts.length > 0 && (
                             <div className="flex gap-1.5 overflow-x-auto pb-1">
                                 {selectedAccounts.map((account) => {
-                                    const isCurrent = (currentPreviewAccount?.id || selectedAccounts[0]?.id) === account.id;
+                                    const isCurrent =
+                                        (currentPreviewAccount?.id || selectedAccounts[0]?.id) === account.id;
                                     return (
                                         <button
                                             key={account.id}
@@ -2280,192 +2234,167 @@ export default function CreatePost() {
                                                     setActiveTab(account.id);
                                                 }
                                             }}
-                                            className={`flex h-8 shrink-0 items-center gap-1.5 rounded-xl border px-2.5 text-[11px] font-semibold transition cursor-pointer ${isCurrent
-                                                    ? 'border-brand-dark bg-brand text-brand-ink'
-                                                    : 'border-border bg-surface text-muted-foreground hover:border-brand-dark/50 hover:text-foreground'
-                                                }`}
+                                            className={`inline-flex min-h-8 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border px-2.5 text-xs transition-colors ${
+                                                isCurrent
+                                                    ? 'border-brand-dark bg-brand font-semibold text-brand-ink'
+                                                    : 'border-border bg-card text-muted-foreground hover:bg-zinc-100 hover:text-foreground'
+                                            }`}
                                         >
-                                            {(() => {
-                                                const avatarUrl = getAccountAvatarUrl(account);
-                                                return avatarUrl ? (
-                                                    <div className="size-4.5 rounded-full overflow-hidden shrink-0 border border-white/20">
-                                                        <img
-                                                            src={avatarUrl}
-                                                            alt=""
-                                                            className="size-full object-cover"
-                                                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
-                                                        />
-                                                    </div>
-                                                ) : null;
-                                            })()}
-                                            <PlatformLogo platform={account.platform} className="size-3.5" />
-                                            <span className="truncate max-w-[100px]">{account.name}</span>
+                                            <PlatformLogo platform={account.platform} className="h-3.5 w-3.5" />
+                                            <span className="max-w-[90px] truncate">{account.name}</span>
                                         </button>
                                     );
                                 })}
                             </div>
                         )}
 
-                        {/* Mockup Preview Container */}
-                        <div className="min-h-[360px] rounded-2xl border border-border bg-surface/60 p-4">
+                        {/* Khung mô phỏng mạng xã hội */}
+                        <div className="min-h-[360px] rounded-2xl border border-border bg-zinc-50/70 p-3.5">
                             {currentPreviewAccount ? (
                                 <SocialMockupPreview
                                     account={currentPreviewAccount}
-                                    text={getResolvedAccountText(currentPreviewAccount) || t('🚀 Nội dung bài viết đang được soạn thảo sẽ hiển thị trực quan tại đây theo thời gian thực...')}
+                                    text={
+                                        getResolvedAccountText(currentPreviewAccount) ||
+                                        t('Nội dung bài viết sẽ xuất hiện tại đây theo thời gian thực…')
+                                    }
                                     media={form.media}
                                     when={t('Vừa xong')}
                                     tiktokProduct={tiktokProduct}
                                 />
                             ) : (
-                                <div className="grid h-full min-h-[328px] place-items-center text-center">
-                                    <div>
-                                        <div className="mx-auto grid size-11 place-items-center rounded-2xl border border-brand-dark/40 bg-brand/20 text-brand-ink">
-                                            <ImageSquare size={18} weight="duotone" />
-                                        </div>
-                                        <p className="mt-3 text-[13px] font-semibold text-foreground">
-                                            {selectedAccounts.length > 0
-                                                ? t('Bắt đầu viết để xem trước')
-                                                : t('Chọn tài khoản để xem trước')}
-                                        </p>
-                                        <p className="mt-0.5 text-xs text-muted-foreground">
-                                            {t('Mô phỏng giao diện từng nền tảng')}
-                                        </p>
-                                    </div>
+                                <div className="flex min-h-[320px] flex-col items-center justify-center p-6 text-center">
+                                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-zinc-100 text-muted-foreground">
+                                        <ImageSquare size={20} />
+                                    </span>
+                                    <p className="mt-3 text-sm font-semibold text-foreground">
+                                        {selectedAccounts.length > 0
+                                            ? t('Nhập nội dung để xem trước')
+                                            : t('Chọn kênh đăng để xem trước')}
+                                    </p>
+                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                        {t('Hiển thị giao diện Facebook, TikTok, LinkedIn…')}
+                                    </p>
                                 </div>
                             )}
                         </div>
+                    </section>
 
-                        {/* "Trước khi đăng" Checklist */}
-                        <div className="rounded-xl border border-brand-dark/30 bg-brand/10 p-3.5">
-                            <div className="mb-2 flex items-center justify-between">
-                                <span className="text-xs font-semibold text-brand-ink">
-                                    {t('Kiểm tra trước khi đăng')}
-                                </span>
-                                <span className="rounded-md border border-brand-dark/40 bg-brand px-1.5 py-0.5 font-mono text-[11px] font-bold text-brand-ink">
-                                    {checklistPassedCount}/{checklistItems.length}
-                                </span>
-                            </div>
-
-                            <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-card border border-brand-dark/20">
-                                <div
-                                    className="h-full rounded-full bg-brand-dark transition-all duration-500"
-                                    style={{ width: `${(checklistPassedCount / checklistItems.length) * 100}%` }}
-                                />
-                            </div>
-
-                            <ul className="space-y-1.5">
-                                {checklistItems.map((item) => (
-                                    <li key={item.label} className="flex items-start gap-2 text-xs">
-                                        {item.ok ? (
-                                            <CheckCircle size={15} weight="fill" className="mt-0.5 shrink-0 text-emerald-600" />
-                                        ) : (
-                                            <WarningCircle size={15} weight="duotone" className="mt-0.5 shrink-0 text-brand-dark" />
-                                        )}
-                                        <span className={item.ok ? 'text-muted-foreground line-through' : 'font-medium text-brand-ink'}>
-                                            {item.label}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
+                    {/* Thẻ Checklist kiểm tra trước khi xuất bản */}
+                    <section className="panel space-y-3 p-4">
+                        <div className="flex items-center justify-between text-xs">
+                            <span className="font-semibold text-foreground">
+                                {t('Kiểm tra trước khi xuất bản')}
+                            </span>
+                            <span className="rounded-md border border-brand-dark/40 bg-brand-100 px-2 py-0.5 font-mono text-xs font-bold text-brand-ink">
+                                {checklistPassedCount}/{checklistItems.length}
+                            </span>
                         </div>
-                    </div>
+
+                        {/* Thanh tiến độ vàng */}
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-zinc-100">
+                            <div
+                                className="h-full rounded-full bg-brand-dark transition-all duration-300"
+                                style={{
+                                    width: `${(checklistPassedCount / checklistItems.length) * 100}%`,
+                                }}
+                            />
+                        </div>
+
+                        <ul className="space-y-2">
+                            {checklistItems.map((item, idx) => (
+                                <li key={idx} className="flex items-start gap-2 text-xs">
+                                    {item.ok ? (
+                                        <CheckCircle
+                                            size={15}
+                                            weight="fill"
+                                            className="mt-0.5 shrink-0 text-emerald-600"
+                                        />
+                                    ) : (
+                                        <WarningCircle
+                                            size={15}
+                                            weight="duotone"
+                                            className="mt-0.5 shrink-0 text-amber-700"
+                                        />
+                                    )}
+                                    <span
+                                        className={
+                                            item.ok
+                                                ? 'text-muted-foreground line-through'
+                                                : 'font-medium text-foreground'
+                                        }
+                                    >
+                                        {item.label}
+                                    </span>
+                                </li>
+                            ))}
+                        </ul>
+                    </section>
                 </aside>
             </div>
 
-            {/* Sticky Bottom Action Bar */}
-            <div className="sticky bottom-4 z-20 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-brand-dark/40 bg-card/95 px-5 py-3.5 backdrop-blur-md">
-                <button
-                    type="button"
-                    disabled={isViewer || saving}
-                    onClick={() => submit('draft')}
-                    title={isViewer ? t('Chế độ xem không thể lưu nháp') : undefined}
-                    className="flex h-9 items-center gap-1.5 rounded-xl border border-border bg-surface px-3.5 text-xs font-semibold text-foreground transition hover:border-brand-dark hover:bg-brand/15 hover:text-brand-ink cursor-pointer disabled:opacity-50"
-                >
-                    <FloppyDisk size={16} weight="duotone" />
-                    <span>{t('Lưu nháp')}</span>
-                </button>
+            {/* THANH ĐIỀU KHIỂN DÍNH CUỐI TRANG (Sticky Bottom Action Bar) */}
+            <div className="sticky bottom-4 z-20 flex flex-col gap-3 rounded-2xl border border-brand-dark/40 bg-card/95 p-3.5 shadow-xl backdrop-blur-md sm:flex-row sm:items-center sm:justify-between sm:px-5">
+                <div className="flex items-center gap-2">
+                    <button
+                        type="button"
+                        disabled={isViewer || saving}
+                        onClick={() => submit('draft')}
+                        className="inline-flex min-h-10 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-card px-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100 disabled:opacity-50"
+                    >
+                        <FloppyDisk size={16} weight="duotone" />
+                        <span>{t('Lưu bản nháp')}</span>
+                    </button>
 
-                <SaveTemplateDialog form={form} demoMode={demoMode} disabled={isViewer || saving || uploading || loading} />
+                    <SaveTemplateDialog
+                        form={form}
+                        demoMode={demoMode}
+                        disabled={isViewer || saving || uploading || loading}
+                    />
+                </div>
 
-                <UseTemplateDialog
-                    brandId={form.brand_id}
-                    demoMode={demoMode}
-                    disabled={isViewer || saving || uploading || loading}
-                    open={isTemplatePickerOpen}
-                    onOpenChange={setIsTemplatePickerOpen}
-                />
-
-                <div className="ml-auto flex flex-wrap items-center gap-2">
-                    {/* Date & Time Picker */}
-                    <div className="flex h-9 items-center gap-2 rounded-xl border border-brand-dark/40 bg-brand/10 px-3 text-xs">
-                        <CalendarBlank size={15} weight="duotone" className="text-brand-ink shrink-0" />
+                <div className="flex flex-wrap items-center gap-2.5">
+                    {/* Hẹn giờ phát hành */}
+                    <div className="flex min-h-10 items-center gap-2 rounded-xl border border-border bg-zinc-50 px-3 py-1 text-xs text-foreground">
+                        <CalendarBlank size={15} className="shrink-0 text-muted-foreground" />
                         <input
                             type="date"
                             value={form.date}
-                            disabled={isViewer}
                             onChange={(e) => setForm({ ...form, date: e.target.value })}
-                            className="bg-transparent outline-none font-medium text-brand-ink text-xs disabled:opacity-60"
+                            className="min-h-[32px] bg-transparent font-medium outline-none cursor-pointer"
                         />
-                        <span className="h-4 w-px bg-brand-dark/30" />
-                        <Clock size={15} weight="duotone" className="text-brand-ink shrink-0" />
+                        <span className="text-muted-foreground">·</span>
                         <input
                             type="time"
                             value={form.time}
-                            disabled={isViewer}
                             onChange={(e) => setForm({ ...form, time: e.target.value })}
-                            className="bg-transparent outline-none font-medium text-brand-ink text-xs disabled:opacity-60"
+                            className="min-h-[32px] bg-transparent font-medium outline-none cursor-pointer"
                         />
-                        <span className="hidden font-mono text-[10px] font-semibold text-brand-ink/70 md:inline">
-                            GMT+7
-                        </span>
                     </div>
 
-                    {/* Thêm vào lịch Button */}
+                    {/* Nút hành động chính (.btn-skew) */}
                     <button
                         type="button"
                         disabled={!canSubmit || saving}
                         onClick={() => submit('schedule')}
-                        title={isViewer ? t('Chế độ xem không thể lên lịch') : t(`Lên lịch ${form.date} ${form.time}`)}
-                        className={`flex h-9 items-center gap-1.5 rounded-xl border border-brand-dark px-3.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer ${
-                            recurringConfig.enabled
-                                ? 'bg-brand text-brand-ink font-bold shadow-xs'
-                                : 'bg-brand/20 text-brand-ink hover:bg-brand/35'
-                        }`}
+                        className="btn-skew min-h-10 shrink-0 whitespace-nowrap cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        {recurringConfig.enabled ? (
-                            <ArrowsClockwise size={16} weight="bold" />
-                        ) : (
-                            <CalendarBlank size={16} weight="bold" />
-                        )}
-                        <span>
-                            {isEditorNeedingApproval
-                                ? t('Lên lịch & Gửi duyệt')
-                                : recurringConfig.enabled
-                                ? t('🔁 Lên lịch {count} kỳ định kỳ', { count: recurringConfig.count })
-                                : t('Thêm vào lịch')}
-                        </span>
+                        <CalendarBlank size={16} weight="bold" />
+                        <span>{saving ? t('Đang lưu…') : t('Lên lịch phát hành')}</span>
                     </button>
 
-                    {/* Đăng ngay Button */}
                     <button
                         type="button"
                         disabled={!canSubmit || saving}
                         onClick={() => submit('publish')}
-                        title={isViewer ? t('Chế độ xem không thể đăng bài') : undefined}
-                        className={`btn-skew disabled:opacity-40 disabled:cursor-not-allowed ${
-                            isEditorNeedingApproval ? 'bg-amber-400 text-zinc-950 font-bold' : ''
-                        }`}
+                        className="inline-flex min-h-10 shrink-0 whitespace-nowrap cursor-pointer items-center gap-1.5 rounded-xl border border-border bg-card px-4 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
                     >
-                        <PaperPlaneTilt size={16} weight="bold" />
-                        <span>
-                            {isEditorNeedingApproval ? t('Gửi duyệt bài') : t('Đăng ngay')}
-                            {selectedAccounts.length > 0 ? ` · ${selectedAccounts.length} kênh` : ''}
-                        </span>
+                        <PaperPlaneTilt size={15} weight="bold" />
+                        <span>{t('Đăng ngay')}</span>
                     </button>
                 </div>
             </div>
 
-            {/* Publishing Confirmation Dialog */}
+            {/* Modal xác nhận xuất bản ngay (PublishConfirmation) */}
             {publishReview && (
                 <PublishConfirmation
                     review={publishReview}
@@ -2473,43 +2402,49 @@ export default function CreatePost() {
                     onResult={(result) => {
                         setPublishReview(null);
                         toast({
-                            title: t(
-                                result.status === 'queued'
-                                    ? 'Lên lịch thành công'
-                                    : result.status === 'published'
-                                        ? 'Bài viết đã xuất bản'
-                                        : result.status === 'processing'
-                                            ? 'Đang xử lý xuất bản'
-                                            : 'Cần kiểm tra lại phân phối'
-                            ),
-                            description: t(result.message || 'Xem lịch sử xuất bản để biết chi tiết.'),
-                            ...(result.status === 'failed' || result.status === 'unknown' ? { variant: 'destructive' } : {}),
+                            title: t('Đã xuất bản bài viết thành công!'),
+                            description: t('Các kênh đã tiếp nhận bài đăng.'),
                         });
-                        navigate('/posts?post=' + result.postId);
+                        navigate('/posts');
                     }}
                 />
             )}
 
-            {/* Confirm Delete Dialog */}
+            {/* Hộp thoại xác nhận xoá bài */}
             <ConfirmDialog
                 open={deleteOpen}
                 onOpenChange={setDeleteOpen}
-                title={t('Xoá bài viết này?')}
-                description={t('Bản nháp hoặc bài viết sẽ bị xoá khỏi hệ thống.')}
-                confirmLabel={t('Xoá bài viết')}
-                destructive
+                title={t('Xoá bài viết')}
+                description={t('Bạn có chắc chắn muốn xoá bài viết này? Hành động này không thể hoàn tác.')}
                 onConfirm={remove}
             />
 
-            {/* AI Multi-Platform Repurposer Dialog */}
+            {/* Hộp thoại Dùng Mẫu bài viết */}
+            <UseTemplateDialog
+                brandId={form.brand_id}
+                demoMode={demoMode}
+                disabled={isViewer || saving || uploading || loading}
+                open={isTemplatePickerOpen}
+                onOpenChange={setIsTemplatePickerOpen}
+                trigger={() => null}
+                onSelect={(template) => {
+                    setForm((prev) => ({
+                        ...prev,
+                        title: template.title || prev.title,
+                        caption: template.caption || prev.caption,
+                    }));
+                    toast({ title: t('Đã áp dụng mẫu bài viết!') });
+                }}
+            />
+
+            {/* Hộp thoại Tái sinh đa kênh với AI */}
             <AiRepurposeDialog
                 open={isAiRepurposeOpen}
-                onClose={() => setIsAiRepurposeOpen(false)}
-                baseCaption={currentEditorValue || form.caption}
-                baseTitle={form.title}
-                brandId={form.brand_id}
+                onOpenChange={setIsAiRepurposeOpen}
+                sourceText={currentEditorValue || form.caption}
+                sourceMedia={form.media}
                 selectedAccounts={selectedAccounts}
-                aiConfig={aiConfig}
+                brandId={form.brand_id}
                 onApply={handleApplyRepurposedCaptions}
             />
         </div>

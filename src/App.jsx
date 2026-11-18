@@ -29,12 +29,14 @@ import SocialInbox from '@/pages/SocialInbox';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
 import Shortlinks from '@/pages/Shortlinks';
+import DashboardV2 from '@/pages/DashboardV2';
 import PrivacyPolicy from '@/pages/PrivacyPolicy';
 import TermsOfService from '@/pages/TermsOfService';
 import CookiePolicy from '@/pages/CookiePolicy';
 import DataDeletion from '@/pages/DataDeletion';
 import LandingPage from '@/pages/LandingPage';
 import LandingPage2 from '@/pages/LandingPage2';
+import LandingPage3 from '@/pages/LandingPage3';
 import ContentStrategy2 from '@/pages/ContentStrategy2';
 import LoginPage from '@/pages/LoginPage';
 import OAuthConsent from '@/pages/OAuthConsent';
@@ -91,6 +93,7 @@ export default function App() {
                             <Route path="/checkout" element={<LandingPage />} />
                             <Route path="/thanh-toan" element={<LandingPage />} />
                             <Route path="/landing-2" element={<LandingPage2 />} />
+                            <Route path="/landing-3" element={<LandingPage3 />} />
                             <Route path="/strategy-2" element={<ContentStrategy2 />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/oauth/consent" element={<OAuthConsent />} />
@@ -109,11 +112,14 @@ export default function App() {
                                 <Route path="/overview" element={<Overview />} />
                                 <Route path="/app" element={<Overview />} />
                                 <Route path="/dashboard" element={<Overview />} />
+                                <Route path="/dashboard-v2" element={<DashboardV2 />} />
+                                <Route path="/dashboard-clean" element={<Navigate to="/overview" replace />} />
                                 <Route path="/calendar" element={<ContentCalendar />} />
                                 <Route path="/inbox" element={<SocialInbox />} />
                                 <Route path="/social-inbox" element={<Navigate to="/inbox" replace />} />
                                 <Route path="/agent" element={<ChatAgent />} />
                                 <Route path="/create" element={<CreatePost />} />
+                                <Route path="/create-clean" element={<Navigate to="/create" replace />} />
                                 <Route path="/templates" element={<PostTemplates />} />
                                 <Route path="/templates/create" element={<CreateTemplate />} />
                                 <Route path="/posts" element={<AllPosts />} />
@@ -123,6 +129,7 @@ export default function App() {
                                 <Route path="/strategy/pillars" element={<ContentPillars />} />
                                 <Route path="/strategy/angles" element={<ContentAngles />} />
                                 <Route path="/analytics" element={<Analytics />} />
+                                <Route path="/analytics-clean" element={<Navigate to="/analytics" replace />} />
                                 <Route path="/media" element={<MediaLibrary />} />
                                 <Route path="/interactive-images" element={<InteractiveImages />} />
                                 <Route path="/shortlinks" element={<Shortlinks />} />

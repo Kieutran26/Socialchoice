@@ -79,7 +79,7 @@ import { desktopRequest } from './desktop/request';
             revoke: input => request('admin/licenses/revoke', [input]),
         },
         customers: {
-            config: () => request('customer/config'),
+            config: (options = {}) => request('customer/config', undefined, { silent: true, ...options }),
             login: input => request('customer/login', [input]),
             register: input => request('customer/register', [input]),
             recover: input => request('customer/recover', [input]),
