@@ -1,166 +1,262 @@
-﻿import MediaAttachments from './media-attachments';
-import RecurringPostSettings from './recurring-post-settings';
-import { referencedMediaIds } from '@/lib/publishing-content';
-import PublishConfirmation from './PublishConfirmation';
-import { useTranslation } from '@/lib/i18n';
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { appClient } from '@/api/app-client';
-import { isDesktop } from '@/api/desktop/runtime';
-import { Dialog, DialogContent } from '../ui/dialog';
-import { Button } from '../ui/button';
-import StatusBadge from '../common/StatusBadge';
-import ScheduleFields from '../composer/ScheduleFields';
-import { DEFAULT_TIMEZONE, POST_STATUS_LABEL, POST_STATUS_TONE, JOB_STATUS_LABEL } from '@/lib/constants';
-import { toZonedParts, toUtcIso } from '@/lib/tz';
-import { formatDateTime } from '@/lib/format';
-import { PLATFORM_LABEL } from '@/lib/constants';
-import { PLATFORM_CONFIG } from '../common/PlatformBadge';
-import { getAccountAvatarUrl } from '@/lib/account-avatar';
-import { useAuth } from '@/lib/AuthContext';
-import { useToast } from '../ui/use-toast';
 import {
+    ArrowsClockwise,
+    Article,
+    Bookmark,
     CalendarCheck,
-    PencilSimple,
+    CaretDown,
+    ChatCircle,
+    CheckCircle,
+    Clock,
     CopySimple,
     Globe,
     Heart,
-    ChatCircle,
-    ShareFat,
     PaperPlaneTilt,
-    Bookmark,
-    ThumbsUp,
-    Repeat,
-    DotsThree,
-    DeviceMobile,
-    CheckCircle,
+    PencilSimple,
     ShieldCheck,
-    WifiHigh,
-    BatteryFull,
-    CaretDown,
-    Clock,
-    ArrowsClockwise,
 } from '@phosphor-icons/react';
+import { appClient } from '@/api/app-client';
+import { isDesktop } from '@/api/desktop/runtime';
+import { useAuth } from '@/lib/AuthContext';
+import { useTranslation } from '@/lib/i18n';
+import { DEFAULT_TIMEZONE, JOB_STATUS_LABEL, PLATFORM_LABEL, POST_STATUS_LABEL, POST_STATUS_TONE } from '@/lib/constants';
+import { formatDateTime } from '@/lib/format';
+import { referencedMediaIds } from '@/lib/publishing-content';
+import { getAccountAvatarUrl } from '@/lib/account-avatar';
+import { toUtcIso, toZonedParts } from '@/lib/tz';
+import { Dialog, DialogContent } from '../ui/dialog';
+import { Button } from '../ui/button';
+import { useToast } from '../ui/use-toast';
+import StatusBadge from '../common/StatusBadge';
+import { PLATFORM_CONFIG } from '../common/PlatformBadge';
+import ScheduleFields from '../composer/ScheduleFields';
+import RecurringPostSettings from './recurring-post-settings';
+import PublishConfirmation from './PublishConfirmation';
 
 export default function PostDetailSheet({ post, onClose, onChanged, accounts: initialAccounts = [] }) {
     const { t } = useTranslation();
     const { user } = useAuth();
     const { toast } = useToast();
-    const [review, setReview] = useState(null), [delivery, setDelivery] = useState(null);
-    const [images, setImages] = useState([]), [platformImages, setPlatformImages] = useState({}), [jobs, setJobs] = useState([]), [variants, setVariants] = useState([]);
+    const [review, setReview] = useState(null);
+    const [delivery, setDelivery] = useState(null);
+    const [images, setImages] = useState([]);
+    const [platformImages, setPlatformImages] = useState({});
+    const [jobs, setJobs] = useState([]);
+    const [variants, setVariants] = useState([]);
     const [accounts, setAccounts] = useState(initialAccounts);
-    const [error, setError] = useState(''), [busy, setBusy] = useState(false), [refreshKey, setRefreshKey] = useState(0), [loaded, setLoaded] = useState(false);
-    const [value, setValue] = useState(() => ({ ...toZonedParts(post.scheduled_at, post.timezone || DEFAULT_TIMEZONE), timezone: post.timezone || DEFAULT_TIMEZONE }));
+    const [error, setError] = useState('');
+    const [busy, setBusy] = useState(false);
+    const [refreshKey, setRefreshKey] = useState(0);
+    const [loaded, setLoaded] = useState(false);
+    const [value, setValue] = useState(() => ({
+        ...toZonedParts(post.scheduled_at, post.timezone || DEFAULT_TIMEZONE),
+        timezone: post.timezone || DEFAULT_TIMEZONE,
+    }));
     const [selectedPreviewPlatform, setSelectedPreviewPlatform] = useState('');
 
-    // Collapsible states for advanced forms
     const [openReschedule, setOpenReschedule] = useState(false);
     const [openRecurring, setOpenRecurring] = useState(false);
     const [openHistory, setOpenHistory] = useState(false);
 
-    // Fetch accounts if not passed
     useEffect(() => {
         if (accounts.length) return;
         let active = true;
         appClient.entities.SocialAccount.filter({ is_demo: post.is_demo }, { limit: 100 })
-            .then(page => {
+            .then((page) => {
                 if (active) setAccounts(page.items || []);
             })
             .catch(() => {});
-        return () => { active = false; };
+        return () => {
+            active = false;
+        };
     }, [post.is_demo, accounts.length]);
 
     useEffect(() => {
-        let active = true, timer;
+        let active = true;
+        let timer;
         async function refresh() {
             try {
                 let result = null;
-                if (!post.is_demo) try { result = await appClient.publishing.status(post.id); } catch (e) { if (e.status !== 404) throw e; }
-                const [page, versions] = await Promise.all([appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }), appClient.entities.PostVariant.filter({ post_id: post.id }, { limit: 200 })]);
+                if (!post.is_demo) {
+                    try {
+                        result = await appClient.publishing.status(post.id);
+                    } catch (e) {
+                        if (e.status !== 404) throw e;
+                    }
+                }
+                const [page, versions] = await Promise.all([
+                    appClient.entities.PublishJob.filter({ post_id: post.id }, { limit: 200 }),
+                    appClient.entities.PostVariant.filter({ post_id: post.id }, { limit: 200 }),
+                ]);
                 if (!active) return;
-                setLoaded(true); setJobs(page.items); setVariants(versions.items); setDelivery(result);
+                setLoaded(true);
+                setJobs(page.items || []);
+                setVariants(versions.items || []);
+                setDelivery(result);
                 const pending = result?.items
-                    ? result.items.some(item => ['queued', 'processing'].includes(item.status) || ['queued', 'processing'].includes(item.commentStatus))
-                    : ['queued', 'processing'].includes(result?.status) || ['queued', 'processing'].includes(result?.commentStatus);
+                    ? result.items.some(
+                          (item) =>
+                              ['queued', 'processing'].includes(item.status) ||
+                              ['queued', 'processing'].includes(item.commentStatus)
+                      )
+                    : ['queued', 'processing'].includes(result?.status) ||
+                      ['queued', 'processing'].includes(result?.commentStatus);
                 if (pending) timer = setTimeout(refresh, 5000);
-            } catch (e) { if (active) setError(e.message); }
+            } catch (e) {
+                if (active) setError(e.message);
+            }
         }
-        refresh(); return () => { active = false; clearTimeout(timer); };
+        refresh();
+        return () => {
+            active = false;
+            clearTimeout(timer);
+        };
     }, [post.id, post.is_demo, refreshKey]);
 
     useEffect(() => {
         let active = true;
         const ids = referencedMediaIds(post);
-        setImages([]); setPlatformImages({});
-        if (ids.length) appClient.entities.MediaAsset.filter({ id: { $in: ids } }, { limit: 60 }).then(page => {
-            if (active) {
-                const assets = mediaIds => mediaIds.map(id => page.items.find(asset => asset.id === id)).filter(Boolean);
-                setImages(assets(post.media_ids || []));
-                setPlatformImages(Object.fromEntries(Object.entries(post.platform_media_ids || {}).map(([platform, mediaIds]) => [platform, assets(mediaIds)])));
-            }
-        }).catch(e => { if (active) setError(e.message); });
-        else setPlatformImages(Object.fromEntries(Object.keys(post.platform_media_ids || {}).map(platform => [platform, []])));
-        return () => { active = false; };
+        setImages([]);
+        setPlatformImages({});
+        if (ids.length) {
+            appClient.entities.MediaAsset.filter({ id: { $in: ids } }, { limit: 60 })
+                .then((page) => {
+                    if (!active) return;
+                    const assets = (mediaIds) =>
+                        mediaIds.map((id) => page.items.find((asset) => asset.id === id)).filter(Boolean);
+                    setImages(assets(post.media_ids || []));
+                    setPlatformImages(
+                        Object.fromEntries(
+                            Object.entries(post.platform_media_ids || {}).map(([platform, mediaIds]) => [
+                                platform,
+                                assets(mediaIds),
+                            ])
+                        )
+                    );
+                })
+                .catch((e) => {
+                    if (active) setError(e.message);
+                });
+        } else {
+            setPlatformImages(
+                Object.fromEntries(Object.keys(post.platform_media_ids || {}).map((platform) => [platform, []]))
+            );
+        }
+        return () => {
+            active = false;
+        };
     }, [post.id, post.media_ids, post.platform_media_ids]);
 
     const items = delivery?.items || (delivery?.attemptId ? [delivery] : []);
-    const queued = items.some(item => item.status === 'queued');
-    const status = delivery && !['prepared', 'calendar_plan'].includes(delivery.status) ? delivery.status === 'queued' ? 'scheduled' : delivery.status : post.status;
-    const locked = !loaded || queued || items.some(item => !['prepared', 'cancelled'].includes(item.status));
+    const queued = items.some((item) => item.status === 'queued');
+    const status =
+        delivery && !['prepared', 'calendar_plan'].includes(delivery.status)
+            ? delivery.status === 'queued'
+                ? 'scheduled'
+                : delivery.status
+            : post.status;
+    const locked = !loaded || queued || items.some((item) => !['prepared', 'cancelled'].includes(item.status));
     const caption = delivery?.caption || post.caption || '';
 
-    // Determine target accounts for this post
     const targetAccounts = useMemo(() => {
         if (!post.account_ids || !post.account_ids.length) return [];
-        return post.account_ids.map(id => accounts.find(a => a.id === id)).filter(Boolean);
+        return post.account_ids.map((id) => accounts.find((a) => a.id === id)).filter(Boolean);
     }, [post.account_ids, accounts]);
 
-    // Available platforms for preview simulator
     const availablePlatforms = useMemo(() => {
         const set = new Set();
         if (items.length) {
-            items.forEach(i => { if (i.platform) set.add(i.platform.toLowerCase()); });
+            items.forEach((i) => {
+                if (i.platform) set.add(i.platform.toLowerCase());
+            });
         }
         if (targetAccounts.length) {
-            targetAccounts.forEach(a => { if (a.platform) set.add(a.platform.toLowerCase()); });
+            targetAccounts.forEach((a) => {
+                if (a.platform) set.add(a.platform.toLowerCase());
+            });
         }
         if (!set.size) {
-            set.add('instagram');
             set.add('facebook');
+            set.add('instagram');
             set.add('threads');
         }
         return Array.from(set);
     }, [items, targetAccounts]);
 
-    const activePlatform = selectedPreviewPlatform && availablePlatforms.includes(selectedPreviewPlatform)
-        ? selectedPreviewPlatform
-        : availablePlatforms[0] || 'instagram';
+    const activePlatform =
+        selectedPreviewPlatform && availablePlatforms.includes(selectedPreviewPlatform)
+            ? selectedPreviewPlatform
+            : availablePlatforms[0] || 'facebook';
 
-    // Helper for active account display in preview
+    const activePlatformMedia = platformImages[activePlatform]?.length ? platformImages[activePlatform] : images;
+    const activeCaption = post.platform_captions?.[activePlatform] || caption;
+
     const previewAccount = useMemo(() => {
-        const found = targetAccounts.find(a => (a.platform || '').toLowerCase() === activePlatform);
+        const found = targetAccounts.find((a) => (a.platform || '').toLowerCase() === activePlatform);
         if (found) return found;
-        const itemFound = items.find(i => (i.platform || '').toLowerCase() === activePlatform);
+        const itemFound = items.find((i) => (i.platform || '').toLowerCase() === activePlatform);
         if (itemFound) return { name: itemFound.pageName || itemFound.pageId, username: itemFound.pageName, platform: activePlatform };
-        return { name: 'Socialchoice Account', username: 'socialchoice_hub', platform: activePlatform };
+        return { name: 'Socialchoice', username: 'socialchoice', platform: activePlatform };
     }, [targetAccounts, items, activePlatform]);
 
     const previewAvatarUrl = previewAccount ? getAccountAvatarUrl(previewAccount) : '';
+    const activePlatformCfg = PLATFORM_CONFIG[activePlatform] || {
+        icon: Globe,
+        label: activePlatform,
+        color: 'text-foreground',
+        bg: 'bg-zinc-900',
+    };
+    const ActivePlatformIcon = activePlatformCfg.icon || Globe;
 
-    async function refresh() { setRefreshKey(key => key + 1); await onChanged?.(); }
-    async function action(work) { setBusy(true); setError(''); try { await work(); await refresh(); } catch (e) { setError(e.message); } finally { setBusy(false); } }
+    async function refresh() {
+        setRefreshKey((key) => key + 1);
+        await onChanged?.();
+    }
+
+    async function action(work) {
+        setBusy(true);
+        setError('');
+        try {
+            await work();
+            await refresh();
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+        }
+    }
 
     async function reschedule() {
-        setBusy(true); setError('');
+        setBusy(true);
+        setError('');
         try {
             const time = toUtcIso(value.date, value.time, value.timezone);
             if (post.is_demo || isDesktop()) {
-                const { id, created_date, updated_date, ...data } = post; void created_date; void updated_date;
-                if (!time || toZonedParts(time, value.timezone).date !== value.date || toZonedParts(time, value.timezone).time !== value.time) throw new Error('Choose a valid local time in this timezone.');
-                await appClient.posts.save({ id, data: { ...data, scheduled_at: time, timezone: value.timezone, status: 'scheduled' } }); await onChanged?.(); onClose();
+                const { id, created_date, updated_date, ...data } = post;
+                void created_date;
+                void updated_date;
+                if (
+                    !time ||
+                    toZonedParts(time, value.timezone).date !== value.date ||
+                    toZonedParts(time, value.timezone).time !== value.time
+                ) {
+                    throw new Error('Choose a valid local time in this timezone.');
+                }
+                await appClient.posts.save({
+                    id,
+                    data: { ...data, scheduled_at: time, timezone: value.timezone, status: 'scheduled' },
+                });
+                await onChanged?.();
+                onClose();
+            } else {
+                setReview(await appClient.publishing.prepareSchedule(post.id, time, value.timezone));
             }
-            else setReview(await appClient.publishing.prepareSchedule(post.id, time, value.timezone));
-        } catch (e) { setError(e.message); } finally { setBusy(false); }
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setBusy(false);
+        }
     }
 
     const handleApprove = async () => {
@@ -168,6 +264,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
         setError('');
         try {
             const { id, created_date, updated_date, ...rest } = post;
+            void id;
             void created_date;
             void updated_date;
             await appClient.posts.save({
@@ -192,15 +289,21 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
 
     const cancelRecurringSeries = async () => {
         if (!post.recurring_group_id) return;
-        if (!window.confirm(t('Bạn có chắc chắn muốn hủy tất cả các bài viết chưa xuất bản trong chuỗi định kỳ này?'))) return;
+        if (
+            !window.confirm(
+                t('Bạn có chắc chắn muốn hủy tất cả các bài viết chưa xuất bản trong chuỗi định kỳ này?')
+            )
+        ) {
+            return;
+        }
         setBusy(true);
         setError('');
         try {
-            const seriesPosts = await appClient.entities.Post.filter({
-                recurring_group_id: post.recurring_group_id,
-            }, { limit: 100 });
-
-            const cancelable = (seriesPosts.items || []).filter(p => ['draft', 'scheduled'].includes(p.status));
+            const seriesPosts = await appClient.entities.Post.filter(
+                { recurring_group_id: post.recurring_group_id },
+                { limit: 100 }
+            );
+            const cancelable = (seriesPosts.items || []).filter((p) => ['draft', 'scheduled'].includes(p.status));
             for (const item of cancelable) {
                 await appClient.posts.save({
                     id: item.id,
@@ -224,258 +327,235 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
     };
 
     return (
-        <Dialog open onOpenChange={open => !open && !busy && onClose()}>
-            <DialogContent className="max-w-6xl xl:max-w-7xl w-[calc(100%-2rem)] max-h-[92vh] p-0 overflow-hidden flex flex-col rounded-3xl bg-card border border-border shadow-2xl">
-                
-                {/* 1. TOP STUDIO HEADER */}
-                <div className="p-3.5 px-6 border-b border-border flex items-center justify-between bg-muted/40 shrink-0 pr-14">
-                    <div className="flex items-center gap-2.5">
-                        <span className="size-7 rounded-lg bg-brand text-brand-ink flex items-center justify-center text-xs font-bold">
-                            <DeviceMobile size={15} weight="bold" />
+        <Dialog open onOpenChange={(open) => !open && !busy && onClose()}>
+            <DialogContent className="flex max-h-[92vh] w-[calc(100%-2rem)] max-w-5xl flex-col overflow-hidden rounded-2xl border border-border bg-card p-0 shadow-2xl xl:max-w-6xl">
+                {/* 1. CLEAN STUDIO HEADER */}
+                <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border bg-zinc-50/80 px-5 py-3.5 pr-14 sm:px-6">
+                    <div className="flex min-w-0 items-center gap-3">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-brand-dark bg-brand text-brand-ink">
+                            <Article size={18} weight="duotone" />
                         </span>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h2 className="text-sm font-bold font-heading text-foreground">
-                                    Content Studio: Kiểm duyệt trước khi đăng (QA Review)
+                        <div className="min-w-0">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h2 className="truncate font-heading text-sm font-semibold text-foreground sm:text-base">
+                                    {t('Chi tiết & Kiểm duyệt bài viết')}
                                 </h2>
-                                <span className="text-xs font-mono text-muted-foreground">
+                                <StatusBadge tone={POST_STATUS_TONE[status]}>
+                                    {POST_STATUS_LABEL[status] || status}
+                                </StatusBadge>
+                                {post.needs_approval && (
+                                    <StatusBadge tone="warn">{t('Chờ phê duyệt')}</StatusBadge>
+                                )}
+                                <span className="font-mono text-xs text-muted-foreground">
                                     #{post.id ? post.id.slice(-6).toUpperCase() : ''}
                                 </span>
                             </div>
-                            <p className="text-[11px] text-muted-foreground">
-                                Xem trước hiển thị trên thiết bị di động thực tế & kiểm tra tiêu chuẩn xuất bản
+                            <p className="mt-0.5 truncate text-xs text-muted-foreground">
+                                {post.scheduled_at
+                                    ? `${t('Lịch xuất bản')}: ${formatDateTime(post.scheduled_at, post.timezone)} (${post.timezone || DEFAULT_TIMEZONE})`
+                                    : t('Bản nháp chưa đặt lịch')}
                             </p>
                         </div>
                     </div>
                 </div>
 
-                {/* 2. BODY: SPLIT PHONE SIMULATOR (LEFT) + QA CONTROLS (RIGHT) */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 min-h-0 flex-1 overflow-hidden">
-                    
-                    {/* LEFT COLUMN: Phone Simulator (Narrower: ~30-33%) */}
-                    <div className="lg:col-span-4 bg-muted/30 p-5 flex flex-col items-center justify-start border-r border-border overflow-y-auto custom-scrollbar">
-                        
-                        {/* Platform Switcher Pills */}
-                        <div className="mb-4 flex items-center bg-card border border-border rounded-xl p-0.5 text-xs shrink-0">
-                            {availablePlatforms.map(platform => {
+                {/* 2. BODY: CLEAN MOCKUP PREVIEW (LEFT) + CONTROLS (RIGHT) */}
+                <div className="grid min-h-0 flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-12 lg:overflow-hidden">
+                    {/* LEFT COLUMN: Clean Social Feed Mockup (No clunky iPhone bezel) */}
+                    <div className="flex flex-col space-y-4 border-b border-border bg-zinc-50/60 p-5 lg:col-span-5 lg:overflow-y-auto lg:border-b-0 lg:border-r">
+                        {/* Platform Switcher */}
+                        <div className="flex flex-wrap items-center gap-1 rounded-xl border border-border bg-card p-1 self-start">
+                            {availablePlatforms.map((platform) => {
                                 const isActive = activePlatform === platform;
+                                const cfg = PLATFORM_CONFIG[platform];
+                                const Icon = cfg?.icon || Globe;
                                 return (
                                     <button
                                         key={platform}
                                         type="button"
                                         onClick={() => setSelectedPreviewPlatform(platform)}
-                                        className={`px-3 py-1 rounded-lg capitalize font-semibold transition-all cursor-pointer ${
+                                        className={`inline-flex min-h-8 cursor-pointer items-center gap-1.5 rounded-lg px-2.5 text-xs font-medium capitalize transition-colors ${
                                             isActive
-                                                ? 'bg-brand text-brand-ink font-bold'
-                                                : 'text-muted-foreground hover:text-foreground'
+                                                ? 'bg-brand font-semibold text-brand-ink'
+                                                : 'text-zinc-600 hover:text-foreground'
                                         }`}
                                     >
-                                        {platform}
+                                        <Icon size={13} weight="bold" />
+                                        <span>{platform}</span>
                                     </button>
                                 );
                             })}
                         </div>
 
-                        {/* Phone Mockup Frame (Narrower & Sleeker: 245px width) */}
-                        <div
-                            className="w-[230px] sm:w-[248px] h-[450px] bg-black rounded-[32px] p-2 shadow-2xl relative border-2 border-zinc-700/40 flex flex-col shrink-0"
-                            style={{ boxShadow: '0 20px 40px -10px rgba(0,0,0,0.3)' }}
-                        >
-                            <div className="w-full h-full bg-white rounded-[24px] overflow-hidden flex flex-col relative text-zinc-900">
-                                
-                                {/* Dynamic Island / Notch */}
-                                <div className="w-16 h-3.5 bg-black rounded-full absolute top-1.5 left-1/2 -translate-x-1/2 z-30"></div>
-
-                                {/* Phone Status Bar */}
-                                <div className="pt-5 px-3 pb-1 flex items-center justify-between text-[9px] font-bold text-zinc-800 bg-white select-none">
-                                    <span>09:41</span>
-                                    <div className="flex items-center gap-1 text-zinc-700">
-                                        <WifiHigh size={10} weight="bold" />
-                                        <BatteryFull size={11} weight="fill" />
-                                    </div>
-                                </div>
-
-                                {/* App Bar Header */}
-                                <div className="px-3 py-1 border-b border-zinc-100 flex items-center justify-between text-[11px] select-none">
-                                    <span className="font-bold text-zinc-900 capitalize font-heading">
-                                        {activePlatform}
-                                    </span>
-                                    <div className="flex items-center gap-2 text-zinc-600">
-                                        <Heart size={13} />
-                                        <ChatCircle size={13} />
-                                    </div>
-                                </div>
-
-                                {/* Scrollable Feed Post inside Phone */}
-                                <div className="flex-1 overflow-y-auto custom-scrollbar select-text">
-                                    
-                                    {/* Feed Header */}
-                                    <div className="p-2 flex items-center justify-between text-xs">
-                                        <div className="flex items-center gap-1.5 min-w-0">
-                                            {previewAvatarUrl ? (
-                                                <div className="size-6 rounded-full bg-gradient-to-tr from-amber-500 to-pink-600 p-[1px] shrink-0">
-                                                    <img
-                                                        src={previewAvatarUrl}
-                                                        alt=""
-                                                        className="size-full rounded-full object-cover bg-white"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="size-5.5 rounded-full bg-brand text-brand-ink flex items-center justify-center text-[9px] font-bold shrink-0">
-                                                    {previewAccount?.name?.[0]?.toUpperCase() || 'D'}
-                                                </div>
-                                            )}
-                                            <div className="min-w-0">
-                                                <span className="font-bold text-zinc-900 block leading-tight truncate text-[10px]">
-                                                    {previewAccount?.username || previewAccount?.name}
-                                                </span>
-                                                <span className="text-[8px] text-zinc-400 block leading-tight">
-                                                    {t('Sponsored')} · {t('Feed')}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <DotsThree size={14} weight="bold" className="text-zinc-400 shrink-0" />
-                                    </div>
-
-                                    {/* Feed Media Display */}
-                                    {images.length > 0 ? (
-                                        <div className="w-full bg-brand overflow-hidden">
-                                            {images[0]?.file_type === 'video' ? (
-                                                <video src={images[0].file_url} controls preload="metadata" className="w-full max-h-40 object-cover" />
-                                            ) : (
-                                                <img src={images[0].file_url} alt="" className="w-full max-h-40 object-cover" />
-                                            )}
-                                        </div>
+                        {/* Clean Social Post Mockup Card */}
+                        <div className="panel space-y-3 bg-card p-4">
+                            <div className="flex items-center justify-between gap-2">
+                                <div className="flex min-w-0 items-center gap-2.5">
+                                    {previewAvatarUrl ? (
+                                        <img
+                                            src={previewAvatarUrl}
+                                            alt=""
+                                            className="h-9 w-9 shrink-0 rounded-full border border-border object-cover"
+                                        />
                                     ) : (
-                                        <div className="w-full h-24 bg-zinc-50 border-y border-zinc-100 flex items-center justify-center p-2 text-center text-zinc-400 text-[10px] italic">
-                                            {t('Text post without shared media')}
+                                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand text-xs font-bold text-brand-ink">
+                                            {previewAccount?.name?.[0]?.toUpperCase() || 'S'}
                                         </div>
                                     )}
-
-                                    {/* Feed Reactions & Caption */}
-                                    <div className="p-2.5 space-y-1 text-xs">
-                                        <div className="flex items-center justify-between text-sm pb-0.5 text-zinc-700">
-                                            <div className="flex items-center gap-2.5">
-                                                <Heart size={14} className="hover:text-red-500 cursor-pointer" />
-                                                <ChatCircle size={14} className="cursor-pointer" />
-                                                <PaperPlaneTilt size={14} className="cursor-pointer" />
-                                            </div>
-                                            <Bookmark size={14} className="cursor-pointer" />
+                                    <div className="min-w-0">
+                                        <div className="truncate text-xs font-semibold text-foreground">
+                                            {previewAccount?.name || previewAccount?.username}
                                         </div>
-                                        <div className="text-[10px] leading-relaxed text-zinc-800">
-                                            <span className="font-bold mr-1">
-                                                {previewAccount?.username || previewAccount?.name}
-                                            </span>
-                                            <span className="whitespace-pre-wrap break-words">
-                                                {caption || 'bb'}
-                                            </span>
-                                        </div>
-                                        <div className="text-[8px] text-zinc-400 uppercase pt-0.5">
-                                            {formatDateTime(post.scheduled_at, post.timezone) || '4 phút trước'}
+                                        <div className="text-xs text-muted-foreground">
+                                            {post.scheduled_at
+                                                ? formatDateTime(post.scheduled_at, post.timezone)
+                                                : t('Vừa xong')}
                                         </div>
                                     </div>
-
                                 </div>
-
-                            </div>
-                        </div>
-
-                        <p className="text-[11px] text-muted-foreground text-center mt-3 font-medium">
-                            {t('Simulated live preview for')} <span className="capitalize font-bold text-foreground">{activePlatform}</span>
-                        </p>
-
-                    </div>
-
-                    {/* RIGHT COLUMN: QA Checklist & Publishing Controls (Wider: ~67-70%) */}
-                    <div className="lg:col-span-8 p-6 overflow-y-auto space-y-5 custom-scrollbar">
-                        
-                        {/* Title, Status & Schedule Summary */}
-                        <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                                <StatusBadge tone={POST_STATUS_TONE[status]}>
-                                    {POST_STATUS_LABEL[status] || status}
-                                </StatusBadge>
-                                {post.needs_approval && (
-                                    <StatusBadge tone="warn">
-                                        {t('Chờ phê duyệt')}
-                                    </StatusBadge>
-                                )}
-                                <span className="text-xs font-mono text-muted-foreground">
-                                    #{post.id ? post.id.slice(-6).toUpperCase() : ''}
+                                <span
+                                    className={`inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${activePlatformCfg.bg || 'bg-zinc-900'} text-white`}
+                                    title={activePlatform}
+                                >
+                                    <ActivePlatformIcon size={14} weight="fill" />
                                 </span>
                             </div>
-                            <h3 className="font-heading font-bold text-xl text-foreground leading-tight">
-                                {post.title || t('Untitled post')}
-                            </h3>
-                            {post.scheduled_at && (
-                                <p className="text-xs text-muted-foreground flex items-center gap-1.5">
-                                    <Clock size={13} className="text-muted-foreground" />
-                                    <span>{t('Scheduled for')}: <strong>{formatDateTime(post.scheduled_at, post.timezone)}</strong> ({post.timezone || DEFAULT_TIMEZONE})</span>
-                                </p>
+
+                            {/* Caption */}
+                            <div className="whitespace-pre-wrap break-words text-xs leading-relaxed text-foreground">
+                                {activeCaption || t('Chưa có nội dung caption.')}
+                            </div>
+
+                            {/* Media */}
+                            {activePlatformMedia.length > 0 && (
+                                <div className="overflow-hidden rounded-xl border border-border bg-zinc-100">
+                                    {activePlatformMedia[0]?.file_type === 'video' ? (
+                                        <video
+                                            src={activePlatformMedia[0].file_url}
+                                            controls
+                                            preload="metadata"
+                                            className="max-h-56 w-full object-cover"
+                                        />
+                                    ) : (
+                                        <img
+                                            src={activePlatformMedia[0].file_url}
+                                            alt=""
+                                            className="max-h-56 w-full object-cover"
+                                        />
+                                    )}
+                                </div>
                             )}
+
+                            {/* Mockup Action Bar */}
+                            <div className="flex items-center justify-between border-t border-border pt-2.5 text-muted-foreground">
+                                <div className="flex items-center gap-4">
+                                    <Heart size={15} />
+                                    <ChatCircle size={15} />
+                                    <PaperPlaneTilt size={15} />
+                                </div>
+                                <Bookmark size={15} />
+                            </div>
                         </div>
 
-                        {/* QA Verification Checklist */}
-                        <div className="p-4 rounded-2xl bg-muted/30 border border-border space-y-2.5">
-                            <div className="text-xs font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                        {/* Compact QA Summary Strip */}
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                            <div className="rounded-xl border border-border bg-card p-2.5">
+                                <div className="text-muted-foreground">{t('Media')}</div>
+                                <div className="mt-0.5 font-semibold text-foreground">
+                                    {images.length > 0 ? `${images.length} ${t('tệp')}` : t('Văn bản')}
+                                </div>
+                            </div>
+                            <div className="rounded-xl border border-border bg-card p-2.5">
+                                <div className="text-muted-foreground">{t('Độ dài')}</div>
+                                <div className="mt-0.5 font-semibold tabular-nums text-foreground">
+                                    {activeCaption?.length || 0} {t('ký tự')}
+                                </div>
+                            </div>
+                            <div className="rounded-xl border border-border bg-card p-2.5">
+                                <div className="text-muted-foreground">{t('Kênh đích')}</div>
+                                <div className="mt-0.5 font-semibold tabular-nums text-foreground">
+                                    {targetAccounts.length || items.length} {t('kênh')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT COLUMN: Post Metadata, Channels & Controls */}
+                    <div className="space-y-5 p-5 sm:p-6 lg:col-span-7 lg:overflow-y-auto">
+                        {/* Title */}
+                        <div className="space-y-1.5">
+                            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                {t('Tiêu đề bài viết')}
+                            </span>
+                            <h3 className="font-heading text-lg font-semibold leading-snug text-foreground">
+                                {post.title || t('Bài viết chưa đặt tiêu đề')}
+                            </h3>
+                        </div>
+
+                        {/* QA Checklist Card */}
+                        <div className="panel space-y-2.5 bg-zinc-50/70 p-4">
+                            <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-foreground">
                                 <ShieldCheck size={16} weight="bold" className="text-emerald-600" />
-                                <span>{t('Publishing QA Checklist')}</span>
+                                <span>{t('Kiểm duyệt tiêu chuẩn xuất bản')}</span>
                             </div>
                             <div className="space-y-1.5 text-xs">
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-                                    <span className="flex items-center gap-2 text-foreground font-medium">
+                                <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2">
+                                    <span className="flex items-center gap-2 font-medium text-foreground">
                                         <CheckCircle size={15} weight="fill" className="text-emerald-600" />
-                                        <span>{t('Media format & resolution')}</span>
+                                        <span>{t('Định dạng nội dung & media')}</span>
                                     </span>
-                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                        {images.length > 0 ? `${images.length} tệp (Hợp lệ)` : 'Chữ thuần túy'}
+                                    <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                        {images.length > 0 ? `${images.length} ${t('tệp hợp lệ')}` : t('Chữ thuần túy')}
                                     </span>
                                 </div>
 
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-                                    <span className="flex items-center gap-2 text-foreground font-medium">
+                                <div className="flex items-center justify-between rounded-xl border border-border bg-card px-3 py-2">
+                                    <span className="flex items-center gap-2 font-medium text-foreground">
                                         <CheckCircle size={15} weight="fill" className="text-emerald-600" />
-                                        <span>{t('Caption length safety')} ({caption?.length || 0} ký tự)</span>
+                                        <span>{t('Giới hạn ký tự an toàn')} ({activeCaption?.length || 0})</span>
                                     </span>
-                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                        {t('Safe')}
-                                    </span>
-                                </div>
-
-                                <div className="flex items-center justify-between p-2 rounded-xl bg-card border border-border">
-                                    <span className="flex items-center gap-2 text-foreground font-medium">
-                                        <CheckCircle size={15} weight="fill" className="text-emerald-600" />
-                                        <span>{t('Destination channel connections')}</span>
-                                    </span>
-                                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                                        {targetAccounts.length || items.length} kênh sẵn sàng
+                                    <span className="rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700">
+                                        {t('Đạt chuẩn')}
                                     </span>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Target Channels / Results by Account */}
+                        {/* Target Channels / Results */}
                         <div className="space-y-2">
-                            <h4 className="font-heading font-bold text-xs uppercase tracking-wider text-muted-foreground">
-                                {t('Target Accounts & Delivery Status')} ({items.length || targetAccounts.length})
+                            <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                {t('Kênh phân phối & Trạng thái')} ({items.length || targetAccounts.length})
                             </h4>
 
                             {items.length > 0 ? (
                                 <div className="space-y-2">
-                                    {items.map(item => (
-                                        <div key={item.attemptId} className="rounded-xl border border-border p-3 text-sm space-y-2 bg-card">
-                                            <div className="flex items-center justify-between">
-                                                <p className="font-bold text-xs text-foreground truncate">
+                                    {items.map((item) => (
+                                        <div key={item.attemptId} className="space-y-2 rounded-xl border border-border bg-card p-3 text-xs">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="truncate font-semibold text-foreground">
                                                     {item.pageName} · {PLATFORM_LABEL[item.platform || 'facebook']}
                                                 </p>
-                                                <StatusBadge tone={POST_STATUS_TONE[item.status === 'queued' ? 'scheduled' : item.status]}>
-                                                    {t(item.status === 'queued' ? 'Scheduled' : POST_STATUS_LABEL[item.status] || item.status)}
+                                                <StatusBadge
+                                                    tone={POST_STATUS_TONE[item.status === 'queued' ? 'scheduled' : item.status]}
+                                                >
+                                                    {t(
+                                                        item.status === 'queued'
+                                                            ? 'Scheduled'
+                                                            : POST_STATUS_LABEL[item.status] || item.status
+                                                    )}
                                                 </StatusBadge>
                                             </div>
-                                            <p className="whitespace-pre-wrap break-words text-xs text-muted-foreground">{item.caption}</p>
+                                            <p className="line-clamp-2 whitespace-pre-wrap break-words text-muted-foreground">
+                                                {item.caption}
+                                            </p>
                                             {item.publishedUrl && (
-                                                <a href={item.publishedUrl} target="_blank" rel="noreferrer" className="underline text-xs text-primary font-bold">
-                                                    {t('View published post')} →
+                                                <a
+                                                    href={item.publishedUrl}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="inline-block font-semibold text-brand-ink underline"
+                                                >
+                                                    {t('Xem bài viết đã đăng →')}
                                                 </a>
                                             )}
                                         </div>
@@ -483,49 +563,71 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                 </div>
                             ) : targetAccounts.length > 0 ? (
                                 <div className="space-y-1.5">
-                                    {targetAccounts.map(account => {
+                                    {targetAccounts.map((account) => {
                                         const platform = (account.platform || 'facebook').toLowerCase();
-                                        const cfg = PLATFORM_CONFIG[platform] || { icon: Globe, label: platform, bg: 'bg-muted', color: 'text-foreground' };
-                                        const PlatformIcon = cfg.icon;
+                                        const cfg = PLATFORM_CONFIG[platform] || {
+                                            icon: Globe,
+                                            label: platform,
+                                            bg: 'bg-zinc-800',
+                                            color: 'text-white',
+                                        };
+                                        const PlatformIcon = cfg.icon || Globe;
                                         return (
-                                            <div key={account.id} className="p-2.5 rounded-xl border border-border bg-card flex items-center justify-between">
-                                                <div className="flex items-center gap-2.5 min-w-0">
-                                                    <span className={`size-6 rounded-full ${cfg.bg} text-white flex items-center justify-center text-xs shrink-0`}>
-                                                        <PlatformIcon size={12} weight="fill" className={cfg.color} />
+                                            <div
+                                                key={account.id}
+                                                className="flex items-center justify-between rounded-xl border border-border bg-card p-2.5"
+                                            >
+                                                <div className="flex min-w-0 items-center gap-2.5">
+                                                    <span
+                                                        className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${cfg.bg} text-white`}
+                                                    >
+                                                        <PlatformIcon size={14} weight="fill" />
                                                     </span>
-                                                    <span className="text-xs font-bold text-foreground truncate">{account.name}</span>
-                                                    <span className="text-[10px] text-muted-foreground capitalize">({cfg.label})</span>
+                                                    <span className="truncate text-xs font-semibold text-foreground">
+                                                        {account.name}
+                                                    </span>
+                                                    <span className="text-xs capitalize text-muted-foreground">
+                                                        ({cfg.label})
+                                                    </span>
                                                 </div>
-                                                <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                                                    {t('Ready')}
+                                                <span className="rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">
+                                                    {t('Sẵn sàng')}
                                                 </span>
                                             </div>
                                         );
                                     })}
                                 </div>
                             ) : (
-                                <p className="text-xs text-muted-foreground italic">
-                                    {t('No specific accounts assigned yet')}
+                                <p className="text-xs italic text-muted-foreground">
+                                    {t('Chưa gán kênh phân phối nào cho bài viết này.')}
                                 </p>
                             )}
                         </div>
 
                         {/* Recurring Series Info Banner */}
                         {post.recurring_group_id && (
-                            <div className="rounded-xl border border-brand-dark/40 bg-brand/15 p-3 flex items-center justify-between gap-3 text-xs">
+                            <div className="flex items-center justify-between gap-3 rounded-xl border border-brand-dark/40 bg-brand-50 p-3 text-xs">
                                 <div className="flex items-center gap-2.5">
-                                    <span className="text-xl">🔁</span>
+                                    <ArrowsClockwise size={18} weight="bold" className="shrink-0 text-brand-ink" />
                                     <div>
-                                        <div className="flex items-center gap-1.5 font-bold text-brand-ink">
+                                        <div className="flex items-center gap-1.5 font-semibold text-brand-ink">
                                             <span>{t('Bài viết thuộc chuỗi định kỳ')}</span>
                                             {post.recurrence_index && (
-                                                <span className="rounded bg-brand border border-brand-dark px-1.5 py-0.2 text-[10px] font-extrabold">
-                                                    {t('Kỳ {index}/{total}', { index: post.recurrence_index, total: post.recurrence_total || '∞' })}
+                                                <span className="rounded border border-brand-dark bg-brand px-1.5 py-0.5 text-xs font-bold">
+                                                    {t('Kỳ {index}/{total}', {
+                                                        index: post.recurrence_index,
+                                                        total: post.recurrence_total || '∞',
+                                                    })}
                                                 </span>
                                             )}
                                         </div>
-                                        <p className="text-[11px] text-muted-foreground mt-0.5">
-                                            {t('Tần suất:')} {post.recurrence_rule?.frequency === 'weekly' ? t('Hàng tuần') : post.recurrence_rule?.frequency === 'biweekly' ? t('Mỗi 2 tuần') : t('Hàng tháng')} · {post.recurrence_rule?.auto_recycle ? t('Auto-Recycle bật') : t('Cố định')}
+                                        <p className="mt-0.5 text-xs text-muted-foreground">
+                                            {t('Tần suất:')}{' '}
+                                            {post.recurrence_rule?.frequency === 'weekly'
+                                                ? t('Hàng tuần')
+                                                : post.recurrence_rule?.frequency === 'biweekly'
+                                                ? t('Mỗi 2 tuần')
+                                                : t('Hàng tháng')}
                                         </p>
                                     </div>
                                 </div>
@@ -533,7 +635,7 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
                                     type="button"
                                     disabled={busy}
                                     onClick={cancelRecurringSeries}
-                                    className="text-[11px] font-bold text-dangerFg hover:underline cursor-pointer shrink-0"
+                                    className="shrink-0 cursor-pointer text-xs font-semibold text-red-700 hover:underline"
                                 >
                                     {t('Hủy cả chuỗi')}
                                 </button>
@@ -542,164 +644,223 @@ export default function PostDetailSheet({ post, onClose, onChanged, accounts: in
 
                         {/* Auto-DM Info Banner */}
                         {post.auto_dm?.enabled && (
-                            <div className="rounded-xl border border-blue-200 bg-blue-50/70 p-3 space-y-2 text-xs">
+                            <div className="space-y-2 rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-xs">
                                 <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2 font-bold text-blue-900">
-                                        <span className="text-base">💬</span>
-                                        <span>{t('Đang bật Comment-to-Inbox (Auto-DM)')}</span>
-                                    </div>
-                                    <span className="rounded bg-blue-200/80 text-blue-900 text-[10px] font-bold px-2 py-0.5">
+                                    <span className="font-semibold text-blue-900">
+                                        {t('Đang bật Comment-to-Inbox (Auto-DM)')}
+                                    </span>
+                                    <span className="rounded bg-blue-200/80 px-2 py-0.5 text-xs font-semibold text-blue-900">
                                         {post.auto_dm.matchAll ? t('Mọi comment') : t('Khớp từ khóa')}
                                     </span>
                                 </div>
-                                <div className="text-[11px] text-blue-800 space-y-1">
+                                <div className="space-y-1 text-xs text-blue-800">
                                     <div>
-                                        <strong>{t('Từ khóa kích hoạt:')}</strong>{' '}
-                                        <span className="font-mono bg-white/80 px-1.5 py-0.2 rounded border border-blue-200">
-                                            {post.auto_dm.matchAll ? t('Tất cả') : (post.auto_dm.keywords || []).join(', ')}
+                                        <strong>{t('Từ khóa:')}</strong>{' '}
+                                        <span className="rounded border border-blue-200 bg-white/80 px-1.5 py-0.5 font-mono">
+                                            {post.auto_dm.matchAll
+                                                ? t('Tất cả')
+                                                : (post.auto_dm.keywords || []).join(', ')}
                                         </span>
                                     </div>
                                     <div className="truncate">
-                                        <strong>{t('Nội dung gửi vào Inbox:')}</strong> {post.auto_dm.privateMessage?.slice(0, 80)}...
+                                        <strong>{t('Tin nhắn Inbox:')}</strong>{' '}
+                                        {post.auto_dm.privateMessage?.slice(0, 80)}…
                                     </div>
                                 </div>
                             </div>
                         )}
 
-                        {/* Accordion 1: Form Đổi ngày & Giờ đăng */}
-                        {!locked && ['draft', 'scheduled', 'cancelled'].includes(status) && !jobs.some(job => job.attempts > 0) && (
-                            <div className="border border-border rounded-xl overflow-hidden bg-card">
-                                <button
-                                    type="button"
-                                    onClick={() => setOpenReschedule(!openReschedule)}
-                                    className="w-full p-3 bg-muted/30 hover:bg-muted/50 flex items-center justify-between text-xs font-bold text-foreground cursor-pointer transition-colors"
-                                >
-                                    <span className="flex items-center gap-2">
-                                        <Clock size={15} weight="bold" className="text-brand-dark" />
-                                        <span>{t('Plan / reschedule')}</span>
-                                    </span>
-                                    <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${openReschedule ? 'rotate-180' : ''}`} />
-                                </button>
-                                {openReschedule && (
-                                    <div className="p-4 space-y-3 border-t border-border text-xs bg-card">
-                                        <ScheduleFields value={value} onChange={patch => setValue({ ...value, ...patch })} />
-                                        <p className="label-xs text-muted-foreground">{t(isDesktop() ? 'This is a local plan only. No automatic publishing.' : 'Review the accounts, content and time before enabling automatic publishing.')}</p>
-                                        <div className="flex items-center gap-2 pt-1">
-                                            <button
-                                                className="px-4 py-2 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-bold transition-colors cursor-pointer"
-                                                type="button"
-                                                disabled={busy}
-                                                onClick={reschedule}
-                                            >
-                                                {t(isDesktop() ? 'Save calendar plan' : 'Review automatic schedule')}
-                                            </button>
-                                            {isDesktop() && status === 'scheduled' && (
-                                                <Button variant="outline" size="sm" disabled={busy} onClick={() => action(async () => { await appClient.posts.cancelPlans([post.id]); onClose(); })}>
-                                                    {t('Cancel calendar plan')}
-                                                </Button>
-                                            )}
+                        {/* Accordion 1: Đổi ngày & Giờ đăng */}
+                        {!locked &&
+                            ['draft', 'scheduled', 'cancelled'].includes(status) &&
+                            !jobs.some((job) => job.attempts > 0) && (
+                                <div className="overflow-hidden rounded-xl border border-border bg-card">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOpenReschedule(!openReschedule)}
+                                        className="flex min-h-10 w-full cursor-pointer items-center justify-between bg-zinc-50/70 px-3.5 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100"
+                                    >
+                                        <span className="flex items-center gap-2">
+                                            <Clock size={15} weight="bold" className="text-brand-ink" />
+                                            <span>{t('Đổi ngày & giờ phát hành')}</span>
+                                        </span>
+                                        <CaretDown
+                                            size={14}
+                                            weight="bold"
+                                            className={`transition-transform duration-200 ${openReschedule ? 'rotate-180' : ''}`}
+                                        />
+                                    </button>
+                                    {openReschedule && (
+                                        <div className="space-y-3 border-t border-border bg-card p-4 text-xs">
+                                            <ScheduleFields
+                                                value={value}
+                                                onChange={(patch) => setValue({ ...value, ...patch })}
+                                            />
+                                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                                                <button
+                                                    className="btn-skew min-h-9 cursor-pointer"
+                                                    type="button"
+                                                    disabled={busy}
+                                                    onClick={reschedule}
+                                                >
+                                                    <span>
+                                                        {t(isDesktop() ? 'Lưu lịch đăng' : 'Xác nhận đổi lịch')}
+                                                    </span>
+                                                </button>
+                                                {isDesktop() && status === 'scheduled' && (
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                        disabled={busy}
+                                                        onClick={() =>
+                                                            action(async () => {
+                                                                await appClient.posts.cancelPlans([post.id]);
+                                                                onClose();
+                                                            })
+                                                        }
+                                                    >
+                                                        {t('Hủy lịch')}
+                                                    </Button>
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
-                        )}
+                                    )}
+                                </div>
+                            )}
 
                         {/* Accordion 2: Tái đăng nội dung định kỳ */}
                         {!post.is_demo && !isDesktop() && (
-                            <div className="border border-border rounded-xl overflow-hidden bg-card">
+                            <div className="overflow-hidden rounded-xl border border-border bg-card">
                                 <button
                                     type="button"
                                     onClick={() => setOpenRecurring(!openRecurring)}
-                                    className="w-full p-3 bg-muted/30 hover:bg-muted/50 flex items-center justify-between text-xs font-bold text-foreground cursor-pointer transition-colors"
+                                    className="flex min-h-10 w-full cursor-pointer items-center justify-between bg-zinc-50/70 px-3.5 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100"
                                 >
                                     <span className="flex items-center gap-2">
-                                        <ArrowsClockwise size={15} weight="bold" className="text-blue-500" />
-                                        <span>{t('Recurring post settings')}</span>
+                                        <ArrowsClockwise size={15} weight="bold" className="text-blue-600" />
+                                        <span>{t('Cài đặt đăng lại định kỳ')}</span>
                                     </span>
-                                    <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${openRecurring ? 'rotate-180' : ''}`} />
+                                    <CaretDown
+                                        size={14}
+                                        weight="bold"
+                                        className={`transition-transform duration-200 ${openRecurring ? 'rotate-180' : ''}`}
+                                    />
                                 </button>
                                 {openRecurring && (
-                                    <div className="p-4 border-t border-border bg-card">
+                                    <div className="border-t border-border bg-card p-4">
                                         <RecurringPostSettings key={post.id} post={post} onChanged={onChanged} />
                                     </div>
                                 )}
                             </div>
                         )}
 
-                        {/* Accordion 3: Publishing History */}
-                        <div className="border border-border rounded-xl overflow-hidden bg-card">
+                        {/* Accordion 3: Lịch sử đăng bài */}
+                        <div className="overflow-hidden rounded-xl border border-border bg-card">
                             <button
                                 type="button"
                                 onClick={() => setOpenHistory(!openHistory)}
-                                className="w-full p-3 bg-muted/30 hover:bg-muted/50 flex items-center justify-between text-xs font-bold text-foreground cursor-pointer transition-colors"
+                                className="flex min-h-10 w-full cursor-pointer items-center justify-between bg-zinc-50/70 px-3.5 py-2.5 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100"
                             >
                                 <span className="flex items-center gap-2">
-                                    <CalendarCheck size={15} weight="bold" className="text-zinc-500" />
-                                    <span>{t('Publishing history')} ({jobs.length})</span>
+                                    <CalendarCheck size={15} weight="bold" className="text-zinc-600" />
+                                    <span>
+                                        {t('Lịch sử đăng bài')} ({jobs.length})
+                                    </span>
                                 </span>
-                                <CaretDown size={14} weight="bold" className={`transition-transform duration-200 ${openHistory ? 'rotate-180' : ''}`} />
+                                <CaretDown
+                                    size={14}
+                                    weight="bold"
+                                    className={`transition-transform duration-200 ${openHistory ? 'rotate-180' : ''}`}
+                                />
                             </button>
                             {openHistory && (
-                                <div className="p-4 border-t border-border space-y-2 text-xs bg-card">
-                                    {jobs.length ? jobs.map(job => (
-                                        <div className="border-b border-border py-2 text-xs last:border-b-0" key={job.id}>
-                                            <p className="font-semibold text-foreground">{job.account_name} · {JOB_STATUS_LABEL[job.status] || job.status}</p>
-                                            {job.scheduled_for && <p className="label-xs mt-0.5">{formatDateTime(job.scheduled_for, post.timezone)}</p>}
-                                            {job.error_message && <p className="text-dangerFg mt-1">{t(job.error_message)}</p>}
-                                        </div>
-                                    )) : (
-                                        <p className="text-xs text-muted-foreground">{t('No publishing attempts recorded.')}</p>
+                                <div className="space-y-2 border-t border-border bg-card p-4 text-xs">
+                                    {jobs.length ? (
+                                        jobs.map((job) => (
+                                            <div
+                                                className="border-b border-border py-2 text-xs last:border-b-0"
+                                                key={job.id}
+                                            >
+                                                <p className="font-semibold text-foreground">
+                                                    {job.account_name} · {JOB_STATUS_LABEL[job.status] || job.status}
+                                                </p>
+                                                {job.scheduled_for && (
+                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+                                                        {formatDateTime(job.scheduled_for, post.timezone)}
+                                                    </p>
+                                                )}
+                                                {job.error_message && (
+                                                    <p className="mt-1 text-red-700">{t(job.error_message)}</p>
+                                                )}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">
+                                            {t('Chưa có lượt xuất bản nào được ghi nhận.')}
+                                        </p>
                                     )}
                                 </div>
                             )}
                         </div>
 
-                        {review && <PublishConfirmation review={review} onClose={() => setReview(null)} onResult={async () => { setReview(null); await refresh(); }} />}
-                        {error && <p role="alert" className="mt-3 text-sm text-dangerFg">{t(error)}</p>}
-
+                        {review && (
+                            <PublishConfirmation
+                                review={review}
+                                onClose={() => setReview(null)}
+                                onResult={async () => {
+                                    setReview(null);
+                                    await refresh();
+                                }}
+                            />
+                        )}
+                        {error && (
+                            <p role="alert" className="text-xs font-medium text-red-700">
+                                {t(error)}
+                            </p>
+                        )}
                     </div>
-
                 </div>
 
                 {/* 3. STICKY BOTTOM FOOTER */}
-                <div className="p-3.5 px-6 border-t border-border bg-card flex items-center justify-between shrink-0">
-                    <span className="text-xs text-muted-foreground font-mono">
-                        {post.scheduled_at ? formatDateTime(post.scheduled_at, post.timezone) : t('Draft')}
+                <div className="flex shrink-0 flex-wrap items-center justify-between gap-3 border-t border-border bg-zinc-50/70 px-5 py-3.5 sm:px-6">
+                    <span className="font-mono text-xs text-muted-foreground">
+                        {post.scheduled_at ? formatDateTime(post.scheduled_at, post.timezone) : t('Bản nháp')}
                     </span>
 
-                    <div className="flex items-center gap-2">
-                        {post.needs_approval && (!user?.isTeamMember || user?.role === 'admin' || user?.role === 'approver') && (
-                            <Button
-                                size="sm"
-                                disabled={busy}
-                                onClick={handleApprove}
-                                className="btn-skew bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs cursor-pointer"
-                            >
-                                <CheckCircle size={14} weight="bold" />
-                                <span>{t('Phê duyệt bài viết')}</span>
-                            </Button>
-                        )}
+                    <div className="flex flex-wrap items-center gap-2">
+                        {post.needs_approval &&
+                            (!user?.isTeamMember || user?.role === 'admin' || user?.role === 'approver') && (
+                                <button
+                                    type="button"
+                                    disabled={busy}
+                                    onClick={handleApprove}
+                                    className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl bg-emerald-600 px-3.5 text-xs font-semibold text-white transition-colors hover:bg-emerald-700 disabled:opacity-50"
+                                >
+                                    <CheckCircle size={14} weight="bold" />
+                                    <span>{t('Phê duyệt bài viết')}</span>
+                                </button>
+                            )}
                         <Link
                             to={'/create?duplicate=' + post.id}
-                            className="inline-flex items-center gap-1.5 border border-border bg-card hover:bg-muted text-foreground rounded-xl px-3.5 py-2 text-xs font-bold transition-colors cursor-pointer"
+                            className="inline-flex min-h-9 cursor-pointer items-center gap-1.5 whitespace-nowrap rounded-xl border border-border bg-card px-3.5 text-xs font-semibold text-foreground transition-colors hover:bg-zinc-100"
                             onClick={onClose}
                         >
-                            <CopySimple size={13} weight="bold" />
-                            <span>{t('Duplicate as draft')}</span>
+                            <CopySimple size={14} weight="bold" />
+                            <span>{t('Nhân bản thành bản nháp')}</span>
                         </Link>
-                        {!locked && (['draft', 'scheduled'].includes(status) || (isDesktop() && status === 'cancelled')) && (
-                            <Link
-                                to={'/create?edit=' + post.id}
-                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-brand text-brand-ink hover:bg-[#ffe059] text-xs font-bold transition-colors cursor-pointer"
-                                onClick={onClose}
-                            >
-                                <PencilSimple size={13} weight="bold" />
-                                <span>{t('Edit post')}</span>
-                            </Link>
-                        )}
+                        {!locked &&
+                            (['draft', 'scheduled'].includes(status) || (isDesktop() && status === 'cancelled')) && (
+                                <Link
+                                    to={'/create?edit=' + post.id}
+                                    className="btn-skew min-h-9 whitespace-nowrap"
+                                    onClick={onClose}
+                                >
+                                    <PencilSimple size={14} weight="bold" />
+                                    <span>{t('Chỉnh sửa bài viết')}</span>
+                                </Link>
+                            )}
                     </div>
                 </div>
-
             </DialogContent>
         </Dialog>
     );
