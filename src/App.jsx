@@ -115,6 +115,7 @@ export default function App() {
                                 <Route path="/dashboard-v2" element={<DashboardV2 />} />
                                 <Route path="/dashboard-clean" element={<Navigate to="/overview" replace />} />
                                 <Route path="/calendar" element={<ContentCalendar />} />
+                                <Route path="/calendar-clean" element={<Navigate to="/calendar" replace />} />
                                 <Route path="/inbox" element={<SocialInbox />} />
                                 <Route path="/social-inbox" element={<Navigate to="/inbox" replace />} />
                                 <Route path="/agent" element={<ChatAgent />} />
