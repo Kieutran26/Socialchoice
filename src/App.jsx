@@ -15,7 +15,7 @@ import ChatAgent from '@/pages/ChatAgent';
 import AllPosts from '@/pages/AllPosts';
 import ContentStrategyAlt from '@/pages/ContentStrategyAlt';
 import CampaignsNew from '@/pages/CampaignsNew';
-import ContentPillars from '@/pages/ContentPillars';
+import ContentPillarsNew from '@/pages/ContentPillarsNew';
 import ContentAngles from '@/pages/ContentAngles';
 import Analytics from '@/pages/Analytics';
 import MediaLibrary from '@/pages/MediaLibrary';
@@ -134,7 +134,8 @@ export default function App() {
                                 <Route path="/strategy/campaigns" element={<CampaignsNew />} />
                                 <Route path="/campaigns" element={<CampaignsNew />} />
                                 <Route path="/campaigns-clean" element={<Navigate to="/campaigns" replace />} />
-                                <Route path="/strategy/pillars" element={<ContentPillars />} />
+                                <Route path="/strategy/pillars" element={<ContentPillarsNew />} />
+                                <Route path="/pillars-clean" element={<Navigate to="/strategy/pillars" replace />} />
                                 <Route path="/strategy/angles" element={<ContentAngles />} />
                                 <Route path="/analytics" element={<Analytics />} />
                                 <Route path="/analytics-clean" element={<Navigate to="/analytics" replace />} />
