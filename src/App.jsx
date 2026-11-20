@@ -13,7 +13,7 @@ import CreateTemplate from '@/pages/CreateTemplate';
 import CreatePost from '@/pages/CreatePost';
 import ChatAgent from '@/pages/ChatAgent';
 import AllPosts from '@/pages/AllPosts';
-import ContentStrategy from '@/pages/ContentStrategy';
+import ContentStrategyAlt from '@/pages/ContentStrategyAlt';
 import Campaigns from '@/pages/Campaigns';
 import ContentPillars from '@/pages/ContentPillars';
 import ContentAngles from '@/pages/ContentAngles';
@@ -127,7 +127,10 @@ export default function App() {
                                 <Route path="/templates/create" element={<CreateTemplate />} />
                                 <Route path="/posts" element={<AllPosts />} />
                                 <Route path="/posts-clean" element={<Navigate to="/posts" replace />} />
-                                <Route path="/strategy" element={<ContentStrategy />} />
+                                <Route path="/strategy" element={<ContentStrategyAlt />} />
+                                <Route path="/strategy-clean" element={<Navigate to="/strategy" replace />} />
+                                <Route path="/strategy-new" element={<Navigate to="/strategy" replace />} />
+                                <Route path="/strategy-alt" element={<Navigate to="/strategy" replace />} />
                                 <Route path="/strategy/campaigns" element={<Campaigns />} />
                                 <Route path="/campaigns" element={<Campaigns />} />
                                 <Route path="/strategy/pillars" element={<ContentPillars />} />
