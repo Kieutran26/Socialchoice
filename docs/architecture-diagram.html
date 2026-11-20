@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Socialchoice — System Architecture</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --color-paper:       #fafafa;
+      --color-paper-2:     #f4f4f5;
+      --color-ink:         #27272a;
+      --color-ink-strong:  #2b2100;
+      --color-muted:       #52525b;
+      --color-soft:        #63636e;
+      --color-rule:        rgba(39, 39, 42, 0.12);
+      --color-accent:      #9a7700;
+      --color-accent-tint: rgba(255, 214, 49, 0.18);
+      --color-link:        #2563eb;
+      --font-sans:         'Geist', system-ui, sans-serif;
+      --font-display:      'Space Grotesk', system-ui, sans-serif;
+      --font-mono:         'Geist Mono', ui-monospace, monospace;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--color-paper);
+      color: var(--color-ink);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3rem 2rem;
+    }
+
+    .frame { max-width: 1120px; width: 100%; }
+    .diagram-container { width: 100%; overflow-x: auto; }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      font-weight: 500;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.45rem;
+    }
+
+    h1 {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 2.2vw + 0.75rem, 2rem);
+      font-weight: 600;
+      letter-spacing: -0.025em;
+      line-height: 1.15;
+      color: var(--color-ink);
+      margin-bottom: 1.5rem;
+    }
+
+    svg { width: 100%; min-width: 960px; display: block; }
+
+    .summary-grid {
+      margin-top: 1.5rem;
+      display: grid;
+      grid-template-columns: 1.15fr 1fr 0.85fr;
+      gap: 0.75rem;
+    }
+
+    .summary-card {
+      background: #ffffff;
+      border: 1px solid var(--color-rule);
+      border-radius: 6px;
+      padding: 0.85rem 1rem;
+    }
+
+    .summary-card-head {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      font-weight: 600;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--color-muted);
+      margin-bottom: 0.35rem;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--color-muted);
+      display: inline-block;
+    }
+    .dot-accent { background: var(--color-accent); }
+    .dot-link { background: var(--color-link); }
+
+    .summary-card p {
+      font-size: 0.78rem;
+      line-height: 1.45;
+      color: var(--color-ink);
+    }
+
+    @media (max-width: 760px) {
+      .summary-grid { grid-template-columns: 1fr; }
+    }
+
+    @media print {
+      .diagram-container { overflow-x: visible; }
+      svg { min-width: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="frame">
+    <p class="eyebrow">Architecture · Socialchoice v0.7.0</p>
+    <h1>Socialchoice System Architecture</h1>
+
+    <div class="diagram-container">
+      <svg viewBox="0 0 960 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="socialchoice-arch-title socialchoice-arch-desc">
+        <title id="socialchoice-arch-title">Socialchoice System Architecture</title>
+        <desc id="socialchoice-arch-desc">System architecture showing the React web app and Tauri desktop runtime routing through Vercel edge proxy to Cloudflare Workers, SQLite Durable Objects, Autopilot Queue and R2 storage, and external social and AI APIs.</desc>
+
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#52525b"/>
+          </marker>
+          <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#9a7700"/>
+          </marker>
+          <marker id="arrow-link" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+            <polygon points="0 0, 8 3, 0 6" fill="#2563eb"/>
+          </marker>
+        </defs>
+
+        <!-- Clean paper ground -->
+        <rect width="100%" height="100%" fill="#fafafa"/>
+
+        <!-- =============================================================== -->
+        <!-- 1. ZONES (max 3 flat zones, drawn behind arrows and nodes) -->
+        <!-- =============================================================== -->
+
+        <!-- Zone 1: Clients & Edge -->
+        <rect x="24" y="24" width="232" height="432" rx="8" fill="rgba(39,39,42,0.02)" stroke="rgba(39,39,42,0.12)" stroke-width="0.8"/>
+        <rect x="36" y="28" width="104" height="12" rx="2" fill="#fafafa"/>
+        <text x="88" y="37" fill="#63636e" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">CLIENTS &amp; EDGE</text>
+
+        <!-- Zone 2: Cloudflare Production -->
+        <rect x="296" y="24" width="424" height="432" rx="8" fill="rgba(39,39,42,0.02)" stroke="rgba(39,39,42,0.12)" stroke-width="0.8"/>
+        <rect x="308" y="28" width="152" height="12" rx="2" fill="#fafafa"/>
+        <text x="384" y="37" fill="#63636e" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">CLOUDFLARE PRODUCTION</text>
+
+        <!-- Zone 3: External Services -->
+        <rect x="760" y="24" width="176" height="432" rx="8" fill="rgba(39,39,42,0.02)" stroke="rgba(39,39,42,0.12)" stroke-width="0.8"/>
+        <rect x="772" y="28" width="124" height="12" rx="2" fill="#fafafa"/>
+        <text x="834" y="37" fill="#63636e" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.14em">EXTERNAL APIS</text>
+
+        <!-- =============================================================== -->
+        <!-- 2. ORTHOGONAL CONNECTORS & MASKED LABELS (drawn before nodes) -->
+        <!-- =============================================================== -->
+
+        <!-- C1: Web SPA -> Vercel Edge Proxy (vertical straight line at x=140) -->
+        <line x1="140" y1="140" x2="140" y2="212" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="148" y="170" width="44" height="12" rx="2" fill="#fafafa"/>
+        <text x="170" y="179" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">HTTPS</text>
+
+        <!-- C2: Vercel Edge Proxy -> Cloudflare API Worker (headline path, horizontal at y=252) -->
+        <line x1="236" y1="252" x2="320" y2="252" stroke="#9a7700" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+        <rect x="248" y="232" width="60" height="12" rx="2" fill="#fafafa"/>
+        <text x="278" y="241" fill="#9a7700" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">/API /MCP</text>
+
+        <!-- C3: Vercel Edge Proxy -> Desktop + Local SQLite (dev fallback, dashed vertical at x=140) -->
+        <line x1="140" y1="292" x2="140" y2="356" stroke="#52525b" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="148" y="318" width="64" height="12" rx="2" fill="#fafafa"/>
+        <text x="180" y="327" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">DEV LOCAL</text>
+
+        <!-- C4: API Worker -> Durable Objects (single-bend L-path: right port y=232 -> bottom edge x=620) -->
+        <path d="M 500,232 H 612 Q 620,232 620,224 V 180" fill="none" stroke="#9a7700" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+        <rect x="524" y="212" width="68" height="12" rx="2" fill="#fafafa"/>
+        <text x="558" y="221" fill="#9a7700" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">READ/WRITE</text>
+
+        <!-- C5: API Worker -> Autopilot Queue + R2 (single-bend L-path: right port y=272 -> top edge x=620) -->
+        <path d="M 500,272 H 612 Q 620,272 620,280 V 336" fill="none" stroke="#52525b" stroke-width="1.1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="524" y="252" width="64" height="12" rx="2" fill="#fafafa"/>
+        <text x="556" y="261" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">ENQUEUE</text>
+
+        <!-- C6: Autopilot Queue + R2 -> API Worker (consumer return: left edge y=380 -> bottom edge x=410) -->
+        <path d="M 544,380 H 418 Q 410,380 410,372 V 292" fill="none" stroke="#52525b" stroke-width="1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <rect x="444" y="360" width="64" height="12" rx="2" fill="#fafafa"/>
+        <text x="476" y="369" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">CONSUME</text>
+
+        <!-- C7: Durable Objects -> Social OAuth APIs (horizontal at y=136) -->
+        <line x1="696" y1="136" x2="776" y2="136" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <rect x="708" y="116" width="56" height="12" rx="2" fill="#fafafa"/>
+        <text x="736" y="125" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">PUBLISH</text>
+
+        <!-- C8: Autopilot Queue + R2 -> AI & Commerce (horizontal at y=380) -->
+        <line x1="696" y1="380" x2="776" y2="380" stroke="#2563eb" stroke-width="1.1" stroke-dasharray="5,4" marker-end="url(#arrow-link)"/>
+        <rect x="708" y="360" width="56" height="12" rx="2" fill="#fafafa"/>
+        <text x="736" y="369" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.06em">AI + PAY</text>
+
+        <!-- =============================================================== -->
+        <!-- 3. NODES (8 nodes total, 4px grid, 2 focal accents max) -->
+        <!-- =============================================================== -->
+
+        <!-- Node 1: Web SPA -->
+        <rect x="44" y="68" width="192" height="72" rx="6" fill="#fafafa"/>
+        <rect x="44" y="68" width="192" height="72" rx="6" fill="#ffffff" stroke="rgba(39,39,42,0.22)" stroke-width="1"/>
+        <rect x="52" y="76" width="32" height="12" rx="2" fill="transparent" stroke="rgba(39,39,42,0.32)" stroke-width="0.8"/>
+        <text x="68" y="85" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SPA</text>
+        <text x="140" y="108" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Web Application</text>
+        <text x="140" y="124" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">React 18 · Vite 8 · Tailwind</text>
+
+        <!-- Node 2: Vercel Edge Proxy -->
+        <rect x="44" y="212" width="192" height="80" rx="6" fill="#fafafa"/>
+        <rect x="44" y="212" width="192" height="80" rx="6" fill="#ffffff" stroke="rgba(37,99,235,0.45)" stroke-width="1"/>
+        <rect x="52" y="220" width="36" height="12" rx="2" fill="transparent" stroke="rgba(37,99,235,0.45)" stroke-width="0.8"/>
+        <text x="70" y="229" fill="#2563eb" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EDGE</text>
+        <text x="140" y="254" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Vercel Edge Proxy</text>
+        <text x="140" y="272" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">socialchoice.site · no-store</text>
+
+        <!-- Node 3: Desktop + Local SQLite -->
+        <rect x="44" y="356" width="192" height="80" rx="6" fill="#fafafa"/>
+        <rect x="44" y="356" width="192" height="80" rx="6" fill="#f4f4f5" stroke="rgba(39,39,42,0.22)" stroke-width="1" stroke-dasharray="4,3"/>
+        <rect x="52" y="364" width="52" height="12" rx="2" fill="transparent" stroke="rgba(39,39,42,0.32)" stroke-width="0.8"/>
+        <text x="78" y="373" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OFFLINE</text>
+        <text x="140" y="398" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Tauri Desktop &amp; Local</text>
+        <text x="140" y="416" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">SQLite :3002 · auth-broker</text>
+
+        <!-- Node 4: Cloudflare API Worker (FOCAL 1) -->
+        <rect x="320" y="212" width="180" height="80" rx="6" fill="#fafafa"/>
+        <rect x="320" y="212" width="180" height="80" rx="6" fill="rgba(255,214,49,0.18)" stroke="#9a7700" stroke-width="1.4"/>
+        <rect x="328" y="220" width="44" height="12" rx="2" fill="transparent" stroke="rgba(154,119,0,0.55)" stroke-width="0.8"/>
+        <text x="350" y="229" fill="#9a7700" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">WORKER</text>
+        <text x="410" y="254" fill="#2b2100" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Cloudflare API Worker</text>
+        <text x="410" y="272" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">cloudflare-worker.js</text>
+
+        <!-- Node 5: Durable Objects (FOCAL 2) -->
+        <rect x="544" y="96" width="152" height="84" rx="6" fill="#fafafa"/>
+        <rect x="544" y="96" width="152" height="84" rx="6" fill="rgba(255,214,49,0.18)" stroke="#9a7700" stroke-width="1.4"/>
+        <rect x="552" y="104" width="44" height="12" rx="2" fill="transparent" stroke="rgba(154,119,0,0.55)" stroke-width="0.8"/>
+        <text x="574" y="113" fill="#9a7700" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">SQLITE</text>
+        <text x="620" y="140" fill="#2b2100" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Durable Objects</text>
+        <text x="620" y="158" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">WORKSPACE · DIR · AI</text>
+
+        <!-- Node 6: Autopilot Queue + R2 -->
+        <rect x="544" y="336" width="152" height="84" rx="6" fill="#fafafa"/>
+        <rect x="544" y="336" width="152" height="84" rx="6" fill="#ffffff" stroke="rgba(39,39,42,0.22)" stroke-width="1"/>
+        <rect x="552" y="344" width="40" height="12" rx="2" fill="transparent" stroke="rgba(39,39,42,0.32)" stroke-width="0.8"/>
+        <text x="572" y="353" fill="#52525b" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">ASYNC</text>
+        <text x="620" y="380" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Queue &amp; R2 Assets</text>
+        <text x="620" y="398" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">8x retry + DLQ · R2</text>
+
+        <!-- Node 7: Social OAuth APIs -->
+        <rect x="776" y="96" width="144" height="84" rx="6" fill="#fafafa"/>
+        <rect x="776" y="96" width="144" height="84" rx="6" fill="#ffffff" stroke="rgba(37,99,235,0.45)" stroke-width="1"/>
+        <rect x="784" y="104" width="40" height="12" rx="2" fill="transparent" stroke="rgba(37,99,235,0.45)" stroke-width="0.8"/>
+        <text x="804" y="113" fill="#2563eb" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">OAUTH</text>
+        <text x="848" y="140" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">Social Platforms</text>
+        <text x="848" y="158" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">Meta · Threads · TikTok</text>
+
+        <!-- Node 8: AI & Commerce -->
+        <rect x="776" y="336" width="144" height="84" rx="6" fill="#fafafa"/>
+        <rect x="776" y="336" width="144" height="84" rx="6" fill="#ffffff" stroke="rgba(37,99,235,0.45)" stroke-width="1"/>
+        <rect x="784" y="344" width="32" height="12" rx="2" fill="transparent" stroke="rgba(37,99,235,0.45)" stroke-width="0.8"/>
+        <text x="800" y="353" fill="#2563eb" font-size="7" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle" letter-spacing="0.08em">EXT</text>
+        <text x="848" y="380" fill="#27272a" font-size="12" font-weight="600" font-family="'Geist', system-ui, sans-serif" text-anchor="middle">AI &amp; Commerce</text>
+        <text x="848" y="398" fill="#52525b" font-size="9" font-family="'Geist Mono', ui-monospace, monospace" text-anchor="middle">AI Egress · Stripe · Shop</text>
+
+        <!-- =============================================================== -->
+        <!-- 4. LEGEND STRIP (horizontal at bottom, outside diagram area) -->
+        <!-- =============================================================== -->
+        <line x1="24" y1="484" x2="936" y2="484" stroke="rgba(39,39,42,0.12)" stroke-width="0.8"/>
+        <text x="24" y="508" fill="#63636e" font-size="8" font-family="'Geist Mono', ui-monospace, monospace" letter-spacing="0.14em">LEGEND</text>
+
+        <!-- Legend Item 1: Focal Core -->
+        <rect x="108" y="500" width="14" height="10" rx="2" fill="rgba(255,214,49,0.22)" stroke="#9a7700" stroke-width="1.2"/>
+        <text x="128" y="508" fill="#52525b" font-size="9" font-family="'Geist', system-ui, sans-serif">Core Runtime &amp; State</text>
+
+        <!-- Legend Item 2: Primary Sync Path -->
+        <line x1="284" y1="505" x2="312" y2="505" stroke="#9a7700" stroke-width="1.5" marker-end="url(#arrow-accent)"/>
+        <text x="320" y="508" fill="#52525b" font-size="9" font-family="'Geist', system-ui, sans-serif">Primary Request Path</text>
+
+        <!-- Legend Item 3: External HTTP/OAuth -->
+        <line x1="472" y1="505" x2="500" y2="505" stroke="#2563eb" stroke-width="1.2" marker-end="url(#arrow-link)"/>
+        <text x="508" y="508" fill="#52525b" font-size="9" font-family="'Geist', system-ui, sans-serif">HTTP / OAuth API</text>
+
+        <!-- Legend Item 4: Async / Optional -->
+        <line x1="644" y1="505" x2="672" y2="505" stroke="#52525b" stroke-width="1.1" stroke-dasharray="5,4" marker-end="url(#arrow)"/>
+        <text x="680" y="508" fill="#52525b" font-size="9" font-family="'Geist', system-ui, sans-serif">Async Queue / Local Dev</text>
+      </svg>
+    </div>
+
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="summary-card-head"><span class="dot dot-accent"></span>Core State &amp; Isolation</div>
+        <p>Four SQLite-backed Durable Objects (WORKSPACE, CUSTOMER_DIRECTORY, CUSTOMER_WORKSPACES, AI_EGRESS) provide per-tenant storage and US AI egress without external DB hops.</p>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-head"><span class="dot dot-link"></span>Edge Proxy &amp; Auth Safety</div>
+        <p>Vercel serves the Vite SPA on socialchoice.site and proxies /api/*, /s/*, and /mcp with Cache-Control: no-store. AuthContext runs once on mount; non-JSON edge errors are sanitized.</p>
+      </div>
+      <div class="summary-card">
+        <div class="summary-card-head"><span class="dot"></span>Offline Desktop &amp; Async</div>
+        <p>Tauri desktop falls back to local SQLite (:3002) and auth-broker. Production autopilot jobs run through Cloudflare Queues (8 retries + DLQ) with R2 asset storage.</p>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
