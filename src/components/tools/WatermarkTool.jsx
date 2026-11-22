@@ -1,36 +1,40 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+    ArrowsClockwise,
+    Check,
+    DownloadSimple,
+    Eye,
+    FloppyDisk,
+    ImageSquare,
+    NotePencil,
+    ShieldCheck,
+    TextT,
+    UploadSimple,
+} from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 import { useWorkspace } from '@/lib/workspace-context';
 import { useToast } from '@/components/ui/use-toast';
 import { appClient } from '@/api/app-client';
-import { useNavigate } from 'react-router-dom';
-import {
-    UploadSimple,
-    DownloadSimple,
-    ImageSquare,
-    Sparkle,
-    TextT,
-    ArrowUpRight,
-    ArrowsClockwise,
-    Trash,
-    Check,
-    FloppyDisk,
-    PencilSimple,
-    Crosshair,
-    Eye,
-    ShieldCheck,
-} from '@phosphor-icons/react';
 
 const POSITIONS = [
-    { id: 'top-left', label: 'Trên - Trái', icon: '↖', x: 0.05, y: 0.05, align: 'left', baseline: 'top' },
-    { id: 'top-center', label: 'Trên - Giữa', icon: '↑', x: 0.5, y: 0.05, align: 'center', baseline: 'top' },
-    { id: 'top-right', label: 'Trên - Phải', icon: '↗', x: 0.95, y: 0.05, align: 'right', baseline: 'top' },
-    { id: 'middle-left', label: 'Giữa - Trái', icon: '←', x: 0.05, y: 0.5, align: 'left', baseline: 'middle' },
-    { id: 'center', label: 'Chính tâm', icon: '⏺', x: 0.5, y: 0.5, align: 'center', baseline: 'middle' },
-    { id: 'middle-right', label: 'Giữa - Phải', icon: '→', x: 0.95, y: 0.5, align: 'right', baseline: 'middle' },
-    { id: 'bottom-left', label: 'Dưới - Trái', icon: '↙', x: 0.05, y: 0.95, align: 'left', baseline: 'bottom' },
-    { id: 'bottom-center', label: 'Dưới - Giữa', icon: '↓', x: 0.5, y: 0.95, align: 'center', baseline: 'bottom' },
-    { id: 'bottom-right', label: 'Dưới - Phải', icon: '↘', x: 0.95, y: 0.95, align: 'right', baseline: 'bottom' },
+    { id: 'top-left', label: 'Trên - Trái', x: 0.05, y: 0.05, align: 'left', baseline: 'top' },
+    { id: 'top-center', label: 'Trên - Giữa', x: 0.5, y: 0.05, align: 'center', baseline: 'top' },
+    { id: 'top-right', label: 'Trên - Phải', x: 0.95, y: 0.05, align: 'right', baseline: 'top' },
+    { id: 'middle-left', label: 'Giữa - Trái', x: 0.05, y: 0.5, align: 'left', baseline: 'middle' },
+    { id: 'center', label: 'Chính tâm', x: 0.5, y: 0.5, align: 'center', baseline: 'middle' },
+    { id: 'middle-right', label: 'Giữa - Phải', x: 0.95, y: 0.5, align: 'right', baseline: 'middle' },
+    { id: 'bottom-left', label: 'Dưới - Trái', x: 0.05, y: 0.95, align: 'left', baseline: 'bottom' },
+    { id: 'bottom-center', label: 'Dưới - Giữa', x: 0.5, y: 0.95, align: 'center', baseline: 'bottom' },
+    { id: 'bottom-right', label: 'Dưới - Phải', x: 0.95, y: 0.95, align: 'right', baseline: 'bottom' },
+];
+
+const TEXT_SWATCHES = [
+    { code: '#ffffff', label: 'Trắng', ink: '#18181b' },
+    { code: '#18181b', label: 'Đen', ink: '#ffffff' },
+    { code: '#ffd631', label: 'Vàng', ink: '#2b2100' },
+    { code: '#1877f2', label: 'Xanh dương', ink: '#ffffff' },
+    { code: '#e11d48', label: 'Đỏ', ink: '#ffffff' },
 ];
 
 export default function WatermarkTool() {
@@ -46,66 +50,61 @@ export default function WatermarkTool() {
     const [mainImage, setMainImage] = useState(null);
     const [mainImageName, setMainImageName] = useState('image.jpg');
     const [isSample, setIsSample] = useState(false);
+    const [isDragging, setIsDragging] = useState(false);
+    const [showOriginal, setShowOriginal] = useState(false);
     const [watermarkType, setWatermarkType] = useState('text'); // 'text' | 'logo'
 
     // Text watermark settings
     const currentBrand = brands.find((b) => b.id === selectedBrandId) || brands[0];
-    const [watermarkText, setWatermarkText] = useState(() => currentBrand ? `© ${currentBrand.name} · socialchoice.site` : '© Socialchoice');
+    const [watermarkText, setWatermarkText] = useState(() =>
+        currentBrand ? `© ${currentBrand.name} · socialchoice.site` : '© Socialchoice'
+    );
     const [textColor, setTextColor] = useState('#ffffff');
-    const [fontSizePercent, setFontSizePercent] = useState(4); // 4% of image width
+    const [fontSizePercent, setFontSizePercent] = useState(4);
     const [withBackground, setWithBackground] = useState(true);
 
     // Logo watermark settings
     const [logoImage, setLogoImage] = useState(null);
-    const [logoSizePercent, setLogoSizePercent] = useState(16); // 16% of image width
+    const [logoSizePercent, setLogoSizePercent] = useState(16);
 
-    // Position & Opacity settings
+    // Position & Opacity
     const [position, setPosition] = useState('bottom-right');
-    const [opacity, setOpacity] = useState(85); // 10% - 100%
-    const [isTiled, setIsTiled] = useState(false); // Diagonal tiled watermark pattern
+    const [opacity, setOpacity] = useState(85);
+    const [isTiled, setIsTiled] = useState(false);
     const [busy, setBusy] = useState(false);
 
-    // Load interactive sample image so canvas is never empty
+    // Interactive sample image
     const loadSampleImage = useCallback(() => {
         const offscreen = document.createElement('canvas');
         offscreen.width = 1200;
-        offscreen.height = 675; // 16:9 social landscape
+        offscreen.height = 675;
         const ctx = offscreen.getContext('2d');
 
-        // Dark gradient background
         const grad = ctx.createLinearGradient(0, 0, 1200, 675);
-        grad.addColorStop(0, '#0f172a');
-        grad.addColorStop(0.5, '#1e293b');
-        grad.addColorStop(1, '#090d16');
+        grad.addColorStop(0, '#18181b');
+        grad.addColorStop(0.55, '#27272a');
+        grad.addColorStop(1, '#18181b');
         ctx.fillStyle = grad;
         ctx.fillRect(0, 0, 1200, 675);
 
-        // Ambient glowing shapes
         ctx.save();
         ctx.fillStyle = '#ffd631';
-        ctx.globalAlpha = 0.12;
+        ctx.globalAlpha = 0.14;
         ctx.beginPath();
         ctx.arc(1020, 160, 260, 0, Math.PI * 2);
         ctx.fill();
-
-        ctx.fillStyle = '#38bdf8';
-        ctx.globalAlpha = 0.08;
-        ctx.beginPath();
-        ctx.arc(180, 520, 200, 0, Math.PI * 2);
-        ctx.fill();
         ctx.restore();
 
-        // Subtle geometric grid
         ctx.save();
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.lineWidth = 1;
-        for (let x = 0; x < 1200; x += 50) {
+        for (let x = 0; x < 1200; x += 60) {
             ctx.beginPath();
             ctx.moveTo(x, 0);
             ctx.lineTo(x, 675);
             ctx.stroke();
         }
-        for (let y = 0; y < 675; y += 50) {
+        for (let y = 0; y < 675; y += 60) {
             ctx.beginPath();
             ctx.moveTo(0, y);
             ctx.lineTo(1200, y);
@@ -113,27 +112,24 @@ export default function WatermarkTool() {
         }
         ctx.restore();
 
-        // Badge pill
         ctx.save();
         ctx.fillStyle = '#ffd631';
         ctx.beginPath();
-        ctx.roundRect(90, 180, 210, 36, 18);
+        ctx.roundRect(90, 185, 210, 34, 10);
         ctx.fill();
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#2b2100';
         ctx.font = 'bold 13px sans-serif';
-        ctx.fillText('⚡ SOCIALCHOICE STUDIO', 110, 203);
+        ctx.fillText('SOCIALCHOICE STUDIO', 112, 207);
         ctx.restore();
 
-        // Title and description
         ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 48px sans-serif';
-        ctx.fillText('Bảo Vệ Bản Quyền Hình Ảnh', 90, 275);
+        ctx.font = 'bold 46px sans-serif';
+        ctx.fillText('Bảo vệ bản quyền hình ảnh', 90, 280);
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#a1a1aa';
         ctx.font = 'normal 21px sans-serif';
-        ctx.fillText('Hệ thống tự động đóng dấu Watermark & Logo chuyên nghiệp đa kênh', 90, 325);
+        ctx.fillText('Đóng dấu chữ hoặc logo thương hiệu trước khi xuất bản đa kênh', 90, 326);
 
-        // Convert to Image
         const img = new Image();
         img.onload = () => {
             setMainImage(img);
@@ -143,7 +139,6 @@ export default function WatermarkTool() {
         img.src = offscreen.toDataURL('image/png');
     }, []);
 
-    // Load sample image on initial mount
     useEffect(() => {
         loadSampleImage();
     }, [loadSampleImage]);
@@ -157,32 +152,26 @@ export default function WatermarkTool() {
         canvas.width = mainImage.width;
         canvas.height = mainImage.height;
 
-        // Draw background image
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(mainImage, 0, 0);
 
-        // Apply opacity
+        if (showOriginal) return;
+
         ctx.globalAlpha = opacity / 100;
 
         if (isTiled) {
-            // Tiled diagonal pattern
             ctx.save();
             ctx.rotate((-30 * Math.PI) / 180);
             ctx.fillStyle = textColor;
             const stepX = canvas.width * 0.35;
             const stepY = canvas.height * 0.25;
-            const fontSize = Math.max(16, (canvas.width * (fontSizePercent / 100)));
+            const fontSize = Math.max(16, canvas.width * (fontSizePercent / 100));
             ctx.font = `bold ${fontSize}px sans-serif`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            const startX = -canvas.width;
-            const endX = canvas.width * 2;
-            const startY = -canvas.height;
-            const endY = canvas.height * 2;
-
-            for (let x = startX; x < endX; x += stepX) {
-                for (let y = startY; y < endY; y += stepY) {
+            for (let x = -canvas.width; x < canvas.width * 2; x += stepX) {
+                for (let y = -canvas.height; y < canvas.height * 2; y += stepY) {
                     if (watermarkType === 'logo' && logoImage) {
                         const lw = canvas.width * (logoSizePercent / 100);
                         const lh = (logoImage.height / logoImage.width) * lw;
@@ -194,7 +183,6 @@ export default function WatermarkTool() {
             }
             ctx.restore();
         } else {
-            // Single placed watermark
             const pos = POSITIONS.find((p) => p.id === position) || POSITIONS[8];
             const px = pos.x * canvas.width;
             const py = pos.y * canvas.height;
@@ -209,33 +197,26 @@ export default function WatermarkTool() {
                 const textHeight = fontSize * 1.2;
 
                 if (withBackground) {
-                    // Draw semi-transparent pill background for clarity
                     ctx.save();
                     ctx.globalAlpha = (opacity / 100) * 0.7;
                     ctx.fillStyle = '#000000';
                     const padX = fontSize * 0.6;
                     const padY = fontSize * 0.3;
-                    let bgX = px;
+                    let bgX = px - padX;
                     if (pos.align === 'center') bgX = px - textWidth / 2 - padX;
                     else if (pos.align === 'right') bgX = px - textWidth - padX;
-                    else bgX = px - padX;
 
-                    let bgY = py;
+                    let bgY = py - padY;
                     if (pos.baseline === 'middle') bgY = py - textHeight / 2 - padY;
                     else if (pos.baseline === 'bottom') bgY = py - textHeight - padY;
-                    else bgY = py - padY;
 
-                    const bgW = textWidth + padX * 2;
-                    const bgH = textHeight + padY * 2;
-                    const r = 8;
                     ctx.beginPath();
-                    ctx.roundRect(bgX, bgY, bgW, bgH, r);
+                    ctx.roundRect(bgX, bgY, textWidth + padX * 2, textHeight + padY * 2, 8);
                     ctx.fill();
                     ctx.restore();
                 }
 
-                // Shadow for contrast
-                ctx.shadowColor = 'rgba(0,0,0,0.7)';
+                ctx.shadowColor = 'rgba(0,0,0,0.65)';
                 ctx.shadowBlur = 6;
                 ctx.fillStyle = textColor;
                 ctx.fillText(watermarkText, px, py);
@@ -251,7 +232,7 @@ export default function WatermarkTool() {
                 if (pos.baseline === 'middle') drawY = py - logoH / 2;
                 else if (pos.baseline === 'bottom') drawY = py - logoH;
 
-                ctx.shadowColor = 'rgba(0,0,0,0.5)';
+                ctx.shadowColor = 'rgba(0,0,0,0.45)';
                 ctx.shadowBlur = 8;
                 ctx.drawImage(logoImage, drawX, drawY, logoW, logoH);
             }
@@ -260,6 +241,7 @@ export default function WatermarkTool() {
         ctx.globalAlpha = 1.0;
     }, [
         mainImage,
+        showOriginal,
         watermarkType,
         watermarkText,
         textColor,
@@ -276,7 +258,6 @@ export default function WatermarkTool() {
         renderCanvas();
     }, [renderCanvas]);
 
-    // Handle Upload Main Image
     const handleMainFile = (file) => {
         if (!file || !file.type.startsWith('image/')) {
             toast({ variant: 'destructive', title: t('Vui lòng chọn file hình ảnh (PNG, JPG, WEBP)') });
@@ -287,18 +268,18 @@ export default function WatermarkTool() {
         const reader = new FileReader();
         reader.onload = (e) => {
             const img = new Image();
-            img.onload = () => {
-                setMainImage(img);
-            };
+            img.onload = () => setMainImage(img);
             img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     };
 
-    // Handle Upload Watermark Logo
     const handleLogoFile = (file) => {
         if (!file || !file.type.startsWith('image/')) {
-            toast({ variant: 'destructive', title: t('Vui lòng chọn file logo (khuyên dùng PNG nền trong suốt)') });
+            toast({
+                variant: 'destructive',
+                title: t('Vui lòng chọn file logo (khuyên dùng PNG nền trong suốt)'),
+            });
             return;
         }
         const reader = new FileReader();
@@ -313,7 +294,13 @@ export default function WatermarkTool() {
         reader.readAsDataURL(file);
     };
 
-    // Download Watermarked Image
+    const handleDrop = (e) => {
+        e.preventDefault();
+        setIsDragging(false);
+        const file = e.dataTransfer?.files?.[0];
+        if (file) handleMainFile(file);
+    };
+
     const handleDownload = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -324,22 +311,32 @@ export default function WatermarkTool() {
         toast({ title: t('Đã tải ảnh đóng dấu bản quyền thành công!') });
     };
 
-    // Save to Media Library
     const handleSaveToMedia = async () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
         setBusy(true);
         try {
-            canvas.toBlob(async (blob) => {
-                if (!blob) throw new Error('Không thể xuất ảnh từ canvas.');
-                const file = new File([blob], `wm_${mainImageName}`, { type: 'image/png' });
-                const brandId = selectedBrandId === 'all' ? brands[0]?.id : selectedBrandId;
-                await appClient.media.upload(file, { brand_id: brandId });
-                toast({
-                    title: t('Đã lưu vào Thư viện Media!'),
-                    description: t('Ảnh đã sẵn sàng để chèn vào bài viết trong Studio.'),
-                });
-            }, 'image/png', 0.95);
+            await new Promise((resolve, reject) => {
+                canvas.toBlob(
+                    async (blob) => {
+                        try {
+                            if (!blob) throw new Error('Không thể xuất ảnh từ canvas.');
+                            const file = new File([blob], `wm_${mainImageName}`, { type: 'image/png' });
+                            const brandId = selectedBrandId === 'all' ? brands[0]?.id : selectedBrandId;
+                            await appClient.media.upload(file, { brand_id: brandId });
+                            toast({
+                                title: t('Đã lưu vào Thư viện Media!'),
+                                description: t('Ảnh đã sẵn sàng để chèn vào bài viết trong Studio.'),
+                            });
+                            resolve();
+                        } catch (err) {
+                            reject(err);
+                        }
+                    },
+                    'image/png',
+                    0.95
+                );
+            });
         } catch (err) {
             toast({ variant: 'destructive', title: t('Lưu ảnh thất bại'), description: err.message });
         } finally {
@@ -347,244 +344,325 @@ export default function WatermarkTool() {
         }
     };
 
-    // Create post with this image
     const handleCreatePostWithImage = () => {
         const canvas = canvasRef.current;
         if (!canvas) return;
+        setBusy(true);
         canvas.toBlob(async (blob) => {
-            if (!blob) return;
+            if (!blob) {
+                setBusy(false);
+                return;
+            }
             const file = new File([blob], `wm_${mainImageName}`, { type: 'image/png' });
             const brandId = selectedBrandId === 'all' ? brands[0]?.id : selectedBrandId;
             try {
                 await appClient.media.upload(file, { brand_id: brandId });
                 toast({ title: t('Đang chuyển sang Studio soạn bài...') });
-                navigate('/create');
-            } catch (err) {
+            } finally {
+                setBusy(false);
                 navigate('/create');
             }
         });
     };
 
     return (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-            {/* Left Controls Column (5 cols) */}
-            <div className="lg:col-span-5 space-y-4">
-                {/* 1. Chọn ảnh gốc */}
-                <div className="rounded-2xl border border-border bg-card p-4 space-y-3 shadow-xs">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-                            <ImageSquare size={16} weight="duotone" className="text-brand-dark" />
-                            <span>{t('1. Chọn ảnh gốc cần đóng dấu')}</span>
-                        </h3>
-                        {isSample && (
-                            <span className="rounded-md bg-brand/20 border border-brand-dark/30 px-2 py-0.5 text-[10px] font-bold text-brand-ink">
-                                {t('Đang xem ảnh mẫu')}
+        <section className="bg-white border border-zinc-200/80 rounded-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] lg:h-[calc(100vh-196px)] lg:min-h-[520px] lg:max-h-[680px]">
+            {/* Hidden file inputs */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleMainFile(e.target.files?.[0])}
+                className="hidden"
+            />
+            <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                onChange={(e) => handleLogoFile(e.target.files?.[0])}
+                className="hidden"
+            />
+
+            {/* LEFT PANE: Unified Clean Canvas Stage */}
+            <div className="min-w-0 min-h-0 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-zinc-200/80">
+                {/* Canvas Top Bar */}
+                <div className="px-4 py-2.5 border-b border-zinc-100 bg-zinc-50/50 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                    <div className="flex items-center gap-2 min-w-0">
+                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                        <span className="text-[12.5px] font-medium text-zinc-900 truncate max-w-[200px]">
+                            {mainImageName}
+                        </span>
+                        {mainImage ? (
+                            <span className="text-[11px] font-mono text-zinc-400 shrink-0">
+                                {mainImage.width}×{mainImage.height}px
                             </span>
-                        )}
+                        ) : null}
+                        {isSample ? (
+                            <span className="px-2 py-0.5 rounded bg-[#ffd631]/25 border border-[#d8b216]/60 text-[10.5px] font-medium text-[#2b2100] shrink-0">
+                                {t('Ảnh mẫu')}
+                            </span>
+                        ) : null}
                     </div>
 
-                    <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => handleMainFile(e.target.files[0])}
-                        className="hidden"
-                    />
-
-                    {mainImage ? (
-                        <div className="p-3 rounded-xl border border-border bg-surface/60 space-y-2.5">
-                            <div className="flex items-center justify-between text-xs">
-                                <div className="flex items-center gap-2 truncate">
-                                    <span className="size-2 rounded-full bg-emerald-500 shrink-0" />
-                                    <span className="font-semibold text-foreground truncate">{mainImageName}</span>
-                                    <span className="font-mono text-[10px] text-muted-foreground shrink-0">
-                                        ({mainImage.width}×{mainImage.height})
-                                    </span>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 pt-1">
-                                <button
-                                    type="button"
-                                    onClick={() => fileInputRef.current?.click()}
-                                    className="flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg border border-brand-dark bg-brand text-brand-ink text-xs font-bold hover:bg-[#ffe059] transition cursor-pointer"
-                                >
-                                    <UploadSimple size={14} weight="bold" />
-                                    <span>{t('Tải ảnh của bạn lên')}</span>
-                                </button>
-                                {!isSample && (
-                                    <button
-                                        type="button"
-                                        onClick={loadSampleImage}
-                                        title={t('Tải lại ảnh mẫu')}
-                                        className="py-1.5 px-2.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground text-xs font-medium transition cursor-pointer"
-                                    >
-                                        <ArrowsClockwise size={14} />
-                                    </button>
-                                )}
-                            </div>
-                        </div>
-                    ) : (
-                        <div
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
                             onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-border hover:border-brand-dark hover:bg-brand/5 rounded-2xl p-5 text-center cursor-pointer transition flex flex-col items-center justify-center gap-1.5"
+                            className="h-8 px-2.5 rounded-lg border border-zinc-200 bg-white hover:border-zinc-300 text-[12px] font-medium text-zinc-700 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
                         >
-                            <div className="size-9 rounded-full bg-brand/20 text-brand-ink grid place-items-center">
-                                <UploadSimple size={18} weight="bold" />
-                            </div>
-                            <span className="text-xs font-bold text-foreground">
-                                {t('Tải ảnh từ máy tính')}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground">
-                                {t('Hỗ trợ JPG, PNG, WEBP lên đến 20MB')}
-                            </span>
-                        </div>
-                    )}
+                            <UploadSimple size={14} />
+                            <span>{t('Chọn ảnh khác')}</span>
+                        </button>
+
+                        {!isSample ? (
+                            <button
+                                type="button"
+                                onClick={loadSampleImage}
+                                title={t('Dùng lại ảnh mẫu')}
+                                aria-label={t('Dùng lại ảnh mẫu')}
+                                className="h-8 w-8 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-zinc-500 hover:text-zinc-900 inline-flex items-center justify-center cursor-pointer"
+                            >
+                                <ArrowsClockwise size={14} />
+                            </button>
+                        ) : null}
+                    </div>
                 </div>
 
-                {/* 2. Cấu hình nội dung & kiểu dáng */}
-                <div className="rounded-2xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
-                    <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-                        <Sparkle size={16} weight="duotone" className="text-brand-dark" />
-                        <span>{t('2. Cấu hình nội dung & Kiểu dáng')}</span>
-                    </h3>
+                {/* Interactive Drop & Preview Stage */}
+                <div
+                    onDragOver={(e) => {
+                        e.preventDefault();
+                        setIsDragging(true);
+                    }}
+                    onDragLeave={() => setIsDragging(false)}
+                    onDrop={handleDrop}
+                    className={`relative flex-1 min-h-0 p-4 flex items-center justify-center overflow-hidden transition-colors ${
+                        isDragging ? 'bg-[#ffd631]/10' : 'bg-zinc-50/80'
+                    }`}
+                >
+                    {/* Subtle Light Checkerboard Dot Grid */}
+                    <div
+                        className="absolute inset-0 opacity-[0.06] pointer-events-none bg-[radial-gradient(#000_1px,transparent_1px)] [background-size:16px_16px]"
+                        aria-hidden="true"
+                    />
 
-                    {/* Mode Tabs: Text / Logo */}
-                    <div className="grid grid-cols-2 p-1 rounded-xl bg-surface border border-border text-xs font-bold">
+                    {isDragging ? (
+                        <div className="absolute inset-4 rounded-xl border-2 border-dashed border-[#d8b216] bg-white/80 z-20 flex flex-col items-center justify-center gap-2 pointer-events-none">
+                            <UploadSimple size={28} weight="duotone" className="text-[#2b2100]" />
+                            <span className="text-[13.5px] font-medium text-[#2b2100]">
+                                {t('Thả ảnh vào đây để đóng dấu bản quyền')}
+                            </span>
+                        </div>
+                    ) : null}
+
+                    <canvas
+                        ref={canvasRef}
+                        className="relative z-10 max-w-full max-h-full object-contain rounded-xl border border-zinc-200/90 shadow-xs bg-white"
+                    />
+                </div>
+
+                {/* Canvas Bottom Action Bar */}
+                <div className="px-4 py-2.5 border-t border-zinc-100 bg-white flex flex-wrap items-center justify-between gap-2 shrink-0">
+                    <div className="flex items-center gap-2.5">
+                        <button
+                            type="button"
+                            onMouseDown={() => setShowOriginal(true)}
+                            onMouseUp={() => setShowOriginal(false)}
+                            onMouseLeave={() => setShowOriginal(false)}
+                            onTouchStart={() => setShowOriginal(true)}
+                            onTouchEnd={() => setShowOriginal(false)}
+                            className="h-8 px-2.5 rounded-lg border border-zinc-200 bg-zinc-50 hover:bg-zinc-100 text-[12px] font-medium text-zinc-600 inline-flex items-center gap-1.5 select-none cursor-pointer"
+                        >
+                            <Eye size={14} />
+                            <span>{showOriginal ? t('Đang xem ảnh gốc') : t('Giữ để so sánh gốc')}</span>
+                        </button>
+
+                        <span className="hidden xl:inline-flex items-center gap-1.5 text-[11px] text-zinc-400">
+                            <ShieldCheck size={13} className="text-emerald-600" />
+                            <span>{t('Xử lý cục bộ trên trình duyệt')}</span>
+                        </span>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <button
+                            type="button"
+                            disabled={busy || !mainImage}
+                            onClick={handleSaveToMedia}
+                            className="h-8 px-2.5 rounded-lg border border-zinc-200 bg-white hover:bg-zinc-50 text-[12px] font-medium text-zinc-700 inline-flex items-center gap-1.5 disabled:opacity-40 transition-colors cursor-pointer"
+                        >
+                            <FloppyDisk size={14} weight="duotone" />
+                            <span>{t('Lưu vào Media')}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled={busy || !mainImage}
+                            onClick={handleCreatePostWithImage}
+                            className="h-8 px-2.5 rounded-lg border border-zinc-200 bg-white hover:border-[#d8b216] hover:bg-[#ffd631]/20 text-[12px] font-medium text-zinc-800 inline-flex items-center gap-1.5 disabled:opacity-40 transition-colors cursor-pointer"
+                        >
+                            <NotePencil size={14} weight="duotone" />
+                            <span>{t('Soạn bài')}</span>
+                        </button>
+
+                        <button
+                            type="button"
+                            disabled={!mainImage}
+                            onClick={handleDownload}
+                            className="btn-skew !h-8 !py-0 !px-3.5"
+                        >
+                            <DownloadSimple size={14} weight="duotone" />
+                            <span>{t('Tải về máy')}</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* RIGHT PANE: Unified Compact Inspector Controls (Fits 100% without page scroll) */}
+            <aside className="bg-zinc-50/35 divide-y divide-zinc-200/70 flex flex-col justify-between overflow-y-auto scrollbar-clean">
+                {/* Section 1: Watermark Type & Content */}
+                <div className="p-4 space-y-3">
+                    <h2 className="font-heading text-[13px] font-medium text-zinc-900">
+                        {t('Nội dung dấu bản quyền')}
+                    </h2>
+
+                    {/* Text / Logo Segmented Toggle */}
+                    <div className="grid grid-cols-2 p-0.5 rounded-lg bg-zinc-100 border border-zinc-200/70">
                         <button
                             type="button"
                             onClick={() => setWatermarkType('text')}
-                            className={`py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                            className={`h-7 rounded-md text-[12px] font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                                 watermarkType === 'text'
-                                    ? 'bg-card text-foreground shadow-2xs border border-border'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'bg-[#ffd631] text-[#2b2100] font-semibold'
+                                    : 'text-zinc-500 hover:text-zinc-900'
                             }`}
                         >
-                            <TextT size={15} weight="bold" />
+                            <TextT size={13} weight="bold" />
                             <span>{t('Văn bản')}</span>
                         </button>
                         <button
                             type="button"
                             onClick={() => setWatermarkType('logo')}
-                            className={`py-1.5 rounded-lg transition cursor-pointer flex items-center justify-center gap-1.5 ${
+                            className={`h-7 rounded-md text-[12px] font-medium inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
                                 watermarkType === 'logo'
-                                    ? 'bg-card text-foreground shadow-2xs border border-border'
-                                    : 'text-muted-foreground hover:text-foreground'
+                                    ? 'bg-[#ffd631] text-[#2b2100] font-semibold'
+                                    : 'text-zinc-500 hover:text-zinc-900'
                             }`}
                         >
-                            <ImageSquare size={15} weight="bold" />
-                            <span>{t('Logo / Hình ảnh')}</span>
+                            <ImageSquare size={13} weight="bold" />
+                            <span>{t('Logo PNG')}</span>
                         </button>
                     </div>
 
                     {watermarkType === 'text' ? (
                         <div className="space-y-3">
-                            <div>
-                                <label className="text-[11px] font-bold text-muted-foreground block mb-1">
-                                    {t('Nội dung bản quyền')}
+                            <div className="space-y-1">
+                                <label htmlFor="wm-text" className="label-xs block text-zinc-600 font-medium">
+                                    {t('Chữ đóng dấu')}
                                 </label>
                                 <input
+                                    id="wm-text"
                                     type="text"
                                     value={watermarkText}
                                     onChange={(e) => setWatermarkText(e.target.value)}
                                     placeholder="© Tên Brand · Hotline..."
-                                    className="w-full rounded-xl border border-border bg-surface/50 px-3 py-2 text-xs font-medium text-foreground outline-none focus:border-brand-dark focus:bg-card transition"
+                                    className="w-full h-8 px-2.5 rounded-lg border border-zinc-200 bg-white text-[12.5px] text-zinc-900 focus:outline-none focus:ring-2 focus:ring-[#ffd631] focus:border-[#d8b216]"
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 items-center">
-                                <div>
-                                    <label className="text-[11px] font-bold text-muted-foreground block mb-1.5">
-                                        {t('Màu chữ')}
-                                    </label>
-                                    <div className="flex items-center gap-2">
-                                        {[
-                                            { code: '#ffffff', label: 'Trắng' },
-                                            { code: '#000000', label: 'Đen' },
-                                            { code: '#ffd631', label: 'Vàng' },
-                                            { code: '#1877f2', label: 'Xanh' },
-                                        ].map((c) => (
+                            {/* Color Swatches */}
+                            <div className="flex items-center justify-between gap-2">
+                                <span className="label-xs text-zinc-600 font-medium">{t('Màu chữ')}</span>
+                                <div className="flex items-center gap-1.5">
+                                    {TEXT_SWATCHES.map((c) => {
+                                        const active = textColor === c.code;
+                                        return (
                                             <button
                                                 key={c.code}
                                                 type="button"
                                                 title={c.label}
+                                                aria-label={c.label}
                                                 onClick={() => setTextColor(c.code)}
                                                 style={{ backgroundColor: c.code }}
-                                                className={`size-6 rounded-full border cursor-pointer transition ${
-                                                    textColor === c.code
-                                                        ? 'ring-2 ring-brand-dark ring-offset-2 scale-110'
-                                                        : 'border-border/80'
+                                                className={`h-6 w-6 rounded-md border flex items-center justify-center transition-transform cursor-pointer ${
+                                                    active
+                                                        ? 'scale-110 ring-2 ring-zinc-900/20 border-zinc-900/40'
+                                                        : 'border-zinc-300 hover:scale-105'
                                                 }`}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground mb-1">
-                                        <span>{t('Cỡ chữ')}</span>
-                                        <span className="font-mono text-foreground">{fontSizePercent}%</span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="2"
-                                        max="10"
-                                        step="0.5"
-                                        value={fontSizePercent}
-                                        onChange={(e) => setFontSizePercent(Number(e.target.value))}
-                                        className="w-full accent-brand cursor-pointer"
-                                    />
+                                            >
+                                                {active ? (
+                                                    <Check size={12} weight="bold" style={{ color: c.ink }} />
+                                                ) : null}
+                                            </button>
+                                        );
+                                    })}
                                 </div>
                             </div>
 
-                            <label className="flex items-center gap-2 text-xs text-foreground cursor-pointer select-none pt-1">
+                            {/* Font Size */}
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[12px]">
+                                    <span className="text-zinc-600 font-medium">{t('Cỡ chữ')}</span>
+                                    <span className="font-mono text-zinc-900 tabular-nums">
+                                        {fontSizePercent}%
+                                    </span>
+                                </div>
+                                <input
+                                    type="range"
+                                    min="2"
+                                    max="10"
+                                    step="0.5"
+                                    value={fontSizePercent}
+                                    onChange={(e) => setFontSizePercent(Number(e.target.value))}
+                                    className="w-full accent-[#d8b216] cursor-pointer"
+                                />
+                            </div>
+
+                            {/* Background Pill Toggle */}
+                            <label className="flex items-center gap-2 text-[12px] text-zinc-700 cursor-pointer select-none">
                                 <input
                                     type="checkbox"
                                     checked={withBackground}
                                     onChange={(e) => setWithBackground(e.target.checked)}
-                                    className="h-4 w-4 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
+                                    className="h-3.5 w-3.5 rounded border-zinc-300 accent-[#d8b216] cursor-pointer"
                                 />
-                                <span>{t('Gắn khung nền bảo vệ chống chìm chữ')}</span>
+                                <span>{t('Khung nền mờ chống chìm chữ')}</span>
                             </label>
                         </div>
                     ) : (
                         <div className="space-y-3">
-                            <input
-                                ref={logoInputRef}
-                                type="file"
-                                accept="image/*"
-                                onChange={(e) => handleLogoFile(e.target.files[0])}
-                                className="hidden"
-                            />
                             {logoImage ? (
-                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-border bg-surface/50 text-xs">
-                                    <div className="flex items-center gap-2">
-                                        <span className="size-2 rounded-full bg-brand shrink-0" />
-                                        <span className="font-semibold text-foreground">
+                                <div className="flex items-center justify-between p-2.5 rounded-xl border border-zinc-200 bg-white text-[12px]">
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        <span className="h-2 w-2 rounded-full bg-emerald-500 shrink-0" />
+                                        <span className="font-medium text-zinc-800 truncate">
                                             Logo ({logoImage.width}×{logoImage.height})
                                         </span>
                                     </div>
                                     <button
                                         type="button"
                                         onClick={() => logoInputRef.current?.click()}
-                                        className="text-[11px] font-bold text-brand-dark hover:underline cursor-pointer"
+                                        className="text-[11.5px] font-medium text-zinc-600 hover:text-zinc-900 underline cursor-pointer shrink-0"
                                     >
-                                        {t('Đổi logo khác')}
+                                        {t('Đổi logo')}
                                     </button>
                                 </div>
                             ) : (
                                 <button
                                     type="button"
                                     onClick={() => logoInputRef.current?.click()}
-                                    className="w-full border border-dashed border-border hover:border-brand-dark p-3 rounded-xl text-xs font-bold text-foreground text-center cursor-pointer transition flex items-center justify-center gap-2 hover:bg-surface/50"
+                                    className="w-full p-3.5 rounded-xl border border-dashed border-zinc-300 bg-white hover:border-[#d8b216] hover:bg-[#ffd631]/10 text-[12px] font-medium text-zinc-700 flex flex-col items-center gap-1 transition-colors cursor-pointer"
                                 >
-                                    <UploadSimple size={15} />
-                                    <span>{t('Tải logo thương hiệu (Khuyên dùng PNG trong suốt)')}</span>
+                                    <UploadSimple size={16} className="text-zinc-400" />
+                                    <span>{t('Tải logo PNG trong suốt')}</span>
                                 </button>
                             )}
 
-                            <div>
-                                <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground mb-1">
-                                    <span>{t('Kích thước logo')}</span>
-                                    <span className="font-mono text-foreground">{logoSizePercent}%</span>
+                            <div className="space-y-1">
+                                <div className="flex items-center justify-between text-[12px]">
+                                    <span className="text-zinc-600 font-medium">{t('Kích thước logo')}</span>
+                                    <span className="font-mono text-zinc-900 tabular-nums">
+                                        {logoSizePercent}%
+                                    </span>
                                 </div>
                                 <input
                                     type="range"
@@ -593,145 +671,95 @@ export default function WatermarkTool() {
                                     step="1"
                                     value={logoSizePercent}
                                     onChange={(e) => setLogoSizePercent(Number(e.target.value))}
-                                    className="w-full accent-brand cursor-pointer"
+                                    className="w-full accent-[#d8b216] cursor-pointer"
                                 />
                             </div>
                         </div>
                     )}
                 </div>
 
-                {/* 3. Vị trí & Độ trong suốt */}
-                <div className="rounded-2xl border border-border bg-card p-4 space-y-3.5 shadow-xs">
+                {/* Section 2: Placement & Tiling */}
+                <div className="p-4 space-y-2.5">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-xs font-bold text-foreground flex items-center gap-2">
-                            <Crosshair size={16} weight="duotone" className="text-brand-dark" />
-                            <span>{t('3. Vị trí & Độ trong suốt')}</span>
-                        </h3>
-                        <label className="flex items-center gap-1.5 text-[11px] font-bold text-foreground cursor-pointer select-none">
-                            <input
-                                type="checkbox"
-                                checked={isTiled}
-                                onChange={(e) => setIsTiled(e.target.checked)}
-                                className="h-3.5 w-3.5 rounded border-border text-brand-dark focus:ring-brand-dark cursor-pointer"
-                            />
-                            <span>{t('Phủ kín chéo (Tiled)')}</span>
-                        </label>
+                        <h2 className="font-heading text-[13px] font-medium text-zinc-900">
+                            {t('Vị trí đặt dấu')}
+                        </h2>
+                        <div className="inline-flex items-center p-0.5 rounded-lg bg-zinc-100 border border-zinc-200/70 text-[11px]">
+                            <button
+                                type="button"
+                                onClick={() => setIsTiled(false)}
+                                className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                                    !isTiled ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500'
+                                }`}
+                            >
+                                {t('1 góc')}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setIsTiled(true)}
+                                className={`px-2 py-0.5 rounded-md font-medium transition-colors cursor-pointer ${
+                                    isTiled ? 'bg-white text-zinc-900 shadow-2xs' : 'text-zinc-500'
+                                }`}
+                            >
+                                {t('Phủ chéo')}
+                            </button>
+                        </div>
                     </div>
 
                     {!isTiled ? (
-                        <div className="space-y-1.5">
-                            <div className="text-[11px] text-muted-foreground font-medium">
-                                {t('Chọn 1 trong 9 vị trí trên khung ảnh:')}
-                            </div>
-                            <div className="grid grid-cols-3 gap-1.5 max-w-[210px] mx-auto p-1.5 rounded-xl bg-surface border border-border">
-                                {POSITIONS.map((p) => {
-                                    const isSelected = position === p.id;
-                                    return (
-                                        <button
-                                            key={p.id}
-                                            type="button"
-                                            onClick={() => setPosition(p.id)}
-                                            title={p.label}
-                                            className={`h-8 rounded-lg text-xs font-bold transition-all cursor-pointer grid place-items-center ${
-                                                isSelected
-                                                    ? 'bg-brand border border-brand-dark text-brand-ink shadow-2xs scale-105'
-                                                    : 'bg-card text-muted-foreground hover:bg-muted hover:text-foreground'
+                        <div className="grid grid-cols-3 gap-1.5 p-1.5 rounded-xl bg-white border border-zinc-200/80">
+                            {POSITIONS.map((p) => {
+                                const active = position === p.id;
+                                return (
+                                    <button
+                                        key={p.id}
+                                        type="button"
+                                        title={p.label}
+                                        aria-label={p.label}
+                                        onClick={() => setPosition(p.id)}
+                                        className={`h-7 rounded-md border flex items-center justify-center transition-colors cursor-pointer ${
+                                            active
+                                                ? 'bg-[#ffd631]/35 border-[#d8b216]'
+                                                : 'bg-zinc-50/70 border-zinc-200/60 hover:bg-zinc-100'
+                                        }`}
+                                    >
+                                        <span
+                                            className={`h-2 w-2 rounded-full ${
+                                                active ? 'bg-[#2b2100]' : 'bg-zinc-400'
                                             }`}
-                                        >
-                                            <span className="leading-none">{p.icon}</span>
-                                        </button>
-                                    );
-                                })}
-                            </div>
+                                        />
+                                    </button>
+                                );
+                            })}
                         </div>
                     ) : (
-                        <div className="p-2.5 rounded-xl border border-brand-dark/30 bg-brand/10 text-[11px] text-brand-ink font-medium">
-                            {t('Dấu ấn sẽ được phủ chéo toàn bộ bức ảnh giúp chống xóa hoặc cắt cúp hình ảnh bản quyền.')}
-                        </div>
+                        <p className="p-2.5 rounded-xl bg-[#ffd631]/15 border border-[#d8b216]/50 text-[11.5px] text-[#2b2100] leading-relaxed">
+                            {t('Dấu bản quyền được lặp chéo phủ toàn bộ khung hình để chống cắt cúp.')}
+                        </p>
                     )}
-
-                    <div>
-                        <div className="flex items-center justify-between text-[11px] font-bold text-muted-foreground mb-1">
-                            <span>{t('Độ mờ đục (Opacity)')}</span>
-                            <span className="font-mono text-foreground font-extrabold">{opacity}%</span>
-                        </div>
-                        <input
-                            type="range"
-                            min="10"
-                            max="100"
-                            step="5"
-                            value={opacity}
-                            onChange={(e) => setOpacity(Number(e.target.value))}
-                            className="w-full accent-brand cursor-pointer"
-                        />
-                    </div>
                 </div>
-            </div>
 
-            {/* Right Canvas Preview & Export Column (7 cols) */}
-            <div className="lg:col-span-7 space-y-4">
-                <div className="rounded-2xl border border-border bg-card p-4.5 space-y-4 shadow-xs">
-                    {/* Top Action Header */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/80 pb-3">
-                        <div className="flex items-center gap-2">
-                            <span className="size-2 rounded-full bg-brand border border-brand-dark" />
-                            <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
-                                {t('Xem trước ảnh đóng dấu thực tế')}
-                            </h3>
-                        </div>
-
-                        {/* Export Action Buttons */}
-                        <div className="flex items-center gap-2">
-                            <button
-                                type="button"
-                                disabled={busy || !mainImage}
-                                onClick={handleSaveToMedia}
-                                className="flex items-center gap-1.5 rounded-xl border border-border bg-surface px-3 py-1.5 text-xs font-medium text-foreground hover:border-brand-dark hover:bg-brand/10 transition cursor-pointer disabled:opacity-40"
-                            >
-                                <FloppyDisk size={14} weight="duotone" />
-                                <span>{t('Lưu vào Media')}</span>
-                            </button>
-                            <button
-                                type="button"
-                                disabled={busy || !mainImage}
-                                onClick={handleCreatePostWithImage}
-                                className="flex items-center gap-1.5 rounded-xl border border-brand-dark bg-brand/20 px-3 py-1.5 text-xs font-bold text-brand-ink hover:bg-brand/35 transition cursor-pointer disabled:opacity-40"
-                            >
-                                <PencilSimple size={14} weight="bold" />
-                                <span>{t('Soạn bài với ảnh này')}</span>
-                            </button>
-                            <button
-                                type="button"
-                                disabled={!mainImage}
-                                onClick={handleDownload}
-                                className="btn-skew flex items-center gap-1.5 !py-1.5 !px-3.5 text-xs font-bold cursor-pointer disabled:opacity-40"
-                            >
-                                <DownloadSimple size={14} weight="bold" />
-                                <span>{t('Tải về máy')}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Canvas Display Area */}
-                    <div className="w-full min-h-[460px] rounded-xl border border-border bg-slate-950/90 flex items-center justify-center p-4 overflow-hidden relative">
-                        <canvas
-                            ref={canvasRef}
-                            className="max-w-full max-h-[580px] object-contain rounded-lg shadow-md border border-slate-800"
-                        />
-                    </div>
-
-                    {/* Bottom Status & Tips */}
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-foreground pt-1">
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck size={14} className="text-emerald-500" />
-                            <span>{t('Ảnh được xử lý trực tiếp an toàn ngay trên trình duyệt (HTML5 Canvas)')}</span>
-                        </div>
-                        <span className="font-mono text-[10px]">
-                            {mainImage ? `${mainImage.width}×${mainImage.height}px · PNG` : ''}
+                {/* Section 3: Opacity */}
+                <div className="p-4 space-y-1.5">
+                    <div className="flex items-center justify-between text-[12px]">
+                        <h2 className="font-heading text-[13px] font-medium text-zinc-900">
+                            {t('Độ rõ nét (Opacity)')}
+                        </h2>
+                        <span className="font-mono text-[12px] font-medium text-zinc-900 tabular-nums">
+                            {opacity}%
                         </span>
                     </div>
+                    <input
+                        type="range"
+                        min="10"
+                        max="100"
+                        step="5"
+                        value={opacity}
+                        onChange={(e) => setOpacity(Number(e.target.value))}
+                        className="w-full accent-[#d8b216] cursor-pointer"
+                    />
                 </div>
-            </div>
-        </div>
+            </aside>
+        </section>
     );
 }

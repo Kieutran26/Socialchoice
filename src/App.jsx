@@ -22,7 +22,7 @@ import MediaLibraryNew from '@/pages/MediaLibraryNew';
 import SocialAccountsNew from '@/pages/SocialAccountsNew';
 import BrandsNew from '@/pages/BrandsNew';
 import Settings from '@/pages/Settings';
-import Tools from '@/pages/Tools';
+import ToolsIndexRedirect, { ToolWorkspacePage } from '@/pages/ToolsNew';
 import TiktokShopNew from '@/pages/TiktokShopNew';
 import ShopeeAffiliateNew from '@/pages/ShopeeAffiliateNew';
 import SocialInbox from '@/pages/SocialInbox';
@@ -144,7 +144,9 @@ export default function App() {
                                 <Route path="/media-clean" element={<Navigate to="/media" replace />} />
                                 <Route path="/interactive-images" element={<InteractiveImages />} />
                                 <Route path="/shortlinks" element={<Shortlinks />} />
-                                <Route path="/tools" element={<Tools />} />
+                                <Route path="/tools" element={<ToolsIndexRedirect />} />
+                                <Route path="/tools/:toolSlug" element={<ToolWorkspacePage />} />
+                                <Route path="/tools-clean" element={<Navigate to="/tools/watermark" replace />} />
                                 <Route path="/tiktok-shop" element={<TiktokShopNew />} />
                                 <Route path="/tiktok-shop-clean" element={<Navigate to="/tiktok-shop" replace />} />
                                 <Route path="/shopee-affiliate" element={<ShopeeAffiliateNew />} />

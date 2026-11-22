@@ -1,4 +1,5 @@
-import { NavLink } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
     SquaresFour,
     ChartLineUp,
@@ -19,6 +20,10 @@ import {
     Storefront,
     ShoppingBagOpen,
     ChatTeardropDots,
+    CaretDown,
+    ShieldCheck,
+    Clock,
+    ChatCircleDots,
 } from '@phosphor-icons/react';
 import { useTranslation } from '@/lib/i18n';
 
@@ -59,7 +64,16 @@ const NAV_GROUPS = [
             { to: '/shortlinks', label: 'Shortlinks', icon: LinkSimple },
             { to: '/tiktok-shop', label: 'TikTok Shop', icon: Storefront, badge: 'HOT' },
             { to: '/shopee-affiliate', label: 'Shopee Affiliate', icon: ShoppingBagOpen, badge: 'HOT' },
-            { to: '/tools', label: 'Tiện ích & Công cụ', icon: Wrench },
+            {
+                to: '/tools',
+                label: 'Tiện ích & Công cụ',
+                icon: Wrench,
+                children: [
+                    { to: '/tools/watermark', label: 'Đóng dấu ảnh', icon: ShieldCheck },
+                    { to: '/tools/golden-hours', label: 'Khung giờ vàng', icon: Clock },
+                    { to: '/tools/auto-dm', label: 'Auto-DM Chốt đơn', icon: ChatCircleDots, badge: 'HOT' },
+                ],
+            },
         ],
     },
 ];
@@ -95,6 +109,85 @@ function NavItem({ to, label, icon: Icon, badge, onNavigate }) {
     );
 }
 
+function NavDropdownItem({ item, onNavigate }) {
+    const { t } = useTranslation();
+    const location = useLocation();
+    const isGroupActive =
+        location.pathname === item.to || location.pathname.startsWith(`${item.to}/`);
+    const [open, setOpen] = useState(isGroupActive);
+    const Icon = item.icon;
+
+    useEffect(() => {
+        if (isGroupActive) setOpen(true);
+    }, [isGroupActive]);
+
+    return (
+        <div className="space-y-0.5">
+            <button
+                type="button"
+                aria-expanded={open}
+                onClick={() => setOpen((prev) => !prev)}
+                className={`w-full group relative flex items-center justify-between gap-2 rounded-xl border px-3 py-2.5 sm:py-2 text-[13px] min-h-[38px] sm:min-h-9 transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                    isGroupActive
+                        ? 'bg-brand/20 border-brand-dark/40 text-brand-ink font-semibold'
+                        : 'border-transparent text-muted-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
+                }`}
+            >
+                <div className="flex items-center gap-3 min-w-0">
+                    <Icon size={18} weight={isGroupActive ? 'fill' : 'regular'} className="shrink-0" />
+                    <span className="truncate">{t(item.label)}</span>
+                </div>
+                <CaretDown
+                    size={13}
+                    weight="bold"
+                    className={`shrink-0 transition-transform duration-150 ${open ? 'rotate-180' : ''}`}
+                />
+            </button>
+
+            {open ? (
+                <div className="ml-4 pl-2.5 border-l border-border/80 space-y-0.5 py-0.5">
+                    {item.children.map((child) => {
+                        const ChildIcon = child.icon;
+                        return (
+                            <NavLink
+                                key={child.to}
+                                to={child.to}
+                                end={child.end ?? true}
+                                onClick={onNavigate}
+                                className={({ isActive }) =>
+                                    `group relative flex items-center justify-between gap-2 rounded-lg border px-2.5 py-1.5 text-[12.5px] min-h-[34px] transition-colors cursor-pointer focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring ${
+                                        isActive
+                                            ? 'bg-brand border-brand-dark text-brand-ink font-semibold'
+                                            : 'border-transparent text-muted-foreground hover:text-brand-ink hover:bg-brand/20 font-medium'
+                                    }`
+                                }
+                            >
+                                {({ isActive }) => (
+                                    <>
+                                        <div className="flex items-center gap-2.5 min-w-0">
+                                            <ChildIcon
+                                                size={15}
+                                                weight={isActive ? 'fill' : 'regular'}
+                                                className="shrink-0"
+                                            />
+                                            <span className="truncate">{t(child.label)}</span>
+                                        </div>
+                                        {child.badge ? (
+                                            <span className="shrink-0 rounded bg-red-600 text-white font-black text-[8.5px] px-1.5 py-0.2 tracking-wider">
+                                                {child.badge}
+                                            </span>
+                                        ) : null}
+                                    </>
+                                )}
+                            </NavLink>
+                        );
+                    })}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 export default function SidebarNavigation({ onNavigate }) {
     const { t } = useTranslation();
 
@@ -107,16 +200,20 @@ export default function SidebarNavigation({ onNavigate }) {
                         {t(group.title)}
                     </p>
                     <div className="space-y-0.5">
-                        {group.items.map((item) => (
-                            <NavItem
-                                key={item.to}
-                                to={item.to}
-                                label={item.label}
-                                icon={item.icon}
-                                badge={item.badge}
-                                onNavigate={onNavigate}
-                            />
-                        ))}
+                        {group.items.map((item) =>
+                            item.children ? (
+                                <NavDropdownItem key={item.to} item={item} onNavigate={onNavigate} />
+                            ) : (
+                                <NavItem
+                                    key={item.to}
+                                    to={item.to}
+                                    label={item.label}
+                                    icon={item.icon}
+                                    badge={item.badge}
+                                    onNavigate={onNavigate}
+                                />
+                            )
+                        )}
                     </div>
                 </div>
             ))}
