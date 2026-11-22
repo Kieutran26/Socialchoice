@@ -20,7 +20,7 @@ import ContentAnglesNew from '@/pages/ContentAnglesNew';
 import Analytics from '@/pages/Analytics';
 import MediaLibrary from '@/pages/MediaLibrary';
 import SocialAccounts from '@/pages/SocialAccounts';
-import Brands from '@/pages/Brands';
+import BrandsNew from '@/pages/BrandsNew';
 import Settings from '@/pages/Settings';
 import Tools from '@/pages/Tools';
 import TiktokShop from '@/pages/TiktokShop';
@@ -148,7 +148,8 @@ export default function App() {
                                 <Route path="/shopee-affiliate" element={<ShopeeAffiliate />} />
                                 <Route path="/shopee" element={<Navigate to="/shopee-affiliate" replace />} />
                                 <Route path="/accounts" element={<SocialAccounts />} />
-                                <Route path="/brands" element={<Brands />} />
+                                <Route path="/brands" element={<BrandsNew />} />
+                                <Route path="/brands-clean" element={<Navigate to="/brands" replace />} />
                                 <Route path="/team" element={<Navigate to="/settings?tab=team" replace />} />
                                 <Route path="/settings" element={<Settings />} />
                                 <Route path="/admin/licenses" element={<AdminLicenses />} />
