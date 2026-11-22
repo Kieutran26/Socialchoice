@@ -16,7 +16,7 @@ import AllPosts from '@/pages/AllPosts';
 import ContentStrategyAlt from '@/pages/ContentStrategyAlt';
 import CampaignsNew from '@/pages/CampaignsNew';
 import ContentPillarsNew from '@/pages/ContentPillarsNew';
-import ContentAngles from '@/pages/ContentAngles';
+import ContentAnglesNew from '@/pages/ContentAnglesNew';
 import Analytics from '@/pages/Analytics';
 import MediaLibrary from '@/pages/MediaLibrary';
 import SocialAccounts from '@/pages/SocialAccounts';
@@ -136,7 +136,8 @@ export default function App() {
                                 <Route path="/campaigns-clean" element={<Navigate to="/campaigns" replace />} />
                                 <Route path="/strategy/pillars" element={<ContentPillarsNew />} />
                                 <Route path="/pillars-clean" element={<Navigate to="/strategy/pillars" replace />} />
-                                <Route path="/strategy/angles" element={<ContentAngles />} />
+                                <Route path="/strategy/angles" element={<ContentAnglesNew />} />
+                                <Route path="/angles-clean" element={<Navigate to="/strategy/angles" replace />} />
                                 <Route path="/analytics" element={<Analytics />} />
                                 <Route path="/analytics-clean" element={<Navigate to="/analytics" replace />} />
                                 <Route path="/media" element={<MediaLibrary />} />
