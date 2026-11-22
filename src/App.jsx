@@ -24,7 +24,7 @@ import BrandsNew from '@/pages/BrandsNew';
 import Settings from '@/pages/Settings';
 import Tools from '@/pages/Tools';
 import TiktokShopNew from '@/pages/TiktokShopNew';
-import ShopeeAffiliate from '@/pages/ShopeeAffiliate';
+import ShopeeAffiliateNew from '@/pages/ShopeeAffiliateNew';
 import SocialInbox from '@/pages/SocialInbox';
 import AdminLicenses from '@/pages/AdminLicenses';
 import InteractiveImages from '@/pages/InteractiveImages';
@@ -147,7 +147,8 @@ export default function App() {
                                 <Route path="/tools" element={<Tools />} />
                                 <Route path="/tiktok-shop" element={<TiktokShopNew />} />
                                 <Route path="/tiktok-shop-clean" element={<Navigate to="/tiktok-shop" replace />} />
-                                <Route path="/shopee-affiliate" element={<ShopeeAffiliate />} />
+                                <Route path="/shopee-affiliate" element={<ShopeeAffiliateNew />} />
+                                <Route path="/shopee-clean" element={<Navigate to="/shopee-affiliate" replace />} />
                                 <Route path="/shopee" element={<Navigate to="/shopee-affiliate" replace />} />
                                 <Route path="/accounts" element={<SocialAccountsNew />} />
                                 <Route path="/accounts-clean" element={<Navigate to="/accounts" replace />} />
