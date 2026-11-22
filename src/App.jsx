@@ -18,7 +18,7 @@ import CampaignsNew from '@/pages/CampaignsNew';
 import ContentPillarsNew from '@/pages/ContentPillarsNew';
 import ContentAnglesNew from '@/pages/ContentAnglesNew';
 import Analytics from '@/pages/Analytics';
-import MediaLibrary from '@/pages/MediaLibrary';
+import MediaLibraryNew from '@/pages/MediaLibraryNew';
 import SocialAccountsNew from '@/pages/SocialAccountsNew';
 import BrandsNew from '@/pages/BrandsNew';
 import Settings from '@/pages/Settings';
@@ -140,7 +140,8 @@ export default function App() {
                                 <Route path="/angles-clean" element={<Navigate to="/strategy/angles" replace />} />
                                 <Route path="/analytics" element={<Analytics />} />
                                 <Route path="/analytics-clean" element={<Navigate to="/analytics" replace />} />
-                                <Route path="/media" element={<MediaLibrary />} />
+                                <Route path="/media" element={<MediaLibraryNew />} />
+                                <Route path="/media-clean" element={<Navigate to="/media" replace />} />
                                 <Route path="/interactive-images" element={<InteractiveImages />} />
                                 <Route path="/shortlinks" element={<Shortlinks />} />
                                 <Route path="/tools" element={<Tools />} />
